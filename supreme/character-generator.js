@@ -3188,6 +3188,9 @@ ${NO_EM_DASH_RULE}`;
         let imageCountEl = document.getElementById("imageCountEl");
         if (imageCountEl) imageCountEl.value = localStorage.imageCount || imageCountEl.value || "4";
 
+        let roleLengthEl = document.getElementById("roleLengthEl");
+        if (roleLengthEl) roleLengthEl.value = localStorage.roleLength || roleLengthEl.value || "medium";
+
         let roleNotesEl = document.getElementById("roleNotesEl");
         if (roleNotesEl) roleNotesEl.value = localStorage.roleNotes || "";
 
@@ -3223,6 +3226,9 @@ ${NO_EM_DASH_RULE}`;
 
         let roleplayNotesEl = document.getElementById("roleplayNotesEl");
         if (roleplayNotesEl) roleplayNotesEl.value = localStorage.roleplayNotes || "";
+
+        let introLengthEl = document.getElementById("introLengthEl");
+        if (introLengthEl) introLengthEl.value = localStorage.introLength || introLengthEl.value || "medium";
 
         let introNotesEl = document.getElementById("introNotesEl");
         if (introNotesEl) introNotesEl.value = localStorage.introNotes || "";

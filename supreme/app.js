@@ -143,6 +143,33 @@
 *Reina taps her temple, her optic neural link blinking green.* "Grid is quiet. Go."
  
 *Kaito looks over at you, his metal hand resting on his gun holster.* "Well, boss. What's the play? Do we breach the front gate or take the vents?"`;
+                } else if (instruction.includes("Extract world-building and setting details")) {
+                    responseText = JSON.stringify({
+                        name: "Luminaria",
+                        setting: "Fantasy",
+                        tones: ["Mysterious", "Epic"],
+                        themes: "crystal magic, floating islands, ancient sky ruins",
+                        overview: "Luminaria is a majestic world composed of shattered continents suspended in a vast glowing aether. Gravity operates irregularly, anchored by massive floating crystals.",
+                        factions: "- Crystal Sentinels: Guard the core levitation crystals.\n- Sky Pirates: Outlaws who scavenge drifting ruins.",
+                        rules: "Magic is fueled by raw aetheric energy tapped from the float-stones. Limitations include crystal decay and gravity field collapses.",
+                        locations: "- The Prism Tower: An ancient monolith floating at the center.\n- Aether Rift: A deep rift of raw gravity energy.",
+                        conflicts: "A slowly spreading darkness is decaying the levitation crystals, causing islands to fall into the abyss."
+                    });
+                } else if (instruction.includes("Extract roleplay scenario details")) {
+                    responseText = JSON.stringify({
+                        worldName: "Galeport",
+                        worldLore: "A steampunk city built on high cliffs overlooking a sea of endless clouds, constantly battered by gale-force winds.",
+                        setting: "Steampunk",
+                        tones: ["Thrilling_Action", "Grounded"],
+                        themes: "airships, storm piracy, mechanical wings",
+                        userName: "Marcus",
+                        userRole: "A rogue aeronautical mechanic",
+                        npcs: [
+                            { name: "Captain Zephyr", species: "Human", personality: "Dashing, daring, loyal.", role: "Pilot of the airship Storm-Cutter" },
+                            { name: "Cinder", species: "Goblinal", personality: "Jittery, pyro-obsessed.", role: "Demolitions expert" }
+                        ],
+                        scenarioNotes: "Your airship has been sabotaged mid-flight during a severe thunderstorm. You must fix the engine while defending against sky pirates."
+                    });
                 }
                 
                 if (onChunk) {
@@ -225,14 +252,16 @@
         if (menu) {
             menu.style.display = menu.style.display === "none" ? "block" : "none";
             // Focus search input if opening setting dropdown
-            if ((menuId === "settingDropdownMenu" || menuId === "wSettingDropdownMenu") && menu.style.display === "block") {
+            if ((menuId === "settingDropdownMenu" || menuId === "wSettingDropdownMenu" || menuId === "rpSettingDropdownMenu") && menu.style.display === "block") {
                 let search = menu.querySelector(".dropdown-search-input");
                 if (search) {
                     search.value = "";
                     if (menuId === "settingDropdownMenu") {
                         filterSettings("");
-                    } else if (typeof filterWorldSettings === "function") {
+                    } else if (menuId === "wSettingDropdownMenu" && typeof filterWorldSettings === "function") {
                         filterWorldSettings("");
+                    } else if (menuId === "rpSettingDropdownMenu" && typeof filterRoleplaySettings === "function") {
+                        filterRoleplaySettings("");
                     }
                     setTimeout(() => search.focus(), 50);
                 }

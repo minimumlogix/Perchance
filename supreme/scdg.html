@@ -458,6 +458,13 @@
             </div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="roleLengthEl" onchange="localStorage.roleLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
                     <button class="gen-btn" id="roleGenBtnEl" onclick="generateSection('role')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="roleClearBtnEl" onclick="clearSection('role')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -745,6 +752,13 @@
             </div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="roleplayLengthEl" onchange="localStorage.roleplayLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
                     <button class="gen-btn" id="roleplayGenBtnEl" onclick="generateSection('roleplay')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="roleplayClearBtnEl" onclick="clearSection('roleplay')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -776,6 +790,13 @@
             </div>
             <div style="display:flex; align-items:center; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="introLengthEl" onchange="localStorage.introLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
                     <button class="gen-btn" id="introGenBtnEl" onclick="generateSection('intro')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="introClearBtnEl" onclick="clearSection('intro')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -839,6 +860,24 @@
                     <button id="wClearAllBtn" onclick="clearWorldState()" class="btn-ghost"><i class="bi bi-trash"></i> Clear World</button>
                     <div id="saveWorldButtonsContainer" style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                         <!-- Save buttons populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- MAGIC IMPORT -->
+                <div class="panel collapsed" id="wMagicImportPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wMagicImportPanelEl')">
+                        <span style="display: flex; align-items: center; gap: 0.4rem;"><i class="bi bi-magic" style="color:var(--accent-color);"></i> Magic Import</span>
+                        <span class="panel-chevron bi bi-chevron-right"></span>
+                    </div>
+                    <div class="panel-body">
+                        <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Paste a URL from a Fandom wiki or any web page to automatically extract world-building and setting details.</p>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="wWikiUrlEl" class="detail-input" style="flex-grow:1;"
+                                placeholder="https://genshin-impact.fandom.com/wiki/Teyvat">
+                            <button class="gen-btn" id="wWikiImportBtnEl" onclick="importWorldFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i> import</button>
+                        </div>
+                        <textarea id="wWikiOverrideEl" class="section-notes" style="min-height:2.5rem; margin-top:0.5rem;"
+                            placeholder='Twist / Override (optional)  -  e.g. "Steampunk version, with floating islands"'></textarea>
                     </div>
                 </div>
 
@@ -982,9 +1021,12 @@
                             <div class="panel-badge">2</div>
                             <span>World Overview</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
-                            <button class="gen-btn" id="w-overviewGenBtnEl" onclick="generateWorldSection('overview')"><i class="bi bi-sparkles"></i> Generate</button>
-                            <button class="small-btn" id="w-overviewStopBtnEl" onclick="stopWorldSection('overview')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                                <button class="gen-btn" id="w-overviewGenBtnEl" onclick="generateWorldSection('overview')"><i class="bi bi-sparkles"></i> Generate</button>
+                                <button class="small-btn" id="w-overviewStopBtnEl" onclick="stopWorldSection('overview')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1004,9 +1046,12 @@
                             <div class="panel-badge">3</div>
                             <span>Factions & Societies</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
-                            <button class="gen-btn" id="w-factionsGenBtnEl" onclick="generateWorldSection('factions')"><i class="bi bi-sparkles"></i> Generate</button>
-                            <button class="small-btn" id="w-factionsStopBtnEl" onclick="stopWorldSection('factions')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                                <button class="gen-btn" id="w-factionsGenBtnEl" onclick="generateWorldSection('factions')"><i class="bi bi-sparkles"></i> Generate</button>
+                                <button class="small-btn" id="w-factionsStopBtnEl" onclick="stopWorldSection('factions')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1026,9 +1071,12 @@
                             <div class="panel-badge">4</div>
                             <span>Laws of Magic & Technology</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
-                            <button class="gen-btn" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i class="bi bi-sparkles"></i> Generate</button>
-                            <button class="small-btn" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                                <button class="gen-btn" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i class="bi bi-sparkles"></i> Generate</button>
+                                <button class="small-btn" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1048,9 +1096,12 @@
                             <div class="panel-badge">5</div>
                             <span>Key Locations & Landmarks</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
-                            <button class="gen-btn" id="w-locationsGenBtnEl" onclick="generateWorldSection('locations')"><i class="bi bi-sparkles"></i> Generate</button>
-                            <button class="small-btn" id="w-locationsStopBtnEl" onclick="stopWorldSection('locations')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                                <button class="gen-btn" id="w-locationsGenBtnEl" onclick="generateWorldSection('locations')"><i class="bi bi-sparkles"></i> Generate</button>
+                                <button class="small-btn" id="w-locationsStopBtnEl" onclick="stopWorldSection('locations')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1070,9 +1121,12 @@
                             <div class="panel-badge">6</div>
                             <span>Conflicts & History</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
-                            <button class="gen-btn" id="w-conflictsGenBtnEl" onclick="generateWorldSection('conflicts')"><i class="bi bi-sparkles"></i> Generate</button>
-                            <button class="small-btn" id="w-conflictsStopBtnEl" onclick="stopWorldSection('conflicts')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                                <button class="gen-btn" id="w-conflictsGenBtnEl" onclick="generateWorldSection('conflicts')"><i class="bi bi-sparkles"></i> Generate</button>
+                                <button class="small-btn" id="w-conflictsStopBtnEl" onclick="stopWorldSection('conflicts')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1103,44 +1157,178 @@
                     <button id="rpClearBtn" onclick="clearRoleplayData()" class="btn-ghost"><i class="bi bi-trash"></i> Clear All</button>
                 </div>
 
-                <!-- PANEL 1: WORLD SETTING -->
-                <div class="panel" id="rpWorldPanelEl">
-                    <div class="panel-header" onclick="togglePanel('rpWorldPanelEl')">
+                <!-- MAGIC IMPORT -->
+                <div class="panel collapsed" id="rpMagicImportPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpMagicImportPanelEl')">
+                        <span style="display: flex; align-items: center; gap: 0.4rem;"><i class="bi bi-magic" style="color:var(--accent-color);"></i> Magic Import</span>
+                        <span class="panel-chevron bi bi-chevron-right"></span>
+                    </div>
+                    <div class="panel-body">
+                        <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Paste a URL from a Fandom wiki or any web page to automatically extract roleplay scenario and NPC details.</p>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="rpWikiUrlEl" class="detail-input" style="flex-grow:1;"
+                                placeholder="https://genshin-impact.fandom.com/wiki/Archon_Quests">
+                            <button class="gen-btn" id="rpWikiImportBtnEl" onclick="importRoleplayFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i> import</button>
+                        </div>
+                        <textarea id="rpWikiOverrideEl" class="section-notes" style="min-height:2.5rem; margin-top:0.5rem;"
+                            placeholder='Twist / Override (optional)  -  e.g. "Space Opera setting, with futuristic spaceships"'></textarea>
+                    </div>
+                </div>
+
+                <!-- PANEL 1: CORE IDENTITY & PARAMETERS -->
+                <div class="panel" id="rpCoreParamsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpCoreParamsPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-globe"></i></div>
-                            <span>1. World Setting & Lore</span>
+                            <div class="panel-badge">1</div>
+                            <span>Core Identity & Parameters</span>
                         </div>
                         <span class="panel-chevron bi bi-chevron-down"></span>
                     </div>
-                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 200px;">
-                                <label style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">🌍 World Name</label>
-                                <input type="text" id="rpWorldNameEl" class="detail-input" style="flex: 1;" placeholder="Name of your roleplay world" oninput="saveRoleplayState()">
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        
+                        <!-- GLOBAL PARAMETERS (SETTING, TONE) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
+                            <!-- SETTING DROPDOWN -->
+                            <div class="custom-dropdown" id="rpSettingDropdown">
+                                <button class="dropdown-trigger" onclick="toggleCustomDropdown('rpSettingDropdownMenu', event)">
+                                    <i class="bi bi-globe dropdown-icon"></i>
+                                    <span class="dropdown-label">Setting:</span>
+                                    <span class="dropdown-value" id="rpSettingLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="rpSettingDropdownMenu" style="display:none;">
+                                    <div class="dropdown-search-wrapper">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="dropdown-search-input" placeholder="Search setting..." oninput="filterRoleplaySettings(this.value)" onclick="event.stopPropagation()">
+                                    </div>
+                                    <div class="dropdown-options" id="rpSettingOptionsList">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- TONE DROPDOWN -->
+                            <div class="custom-dropdown" id="rpToneDropdown">
+                                <button class="dropdown-trigger" id="rpToneDropdownBtn" onclick="toggleCustomDropdown('rpToneDropdownMenu', event)">
+                                    <i class="bi bi-masks dropdown-icon"></i>
+                                    <span class="dropdown-label">Tone:</span>
+                                    <span class="dropdown-value" id="rpToneDropdownLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="rpToneDropdownMenu" style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;" onclick="event.stopPropagation()">
+                                    <div class="dropdown-options">
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" id="rpToneAnyCheckbox" value="Any" onchange="handleRoleplayToneAnyToggle(this)" style="accent-color:var(--accent-color);">
+                                            <span>Any</span>
+                                        </label>
+                                        <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Grounded" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Grounded</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Thrilling_Action" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Thrilling / Action</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Dark_Gritty" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dark / Gritty</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Light_hearted_Comedic" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Light-hearted / Comedic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Mysterious" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Mysterious</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Romantic" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Romantic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Erotic" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Erotic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Tragic" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Tragic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Whimsical" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Whimsical</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Epic" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Epic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Affectionate" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Affectionate</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Flirtatious" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Flirtatious</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Sensual" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Sensual</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Explicit" onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Explicit</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- SAVED WORLDS SELECTOR DROPDOWN & SYNC -->
                             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
                                 <select id="rpWorldImportSelector" onchange="loadSavedWorldIntoRoleplay(this.value)" class="length-select" style="font-size: 75%; padding: 0.2rem 0.4rem; height: 28px; cursor: pointer;">
                                     <option value="">-- Load Saved World --</option>
                                 </select>
-                                <button class="small-btn" onclick="syncWorldFromCharGen()" style="font-size: 75%; padding: 0.25rem 0.5rem;" title="Import active World Name & World Lore from the Characters tab"><i class="bi bi-arrow-down-up"></i> Sync Active World</button>
+                                <button class="small-btn" onclick="syncWorldFromCharGen()" style="font-size: 75%; padding: 0.25rem 0.5rem; height: 28px;" title="Import active World Name & World Lore from the Characters tab"><i class="bi bi-arrow-down-up"></i> Sync Active World</button>
                             </div>
+                        </div>
+
+                        <!-- CORE THEMES -->
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Core Themes & Keywords</label>
+                            <textarea id="rpThemesEl" class="section-notes" style="min-height: 4rem; font-size: 86%;" placeholder="e.g. cyberpunk, political intrigue, high magic, dark atmosphere..." oninput="saveRoleplayState()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: WORLD SETTING -->
+                <div class="panel" id="rpWorldPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpWorldPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">2</div>
+                            <span>World Setting & Lore</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">🌍 World Name</label>
+                            <input type="text" id="rpWorldNameEl" class="detail-input" style="flex: 1;" placeholder="Name of your roleplay world" oninput="saveRoleplayState()">
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">World Lore & Setting Description</label>
-                                <button class="small-btn" onclick="generateRoleplayWorldLore(this)" style="font-size: 72%; padding: 0.15rem 0.4rem; height: 22px; color: var(--accent-color); border-color: rgba(var(--accent-color-rgb),0.3);" title="Generate world lore via AI"><i class="bi bi-sparkles"></i> Generate World Lore</button>
+                                <button class="gen-btn" onclick="generateRoleplayWorldLore(this)" style="font-size: 75%; padding: 0.2rem 0.5rem;" title="Generate world lore via AI"><i class="bi bi-sparkles"></i> Generate World Lore</button>
                             </div>
                             <textarea id="rpWorldLoreEl" class="section-notes" style="min-height: 5.5rem; font-size: 86%;" placeholder="Describe the world rules, atmosphere, tech/magic level, major factions or recent history..." oninput="saveRoleplayState()"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- PANEL 2: PLAYER / USER DETAILED PROFILE -->
+                <!-- PANEL 3: PLAYER / USER DETAILED PROFILE -->
                 <div class="panel" id="rpPlayerPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpPlayerPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-person-circle"></i></div>
-                            <span>2. Player Setup (You)</span>
+                            <div class="panel-badge">3</div>
+                            <span>Player Setup (You)</span>
                         </div>
                         <span class="panel-chevron bi bi-chevron-down"></span>
                     </div>
@@ -1158,12 +1346,12 @@
                     </div>
                 </div>
 
-                <!-- PANEL 3: NPC CAST (MULTIPLE CHARACTERS) -->
+                <!-- PANEL 4: NPC CAST (MULTIPLE CHARACTERS) -->
                 <div class="panel" id="rpNPCsPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpNPCsPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-people-fill"></i></div>
-                            <span>3. NPC Cast (Multiple Characters)</span>
+                            <div class="panel-badge">4</div>
+                            <span>NPC Cast (Multiple Characters)</span>
                         </div>
                         <span class="panel-chevron bi bi-chevron-down"></span>
                     </div>
@@ -1182,12 +1370,12 @@
                     </div>
                 </div>
 
-                <!-- PANEL 4: SCENARIO & PLOT HOOK SETUP -->
+                <!-- PANEL 5: SCENARIO & SETUP -->
                 <div class="panel" id="rpScenarioPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpScenarioPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-pencil-square"></i></div>
-                            <span>4. Scenario Scenario & Setup</span>
+                            <div class="panel-badge">5</div>
+                            <span>Scenario & Setup</span>
                         </div>
                         <span class="panel-chevron bi bi-chevron-down"></span>
                     </div>
@@ -1206,7 +1394,7 @@
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario Details & Plot Hook Notes</label>
-                                <button class="small-btn" onclick="generateRoleplayScenarioNotes(this)" style="font-size: 72%; padding: 0.15rem 0.4rem; height: 22px; color: var(--accent-color); border-color: rgba(var(--accent-color-rgb),0.3);" title="Generate scenario plot hook via AI"><i class="bi bi-sparkles"></i> Generate Plot Hook</button>
+                                <button class="gen-btn" onclick="generateRoleplayScenarioNotes(this)" style="font-size: 75%; padding: 0.2rem 0.5rem;" title="Generate scenario plot hook via AI"><i class="bi bi-sparkles"></i> Generate Plot Hook</button>
                             </div>
                             <textarea id="rpScenarioNotesEl" class="section-notes" style="min-height: 4.5rem; font-size: 86%;" placeholder="e.g., The characters have just broken into a high-security vault, but the alarms start blaring. They must decide who takes the loot and how to escape..." oninput="saveRoleplayState()"></textarea>
                         </div>

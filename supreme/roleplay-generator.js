@@ -6,6 +6,9 @@
         worldLore: "",
         userName: "",
         userRole: "",
+        setting: "Any",
+        tones: ["Any"],
+        themes: "",
         npcs: [
             { name: "", species: "", personality: "", role: "" }
         ],
@@ -38,12 +41,16 @@
             window.roleplayState.userRole = document.getElementById("rpUserRoleEl")?.value || "";
             window.roleplayState.scenarioNotes = document.getElementById("rpScenarioNotesEl")?.value || "";
             window.roleplayState.activeLength = document.getElementById("rpLengthEl")?.value || "medium";
+            window.roleplayState.themes = document.getElementById("rpThemesEl")?.value || "";
 
             localStorage.rpState = JSON.stringify({
                 worldName: window.roleplayState.worldName,
                 worldLore: window.roleplayState.worldLore,
                 userName: window.roleplayState.userName,
                 userRole: window.roleplayState.userRole,
+                setting: window.roleplayState.setting,
+                tones: window.roleplayState.tones,
+                themes: window.roleplayState.themes,
                 npcs: window.roleplayState.npcs,
                 scenarioNotes: window.roleplayState.scenarioNotes,
                 activeLength: window.roleplayState.activeLength,
@@ -69,11 +76,26 @@
         if (w) {
             let nameEl = document.getElementById("rpWorldNameEl");
             let loreEl = document.getElementById("rpWorldLoreEl");
+            let themesEl = document.getElementById("rpThemesEl");
             if (nameEl) nameEl.value = w.name;
             if (loreEl) loreEl.value = w.sections.overview || "";
+            if (themesEl) themesEl.value = w.themes || "";
 
             window.roleplayState.worldName = w.name;
             window.roleplayState.worldLore = w.sections.overview || "";
+            window.roleplayState.themes = w.themes || "";
+
+            window.roleplayState.setting = w.setting || "Any";
+            window.selectRoleplaySetting(w.setting || "Any", false);
+
+            window.roleplayState.tones = w.tones || ["Any"];
+            document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
+                cb.checked = (w.tones || ["Any"]).includes(cb.value);
+            });
+            let anyBox = document.getElementById("rpToneAnyCheckbox");
+            if (anyBox) anyBox.checked = (w.tones || ["Any"]).includes("Any") || (w.tones || []).length === 0;
+            window.updateRoleplayToneLabel();
+
             window.saveRoleplayState();
 
             // Notify status
@@ -91,15 +113,37 @@
     window.syncWorldFromCharGen = function () {
         let name = document.getElementById("worldNameEl")?.value || "";
         let lore = document.getElementById("worldLoreEl")?.value || "";
+        let themes = document.getElementById("wThemesEl")?.value || document.getElementById("overviewNotesEl")?.value || "";
 
         let nameEl = document.getElementById("rpWorldNameEl");
         let loreEl = document.getElementById("rpWorldLoreEl");
+        let themesEl = document.getElementById("rpThemesEl");
 
         if (nameEl) nameEl.value = name;
         if (loreEl) loreEl.value = lore;
+        if (themesEl) themesEl.value = themes;
 
         window.roleplayState.worldName = name;
         window.roleplayState.worldLore = lore;
+        window.roleplayState.themes = themes;
+
+        // Sync setting and tones too!
+        if (localStorage.setting) {
+            window.roleplayState.setting = localStorage.setting;
+            window.selectRoleplaySetting(localStorage.setting, false);
+        }
+        try {
+            if (localStorage.tones) {
+                let parsed = JSON.parse(localStorage.tones);
+                window.roleplayState.tones = parsed;
+                document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
+                    cb.checked = parsed.includes(cb.value);
+                });
+                let anyBox = document.getElementById("rpToneAnyCheckbox");
+                if (anyBox) anyBox.checked = parsed.includes("Any") || parsed.length === 0;
+                window.updateRoleplayToneLabel();
+            }
+        } catch(e) {}
         
         window.saveRoleplayState();
         
@@ -213,7 +257,7 @@
                                 <option value="">Import...</option>
                                 ${importOptions}
                             </select>
-                            <button onclick="generateRoleplayNPC(${index}, this)" class="small-btn" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px; border-color: rgba(var(--accent-color-rgb),0.3); color: var(--accent-color);" title="Generate NPC details via AI"><i class="bi bi-sparkles"></i></button>
+                            <button onclick="generateRoleplayNPC(${index}, this)" class="gen-btn" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px; display: inline-flex; align-items: center; justify-content: center; border: none; box-shadow: none; text-shadow: none;" title="Generate NPC details via AI"><i class="bi bi-sparkles"></i></button>
                             <button onclick="removeNPC(${index})" class="small-btn clear-btn" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px; display: inline-flex; align-items: center; justify-content: center;" title="Remove NPC"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
@@ -243,11 +287,270 @@
         }).join("");
     };
 
+    // Initialize custom dropdowns specifically for Roleplay Generator
+    window.selectRoleplaySetting = function (value, closeMenu = true) {
+        window.roleplayState.setting = value;
+        let labelEl = document.getElementById("rpSettingLabel");
+        if (labelEl) {
+            labelEl.textContent = value.replace(/_/g, " ");
+        }
+
+        // Update active checkmarks in settings options list
+        let items = document.querySelectorAll("#rpSettingOptionsList .dropdown-option-item");
+        items.forEach(item => {
+            let check = item.querySelector("i");
+            if (item.getAttribute("data-value") === value) {
+                item.classList.add("active");
+                if (check) check.style.display = "inline-block";
+            } else {
+                item.classList.remove("active");
+                if (check) check.style.display = "none";
+            }
+        });
+
+        if (closeMenu) {
+            let menu = document.getElementById("rpSettingDropdownMenu");
+            if (menu) menu.style.display = "none";
+        }
+        window.saveRoleplayState();
+    };
+
+    window.initCustomRoleplaySettingDropdown = function () {
+        let listEl = document.getElementById("rpSettingOptionsList");
+        if (!listEl) return;
+        
+        let keys = [
+            "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
+            "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
+            "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
+            "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
+            "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",
+            "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
+        ];
+        
+        listEl.innerHTML = keys.map(k => {
+            let label = k.replace(/_/g, " ");
+            return `
+                <div class="dropdown-option-item" data-value="${k}" onclick="selectRoleplaySetting('${k}', true)">
+                    <span>${label}</span>
+                    <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
+                </div>
+            `;
+        }).join("");
+
+        // Select initial value
+        let val = window.roleplayState.setting || "Any";
+        selectRoleplaySetting(val, false);
+    };
+
+    window.filterRoleplaySettings = function (query) {
+        let q = query.toLowerCase().trim();
+        let items = document.querySelectorAll("#rpSettingOptionsList .dropdown-option-item");
+        items.forEach(item => {
+            let text = item.querySelector("span").textContent.toLowerCase();
+            if (text.includes(q)) {
+                item.style.display = "flex";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    };
+
+    // Tones management specifically for Roleplay Generator
+    window.getSelectedRoleplayTones = function () {
+        let checked = [...document.querySelectorAll(".rpToneCheckbox:checked")].map(c => c.value);
+        return checked.length > 0 ? checked : ["Any"];
+    };
+
+    window.handleRoleplayToneChange = function () {
+        let checked = [...document.querySelectorAll(".rpToneCheckbox:checked")];
+        let anyBox = document.getElementById("rpToneAnyCheckbox");
+        if (anyBox && checked.length > 0) anyBox.checked = false;
+        
+        window.roleplayState.tones = getSelectedRoleplayTones();
+        updateRoleplayToneLabel();
+        window.saveRoleplayState();
+    };
+
+    window.handleRoleplayToneAnyToggle = function (checkbox) {
+        if (checkbox.checked) {
+            document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
+        }
+        window.roleplayState.tones = ["Any"];
+        updateRoleplayToneLabel();
+        window.saveRoleplayState();
+    };
+
+    window.updateRoleplayToneLabel = function () {
+        let tones = window.roleplayState.tones || ["Any"];
+        let label = document.getElementById("rpToneDropdownLabel");
+        if (label) {
+            if (tones[0] === "Any") label.textContent = "Any";
+            else if (tones.length === 1) label.textContent = tones[0].replace(/_/g, " ");
+            else label.textContent = tones[0].replace(/_/g, " ") + " +" + (tones.length - 1);
+        }
+    };
+
+    window.loadRoleplayTones = function () {
+        try {
+            let saved = window.roleplayState.tones || ["Any"];
+            let anyBox = document.getElementById("rpToneAnyCheckbox");
+            if (!saved || saved.length === 0 || saved[0] === "Any") {
+                if (anyBox) anyBox.checked = true;
+                document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
+            } else {
+                if (anyBox) anyBox.checked = false;
+                document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
+                saved.forEach(t => {
+                    let box = document.querySelector(`.rpToneCheckbox[value="${t}"]`);
+                    if (box) box.checked = true;
+                });
+            }
+            updateRoleplayToneLabel();
+        } catch (e) {
+            let anyBox = document.getElementById("rpToneAnyCheckbox");
+            if (anyBox) anyBox.checked = true;
+            updateRoleplayToneLabel();
+        }
+    };
+
+    // Magic wiki import for Roleplay Generator
+    window.importRoleplayFromWikiUrl = async function (url) {
+        if (!url) return;
+        url = url.trim();
+        if (!/^https?:\/\//i.test(url)) {
+            alert("Please enter a valid URL (starting with http:// or https://)");
+            return;
+        }
+        setGenerationStatus("⏳ Fetching page content...");
+        try {
+            let content = "";
+            let response = await superFetch(url);
+            let blob = await response.blob();
+            let html = await blob.text();
+            let doc = new DOMParser().parseFromString(html, "text/html");
+            if (/^https:\/\/[^.]+.fandom\.com\/wiki\//.test(url)) {
+                let wikiPageName = url.split("/wiki/").at(-1).split("?")[0];
+                let urlObj = new URL(url);
+                let json = await superFetch(`https://${urlObj.hostname}/api.php?action=visualeditor&format=json&paction=wikitext&page=${wikiPageName}&uselang=en&formatversion=2`).then(r => r.json());
+                content = json?.visualeditor?.content || "";
+                content = content.replace(/<ref[ >].+<\/ref>/g, "");
+                content = content.replace(/\[\[File:.+?\]\]/g, "");
+                content = content.replace(/\[\[(.+?)\|(.+?)\]\]/g, "$2");
+                content = content.replace(/\[\[(.+?)\]\]/g, "$1");
+                content = content.replace(/<br>/g, "\n");
+            } else {
+                if (!window.Readability) {
+                    window.Readability = await import("https://user.uploads.dev/file/93edd249920ca5ac663278139c31868d.js")
+                        .then(m => m.Readability)
+                        .catch(err => {
+                            console.warn("Failed to load readability module:", err);
+                            return null;
+                        });
+                }
+                if (window.Readability) {
+                    try {
+                        let article = new window.Readability(new DOMParser().parseFromString(html, "text/html")).parse();
+                        content = article ? article.textContent : doc.body.innerText;
+                    } catch (readError) {
+                        console.warn("Readability parsing error, falling back to innerText:", readError);
+                        content = doc.body.innerText;
+                    }
+                } else {
+                    content = doc.body.innerText;
+                }
+            }
+            setGenerationStatus("🧠 Extracting scenario details...");
+            let override = (document.getElementById("rpWikiOverrideEl") || {}).value || "";
+            let instruction = `TASK: Extract roleplay scenario details from the provided text to populate a roleplay configuration.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "worldName": "...",\n  "worldLore": "...",\n  "setting": "...",\n  "tones": ["...", "..."],\n  "themes": "...",\n  "userName": "...",\n  "userRole": "...",\n  "npcs": [\n    { "name": "...", "species": "...", "personality": "...", "role": "..." }\n  ],\n  "scenarioNotes": "..."\n}\n- worldName, userName, userRole: short text.\n- setting: short genre.\n- tones: array of tone names.\n- themes: comma-separated list of themes.\n- worldLore, scenarioNotes: detailed descriptions.\n- npcs: array of up to 4 major characters from the text, with name, species, personality summary, and role in story.\n- If a field is unknown, use null.${override.trim() ? `\n\nIMPORTANT CREATIVE TWIST - apply this override: "${override.trim()}". Reinterpret the scenario fully through this lens.` : ""}\n\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite.`;
+
+            let res = await ai({ instruction });
+            let jsonText = res.text || "";
+            let jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+            let cleanedJson = jsonMatch ? jsonMatch[0] : jsonText.replace(/```json|```/g, "").trim();
+            let json = JSON.parse(cleanedJson);
+
+            // Populate Roleplay state
+            if (json.worldName) {
+                window.roleplayState.worldName = json.worldName;
+                let el = document.getElementById("rpWorldNameEl");
+                if (el) el.value = json.worldName;
+            }
+            if (json.worldLore) {
+                window.roleplayState.worldLore = json.worldLore;
+                let el = document.getElementById("rpWorldLoreEl");
+                if (el) el.value = json.worldLore;
+            }
+            if (json.setting) {
+                window.roleplayState.setting = json.setting;
+                window.selectRoleplaySetting(json.setting, false);
+            }
+            if (json.tones && Array.isArray(json.tones)) {
+                window.roleplayState.tones = json.tones;
+                document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
+                    cb.checked = json.tones.includes(cb.value);
+                });
+                let anyBox = document.getElementById("rpToneAnyCheckbox");
+                if (anyBox) {
+                    anyBox.checked = json.tones.includes("Any") || json.tones.length === 0;
+                }
+                window.updateRoleplayToneLabel();
+            }
+            if (json.themes) {
+                window.roleplayState.themes = json.themes;
+                let el = document.getElementById("rpThemesEl");
+                if (el) el.value = json.themes;
+            }
+            if (json.userName) {
+                window.roleplayState.userName = json.userName;
+                let el = document.getElementById("rpUserNameEl");
+                if (el) el.value = json.userName;
+            }
+            if (json.userRole) {
+                window.roleplayState.userRole = json.userRole;
+                let el = document.getElementById("rpUserRoleEl");
+                if (el) el.value = json.userRole;
+            }
+            if (json.scenarioNotes) {
+                window.roleplayState.scenarioNotes = json.scenarioNotes;
+                let el = document.getElementById("rpScenarioNotesEl");
+                if (el) el.value = json.scenarioNotes;
+            }
+            if (json.npcs && Array.isArray(json.npcs)) {
+                window.roleplayState.npcs = json.npcs.map(n => ({
+                    name: n.name || "",
+                    species: n.species || "",
+                    personality: n.personality || "",
+                    role: n.role || ""
+                }));
+                window.renderNPCGrid();
+            }
+
+            window.saveRoleplayState();
+
+            setGenerationStatus("✨ Roleplay scenario imported!");
+            setTimeout(() => setGenerationStatus(""), 3000);
+        } catch (e) {
+            console.error(e);
+            alert("Error importing roleplay scenario from URL.");
+            setGenerationStatus("");
+        }
+    };
+
+    window.importRoleplayFromWikiUrlButtonClickHandler = async function () {
+        let btn = document.getElementById("rpWikiImportBtnEl");
+        let urlEl = document.getElementById("rpWikiUrlEl");
+        if (!urlEl || !urlEl.value) return;
+        if (btn) btn.disabled = true;
+        await window.importRoleplayFromWikiUrl(urlEl.value);
+        if (btn) btn.disabled = false;
+    };
+
     // AI generating buttons for Roleplay
     window.generateRoleplayWorldLore = async function (btn) {
         window.saveRoleplayState();
         let name = window.roleplayState.worldName.trim() || "Unnamed World";
-        let setting = document.getElementById("settingLabel")?.textContent.trim() || "Any setting";
+        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any setting";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
 
         let origText = btn.innerHTML;
@@ -287,7 +590,7 @@ Do not include titles. Write in a factual, evocative style. Do not use the em-da
         window.saveRoleplayState();
         let worldName = window.roleplayState.worldName || "Unnamed World";
         let worldLore = window.roleplayState.worldLore || "Generic setting";
-        let setting = document.getElementById("settingLabel")?.textContent.trim() || "Any Setting";
+        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any Setting";
 
         let origText = btn.innerHTML;
         btn.disabled = true;
@@ -482,11 +785,18 @@ Establish an immediate danger, mystery, or conflict that unites the player and t
         let pRole = window.roleplayState.userRole || "a protagonist";
         let scenarioNotes = window.roleplayState.scenarioNotes || "The characters are meeting for the first time or embarking on a mutual task.";
 
+        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any setting";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+
         let prompt = `You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The user is the player of this roleplay.
 
 WORLD DATA:
 - World Name: ${worldName}
 - World Lore/Setting: ${worldLore}
+- Setting Genre: ${setting}
+- Atmospheric Tones: ${tonesStr}
+- Themes/Keywords: ${themes}
 
 PLAYER DATA (The User):
 - Player Name: ${pName}
@@ -739,6 +1049,7 @@ Respond using the separator "=== ROLEPLAY_STARTER_SEPARATOR ===" between the Sce
         let userRoleEl = document.getElementById("rpUserRoleEl");
         let notesEl = document.getElementById("rpScenarioNotesEl");
         let lengthEl = document.getElementById("rpLengthEl");
+        let themesEl = document.getElementById("rpThemesEl");
 
         if (nameEl) nameEl.value = window.roleplayState.worldName || "";
         if (loreEl) loreEl.value = window.roleplayState.worldLore || "";
@@ -746,6 +1057,11 @@ Respond using the separator "=== ROLEPLAY_STARTER_SEPARATOR ===" between the Sce
         if (userRoleEl) userRoleEl.value = window.roleplayState.userRole || "";
         if (notesEl) notesEl.value = window.roleplayState.scenarioNotes || "";
         if (lengthEl) lengthEl.value = window.roleplayState.activeLength || "medium";
+        if (themesEl) themesEl.value = window.roleplayState.themes || "";
+
+        // Restore setting and tone custom elements
+        initCustomRoleplaySettingDropdown();
+        loadRoleplayTones();
 
         // Restore dynamic NPC list
         window.renderNPCGrid();

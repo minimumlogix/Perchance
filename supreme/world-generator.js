@@ -891,6 +891,132 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
         );
     };
 
+    window.importWorldFromWikiUrl = async function (url) {
+        if (!url) return;
+        url = url.trim();
+        if (!/^https?:\/\//i.test(url)) {
+            alert("Please enter a valid URL (starting with http:// or https://)");
+            return;
+        }
+        setGenerationStatus("⏳ Fetching page content...");
+        try {
+            let content = "";
+            let response = await superFetch(url);
+            let blob = await response.blob();
+            let html = await blob.text();
+            let doc = new DOMParser().parseFromString(html, "text/html");
+            if (/^https:\/\/[^.]+.fandom\.com\/wiki\//.test(url)) {
+                let wikiPageName = url.split("/wiki/").at(-1).split("?")[0];
+                let urlObj = new URL(url);
+                let json = await superFetch(`https://${urlObj.hostname}/api.php?action=visualeditor&format=json&paction=wikitext&page=${wikiPageName}&uselang=en&formatversion=2`).then(r => r.json());
+                content = json?.visualeditor?.content || "";
+                content = content.replace(/<ref[ >].+<\/ref>/g, "");
+                content = content.replace(/\[\[File:.+?\]\]/g, "");
+                content = content.replace(/\[\[(.+?)\|(.+?)\]\]/g, "$2");
+                content = content.replace(/\[\[(.+?)\]\]/g, "$1");
+                content = content.replace(/<br>/g, "\n");
+            } else {
+                if (!window.Readability) {
+                    window.Readability = await import("https://user.uploads.dev/file/93edd249920ca5ac663278139c31868d.js")
+                        .then(m => m.Readability)
+                        .catch(err => {
+                            console.warn("Failed to load readability module:", err);
+                            return null;
+                        });
+                }
+                if (window.Readability) {
+                    try {
+                        let article = new window.Readability(new DOMParser().parseFromString(html, "text/html")).parse();
+                        content = article ? article.textContent : doc.body.innerText;
+                    } catch (readError) {
+                        console.warn("Readability parsing error, falling back to innerText:", readError);
+                        content = doc.body.innerText;
+                    }
+                } else {
+                    content = doc.body.innerText;
+                }
+            }
+            setGenerationStatus("🧠 Extracting world setting...");
+            let override = (document.getElementById("wWikiOverrideEl") || {}).value || "";
+            let instruction = `TASK: Extract world-building and setting details from the provided text to populate a complete world setting profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "setting": "...",\n  "tones": ["...", "..."],\n  "themes": "...",\n  "overview": "...",\n  "factions": "...",\n  "rules": "...",\n  "locations": "...",\n  "conflicts": "..."\n}\n- Keep "name" and "setting" (e.g. Fantasy, Cyberpunk) short.\n- tones: array of tones (choose from: Grounded, Thrilling Action, Dark Gritty, Light-hearted Comedic, Mysterious, Romantic, Erotic, Tragic, Whimsical, Epic, Affectionate, Flirtatious, Sensual).\n- themes: comma-separated core themes.\n- overview, factions, rules, locations, and conflicts should be detailed descriptions (or bullet points for factions/locations) describing each area based on the text.\n- If a field is unknown, use null.${override.trim() ? `\n\nIMPORTANT CREATIVE TWIST - apply this override: "${override.trim()}". Reinterpret the world fully through this lens.` : ""}\n\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite.`;
+            
+            let res = await ai({ instruction });
+            let jsonText = res.text || "";
+            let jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+            let cleanedJson = jsonMatch ? jsonMatch[0] : jsonText.replace(/```json|```/g, "").trim();
+            let json = JSON.parse(cleanedJson);
+
+            // Populate World Generator Tab
+            if (json.name) {
+                window.worldState.name = json.name;
+                let wNameEl = document.getElementById("wNameEl");
+                if (wNameEl) wNameEl.value = json.name;
+            }
+            if (json.setting) {
+                window.worldState.setting = json.setting;
+                window.selectWorldSetting(json.setting, false);
+            }
+            if (json.tones && Array.isArray(json.tones)) {
+                window.worldState.tones = json.tones;
+                // Update Tone checkbox checklist in DOM
+                document.querySelectorAll(".wToneCheckbox").forEach(cb => {
+                    cb.checked = json.tones.includes(cb.value);
+                });
+                let anyBox = document.getElementById("wToneAnyCheckbox");
+                if (anyBox) {
+                    anyBox.checked = json.tones.includes("Any") || json.tones.length === 0;
+                }
+                window.updateWorldToneLabel();
+            }
+            if (json.themes) {
+                window.worldState.themes = json.themes;
+                let wThemesEl = document.getElementById("wThemesEl");
+                if (wThemesEl) wThemesEl.value = json.themes;
+            }
+
+            // Sections
+            let list = ["overview", "factions", "rules", "locations", "conflicts"];
+            list.forEach(s => {
+                if (json[s]) {
+                    let cleanedVal = json[s].replace(/\u2014/g, " - ");
+                    window.worldState.sections[s] = cleanedVal;
+                    let out = document.getElementById(`w-${s}OutputEl`);
+                    let edit = document.getElementById(`w-${s}EditBtnEl`);
+                    let copy = document.getElementById(`w-${s}CopyBtnEl`);
+                    if (out) {
+                        out.innerHTML = formatSectionText(cleanedVal);
+                        out.style.display = "block";
+                    }
+                    if (edit) edit.style.display = "inline-block";
+                    if (copy) copy.style.display = "inline-block";
+                }
+            });
+
+            window.saveWorldState();
+            
+            // Auto generate banner image if overview is present
+            if (json.overview || json.themes) {
+                await generateWorldBanner();
+            }
+
+            setGenerationStatus("✨ World imported!");
+            setTimeout(() => setGenerationStatus(""), 3000);
+        } catch (e) {
+            console.error(e);
+            alert("Error importing world from URL.");
+            setGenerationStatus("");
+        }
+    };
+
+    window.importWorldFromWikiUrlButtonClickHandler = async function () {
+        let btn = document.getElementById("wWikiImportBtnEl");
+        let urlEl = document.getElementById("wWikiUrlEl");
+        if (!urlEl || !urlEl.value) return;
+        if (btn) btn.disabled = true;
+        await window.importWorldFromWikiUrl(urlEl.value);
+        if (btn) btn.disabled = false;
+    };
+
     // Load active world state on DOMContentLoaded or defer script evaluation
     setTimeout(() => {
         window.loadWorldState();
