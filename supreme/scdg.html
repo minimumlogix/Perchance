@@ -79,7 +79,6 @@
                     <textarea id="wikiOverrideEl" class="section-notes" style="min-height:2.5rem; margin-top:0.5rem;"
                         placeholder='Twist / Override (optional)  -  e.g. "Deadpool, but he is the Hogwarts headmaster"'
                         oninput="localStorage.wikiOverride=this.value"></textarea>
-                    <script>setTimeout(() => { if(typeof wikiOverrideEl !== 'undefined') wikiOverrideEl.value = localStorage.wikiOverride || ""; }, 30);</script>
                 </div>
             </div>
 
@@ -277,7 +276,6 @@
                         <textarea id="overviewNotesEl" class="section-notes" style="min-height: 130px; flex-grow: 1;"
                             oninput="localStorage.overviewNotes=this.value"
                             placeholder="Appearance: Tall, slender, raven hair...&#10;Personality: Quiet, fiercely loyal, observant...&#10;Context: User's childhood friend who has returned after years...&#10;Backstory: Born into a family of scholars..."></textarea>
-                        <script>overviewNotesEl.value = localStorage.overviewNotes || "";</script>
                     </div>
                 </div>
             </div>
@@ -323,7 +321,6 @@
                         <textarea id="worldLoreNotesEl" class="section-notes" style="min-height:2.5rem; font-size:86%;"
                             placeholder="e.g. Cyberpunk Japan, 2089, mega-corporations rule. Neon city meets tradition..."
                             oninput="localStorage.worldLoreNotes=this.value"></textarea>
-                        <script>setTimeout(() => { if(typeof worldLoreNotesEl !== 'undefined') worldLoreNotesEl.value = localStorage.worldLoreNotes || ''; }, 30);</script>
                     </div>
                 </div>
 
@@ -345,18 +342,6 @@
                         <button class="small-btn" id="worldLoreStopBtnEl" onclick="stopSection('worldLore')" style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                     </div>
                 </div>
-                <script>
-                    setTimeout(() => {
-                        if (typeof worldLoreEl !== 'undefined') worldLoreEl.value = localStorage.worldLore || "";
-                        if (localStorage.worldLoreImageUrl) {
-                            let thumb = document.getElementById("worldLoreThumbEl");
-                            let container = document.getElementById("worldLoreImgContainer");
-                            if (thumb) thumb.style.backgroundImage = `url(${localStorage.worldLoreImageUrl})`;
-                            if (container) container.style.display = "flex";
-                            if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = `url(${localStorage.worldLoreImageUrl})`;
-                        }
-                    }, 50);
-                </script>
                 <div id="worldLoreStatusEl" class="section-status"></div>
             </div>
         </div>
@@ -379,7 +364,6 @@
                         <option value="long">Long</option>
                         <option value="super-long">Super Long</option>
                     </select>
-                    <script>setTimeout(() => appearanceLengthEl.value = localStorage.appearanceLength || appearanceLengthEl.value, 10);</script>
                     <button class="gen-btn" id="appearanceGenBtnEl" onclick="generateSection('appearance')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="appearanceClearBtnEl" onclick="clearSection('appearance')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -389,7 +373,6 @@
         <div class="panel-body">
             <textarea id="appearanceNotesEl" class="section-notes" oninput="localStorage.appearanceNotes=this.value"
                 placeholder="Notes for appearance/clothing  -  e.g. tall, scarred, wearing a lab coat..."></textarea>
-            <script>appearanceNotesEl.value = localStorage.appearanceNotes || "";</script>
             <div id="appearanceStatusEl" class="section-status"></div>
             <div id="appearanceOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -416,12 +399,6 @@
                             <select id="visualStyleEl" class="image-tool-control"
                                 onchange="localStorage.visualStyle=this.value; window.overwrittenStylePrompt=null; updateStyleOverridePlaceholder(); if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();">
                             </select>
-                            <script>
-                                setTimeout(() => {
-                                    visualStyleEl.innerHTML = generateVisualStyleOptionsHtml();
-                                    visualStyleEl.value = localStorage.visualStyle || "Fantasy Portrait";
-                                }, 20);
-                            </script>
                         </div>
                         
                         <!-- Count selector card -->
@@ -435,7 +412,6 @@
                                 <option value="6">6</option>
                                 <option value="9">9</option>
                             </select>
-                            <script>setTimeout(() => imageCountEl.value = localStorage.imageCount || imageCountEl.value, 10);</script>
                         </div>
                         
                         <div style="display:flex; gap:0.5rem; align-items:stretch;">
@@ -491,7 +467,6 @@
         <div class="panel-body">
             <textarea id="roleNotesEl" class="section-notes" oninput="localStorage.roleNotes=this.value"
                 placeholder="Notes for role/rules  -  e.g. villain, obsessed with user, cannot speak..."></textarea>
-            <script>roleNotesEl.value = localStorage.roleNotes || "";</script>
             <div id="roleStatusEl" class="section-status"></div>
             <div id="roleOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -520,7 +495,6 @@
                         <option value="long">Long</option>
                         <option value="super-long">Super Long</option>
                     </select>
-                    <script>setTimeout(() => personalityLengthEl.value = localStorage.personalityLength || personalityLengthEl.value, 10);</script>
                     <button class="gen-btn" id="personalityGenBtnEl" onclick="generateSection('personality')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="personalityClearBtnEl" onclick="clearSection('personality')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -530,7 +504,6 @@
         <div class="panel-body">
             <textarea id="personalityNotesEl" class="section-notes" oninput="localStorage.personalityNotes=this.value"
                 placeholder="Notes for personality  -  e.g. dry wit, paranoid, secretly kind..."></textarea>
-            <script>personalityNotesEl.value = localStorage.personalityNotes || "";</script>
             <div id="personalityStatusEl" class="section-status"></div>
             <div id="personalityOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -560,7 +533,6 @@
                         <option value="long">Long</option>
                         <option value="super-long">Super Long</option>
                     </select>
-                    <script>setTimeout(() => beliefsLengthEl.value = localStorage.beliefsLength || beliefsLengthEl.value, 10);</script>
                     <button class="gen-btn" id="beliefsGenBtnEl" onclick="generateSection('beliefs')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="beliefsClearBtnEl" onclick="clearSection('beliefs')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -570,7 +542,6 @@
         <div class="panel-body">
             <textarea id="beliefsNotesEl" class="section-notes" oninput="localStorage.beliefsNotes=this.value"
                 placeholder="Notes for beliefs & morals  -  e.g. strictly pacifist, believes end justifies means..."></textarea>
-            <script>beliefsNotesEl.value = localStorage.beliefsNotes || "";</script>
             <div id="beliefsStatusEl" class="section-status"></div>
             <div id="beliefsOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -600,7 +571,6 @@
                         <option value="long">Long</option>
                         <option value="super-long">Super Long</option>
                     </select>
-                    <script>setTimeout(() => preferencesLengthEl.value = localStorage.preferencesLength || preferencesLengthEl.value, 10);</script>
                     <button class="gen-btn" id="preferencesGenBtnEl" onclick="generateSection('preferences')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="preferencesClearBtnEl" onclick="clearSection('preferences')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -610,7 +580,6 @@
         <div class="panel-body">
             <textarea id="preferencesNotesEl" class="section-notes" oninput="localStorage.preferencesNotes=this.value"
                 placeholder="Notes for preferences  -  e.g. loves sweet food, dislikes loud noises..."></textarea>
-            <script>preferencesNotesEl.value = localStorage.preferencesNotes || "";</script>
             <div id="preferencesStatusEl" class="section-status"></div>
             <div id="preferencesOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -640,7 +609,6 @@
                         <option value="long">Long</option>
                         <option value="super-long">Super Long</option>
                     </select>
-                    <script>setTimeout(() => backgroundLengthEl.value = localStorage.backgroundLength || backgroundLengthEl.value, 10);</script>
                     <button class="gen-btn" id="backgroundGenBtnEl" onclick="generateSection('background')"><i class="bi bi-sparkles"></i> Generate</button>
                     <button class="small-btn clear-btn" id="backgroundClearBtnEl" onclick="clearSection('background')"><i class="bi bi-trash"></i> Clear</button>
                 </div>
@@ -650,7 +618,6 @@
         <div class="panel-body">
             <textarea id="backgroundNotesEl" class="section-notes" oninput="localStorage.backgroundNotes=this.value"
                 placeholder="Notes for backstory  -  e.g. exiled noble, grew up in the slums..."></textarea>
-            <script>backgroundNotesEl.value = localStorage.backgroundNotes || "";</script>
             <div id="backgroundStatusEl" class="section-status"></div>
             <div id="backgroundOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -682,7 +649,6 @@
         <div class="panel-body">
             <textarea id="loreNotesEl" class="section-notes" oninput="localStorage.loreNotes=this.value"
                 placeholder="Notes for lore  -  e.g. born in the forest, has a secret map..."></textarea>
-            <script>loreNotesEl.value = localStorage.loreNotes || "";</script>
             <div id="loreStatusEl" class="section-status"></div>
             
             <!-- Grid of 5 Lore Entries -->
@@ -788,7 +754,6 @@
         <div class="panel-body">
             <textarea id="roleplayNotesEl" class="section-notes" oninput="localStorage.roleplayNotes=this.value"
                 placeholder="Notes for examples  -  e.g. focus on their sarcasm, show them in a fight..."></textarea>
-            <script>roleplayNotesEl.value = localStorage.roleplayNotes || "";</script>
             <div id="roleplayStatusEl" class="section-status"></div>
             <div id="roleplayOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -820,7 +785,6 @@
         <div class="panel-body">
             <textarea id="introNotesEl" class="section-notes" oninput="localStorage.introNotes=this.value"
                 placeholder="Notes for intro  -  e.g. focus on physical reactions, uncesnsored, describe setting..."></textarea>
-            <script>introNotesEl.value = localStorage.introNotes || "";</script>
             <div id="introStatusEl" class="section-status"></div>
             <div id="introOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -855,15 +819,272 @@
             </div>
             <span id="galleryToggleIconEl" class="panel-chevron bi bi-chevron-right"></span>
         </div>
-        <div id="galleryContentEl" class="panel-body" style="padding:1rem;">
-            <script>
-                setTimeout(() => {
-                    document.getElementById('galleryContentEl').innerHTML = root.image(root.galleryOptions).evaluateItem;
-                }, 50);
-            </script>
-        </div>
+        <div id="galleryContentEl" class="panel-body" style="padding:1rem;"></div>
     </div>
             </div><!-- end generatorTabEl -->
+
+            <!-- WORLD TAB -->
+            <div id="worldTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
+                <!-- HEADER -->
+                <div style="margin-bottom: 0.5rem;">
+                    <h1 style="text-align: left; margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 600;">Supreme World Generator</h1>
+                    <p style="text-align: left; color: var(--text-muted); font-size: 90%; line-height: 1.5; margin: 0; max-width: 600px;">
+                        Design extensive world settings with custom genres, magic rules, key factions, and visual landscape banners.
+                    </p>
+                </div>
+
+                <!-- TOP ACTION ROW -->
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button id="wGenerateAllBtn" onclick="generateAllWorldSections()" class="btn-primary"><i class="bi bi-sparkles"></i> Generate All Sections</button>
+                    <button id="wClearAllBtn" onclick="clearWorldState()" class="btn-ghost"><i class="bi bi-trash"></i> Clear World</button>
+                    <div id="saveWorldButtonsContainer" style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <!-- Save buttons populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- PANEL 1: CORE IDENTITY & SETTINGS -->
+                <div class="panel" id="wCoreIdentityPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wCoreIdentityPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">1</div>
+                            <span>Core Identity & Parameters</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        
+                        <!-- GLOBAL PARAMETERS (SETTING, TONE, LENGTH) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
+                            <!-- SETTING DROPDOWN -->
+                            <div class="custom-dropdown" id="wSettingDropdown">
+                                <button class="dropdown-trigger" onclick="toggleCustomDropdown('wSettingDropdownMenu', event)">
+                                    <i class="bi bi-globe dropdown-icon"></i>
+                                    <span class="dropdown-label">Setting:</span>
+                                    <span class="dropdown-value" id="wSettingLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="wSettingDropdownMenu" style="display:none;">
+                                    <div class="dropdown-search-wrapper">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="dropdown-search-input" placeholder="Search setting..." oninput="filterWorldSettings(this.value)" onclick="event.stopPropagation()">
+                                    </div>
+                                    <div class="dropdown-options" id="wSettingOptionsList">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TONE DROPDOWN -->
+                            <div class="custom-dropdown" id="wToneDropdown">
+                                <button class="dropdown-trigger" id="wToneDropdownBtn" onclick="toggleCustomDropdown('wToneDropdownMenu', event)">
+                                    <i class="bi bi-masks dropdown-icon"></i>
+                                    <span class="dropdown-label">Tone:</span>
+                                    <span class="dropdown-value" id="wToneDropdownLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="wToneDropdownMenu" style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;" onclick="event.stopPropagation()">
+                                    <div class="dropdown-options">
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" id="wToneAnyCheckbox" value="Any" onchange="handleWorldToneAnyToggle(this)" style="accent-color:var(--accent-color);">
+                                            <span>Any</span>
+                                        </label>
+                                        <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Grounded" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Grounded</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Thrilling_Action" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Thrilling / Action</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Dark_Gritty" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dark / Gritty</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Light_hearted_Comedic" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Light-hearted / Comedic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Mysterious" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Mysterious</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Romantic" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Romantic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Erotic" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Erotic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Tragic" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Tragic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Whimsical" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Whimsical</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Epic" onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Epic</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LENGTH DROPDOWN -->
+                            <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--panel-header-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.4rem 0.75rem; height: 38px; box-sizing: border-box;">
+                                <i class="bi bi-text-left" style="color: var(--accent-color);"></i>
+                                <span style="font-size: 85%; color: var(--text-muted); font-weight: 500;">Section Length:</span>
+                                <select id="wLengthEl" class="length-select" style="background:transparent; border:none; color:var(--text-main); font-weight:600; cursor:pointer; outline:none; font-size:85%;" onchange="window.saveWorldState()">
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- VISUAL BANNER GENERATOR -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
+                            <!-- Banner Display -->
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 280px; margin: 0 auto;">
+                                <div id="wBannerEl" style="height: 140px; border-radius: 8px; border: 1px solid var(--panel-border); background: var(--input-bg); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; position: relative;">
+                                    <i class="bi bi-image" style="font-size:2.5rem; color:var(--text-muted);"></i>
+                                </div>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <button class="gen-btn" id="wBannerGenBtn" onclick="generateWorldBanner()" style="flex:1; font-size:78%; padding:0.3rem 0.5rem;"><i class="bi bi-sparkles"></i> Render Banner</button>
+                                    <button class="small-btn clear-btn" id="wClearBannerBtn" onclick="clearWorldBanner(event)" style="display:none; font-size:75%; padding:0.3rem 0.5rem;"><i class="bi bi-trash"></i></button>
+                                </div>
+                                <div id="wBannerStatusEl" style="font-size:72%; text-align:center; color:var(--accent-color);"></div>
+                            </div>
+
+                            <!-- Core inputs -->
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-width: 250px;">
+                                <div class="detail-field">
+                                    <label class="detail-label" style="min-width: 90px;">World Name</label>
+                                    <input type="text" id="wNameEl" class="detail-input" placeholder="e.g. Neo-Genoa, The Sinking Isles" oninput="saveWorldState()">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                                    <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Core Themes & Keywords</label>
+                                    <textarea id="wThemesEl" class="section-notes" style="min-height: 4.8rem; font-size: 86%;" placeholder="e.g. solarpunk, decaying high-tech, underwater relics, resource scarcity, green rebellion..." oninput="saveWorldState()"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SECTION 2: WORLD OVERVIEW -->
+                <div class="panel" id="wOverviewPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wOverviewPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">2</div>
+                            <span>World Overview</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                            <button class="gen-btn" id="w-overviewGenBtnEl" onclick="generateWorldSection('overview')"><i class="bi bi-sparkles"></i> Generate</button>
+                            <button class="small-btn" id="w-overviewStopBtnEl" onclick="stopWorldSection('overview')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="w-overviewStatusEl" class="section-status"></div>
+                        <div id="w-overviewOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="small-btn" id="w-overviewEditBtnEl" onclick="toggleWorldSectionEdit('overview')" style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" id="w-overviewCopyBtnEl" onclick="copyWorldSectionText('overview')" style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: FACTIONS & SOCIETIES -->
+                <div class="panel" id="wFactionsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wFactionsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">3</div>
+                            <span>Factions & Societies</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                            <button class="gen-btn" id="w-factionsGenBtnEl" onclick="generateWorldSection('factions')"><i class="bi bi-sparkles"></i> Generate</button>
+                            <button class="small-btn" id="w-factionsStopBtnEl" onclick="stopWorldSection('factions')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="w-factionsStatusEl" class="section-status"></div>
+                        <div id="w-factionsOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="small-btn" id="w-factionsEditBtnEl" onclick="toggleWorldSectionEdit('factions')" style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" id="w-factionsCopyBtnEl" onclick="copyWorldSectionText('factions')" style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: LAWS OF MAGIC & TECHNOLOGY -->
+                <div class="panel" id="wRulesPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wRulesPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">4</div>
+                            <span>Laws of Magic & Technology</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                            <button class="gen-btn" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i class="bi bi-sparkles"></i> Generate</button>
+                            <button class="small-btn" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="w-rulesStatusEl" class="section-status"></div>
+                        <div id="w-rulesOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="small-btn" id="w-rulesEditBtnEl" onclick="toggleWorldSectionEdit('rules')" style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" id="w-rulesCopyBtnEl" onclick="copyWorldSectionText('rules')" style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: KEY LOCATIONS & LANDMARKS -->
+                <div class="panel" id="wLocationsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wLocationsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">5</div>
+                            <span>Key Locations & Landmarks</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                            <button class="gen-btn" id="w-locationsGenBtnEl" onclick="generateWorldSection('locations')"><i class="bi bi-sparkles"></i> Generate</button>
+                            <button class="small-btn" id="w-locationsStopBtnEl" onclick="stopWorldSection('locations')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="w-locationsStatusEl" class="section-status"></div>
+                        <div id="w-locationsOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="small-btn" id="w-locationsEditBtnEl" onclick="toggleWorldSectionEdit('locations')" style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" id="w-locationsCopyBtnEl" onclick="copyWorldSectionText('locations')" style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: CONFLICTS & HISTORY -->
+                <div class="panel" id="wConflictsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wConflictsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">6</div>
+                            <span>Conflicts & History</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                            <button class="gen-btn" id="w-conflictsGenBtnEl" onclick="generateWorldSection('conflicts')"><i class="bi bi-sparkles"></i> Generate</button>
+                            <button class="small-btn" id="w-conflictsStopBtnEl" onclick="stopWorldSection('conflicts')" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="w-conflictsStatusEl" class="section-status"></div>
+                        <div id="w-conflictsOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="small-btn" id="w-conflictsEditBtnEl" onclick="toggleWorldSectionEdit('conflicts')" style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" id="w-conflictsCopyBtnEl" onclick="copyWorldSectionText('conflicts')" style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- end worldTabEl -->
 
             <!-- ROLEPLAY TAB -->
             <div id="roleplayTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
@@ -893,14 +1114,22 @@
                     </div>
                     <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
                         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 250px;">
-                                <label style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">ðŸŒ World Name</label>
+                            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 200px;">
+                                <label style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">🌍 World Name</label>
                                 <input type="text" id="rpWorldNameEl" class="detail-input" style="flex: 1;" placeholder="Name of your roleplay world" oninput="saveRoleplayState()">
                             </div>
-                            <button class="small-btn" onclick="syncWorldFromCharGen()" style="font-size: 75%; padding: 0.25rem 0.5rem;" title="Import active World Name & World Lore from the Characters tab"><i class="bi bi-arrow-down-up"></i> Sync Active World</button>
+                            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                                <select id="rpWorldImportSelector" onchange="loadSavedWorldIntoRoleplay(this.value)" class="length-select" style="font-size: 75%; padding: 0.2rem 0.4rem; height: 28px; cursor: pointer;">
+                                    <option value="">-- Load Saved World --</option>
+                                </select>
+                                <button class="small-btn" onclick="syncWorldFromCharGen()" style="font-size: 75%; padding: 0.25rem 0.5rem;" title="Import active World Name & World Lore from the Characters tab"><i class="bi bi-arrow-down-up"></i> Sync Active World</button>
+                            </div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">World Lore & Setting Description</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">World Lore & Setting Description</label>
+                                <button class="small-btn" onclick="generateRoleplayWorldLore(this)" style="font-size: 72%; padding: 0.15rem 0.4rem; height: 22px; color: var(--accent-color); border-color: rgba(var(--accent-color-rgb),0.3);" title="Generate world lore via AI"><i class="bi bi-sparkles"></i> Generate World Lore</button>
+                            </div>
                             <textarea id="rpWorldLoreEl" class="section-notes" style="min-height: 5.5rem; font-size: 86%;" placeholder="Describe the world rules, atmosphere, tech/magic level, major factions or recent history..." oninput="saveRoleplayState()"></textarea>
                         </div>
                     </div>
@@ -975,7 +1204,10 @@
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario Details & Plot Hook Notes</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario Details & Plot Hook Notes</label>
+                                <button class="small-btn" onclick="generateRoleplayScenarioNotes(this)" style="font-size: 72%; padding: 0.15rem 0.4rem; height: 22px; color: var(--accent-color); border-color: rgba(var(--accent-color-rgb),0.3);" title="Generate scenario plot hook via AI"><i class="bi bi-sparkles"></i> Generate Plot Hook</button>
+                            </div>
                             <textarea id="rpScenarioNotesEl" class="section-notes" style="min-height: 4.5rem; font-size: 86%;" placeholder="e.g., The characters have just broken into a high-security vault, but the alarms start blaring. They must decide who takes the loot and how to escape..." oninput="saveRoleplayState()"></textarea>
                         </div>
                     </div>

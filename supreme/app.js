@@ -225,11 +225,15 @@
         if (menu) {
             menu.style.display = menu.style.display === "none" ? "block" : "none";
             // Focus search input if opening setting dropdown
-            if (menuId === "settingDropdownMenu" && menu.style.display === "block") {
+            if ((menuId === "settingDropdownMenu" || menuId === "wSettingDropdownMenu") && menu.style.display === "block") {
                 let search = menu.querySelector(".dropdown-search-input");
                 if (search) {
                     search.value = "";
-                    filterSettings("");
+                    if (menuId === "settingDropdownMenu") {
+                        filterSettings("");
+                    } else if (typeof filterWorldSettings === "function") {
+                        filterWorldSettings("");
+                    }
                     setTimeout(() => search.focus(), 50);
                 }
             }
