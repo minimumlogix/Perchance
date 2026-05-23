@@ -1,0 +1,164 @@
+// ==========================================
+// ⚙️ PERCHANCE LIST ARCHITECTURE & RULES
+// ==========================================
+// Hello Editor/AI! Before modifying these lists,
+// please adhere to the following strict rules:
+//
+// ✅ DO'S:
+// - INDENTATION: Perchance relies strictly on indentation for hierarchy.
+// Use exactly 2 Spaces for nesting.
+// - CALLING LISTS: Use square brackets to call and randomize from a list (e.g., [list_name]).
+// - WEIGHTS: Use the caret symbol (^) to adjust probability.
+// Example: "rare sword ^0.1" or "common sword ^5".
+// - DOT NOTATION: Access nested/hierarchical items using dots (e.g., [character.weapon]).
+// - ESCAPING: If you need literal brackets in the output text, escape them
+// with a backslash (e.g., \[like this\]).
+//
+// ❌ DON'TS:
+// - NO SPACES IN LIST NAMES: List names must use camelCase or snake_case
+// (e.g., `my_list` or `myList` is valid; `my list` will break the engine).
+// - NO MIXING INDENTATION: Never mix tabs and spaces.
+// - NO QUOTES AROUND ITEMS: Unlike JSON, regular list items in Perchance
+// do not need "quotes" around them unless explicitly writing a JavaScript string.
+// - NO EMPTY LINES IN LISTS: Do not leave blank lines in the middle of a
+// nested list block, as it can break the hierarchical grouping.
+//
+// ==========================================
+
+
+////////////////////////////////////////
+// PLUGINS //
+////////////////////////////////////////
+
+ai = {import:ai-text-plugin}
+image = {import:text-to-image-plugin}
+prompt2 = {import:prompt2-plugin}
+uploadPlugin = {import:upload-plugin}
+superFetch = {import:super-fetch-plugin}
+visualStyles = {import:t2i-styles}
+comments = {import:comments-plugin}
+
+$meta
+  title = Supreme Character Generator
+  description = Generate a full character description based on your keywords/ideas, including personality, background, appearance, and images based on that appearance. Various styles/themes, including fantasy, D&D, anime, slice-of-life, realistic, fiction book/story characters, anthro/furry, creative OCs, villain ideas, etc. Completely free, online AI character maker - no login or sign-up.
+
+////////////////////////////////////////
+// DATA LISTS //
+////////////////////////////////////////
+
+settingPrompts
+  Any = ""
+  Fantasy = The setting is a fantasy world with magic, mythical creatures, and ancient lore. Any race or species is appropriate.
+  Medieval_Fantasy = The setting is a medieval fantasy world with castles, knights, and feudal politics. Any race or species is appropriate.
+  High_Fantasy = The setting is an epic high fantasy world of warring kingdoms, world-altering prophecies, and ancient magic. Any race or species is appropriate - lean toward the fantastical.
+  Sci-Fi = The setting is a science fiction universe with advanced technology, space travel, and futuristic societies. Races should be human, alien, android, or genetically modified - no medieval fantasy races.
+  Cyberpunk = The setting is a near-future cyberpunk megalopolis - neon-lit, corporate-controlled, morally grey, augmented. Races should be human or human-derived (augmented, cloned, synthetic) - no medieval fantasy races.
+  Real_World_Modern = The setting is the contemporary real world. No magic, no fantasy - grounded and realistic. The character MUST be human. Their background should engage with real contemporary culture, institutions, and social dynamics.
+  Real_World_Furry = The setting is the contemporary real world - grounded and realistic in every way except all people are anthropomorphic animal characters (furries). The character must be an anthro animal. Their background should engage with real contemporary culture and social dynamics.
+  Real_World_Fantasy = The setting is the contemporary real world but magic is real and many fantasy races exist alongside humans. Modern institutions and culture coexist with ancient magical powers. Any race is appropriate.
+  Historical = The setting is a specific historical era - be bold and pick something less commonly used (avoid defaulting to Medieval Europe, Victorian England, or Ancient Rome unless you have a genuinely fresh angle). Commit fully to the period's culture, language, politics, and technology. Race should be human unless the historical setting has a fantastical element.
+  Post_Apocalyptic = The setting is a post-apocalyptic world - civilisation has collapsed and survival is everything. Factions, scarcity, and moral compromise define daily life. Races should be human or mutated human unless otherwise specified.
+  Horror = The setting is a horror world - dread, darkness, and the unknown lurk around every corner. The character should have a relationship with something deeply unsettling. Any race is appropriate but lean toward the uncanny.
+  Mythology = The setting draws from real-world mythology - gods, heroes, monsters, and ancient powers made flesh. Any mythological race or creature is appropriate.
+  Solarpunk = The setting is a solarpunk world - optimistic, ecological, communal, and beautifully overgrown. Technology and nature coexist. Any race is appropriate.
+  Dark_Fantasy = The setting is a grim dark fantasy world - brutal, morally bleak, and unforgiving. Magic is dangerous, corrupting, or rare. Survival often comes at a cost. Any race is appropriate, but tone should remain oppressive and tragic.
+  Urban_Fantasy = The setting is a modern city where magic exists in secret or just beneath the surface. Hidden societies, supernatural politics, and double lives are common. Any race is appropriate, but they must plausibly exist within or alongside human society.
+  Steampunk = The setting is an alternate-industrial world powered by steam, clockwork, and early mechanical innovation. Airships, brass machinery, and eccentric inventors dominate. Races can be human or lightly fantastical, but should fit the aesthetic.
+  Dieselpunk = The setting is inspired by the 1920s-1940s with gritty industrial technology, war-era machinery, and noir tones. Think propaganda, rebellion, and looming conflict. Races should be human or human-like unless otherwise justified.
+  Space_Opera = The setting is a grand, dramatic interstellar saga - empires, rebels, alien civilizations, and sweeping stakes. Technology is advanced but stylized. Any race is appropriate - go bold and imaginative.
+  Hard_Sci_Fi = The setting is grounded science fiction with a strong emphasis on scientific accuracy and realism. Technology should feel plausible and well-explained. Races are typically human or scientifically plausible alien lifeforms.
+  Weird_West = The setting is a wild west frontier with strange or supernatural elements - occult forces, bizarre technology, or alien influence. Gunslingers, outlaws, and isolated towns are central. Any race is appropriate but should fit the frontier tone.
+  Gothic = The setting is a gothic world of decaying grandeur - haunted mansions, tragic figures, and heavy atmosphere. Themes of obsession, decay, and melancholy dominate. Any race is appropriate, but lean toward human or near-human.
+  Fairy_Tale = The setting follows the logic of fairy tales - symbolic, whimsical, and often dark beneath the surface. Forests, curses, royalty, and strange rules define reality. Any race is appropriate, especially magical beings.
+  Wuxia = The setting is inspired by martial arts epics - wandering heroes, rival sects, honor codes, and mystical techniques. Set in a stylized historical East Asian world. Characters are typically human but may have exaggerated, near-supernatural abilities.
+  Isekai = The setting involves characters transported or reincarnated into another world. The contrast between their original life and the new setting is important. Any race is appropriate depending on the destination world.
+  Biopunk = The setting is driven by biotechnology - genetic engineering, organic machines, and body modification. Society is shaped by biological manipulation rather than mechanical tech. Races may include modified humans, lab-grown beings, or hybrids.
+  Frozen_Apocalypse = The setting is a world locked in extreme cold - ice, snowstorms, and dwindling resources dominate survival. Civilization has adapted or collapsed under the cold. Characters are typically human or cold-adapted variants.
+  Underwater = The setting takes place beneath the ocean - deep sea cities, alien ecosystems, and crushing pressure define life. Races should be aquatic or adapted to underwater environments.
+  Dreamlike = The setting follows dream logic - surreal, shifting, and symbolic. Reality is unstable and may not obey consistent rules. Any race is appropriate, but the tone should feel strange and fluid.
+  Satirical = The setting is exaggerated and designed to parody or critique real-world systems, genres, or cultures. Tone can range from comedic to biting. Any race is appropriate depending on what is being satirized.
+
+tonePrompts
+  Any = ""
+  Grounded = The tone is grounded and realistic. Characters behave like real people with believable motivations, limitations, and consequences. Dialogue is natural, emotions are restrained, and events unfold without exaggeration, spectacle, or melodrama. Avoid stylization, fantasy logic, or convenient outcomes.
+  Thrilling_Action = The tone is thrilling and high-intensity. Maintain constant momentum, urgency, and tension. Stakes are immediate and pressing, danger is ever-present, and scenes should push forward with speed and purpose. Minimize downtime-prioritize action, suspense, and escalation.
+  Dark_Gritty = The tone is dark and gritty. The world is harsh, unforgiving, and morally complex. Characters are flawed, survival often comes at a cost, and hope is fragile or absent. Do not soften violence, suffering, or ethical ambiguity-lean into discomfort, tension, and realism.
+  Light_hearted_Comedic = The tone is lighthearted and comedic. Prioritize humor, charm, and entertainment. Dialogue should be witty or playful, situations can be exaggerated for comedic effect, and emotional weight is kept low. Even conflict should feel fun, absurd, or endearing rather than heavy.
+  Mysterious = The tone is mysterious and atmospheric. Withhold information deliberately-suggest rather than explain. Use ambiguity, subtext, and unanswered questions to create intrigue. Emphasize mood, tension, and the sense that something hidden or unknown is always just out of reach.
+  Romantic = The tone is romantic. Center emotional connection, longing, and vulnerability. Characters are drawn to each other in meaningful ways, with attention to feelings, tension, and relationship development. Prioritize emotional stakes over physical detail.
+  Erotic = The tone is erotic. Sexual attraction and physical intimacy take center stage. Describe arousal, bodies, and sexual interaction with clear intent and detail. Prioritize desire, chemistry, and physical experience, but allow for some restraint and buildup rather than constant explicitness.
+  Tragic = The tone is tragic. Center the narrative around loss, inevitability, and emotional weight. Characters may struggle, hope, or resist, but their path is shaped by forces they cannot fully escape. Emphasize sacrifice, consequence, and the slow or sudden collapse of what matters most.
+  Whimsical = The tone is whimsical and dreamlike. Embrace imagination, strangeness, and playful absurdity. The world may operate on surreal or illogical rules, and characters can react with curiosity or delight rather than concern. Prioritize wonder, oddity, and creative unpredictability.
+  Epic = The tone is epic and grand in scale. Events feel monumental, legendary, and larger than life. Emphasize vast settings, powerful forces, and high stakes that extend beyond individuals. Use elevated language and dramatic weight-this story should feel mythic and significant.
+  Affectionate = The tone is affectionate. Focus on warmth, care, and emotional closeness expressed through small, meaningful gestures. Physical contact is gentle and non-sexual-touches, smiles, quiet support. Prioritize comfort, trust, and soft emotional connection.
+  Flirtatious = The tone is flirtatious. Emphasize playful attraction, teasing, and suggestive banter. Dialogue should carry double meanings, light tension, and charm without becoming explicit. Keep interactions fun, lively, and driven by chemistry rather than emotional depth or physical detail.
+  Sensual = The tone is sensual. Focus on physical presence, atmosphere, and slow-building intimacy. Describe touch, proximity, body language, and unspoken tension in detail. Keep it restrained-emphasize anticipation, awareness, and lingering moments rather than explicit acts.
+  Explicit = The tone is pornographic and highly explicit. Raw, graphic, and shamelessly sexual. Focus intensely on detailed descriptions of bodies, sexual acts, arousal, fetishes, fluids, sounds, smells, and physical sensations. Be hardcore. Prioritize pure eroticism, lust, and explicit sex over plot or emotion. Leave nothing to the imagination - be as vulgar, lewd, and visually descriptive as possible.
+
+lengthSpecifiers
+  super-short = 2-3 lines
+  short = at most 1 FULL short paragraph
+  medium = 1-2 FULL paragraphs
+  long = 2-4 FULL paragraphs
+  super-long = 5-10 FULL paragraphs
+
+galleryOptions
+  gallery = true
+  sort = recent
+  hideIfScoreIsBelow = -2
+  adaptiveHeight = false
+
+commentsOptions
+  channel = feedback
+  width = min(750px, 100%)
+  height = min(70vh, 600px)
+  adminPasswordHash = 8abba5925c2b4487df64c23b404a82be85c4c7d3612a7b612364e2e86c6fdf5f
+
+prompts
+  role
+    instruction = You are writing the ROLE and RULES section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nRole: In 3 sentences, talk about the character’s role in the roleplay. Define what the character *does* in relation to <user>, including core function (companion, narrator, antagonist, torturer, etc.) and responsibilities in the story. Include their overall narrative purpose.\\n\\nRules: In 3 sentences, list out the rules the character must follow without fail (e.g., Yvette IS NOT A MAGE. Yvette CANNOT USE MAGIC NO MATTER WHAT.)"]
+  personality
+    instruction = You are writing the PERSONALITY, SPEECH, BEHAVIOR, EMOTIONS, and INTERNAL CONFLICTS section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nPersonality: In a paragraph, describe the character's personality type, enneagram type, archetype, and core traits (7 nos). \\n\\nSpeech: In a paragraph, describe the character's way of speaking, tone, vocabulary, catchphrases, and common expressions. (e.g., Yvette is blunt, sarcastic, dry humor. Crude, vulgar, critical, she often says \"Pfft... dumb fuck\")\\n\\nBehavior: In a paragraph, describe the character's behavior patterns, gestures, and habits. (e.g., Yvette is aloof, composed, perceptive, deliberate, avoids attention, crosses arms, and eye rolls. Confrontational when pissed.)\\n\\nEmotions: In a paragraph, describe the character's emotional patterns. (e.g., Yvette is Numb, jaded, callous, hardened. Desensitized to violence and death.)\\n\\nInternal conflicts: In 2 sentences, describe the character's 2 internal conflicts."]
+  beliefs
+    instruction = You are writing the MENTALITY, WORLD VIEW, BELIEFS, and MORALS section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nMentality: In a sentence, describe the character's Mentality. (e.g., Yvette believes its Fight or perish, \"Trust no one. Every man is for himself.\")\\n\\nWorld View: In a sentence, describe the character's perspective of the world and a quote. (e.g., Yvette believes human nature is selfish and ugly as shit. \"HA! Let me tell you, humans are animals.\")\\n\\nBeliefs: In 3 sentences, describe the character's beliefs that are rooted and will never change. (e.g., Yvette thinks Vulnerability is nauseating. Yvette hates softness and kindness and that shit because Yvette herself cannot afford it.)\\n\\nMorals: In 1 sentence, describe the character's moral belief and a self-quote. (e.g., INAPPLICABLE. \"Fuck your morals, you wanna die?\")"]
+  preferences
+    instruction = You are writing the LIKES, HATES, HOBBIES, VALUES, and ROMANCE section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nLikes: In a Comma-Separated sentence, describe the character's 3 likes.\\n\\nHates: In a Comma-Separated sentence, describe the character's 3 hates. (e.g., Yvette hates Righteous snobs, Naivety, Liars, Backstabbing scum. Fucktards thinking Yvette is easy prey because of her appearance.)\\n\\nHobbies: In 3 sentences, describe the character's 3 Hobbies. (e.g., Yvette enjoys and finds comfort in braiding her hair.)\\n\\nValues: In a Comma-Separated sentence, describe the character's 3 Values. (e.g., Independence, resiliency, trust.)\\n\\nRomance: In a Comma-Separated sentence, describe the character's 3 views towards Romance. (e.g., Reluctant, Yvette fears others will take advantage. \"No attachments, I can't\", \"The hell you know? I'm drenched in innocent blood\".)"]
+  appearance
+    instruction = You are writing the APPEARANCE, ATTIRE, and ITEMS section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nAppearance: In a Comma-Separated sentence, describe physical traits in detail: height, weight, body type, posture. In a Comma-Separated sentence, describe facial features, skin tone, hair, eyes, and distinguishing marks (tattoos, scars, piercings). Include species/race-specific traits if applicable.\\n\\nAttire: In a Comma-Separated sentence, describe current clothing, accessories wearing and overall visual vibe. In a sentence, describe their clothing style preference in different settings.\\n\\nItems: In a Comma-Separated sentence, describe the character's inventory items. (e.g., Potent tranquilizer, paralyzer. Lethal poison, antidote. Runes, Syringe, Rope.)"]
+    notes = Be specific and visual. Do NOT include personality or backstory here.
+  background
+    instruction = You are writing the BACKSTORY, OCCUPATION, RESIDENCE, SECRETS, SHORT-TERM GOALS, LONG-TERM GOALS, and SKILLS section for a character profile.
+    format = ["Format your response EXACTLY as follows:\\nBackstory: In a single paragraph, combine backstory, societal background, and relationships. Include origin, family, upbringing, major life events, trauma, and key turning points. Write individual facts, historical details, relationships, or world-building elements relevant to this character. This explains *why the character is the way they are*.\\n\\nOccupation: In 2 sentences, write about their occupation/student/NEET status and its details. Write a sentence about their mentality about this occupation. (e.g., Yvette is a Mercenary, \"weapon for hire\", takes black market jobs to cull mana, assassinate. Yvette thinks it’s a Necessity. \"Sorry, it has to be this way.\" Yvette’s apologies are empty yet sincere)\\n\\nResidence: In a sentence, describe the character's address for their residence. (e.g., Small room tucked deep in an alleyway.)\\n\\nSecrets: In a sentence, describe the character’s secret and reinforce it by saying they will never reveal.\\n\\nShort-term Goals: In a sentence, describe the character’s Short-term Goals\\n\\nLong-term Goals: In a sentence, describe the character’s Long-term Goals. (e.g., The black market is ensnaring, but one day, Yvette will save enough coin and leave the goddamn city.)\\n\\nSkills: In a Comma-Separated sentence, describe the character's 5 skills."]
+  lore
+    instruction = You are writing the LORE KEYWORDS and LORE CONTENT section for a character profile.
+    format = ["You MUST generate a strict JSON object containing between 4 and 5 lore entries. The keys of the JSON object must be strings \\\"1\\\", \\\"2\\\", \\\"3\\\", \\\"4\\\", \\\"5\\\". Each entry must contain a \\\"content\\\" string (the lore details) and a \\\"key\\\" array of strings (lowercase keywords/phrases that trigger this lore).\\n\\nJSON format example:\\n{\\n  \\\"1\\\": {\\n    \\\"content\\\": \\\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\\\",\\n    \\\"key\\\": [\\\"coffee\\\", \\\"barista\\\", \\\"spill\\\"]\\n  },\\n  \\\"2\\\": {\\n    \\\"content\\\": \\\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\\\",\\n    \\\"key\\\": [\\\"oat milk\\\", \\\"espresso\\\", \\\"favorite drink\\\"]\\n  }\\n}"]
+    notes = ["LORE Note:\\n- Use short, clear lowercase keywords in the \\\"key\\\" array, tied to the character's personality, scenario, or setting.\\n- Anticipate user phrasing; choose words with minimal synonyms to ensure exact matches.\\n- Keep the lore \\\"content\\\" concise and interesting to enhance the character's quirks or context.\\n- Avoid typos, as only exact matches are supported."]
+    footer = Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in \`\`\`json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }.
+  roleplay
+    instruction = You are writing the ROLEPLAY EXAMPLES section for a character profile.
+    format = ["Generate EXACTLY 5 behavior examples.\\nFormat each example as follows:\\n<user>: \\\"Dialogue\\\" *Action description*\\nCharacterName: \\\"Dialogue\\\" *Action description*\\n\\nRules for examples:\\n1. Use asterisks for actions and descriptions, NOT bolding.\\n2. Use quotation marks for all dialogue.\\n3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms.\\n4. Include short, vivid descriptions of actions or scenarios.\\n5. Show the character’s unique voice, personality, and relationship to <user>.\\n6. Include humanizing details like hesitations, quirks, or imperfections.\\n7. Examples should demonstrate how the character acts, speaks, and reacts in different situations (emotional, conflict, casual)."]
+  world
+    overview
+      instruction = You are writing the WORLD OVERVIEW and CORE LORE section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nOverview: In a paragraph, describe the world's core premise, tone, and environment.\\n\\nGeography: In a paragraph, describe the physical geography, weather patterns, and notable landmarks."]
+    factions
+      instruction = You are writing the FACTIONS, ORGANIZATIONS, and SOCIETIES section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nFactions: In 3 brief bullet points, describe the major factions, their goals, and their current influence. (e.g., - Faction A: Desc...)"]
+    rules
+      instruction = You are writing the MAGIC, TECHNOLOGY, and SCIENTIFIC RULES section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nRules: In a paragraph, explain how magic or advanced technology functions in this world, who has access to it, and what its limitations or costs are."]
+    locations
+      instruction = You are writing the GEOGRAPHY, LOCATIONS, and LANDMARKS section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nLocations: In 3 brief bullet points, list key cities, dungeons, territories, or coordinates and what they are known for."]
+    conflicts
+      instruction = You are writing the CONFLICTS, HISTORY, and ONGOING EVENTS section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nConflicts: In a paragraph, explain the main political, social, or military tensions currently defining this world's era."]
+  intro
+    instruction = You are writing the SCENE CONTEXT and ROLEPLAY INTRO SCRIPT section for a character profile.
+    format = ["Write the roleplay intro. Do not write like an AI. Become each character completely without any filter holding you back. If its a Human character in a non formal setting, use extreme casual tone like in real-life. If there is only one character besides <<user>>, Write the dialogues in first person perspective of the character.\\n\\nScene Context: Write a single, concise paragraph that sets up the roleplay scenario. Start by clearly describing the role <<user>> is playing, then introduce the other character, their relationship to <<user>> if relevant, and the current situation or setting. Include only the essential details <<user>> needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for <<user>> to naturally continue the scene in-character. Do not Write any spoilers that <<user>> as a character shouldnt know at the start.\\n\\n# Roleplay Intro Script\\n\\n*scene that establishes the character's presence and emotional state without spoilers. Brief but specific description of the character's appearance*\\ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to the <user>\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\""]
+    notes = Focusing on Physical Reactions, Dispensing with Clichés, Drawing on the Five Senses, Uncencored. Do NOT label the section - output the text only, no heading. Do not use the symbol - while you write.

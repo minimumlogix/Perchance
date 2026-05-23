@@ -1,0 +1,1313 @@
+<link rel="icon" type="image/png" href="https://minimumlogix.github.io/VN_Engine/apps/single_vn/assets/favicon.png">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="app.js" defer></script>
+<script src="character-generator.js" defer></script>
+<script src="roleplay-generator.js" defer></script>
+<script src="world-generator.js" defer></script>
+<div class="app-container">
+    <!-- LEFT SIDEBAR -->
+    <div class="left-sidebar">
+        <div style="padding: 1.5rem 1.2rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 110%; color: var(--text-main);">
+            <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 80%;"><i class="bi bi-stars"></i></div>
+            Supreme
+        </div>
+        <div style="display: flex; flex-direction: column; padding: 0.5rem; gap: 0.2rem; flex: 1;">
+            <div id="sidebar-item-characters" class="sidebar-item active" onclick="switchTab('characters')"><i class="bi bi-people-fill"></i> Characters</div>
+            <div id="sidebar-item-world" class="sidebar-item" onclick="switchTab('world')"><i class="bi bi-globe-americas"></i> World</div>
+            <div id="sidebar-item-roleplay" class="sidebar-item" onclick="switchTab('roleplay')"><i class="bi bi-controller"></i> Roleplay</div>
+            <div id="sidebar-item-settings" class="sidebar-item" onclick="switchTab('settings')"><i class="bi bi-gear-fill"></i> Settings</div>
+        </div>
+        <!-- SIDEBAR STATUS & TOGGLES PANEL -->
+        <div id="sidebarStatusPanel" style="padding: 1rem 1.2rem; border-top: 1px solid var(--panel-border); margin-top: auto; display: flex; flex-direction: column; gap: 0.6rem; background: rgba(0,0,0,0.02);">
+            <div style="font-size: 70%; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="bi bi-cpu" style="color: var(--accent-color);"></i> AI Status
+            </div>
+            <div id="generationStatusEl" style="font-size: 80%; min-height: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); word-break: break-word; line-height: 1.3;">
+                <!-- Populated dynamically -->
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.2rem; border-top: 1px solid var(--panel-border); padding-top: 0.5rem;">
+                <button id="darkModeBtn" onclick="window.toggleManualDarkMode();" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:var(--panel-header-bg); border:1px solid var(--panel-border); color:var(--text-main); font-size:0.95rem; cursor:pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.2s;" title="Toggle Theme">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+                <span class="sidebar-version" style="font-size: 70%; opacity: 0.4; font-family: monospace;">v1.5.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- GENERATOR TAB -->
+            <div id="generatorTabEl" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                <!-- HEADER -->
+            <div style="margin-bottom: 0.5rem;">
+                <h1 style="text-align: left; margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 600;">Supreme Character Description Generator</h1>
+                <p style="text-align: left; color: var(--text-muted); font-size: 90%; line-height: 1.5; margin: 0; max-width: 600px;">
+                    Build your character section by section  -  <span id="typed-tagline" style="color: var(--accent-color); font-weight: 500;"></span><br>
+                    Save and load characters locally, reference them from the sidebar.
+                </p>
+            </div>
+
+            <!-- TOP ACTION ROW -->
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <button id="generateAllBtn" onclick="generateAll()" class="btn-primary"><i class="bi bi-sparkles"></i> Generate All</button>
+                <button id="stopAllBtn" onclick="stopAll()" class="btn-secondary" style="display:none;"><i class="bi bi-stop-circle"></i> Stop All</button>
+                <button id="clearAllBtn" onclick="clearAllSections()" class="btn-ghost"><i class="bi bi-trash"></i> Clear All</button>
+                <button id="exportMdBtn" onclick="exportAsMarkdown()" class="btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-file-earmark-arrow-down"></i> Export Markdown</button>
+                <button id="exportZipBtn" onclick="exportAsZip()" class="btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-file-zip"></i> Download Archive</button>
+                <div id="saveButtonsContainer" style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button id="saveCharacterTopBtn" onclick="saveCharacterFromTopBar(this)" class="btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy"></i> Save Character</button>
+                </div>
+                <button id="historyBtn" onclick="showHistoryModal()" class="btn-secondary" style="display:none; font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-clock-history"></i> history</button>
+            </div>
+
+            <!-- MAGIC IMPORT -->
+            <div class="panel collapsed" id="magicImportPanelEl">
+                <div class="panel-header" onclick="togglePanel('magicImportPanelEl')">
+                    <span style="display: flex; align-items: center; gap: 0.4rem;"><i class="bi bi-magic" style="color:var(--accent-color);"></i> Magic Import</span>
+                    <span class="panel-chevron bi bi-chevron-right"></span>
+                </div>
+                <div class="panel-body">
+                    <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Paste a URL from a Fandom wiki or any web page to
+                        automatically generate this character.</p>
+                    <div style="display:flex; gap:0.5rem;">
+                        <input type="text" id="wikiUrlEl" class="detail-input" style="flex-grow:1;"
+                            placeholder="https://genshin-impact.fandom.com/wiki/Raiden_Shogun">
+                        <button class="gen-btn" id="wikiImportBtnEl" onclick="importFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i> import</button>
+                    </div>
+                    <textarea id="wikiOverrideEl" class="section-notes" style="min-height:2.5rem; margin-top:0.5rem;"
+                        placeholder='Twist / Override (optional)  -  e.g. "Deadpool, but he is the Hogwarts headmaster"'
+                        oninput="localStorage.wikiOverride=this.value"></textarea>
+                    <script>setTimeout(() => { if(typeof wikiOverrideEl !== 'undefined') wikiOverrideEl.value = localStorage.wikiOverride || ""; }, 30);</script>
+                </div>
+            </div>
+
+            <!-- CORE IDENTITY & SETTINGS PANEL -->
+            <div class="panel" id="coreIdentityPanelEl">
+                <div class="panel-header" onclick="togglePanel('coreIdentityPanelEl')">
+                    <div class="panel-title">
+                        <div class="panel-badge">1</div>
+                        <span>Core Identity & Parameters</span>
+                    </div>
+                    <span class="panel-chevron bi bi-chevron-down"></span>
+                </div>
+                <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    
+                    <!-- GLOBAL PARAMETERS (SETTING, TONE, LENGTH) -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
+                        <!-- SETTING DROPDOWN -->
+                        <div class="custom-dropdown" id="settingDropdown">
+                            <button class="dropdown-trigger" onclick="toggleCustomDropdown('settingDropdownMenu', event)">
+                                <i class="bi bi-globe dropdown-icon"></i>
+                                <span class="dropdown-label">Setting:</span>
+                                <span class="dropdown-value" id="settingLabel">Any</span>
+                                <i class="bi bi-chevron-down dropdown-arrow"></i>
+                            </button>
+                            <div class="dropdown-menu-custom" id="settingDropdownMenu" style="display:none;">
+                                <div class="dropdown-search-wrapper">
+                                    <i class="bi bi-search"></i>
+                                    <input type="text" class="dropdown-search-input" placeholder="Search setting..." oninput="filterSettings(this.value)" onclick="event.stopPropagation()">
+                                </div>
+                                <div class="dropdown-options" id="settingOptionsList">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TONE DROPDOWN -->
+                        <div class="custom-dropdown" id="toneDropdown">
+                            <button class="dropdown-trigger" id="toneDropdownBtn" onclick="toggleCustomDropdown('toneDropdownMenu', event)">
+                                <i class="bi bi-masks dropdown-icon"></i>
+                                <span class="dropdown-label">Tone:</span>
+                                <span class="dropdown-value" id="toneDropdownLabel">Any</span>
+                                <i class="bi bi-chevron-down dropdown-arrow"></i>
+                            </button>
+                            <div class="dropdown-menu-custom" id="toneDropdownMenu" style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;" onclick="event.stopPropagation()">
+                                <div class="dropdown-options">
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" id="toneAnyCheckbox" value="Any" onchange="handleToneAnyToggle(this)" style="accent-color:var(--accent-color);">
+                                        <span>Any</span>
+                                    </label>
+                                    <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Grounded" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Grounded</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Thrilling_Action" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Thrilling / Action</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Dark_Gritty" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Dark / Gritty</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Light_hearted_Comedic" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Light-hearted / Comedic</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Mysterious" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Mysterious</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Romantic" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Romantic</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Erotic" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Erotic</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Tragic" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Tragic</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Whimsical" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Whimsical</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Epic" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Epic</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Affectionate" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Affectionate</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Flirtatious" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Flirtatious</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Sensual" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Sensual</span>
+                                    </label>
+                                    <label class="dropdown-option-item-checkbox">
+                                        <input type="checkbox" class="toneCheckbox" value="Explicit" onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                        <span>Explicit</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GLOBAL LENGTH DROPDOWN -->
+                        <div class="custom-dropdown" id="globalLengthDropdown" title="Override text length for all sections">
+                            <button class="dropdown-trigger" onclick="toggleCustomDropdown('globalLengthDropdownMenu', event)">
+                                <i class="bi bi-text-left dropdown-icon"></i>
+                                <span class="dropdown-label">Length:</span>
+                                <span class="dropdown-value" id="globalLengthLabel">Custom</span>
+                                <i class="bi bi-chevron-down dropdown-arrow"></i>
+                            </button>
+                            <div class="dropdown-menu-custom" id="globalLengthDropdownMenu" style="display:none; width:175px;" onclick="event.stopPropagation()">
+                                <div class="dropdown-options">
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('super-short')">Super Short</div>
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('short')">Short</div>
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('medium')">Medium</div>
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('long')">Long</div>
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('super-long')">Super Long</div>
+                                    <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+                                    <div class="dropdown-option-item" onclick="setGlobalLength('custom')" style="font-style:italic;">Custom (per section)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IDENTITY DETAILS -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="font-size: 90%; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                            <span>Identity Details</span>
+                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                <button class="gen-btn" id="detailsGenBtnEl" onclick="generateIdentityDetails()" style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-sparkles"></i> Generate Details</button>
+                                <button class="small-btn" id="detailsStopBtnEl" onclick="stopDetailsGeneration()" style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i class="bi bi-stop-circle"></i> Stop</button>
+                                <button class="small-btn clear-btn" onclick="clearDetails()" style="font-size: 75%; padding: 0.15rem 0.45rem;"><i class="bi bi-trash"></i> Clear Details</button>
+                            </div>
+                        </div>
+                        <div id="detailsStatusEl" class="section-status"></div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
+                            <!-- Avatar -->
+                            <div id="characterAvatarContainer" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 120px; flex-shrink: 0; margin: 0 auto;">
+                                <div id="characterAvatarEl" style="width: 120px; height: 180px; border-radius: 8px; border: 1px solid var(--panel-border); background: var(--input-bg); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--text-muted); position: relative; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);">
+                                    <i class="bi bi-person-fill" id="avatarPlaceholderIcon"></i>
+                                </div>
+                                <button class="small-btn clear-btn" id="clearAvatarBtn" onclick="clearAvatar(event)" style="font-size: 70%; padding: 0.15rem 0.4rem; display: none; align-items: center; gap: 0.2rem;"><i class="bi bi-trash"></i> Remove</button>
+                            </div>
+                            <!-- Fields -->
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.5rem; flex: 1; min-width: 200px;">
+                                <div class="detail-field">
+                                    <label class="detail-label">Name</label>
+                                    <input type="text" id="detailNameEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                                <div class="detail-field">
+                                    <label class="detail-label">Age</label>
+                                    <input type="text" id="detailAgeEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                                <div class="detail-field">
+                                    <label class="detail-label">Gender</label>
+                                    <input type="text" id="detailGenderEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                                <div class="detail-field">
+                                    <label class="detail-label">Orientation</label>
+                                    <input type="text" id="detailOrientationEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                                <div class="detail-field">
+                                    <label class="detail-label">Species</label>
+                                    <input type="text" id="detailRaceEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                                <div class="detail-field">
+                                    <label class="detail-label">Ethnicity</label>
+                                    <input type="text" id="detailEthnicityEl" class="detail-input" placeholder="leave blank to generate" oninput="saveDetails()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OVERVIEW NOTES -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                        <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="bi bi-journal-text" style="color:var(--accent-color);"></i>
+                                Overview Notes <span style="opacity:0.5; font-size:85%; font-weight:normal; margin-left:0.2rem;">Optional - context seed for all generated sections</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                <button class="gen-btn" id="overviewGenBtnEl" onclick="generateOverviewNotes('textarea')" style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-sparkles"></i> Generate Overview</button>
+                                <button class="small-btn" id="overviewStopBtnEl" onclick="stopOverviewGeneration()" style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                        </div>
+                        <div id="overviewStatusEl" class="section-status"></div>
+                        <textarea id="overviewNotesEl" class="section-notes" style="min-height: 130px; flex-grow: 1;"
+                            oninput="localStorage.overviewNotes=this.value"
+                            placeholder="Appearance: Tall, slender, raven hair...&#10;Personality: Quiet, fiercely loyal, observant...&#10;Context: User's childhood friend who has returned after years...&#10;Backstory: Born into a family of scholars..."></textarea>
+                        <script>overviewNotesEl.value = localStorage.overviewNotes || "";</script>
+                    </div>
+                </div>
+            </div>
+
+    <!-- WORLD LORE PANEL -->
+    <div class="panel collapsed" id="worldLorePanelEl">
+        <div class="panel-header" onclick="togglePanel('worldLorePanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">2</div>
+                <span>World Lore</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="small-btn" id="worldLoreHistoryBtnEl" onclick="showWorldLoreHistoryModal()"><i class="bi bi-clock-history"></i> History</button>
+                    <button class="gen-btn" id="worldLoreGenBtnEl" onclick="generateWorldLore(true)"><i class="bi bi-sparkles"></i> Generate</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-right"></span>
+            </div>
+        </div>
+        <div class="panel-body" style="position:relative; overflow:hidden;">
+            <div id="worldLoreBgEl"
+                style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; opacity:0.12; pointer-events:none; background-size:cover; background-position:center;">
+            </div>
+            <div style="position:relative; z-index:1; display:flex; flex-direction:column; gap:0.75rem;">
+
+                <!-- WORLD NAME + NOTES INPUT ROW -->
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:180px;">
+                            <label style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;">🌍 World Name</label>
+                            <input type="text" id="worldNameEl" class="detail-input" style="flex:1;" placeholder="leave blank to auto-generate"
+                                oninput="localStorage.worldName=this.value">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:180px;">
+                            <label style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;"><i class="bi bi-download"></i> Load World</label>
+                            <select id="charWorldImportSelector" onchange="loadSavedWorldIntoCharGen(this.value)" class="length-select" style="flex:1; padding:0.35rem 0.5rem; height:28px; cursor: pointer;">
+                                <option value="">-- Load Saved World --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:80%; color:var(--text-muted); font-weight:500;">Optional Notes <span style="opacity:0.55; font-size:90%;">— hints for world generation</span></label>
+                        <textarea id="worldLoreNotesEl" class="section-notes" style="min-height:2.5rem; font-size:86%;"
+                            placeholder="e.g. Cyberpunk Japan, 2089, mega-corporations rule. Neon city meets tradition..."
+                            oninput="localStorage.worldLoreNotes=this.value"></textarea>
+                        <script>setTimeout(() => { if(typeof worldLoreNotesEl !== 'undefined') worldLoreNotesEl.value = localStorage.worldLoreNotes || ''; }, 30);</script>
+                    </div>
+                </div>
+
+                <!-- WORLD LORE GENERATED OUTPUT -->
+                <div style="position:relative;">
+                    <div id="worldLoreImgContainer" style="float:right; display:none; flex-direction:column; align-items:center; gap:0.25rem; margin-left:0.5rem; margin-bottom:0.3rem;">
+                        <div id="worldLoreThumbEl"
+                            style="width:80px; height:80px; border-radius:4px; background:var(--input-bg); background-size:cover; background-position:center; border:1px solid var(--panel-border);">
+                        </div>
+                        <button class="small-btn" onclick="generateWorldLoreImage(worldLoreEl.value)" style="font-size:70%; padding:0.1rem 0.3rem; width:100%;" title="Regenerate Image"><i class="bi bi-arrow-clockwise"></i> regen img</button>
+                    </div>
+                    <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Generated world context. This informs all character sections generated below.</p>
+                    <textarea id="worldLoreEl" class="section-notes" style="min-height:6rem;" readonly
+                        oninput="localStorage.worldLore=this.value"
+                        placeholder="e.g. A decaying futuristic city where magic has begun to leak back into reality through the digital network..."></textarea>
+                    <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                        <button class="small-btn" id="worldLoreEditBtnEl" onclick="toggleWorldLoreEdit()"><i class="bi bi-pencil-square"></i> edit</button>
+                        <button class="small-btn clear-btn" onclick="clearWorldLore()"><i class="bi bi-trash"></i> clear</button>
+                        <button class="small-btn" id="worldLoreStopBtnEl" onclick="stopSection('worldLore')" style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                    </div>
+                </div>
+                <script>
+                    setTimeout(() => {
+                        if (typeof worldLoreEl !== 'undefined') worldLoreEl.value = localStorage.worldLore || "";
+                        if (localStorage.worldLoreImageUrl) {
+                            let thumb = document.getElementById("worldLoreThumbEl");
+                            let container = document.getElementById("worldLoreImgContainer");
+                            if (thumb) thumb.style.backgroundImage = `url(${localStorage.worldLoreImageUrl})`;
+                            if (container) container.style.display = "flex";
+                            if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = `url(${localStorage.worldLoreImageUrl})`;
+                        }
+                    }, 50);
+                </script>
+                <div id="worldLoreStatusEl" class="section-status"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- APPEARANCE SECTION -->
+    <div class="panel" id="appearancePanelEl">
+        <div class="panel-header" onclick="togglePanel('appearancePanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">3</div>
+                <span>Appearance</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="appearanceLengthEl" onchange="localStorage.appearanceLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
+                    <script>setTimeout(() => appearanceLengthEl.value = localStorage.appearanceLength || appearanceLengthEl.value, 10);</script>
+                    <button class="gen-btn" id="appearanceGenBtnEl" onclick="generateSection('appearance')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="appearanceClearBtnEl" onclick="clearSection('appearance')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="appearanceNotesEl" class="section-notes" oninput="localStorage.appearanceNotes=this.value"
+                placeholder="Notes for appearance/clothing  -  e.g. tall, scarred, wearing a lab coat..."></textarea>
+            <script>appearanceNotesEl.value = localStorage.appearanceNotes || "";</script>
+            <div id="appearanceStatusEl" class="section-status"></div>
+            <div id="appearanceOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="appearanceEditBtnEl" onclick="toggleSectionEdit('appearance')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="appearanceCopyBtnEl" onclick="copySectionText('appearance')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="appearanceStopBtnEl" onclick="stopSection('appearance')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+
+            <!-- IMAGE AREA -->
+            <div id="imagesAreaEl" style="display:none; width:100%; margin-top:1.25rem; border-top:1px dashed var(--panel-border); padding-top:1.25rem;">
+                <div class="image-tools-section">
+                    <div style="font-size:90%; font-weight:600; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem; color:var(--text-main);">
+                        <i class="bi bi-sparkles" style="color:var(--accent-color);"></i>
+                        <span>Image Generation Tools & Controls</span>
+                    </div>
+                    
+                    <div class="image-tools-grid">
+                        <!-- Style selector card -->
+                        <div class="image-tool-card">
+                            <span class="image-tool-label"><i class="bi bi-palette"></i> Style</span>
+                            <select id="visualStyleEl" class="image-tool-control"
+                                onchange="localStorage.visualStyle=this.value; window.overwrittenStylePrompt=null; updateStyleOverridePlaceholder(); if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();">
+                            </select>
+                            <script>
+                                setTimeout(() => {
+                                    visualStyleEl.innerHTML = generateVisualStyleOptionsHtml();
+                                    visualStyleEl.value = localStorage.visualStyle || "Fantasy Portrait";
+                                }, 20);
+                            </script>
+                        </div>
+                        
+                        <!-- Count selector card -->
+                        <div class="image-tool-card">
+                            <span class="image-tool-label"><i class="bi bi-images"></i> Count</span>
+                            <select id="imageCountEl" class="image-tool-control" onchange="localStorage.imageCount=this.value">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4" selected>4</option>
+                                <option value="6">6</option>
+                                <option value="9">9</option>
+                            </select>
+                            <script>setTimeout(() => imageCountEl.value = localStorage.imageCount || imageCountEl.value, 10);</script>
+                        </div>
+                        
+                        <div style="display:flex; gap:0.5rem; align-items:stretch;">
+                            <button id="regenImagesBtn" class="gen-btn" onclick="generateImages()" style="flex:1.2; font-size:80%; display:inline-flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; height:100%;">
+                                <i class="bi bi-arrow-clockwise"></i> Generate
+                            </button>
+                            <button id="stopImageGenBtn" class="small-btn" onclick="stopImageGeneration()" style="display:none; font-size:80%; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.5); color:#ef4444;">
+                                <i class="bi bi-stop-circle"></i> Stop
+                            </button>
+                            <button id="regenImagePromptBtn" class="small-btn" onclick="regenerateImagePrompt()" style="flex:0.8; font-size:80%; display:inline-flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; height:100%;">
+                                <i class="bi bi-pencil-square"></i> Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Prompt inputs container -->
+                    <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.75rem;">
+                        <!-- Generated caption editor -->
+                        <div id="imagePromptEl"></div>
+                        
+                        <!-- Style override editor -->
+                        <div>
+                            <b style="font-size:80%; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-palette-fill" style="color:var(--accent-color);"></i> Style Override <span style="opacity:0.6;">(clear to reset to dropdown)</span>:</b>
+                            <textarea id="styleOverrideEl" class="image-tools-textarea"
+                                oninput="window.overwrittenStylePrompt = this.value.trim() ? this.value : null; if(!this.value.trim()) updateStyleOverridePlaceholder(); if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();"
+                                style="min-height:3rem; margin-top:0.25rem;"
+                                placeholder="Select a style above to see its prompt..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Premium Scrollable Image Row -->
+                <div id="imagesEl" class="images-scroll-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROLE SECTION -->
+    <div class="panel" id="rolePanelEl">
+        <div class="panel-header" onclick="togglePanel('rolePanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">4</div>
+                <span>Role</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="gen-btn" id="roleGenBtnEl" onclick="generateSection('role')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="roleClearBtnEl" onclick="clearSection('role')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="roleNotesEl" class="section-notes" oninput="localStorage.roleNotes=this.value"
+                placeholder="Notes for role/rules  -  e.g. villain, obsessed with user, cannot speak..."></textarea>
+            <script>roleNotesEl.value = localStorage.roleNotes || "";</script>
+            <div id="roleStatusEl" class="section-status"></div>
+            <div id="roleOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="roleEditBtnEl" onclick="toggleSectionEdit('role')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="roleCopyBtnEl" onclick="copySectionText('role')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="roleStopBtnEl" onclick="stopSection('role')" style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PERSONALITY SECTION -->
+    <div class="panel" id="personalityPanelEl">
+        <div class="panel-header" onclick="togglePanel('personalityPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">5</div>
+                <span>Personality</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="personalityLengthEl" onchange="localStorage.personalityLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
+                    <script>setTimeout(() => personalityLengthEl.value = localStorage.personalityLength || personalityLengthEl.value, 10);</script>
+                    <button class="gen-btn" id="personalityGenBtnEl" onclick="generateSection('personality')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="personalityClearBtnEl" onclick="clearSection('personality')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="personalityNotesEl" class="section-notes" oninput="localStorage.personalityNotes=this.value"
+                placeholder="Notes for personality  -  e.g. dry wit, paranoid, secretly kind..."></textarea>
+            <script>personalityNotesEl.value = localStorage.personalityNotes || "";</script>
+            <div id="personalityStatusEl" class="section-status"></div>
+            <div id="personalityOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="personalityEditBtnEl" onclick="toggleSectionEdit('personality')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="personalityCopyBtnEl" onclick="copySectionText('personality')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="personalityStopBtnEl" onclick="stopSection('personality')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BELIEFS SECTION -->
+    <div class="panel" id="beliefsPanelEl">
+        <div class="panel-header" onclick="togglePanel('beliefsPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">6</div>
+                <span>Beliefs</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="beliefsLengthEl" onchange="localStorage.beliefsLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
+                    <script>setTimeout(() => beliefsLengthEl.value = localStorage.beliefsLength || beliefsLengthEl.value, 10);</script>
+                    <button class="gen-btn" id="beliefsGenBtnEl" onclick="generateSection('beliefs')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="beliefsClearBtnEl" onclick="clearSection('beliefs')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="beliefsNotesEl" class="section-notes" oninput="localStorage.beliefsNotes=this.value"
+                placeholder="Notes for beliefs & morals  -  e.g. strictly pacifist, believes end justifies means..."></textarea>
+            <script>beliefsNotesEl.value = localStorage.beliefsNotes || "";</script>
+            <div id="beliefsStatusEl" class="section-status"></div>
+            <div id="beliefsOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="beliefsEditBtnEl" onclick="toggleSectionEdit('beliefs')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="beliefsCopyBtnEl" onclick="copySectionText('beliefs')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="beliefsStopBtnEl" onclick="stopSection('beliefs')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREFERENCES SECTION -->
+    <div class="panel" id="preferencesPanelEl">
+        <div class="panel-header" onclick="togglePanel('preferencesPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">7</div>
+                <span>Preferences</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="preferencesLengthEl" onchange="localStorage.preferencesLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
+                    <script>setTimeout(() => preferencesLengthEl.value = localStorage.preferencesLength || preferencesLengthEl.value, 10);</script>
+                    <button class="gen-btn" id="preferencesGenBtnEl" onclick="generateSection('preferences')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="preferencesClearBtnEl" onclick="clearSection('preferences')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="preferencesNotesEl" class="section-notes" oninput="localStorage.preferencesNotes=this.value"
+                placeholder="Notes for preferences  -  e.g. loves sweet food, dislikes loud noises..."></textarea>
+            <script>preferencesNotesEl.value = localStorage.preferencesNotes || "";</script>
+            <div id="preferencesStatusEl" class="section-status"></div>
+            <div id="preferencesOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="preferencesEditBtnEl" onclick="toggleSectionEdit('preferences')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="preferencesCopyBtnEl" onclick="copySectionText('preferences')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="preferencesStopBtnEl" onclick="stopSection('preferences')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BACKGROUND SECTION -->
+    <div class="panel" id="backgroundPanelEl">
+        <div class="panel-header" onclick="togglePanel('backgroundPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">8</div>
+                <span>Background</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <select class="length-select" id="backgroundLengthEl" onchange="localStorage.backgroundLength=this.value">
+                        <option value="super-short">Super Short</option>
+                        <option value="short">Short</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="long">Long</option>
+                        <option value="super-long">Super Long</option>
+                    </select>
+                    <script>setTimeout(() => backgroundLengthEl.value = localStorage.backgroundLength || backgroundLengthEl.value, 10);</script>
+                    <button class="gen-btn" id="backgroundGenBtnEl" onclick="generateSection('background')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="backgroundClearBtnEl" onclick="clearSection('background')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="backgroundNotesEl" class="section-notes" oninput="localStorage.backgroundNotes=this.value"
+                placeholder="Notes for backstory  -  e.g. exiled noble, grew up in the slums..."></textarea>
+            <script>backgroundNotesEl.value = localStorage.backgroundNotes || "";</script>
+            <div id="backgroundStatusEl" class="section-status"></div>
+            <div id="backgroundOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="backgroundCopyBtnEl" onclick="copySectionText('background')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="backgroundStopBtnEl" onclick="stopSection('background')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LORE SECTION -->
+    <div class="panel" id="lorePanelEl">
+        <div class="panel-header" onclick="togglePanel('lorePanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">9</div>
+                <span>Lore Entries</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="gen-btn" id="loreGenBtnEl" onclick="generateSection('lore')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="loreClearBtnEl" onclick="clearSection('lore')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="loreNotesEl" class="section-notes" oninput="localStorage.loreNotes=this.value"
+                placeholder="Notes for lore  -  e.g. born in the forest, has a secret map..."></textarea>
+            <script>loreNotesEl.value = localStorage.loreNotes || "";</script>
+            <div id="loreStatusEl" class="section-status"></div>
+            
+            <!-- Grid of 5 Lore Entries -->
+            <div id="loreFieldsContainer" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+                <!-- Entry 1 -->
+                <div class="lore-entry-row" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                    <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 1</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <div class="detail-field">
+                            <label class="detail-label">Keys (separated by semicolons)</label>
+                            <input type="text" id="loreKey1El" class="detail-input" placeholder="e.g. leg; high school; hurt" oninput="saveLoreToLocalStorage()">
+                        </div>
+                        <div class="detail-field">
+                            <label class="detail-label">Content</label>
+                            <textarea id="loreContent1El" class="detail-input" style="min-height: 2.2rem; resize: vertical;" placeholder="e.g. Coco broke his leg in high school." oninput="saveLoreToLocalStorage()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Entry 2 -->
+                <div class="lore-entry-row" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                    <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 2</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <div class="detail-field">
+                            <label class="detail-label">Keys (separated by semicolons)</label>
+                            <input type="text" id="loreKey2El" class="detail-input" placeholder="e.g. joyland; internet; website" oninput="saveLoreToLocalStorage()">
+                        </div>
+                        <div class="detail-field">
+                            <label class="detail-label">Content</label>
+                            <textarea id="loreContent2El" class="detail-input" style="min-height: 2.2rem; resize: vertical;" placeholder="e.g. Joyland is Coco's favorite website." oninput="saveLoreToLocalStorage()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Entry 3 -->
+                <div class="lore-entry-row" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                    <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 3</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <div class="detail-field">
+                            <label class="detail-label">Keys (separated by semicolons)</label>
+                            <input type="text" id="loreKey3El" class="detail-input" placeholder="..." oninput="saveLoreToLocalStorage()">
+                        </div>
+                        <div class="detail-field">
+                            <label class="detail-label">Content</label>
+                            <textarea id="loreContent3El" class="detail-input" style="min-height: 2.2rem; resize: vertical;" placeholder="..." oninput="saveLoreToLocalStorage()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Entry 4 -->
+                <div class="lore-entry-row" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                    <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 4</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <div class="detail-field">
+                            <label class="detail-label">Keys (separated by semicolons)</label>
+                            <input type="text" id="loreKey4El" class="detail-input" placeholder="..." oninput="saveLoreToLocalStorage()">
+                        </div>
+                        <div class="detail-field">
+                            <label class="detail-label">Content</label>
+                            <textarea id="loreContent4El" class="detail-input" style="min-height: 2.2rem; resize: vertical;" placeholder="..." oninput="saveLoreToLocalStorage()"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Entry 5 -->
+                <div class="lore-entry-row" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                    <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 5</div>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <div class="detail-field">
+                            <label class="detail-label">Keys (separated by semicolons)</label>
+                            <input type="text" id="loreKey5El" class="detail-input" placeholder="..." oninput="saveLoreToLocalStorage()">
+                        </div>
+                        <div class="detail-field">
+                            <label class="detail-label">Content</label>
+                            <textarea id="loreContent5El" class="detail-input" style="min-height: 2.2rem; resize: vertical;" placeholder="..." oninput="saveLoreToLocalStorage()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden Raw Output for streaming -->
+            <div id="loreOutputEl" class="section-output" contenteditable="false" style="display:none; max-height:120px; overflow-y:auto; margin-top:0.5rem; font-family:monospace; font-size:85%;"></div>
+            
+            <div style="margin-top:0.75rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="loreExportJsonBtnEl" onclick="exportLoreAsJson()"><i class="bi bi-file-earmark-arrow-down"></i> Export as JSON</button>
+                <button class="small-btn" id="loreCopyBtnEl" onclick="copySectionText('lore')" style="display:none;"><i class="bi bi-clipboard"></i> Copy JSON</button>
+                <button class="small-btn" id="loreStopBtnEl" onclick="stopSection('lore')" style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROLEPLAY EXAMPLE SECTION -->
+    <div class="panel" id="roleplayPanelEl">
+        <div class="panel-header" onclick="togglePanel('roleplayPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">10</div>
+                <span>Roleplay Examples</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="gen-btn" id="roleplayGenBtnEl" onclick="generateSection('roleplay')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="roleplayClearBtnEl" onclick="clearSection('roleplay')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="roleplayNotesEl" class="section-notes" oninput="localStorage.roleplayNotes=this.value"
+                placeholder="Notes for examples  -  e.g. focus on their sarcasm, show them in a fight..."></textarea>
+            <script>roleplayNotesEl.value = localStorage.roleplayNotes || "";</script>
+            <div id="roleplayStatusEl" class="section-status"></div>
+            <div id="roleplayOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="roleplayCopyBtnEl" onclick="copySectionText('roleplay')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="roleplayStopBtnEl" onclick="stopSection('roleplay')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTRO SECTION -->
+    <div class="panel" id="introPanelEl">
+        <div class="panel-header" onclick="togglePanel('introPanelEl')">
+            <div class="panel-title">
+                <div class="panel-badge">11</div>
+                <span>Roleplay Intro</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem;" onclick="event.stopPropagation()">
+                    <button class="gen-btn" id="introGenBtnEl" onclick="generateSection('intro')"><i class="bi bi-sparkles"></i> Generate</button>
+                    <button class="small-btn clear-btn" id="introClearBtnEl" onclick="clearSection('intro')"><i class="bi bi-trash"></i> Clear</button>
+                </div>
+                <span class="panel-chevron bi bi-chevron-down"></span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <textarea id="introNotesEl" class="section-notes" oninput="localStorage.introNotes=this.value"
+                placeholder="Notes for intro  -  e.g. focus on physical reactions, uncesnsored, describe setting..."></textarea>
+            <script>introNotesEl.value = localStorage.introNotes || "";</script>
+            <div id="introStatusEl" class="section-status"></div>
+            <div id="introOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                <button class="small-btn" id="introEditBtnEl" onclick="toggleSectionEdit('intro')"
+                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                <button class="small-btn" id="introCopyBtnEl" onclick="copySectionText('intro')"
+                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                <button class="small-btn" id="introStopBtnEl" onclick="stopSection('intro')"
+                    style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <div id="referencedCharactersBannerEl"
+        style="display:none; font-size:80%; opacity:0.75; padding:0.2rem 0.6rem; border-radius:4px; background:rgba(var(--accent-color-rgb),0.12); border:1px solid rgba(var(--accent-color-rgb),0.3); color:var(--accent-color); text-align:center; align-items:center; gap:0.4rem; justify-content:center;">
+        <i class="bi bi-paperclip"></i> <span id="referencedCharactersCountEl"></span> character(s) referenced in next generation
+    </div>
+
+    <div id="storageWarningEl"
+        style="display:none; font-size:80%; opacity:0.85; padding:0.2rem 0.6rem; border-radius:4px; background:rgba(255,160,0,0.12); border:1px solid rgba(255,160,0,0.4); color:#c87000; text-align:center;">
+    </div>
+
+    <!-- GALLERY SECTION -->
+    <div id="gallerySectionEl" class="panel collapsed" style="margin-top: 1.5rem;">
+        <div id="galleryHeaderEl" class="panel-header" onclick="toggleGallery()">
+            <div class="panel-title">
+                <b style="font-weight:600; display:flex; align-items:center; gap:0.5rem;"><i class="bi bi-images" style="color:var(--accent-color);"></i> Public Character Gallery</b>
+            </div>
+            <span id="galleryToggleIconEl" class="panel-chevron bi bi-chevron-right"></span>
+        </div>
+        <div id="galleryContentEl" class="panel-body" style="padding:1rem;">
+            <script>
+                setTimeout(() => {
+                    document.getElementById('galleryContentEl').innerHTML = root.image(root.galleryOptions).evaluateItem;
+                }, 50);
+            </script>
+        </div>
+    </div>
+            </div><!-- end generatorTabEl -->
+
+            <!-- ROLEPLAY TAB -->
+            <div id="roleplayTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
+                <!-- HEADER -->
+                <div style="margin-bottom: 0.5rem;">
+                    <h1 style="text-align: left; margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 600;">Supreme Roleplay Generator</h1>
+                    <p style="text-align: left; color: var(--text-muted); font-size: 90%; line-height: 1.5; margin: 0; max-width: 600px;">
+                        Design complex multi-character roleplays with detailed world-building. You are the player!
+                    </p>
+                </div>
+
+                <!-- TOP ACTION ROW -->
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button id="rpGenerateBtn" onclick="generateRoleplay()" class="btn-primary"><i class="bi bi-sparkles"></i> Generate Roleplay</button>
+                    <button id="rpStopBtn" onclick="stopRoleplayGeneration()" class="btn-secondary" style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                    <button id="rpClearBtn" onclick="clearRoleplayData()" class="btn-ghost"><i class="bi bi-trash"></i> Clear All</button>
+                </div>
+
+                <!-- PANEL 1: WORLD SETTING -->
+                <div class="panel" id="rpWorldPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpWorldPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-globe"></i></div>
+                            <span>1. World Setting & Lore</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 250px;">
+                                <label style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">ðŸŒ World Name</label>
+                                <input type="text" id="rpWorldNameEl" class="detail-input" style="flex: 1;" placeholder="Name of your roleplay world" oninput="saveRoleplayState()">
+                            </div>
+                            <button class="small-btn" onclick="syncWorldFromCharGen()" style="font-size: 75%; padding: 0.25rem 0.5rem;" title="Import active World Name & World Lore from the Characters tab"><i class="bi bi-arrow-down-up"></i> Sync Active World</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">World Lore & Setting Description</label>
+                            <textarea id="rpWorldLoreEl" class="section-notes" style="min-height: 5.5rem; font-size: 86%;" placeholder="Describe the world rules, atmosphere, tech/magic level, major factions or recent history..." oninput="saveRoleplayState()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: PLAYER / USER DETAILED PROFILE -->
+                <div class="panel" id="rpPlayerPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpPlayerPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-person-circle"></i></div>
+                            <span>2. Player Setup (You)</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                            <div class="detail-field">
+                                <label class="detail-label">Your Name</label>
+                                <input type="text" id="rpUserNameEl" class="detail-input" placeholder="User (leave empty for default)" oninput="saveRoleplayState()">
+                            </div>
+                            <div class="detail-field">
+                                <label class="detail-label">Your Role / Background</label>
+                                <input type="text" id="rpUserRoleEl" class="detail-input" placeholder="e.g., A traveling mercenary, a rogue merchant" oninput="saveRoleplayState()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: NPC CAST (MULTIPLE CHARACTERS) -->
+                <div class="panel" id="rpNPCsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpNPCsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-people-fill"></i></div>
+                            <span>3. NPC Cast (Multiple Characters)</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="font-size: 80%; opacity: 0.7; margin: 0 0 0.2rem 0;">Add the characters that inhabit this scenario. You can define details manually or quickly import them from your saved list.</p>
+                        
+                        <!-- NPC Grid Container -->
+                        <div id="rpNPCGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; width: 100%;">
+                            <!-- Cards rendered dynamically by javascript -->
+                        </div>
+
+                        <!-- Card Controls -->
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-start; margin-top: 0.5rem;">
+                            <button class="btn-secondary" onclick="addNPC()" style="font-size: 85%; padding: 0.4rem 0.8rem;"><i class="bi bi-plus-lg"></i> Add Character</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 4: SCENARIO & PLOT HOOK SETUP -->
+                <div class="panel" id="rpScenarioPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpScenarioPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-pencil-square"></i></div>
+                            <span>4. Scenario Scenario & Setup</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                            <!-- Length dropdown -->
+                            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                <span style="font-size: 82%; font-weight: 600; color: var(--text-muted);">Starter Length:</span>
+                                <select id="rpLengthEl" class="length-select" style="padding: 0.3rem 0.6rem;" onchange="saveRoleplayState()">
+                                    <option value="short">Short (1-2 paragraphs)</option>
+                                    <option value="medium" selected>Medium (3-4 paragraphs)</option>
+                                    <option value="long">Long (5+ paragraphs)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario Details & Plot Hook Notes</label>
+                            <textarea id="rpScenarioNotesEl" class="section-notes" style="min-height: 4.5rem; font-size: 86%;" placeholder="e.g., The characters have just broken into a high-security vault, but the alarms start blaring. They must decide who takes the loot and how to escape..." oninput="saveRoleplayState()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OUTPUT DISPLAY AREA -->
+                <div id="rpOutputSectionEl" class="panel" style="display: none; border-color: rgba(var(--accent-color-rgb), 0.35); box-shadow: 0 0 12px rgba(var(--accent-color-rgb), 0.1);">
+                    <div class="panel-header" style="background: rgba(var(--accent-color-rgb), 0.03);">
+                        <div class="panel-title">
+                            <b style="font-weight: 600; display: flex; align-items: center; gap: 0.5rem; color: var(--accent-color);"><i class="bi bi-controller"></i> Generated Roleplay Sheet</b>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="padding: 1.25rem;">
+                        <div id="rpStatusEl" class="section-status" style="margin-bottom: 0.5rem; font-weight: 500;"></div>
+                        
+                        <!-- TAB SELECTOR FOR OUTPUT -->
+                        <div style="display: flex; border-bottom: 1px solid var(--panel-border); margin-bottom: 1rem; gap: 0.2rem;">
+                            <button id="rpOutputTabBtn-scenario" class="btn-ghost" onclick="switchRpOutputTab('scenario')" style="font-size: 85%; padding: 0.4rem 0.8rem; border-radius: 6px 6px 0 0; margin-bottom: -1px; border-bottom: 2px solid var(--accent-color); font-weight: 600; color: var(--accent-color);">Scenario Sheet</button>
+                            <button id="rpOutputTabBtn-starter" class="btn-ghost" onclick="switchRpOutputTab('starter')" style="font-size: 85%; padding: 0.4rem 0.8rem; border-radius: 6px 6px 0 0; margin-bottom: -1px; border-bottom: 2px solid transparent; opacity: 0.6;">Roleplay Starter Post</button>
+                        </div>
+
+                        <!-- SCENARIO SHEET CONTENT -->
+                        <div id="rpOutputTabEl-scenario" class="section-output" contenteditable="false" style="display: block; min-height: 10rem; max-height: 35rem; overflow-y: auto; padding: 1rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px;"></div>
+                        
+                        <!-- STARTER POST CONTENT -->
+                        <div id="rpOutputTabEl-starter" class="section-output" contenteditable="false" style="display: none; min-height: 10rem; max-height: 35rem; overflow-y: auto; padding: 1rem; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px;"></div>
+
+                        <!-- ACTIONS ROW -->
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <button class="small-btn" id="rpEditBtn" onclick="toggleRpEdit()" style="display: none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="small-btn" onclick="copyRpText()"><i class="bi bi-clipboard"></i> copy current tab</button>
+                            <button class="small-btn" onclick="downloadRpMarkdown()"><i class="bi bi-file-earmark-arrow-down"></i> download scenario (.md)</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end roleplayTabEl -->
+
+            <!-- SETTINGS TAB -->
+            <div id="settingsTabEl" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">
+                <!-- HEADER -->
+                <div style="margin-bottom: 0.5rem;">
+                    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 600;">Application Settings</h1>
+                    <p style="color: var(--text-muted); font-size: 90%; line-height: 1.5; margin: 0; max-width: 600px;">
+                        Configure confirmation popups, warning preferences, and character repository options.
+                    </p>
+                </div>
+
+                <!-- SETTINGS PANEL CARD -->
+                <div class="panel">
+                    <div class="panel-header" style="cursor: default;">
+                        <div class="panel-title">
+                            <b style="font-weight:600; display:flex; align-items:center; gap:0.5rem;"><i class="bi bi-sliders" style="color:var(--accent-color);"></i> Confirmation Warnings</b>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem;">
+                        
+                        <!-- CLEAR CONFIRMATION -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);">
+                            <div style="flex: 1;">
+                                <b style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Confirm on Clear All Data</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">Show warning before clearing all sections on the page.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingClearConfirmEl" onchange="localStorage.warnOnClear = this.checked ? 'true' : 'false'">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- LOAD CONFIRMATION -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);">
+                            <div style="flex: 1;">
+                                <b style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Confirm on Load Character</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">Show warning when loading a saved character, which overwrites unsaved edits.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingLoadConfirmEl" onchange="localStorage.warnOnLoad = this.checked ? 'true' : 'false'">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- UPDATE CONFIRMATION -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                            <div style="flex: 1;">
+                                <b style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Confirm on Update Character</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">Show warning before updating a saved character file with your active changes.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingUpdateConfirmEl" onchange="localStorage.warnOnUpdate = this.checked ? 'true' : 'false'">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- OVERVIEW AUTO-GENERATE TOGGLE -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--panel-border);">
+                            <div style="flex: 1;">
+                                <b style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Skip Overview Concept Confirmation</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">When Generate All is used with empty Overview Notes, skip the review popup and auto-generate the concept silently before proceeding.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingSkipOverviewConfirmEl" onchange="localStorage.skipOverviewConfirm = this.checked ? 'true' : 'false'; let m = document.getElementById('overviewModalDontShowEl'); if(m) m.checked = this.checked;">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- THEME ACCENT PANEL CARD -->
+                <div class="panel" style="margin-top: 1rem;">
+                    <div class="panel-header" style="cursor: default;">
+                        <div class="panel-title">
+                            <b style="font-weight:600; display:flex; align-items:center; gap:0.5rem;"><i class="bi bi-palette-fill" style="color:var(--accent-color);"></i> Accent Theme Customizer</b>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <span style="font-size: 83%; color: var(--text-muted); display: block; margin-bottom: 1rem;">Select a premium color accent scheme. Changes are applied instantly and seamlessly across the entire generator.</span>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; width: 100%;">
+                                <!-- Amethyst Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('amethyst')" data-theme="amethyst" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Amethyst</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #7c3aed; box-shadow: 0 0 8px rgba(124, 58, 237, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Royal Purple</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #7c3aed; font-size: 90%; display: none;"></i>
+                                </div>
+                                <!-- Cyberpunk Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('cyberpunk')" data-theme="cyberpunk" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Cyberpunk</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #ff007f; box-shadow: 0 0 8px rgba(255, 0, 127, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Neon Pink</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #ff007f; font-size: 90%; display: none;"></i>
+                                </div>
+                                <!-- Emerald Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('emerald')" data-theme="emerald" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Emerald</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Forest Green</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #10b981; font-size: 90%; display: none;"></i>
+                                </div>
+                                <!-- Sapphire Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('sapphire')" data-theme="sapphire" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Sapphire</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Calm Blue</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #3b82f6; font-size: 90%; display: none;"></i>
+                                </div>
+                                <!-- Crimson Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('crimson')" data-theme="crimson" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Crimson</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Vampire Red</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #ef4444; font-size: 90%; display: none;"></i>
+                                </div>
+                                <!-- Sunset Theme Option -->
+                                <div class="theme-card-option" onclick="setAccentTheme('sunset')" data-theme="sunset" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.75rem; border: 1.5px solid var(--panel-border); border-radius: 10px; background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; position: relative;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span style="font-size: 80%; font-weight: 600; color: var(--text-main);">Sunset</span>
+                                        <div style="width: 14px; height: 14px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);"></div>
+                                    </div>
+                                    <span style="font-size: 72%; color: var(--text-muted);">Warm Amber</span>
+                                    <i class="bi bi-check-circle-fill theme-check" style="position: absolute; bottom: 0.5rem; right: 0.5rem; color: #f59e0b; font-size: 90%; display: none;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- end content-wrapper -->
+    </div><!-- end main-content -->
+</div><!-- end app-container -->
+
+<!-- OVERVIEW CONCEPT CONFIRM MODAL -->
+<div id="overviewConfirmModalEl" style="
+    display:none; position:fixed; inset:0; z-index:99998;
+    background:rgba(0,0,0,0.65); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center;
+">
+    <div style="
+        background:var(--panel-bg); border:1px solid var(--panel-border);
+        border-radius:14px; padding:1.5rem; max-width:560px; width:90vw;
+        box-shadow:0 20px 60px rgba(0,0,0,0.4); display:flex; flex-direction:column; gap:1rem;
+        animation: fadeInConfirm 0.2s ease-out;
+    ">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+            <i class="bi bi-stars" style="color:var(--accent-color); font-size:1.2rem;"></i>
+            <b style="font-size:105%; color:var(--text-main);">Generate a Character Concept First?</b>
+        </div>
+        <p style="font-size:84%; color:var(--text-muted); margin:0; line-height:1.5;">
+            Your Overview Notes are empty. The AI will generate a creative character concept for you based on the current World Setting and Tone. Review it below, then approve to start the full generation.
+        </p>
+        <!-- Streaming content display -->
+        <div id="overviewModalContentEl" style="
+            min-height:7rem; max-height:14rem; overflow-y:auto;
+            background:var(--input-bg); border:1px solid var(--input-border);
+            border-radius:8px; padding:0.75rem 1rem; font-size:88%; line-height:1.6;
+            color:var(--text-main); white-space:pre-wrap;
+        ">
+            <span style="opacity:0.5; font-style:italic;">Generating a character concept...</span>
+        </div>
+        <div id="overviewModalStatusEl" style="font-size:80%; color:var(--accent-color); min-height:1.2rem;"></div>
+        <!-- Action row -->
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button id="overviewModalRegenBtn" class="btn-secondary" onclick="regenOverviewModal()" style="font-size:86%; padding:0.45rem 0.9rem; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i class="bi bi-arrow-clockwise"></i> Regen
+                </button>
+                <button id="overviewModalApproveBtn" class="btn-primary" onclick="approveOverviewAndGenerateAll()" style="font-size:86%; padding:0.45rem 0.9rem; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i class="bi bi-check-lg"></i> Approve &amp; Generate All
+                </button>
+                <button class="btn-ghost" onclick="closeOverviewConfirmModal()" style="font-size:86%; padding:0.45rem 0.9rem;">
+                    Cancel
+                </button>
+            </div>
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:80%; color:var(--text-muted); cursor:pointer; white-space:nowrap;">
+                <input type="checkbox" id="overviewModalDontShowEl" style="accent-color:var(--accent-color);" onchange="localStorage.skipOverviewConfirm = this.checked ? 'true' : 'false'; let s = document.getElementById('settingSkipOverviewConfirmEl'); if(s) s.checked = this.checked;">
+                Don't show this again
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebarEl" style="
+  position:fixed; top:0; right:0; height:100%;
+  width:min(240px, 80vw);
+  background:var(--sidebar-bg);
+  border-left:1px solid var(--panel-border);
+  display:flex; flex-direction:column;
+  z-index:1000;
+  transform:translateX(100%);
+  transition:transform 0.25s ease;
+  box-shadow:-4px 0 16px rgba(0,0,0,0.15);
+">
+    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="btn-secondary"
+        style="position:absolute; top:0.5rem; left:0; transform:translateX(-100%); border-radius:8px 0 0 8px; border-right:none; padding:0.4rem 0.7rem; font-size:85%; white-space:nowrap; z-index:1001; display:flex; align-items:center; gap:0.3rem; background:var(--sidebar-bg); color:var(--text-main); box-shadow:-4px 0 12px rgba(0,0,0,0.15);">
+        <i class="bi bi-floppy"></i> saved <span id="savedCountBadgeEl"
+            style="display:none; background:var(--accent-color); color:white; border-radius:10px; padding:0 5px; font-size:90%; margin-left:2px;"></span>
+    </button>
+    <div
+        style="padding:0.75rem 1rem; border-bottom:1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center; color:var(--text-main);">
+        <b style="font-size:92%; display:flex; align-items:center; gap:0.4rem;" id="sidebarHeaderTitleEl"><i class="bi bi-floppy-fill" style="color:var(--accent-color);"></i> Saved Characters</b>
+        <button onclick="toggleSidebar()" class="btn-ghost" style="font-size:80%; padding:0.25rem 0.4rem; display:flex; align-items:center; justify-content:center;"><i class="bi bi-x-lg"></i></button>
+    </div>
+    
+    <!-- Sidebar tabs switcher -->
+    <div style="display: flex; border-bottom: 1px solid var(--panel-border); background: rgba(0,0,0,0.1); padding: 0.25rem 0.5rem 0; gap: 0.2rem;">
+        <button id="sidebarTabBtn-characters" class="sidebar-tab-btn active" onclick="switchSidebarTab('characters')">
+            <i class="bi bi-people"></i> Characters
+        </button>
+        <button id="sidebarTabBtn-worlds" class="sidebar-tab-btn" onclick="switchSidebarTab('worlds')">
+            <i class="bi bi-globe"></i> Worlds
+        </button>
+    </div>
+
+    <!-- Characters Section in Sidebar -->
+    <div id="sidebarCharacterSection" style="display: flex; flex-direction: column; flex: 1;">
+        <div style="padding:0.4rem 0.5rem; border-bottom:1px solid var(--panel-border); font-size:75%; opacity:0.7; text-align:center; line-height:1.4; color:var(--text-muted);">
+            ☑ Check to reference • Double-click name to rename
+        </div>
+        
+        <!-- SEARCH FIELD -->
+        <div style="padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--panel-border); background: rgba(0,0,0,0.12);">
+            <div style="display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; padding: 0.35rem 0.6rem; gap: 0.4rem; position: relative;">
+                <i class="bi bi-search" style="font-size: 80%; opacity: 0.6; color: var(--text-muted);"></i>
+                <input type="text" id="characterSearchInput" placeholder="Search saved characters..." oninput="filterSavedCharacters(this.value)" style="flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 80%; outline: none; padding: 0; min-width: 0;">
+                <button id="clearSearchBtn" onclick="clearCharacterSearch()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: none; padding: 0; font-size: 90%; align-items: center; justify-content: center;"><i class="bi bi-x-circle-fill"></i></button>
+            </div>
+        </div>
+
+        <div id="sidebarListEl" style="overflow-y:auto; flex:1; padding:0.5rem; display:flex; flex-direction:column; gap:0.5rem;"></div>
+        
+        <div style="padding:0.5rem; border-top:1px solid var(--panel-border); display:flex; flex-direction:column; gap:0.3rem; background:rgba(0,0,0,0.02);">
+            <div style="display:flex; gap:0.3rem;">
+                <button onclick="exportSavedCharacters()" class="btn-secondary" style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-upload"></i> export</button>
+                <button onclick="importSavedCharacters()" class="btn-secondary" style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-download"></i> import</button>
+            </div>
+            <button onclick="clearAllSavedCharacters()" class="btn-ghost clear-btn" style="width:100%; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-trash3"></i> clear all saved</button>
+        </div>
+    </div>
+
+    <!-- Worlds Section in Sidebar -->
+    <div id="sidebarWorldSection" style="display: none; flex-direction: column; flex: 1;">
+        <div style="padding:0.4rem 0.5rem; border-bottom:1px solid var(--panel-border); font-size:75%; opacity:0.7; text-align:center; line-height:1.4; color:var(--text-muted);">
+            Double-click name to rename
+        </div>
+        
+        <!-- SEARCH FIELD -->
+        <div style="padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--panel-border); background: rgba(0,0,0,0.12);">
+            <div style="display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; padding: 0.35rem 0.6rem; gap: 0.4rem; position: relative;">
+                <i class="bi bi-search" style="font-size: 80%; opacity: 0.6; color: var(--text-muted);"></i>
+                <input type="text" id="worldSearchInput" placeholder="Search saved worlds..." oninput="renderSidebarWorlds(this.value)" style="flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 80%; outline: none; padding: 0; min-width: 0;">
+            </div>
+        </div>
+
+        <div id="sidebarWorldListEl" style="overflow-y:auto; flex:1; padding:0.5rem; display:flex; flex-direction:column; gap:0.5rem;"></div>
+        
+        <div style="padding:0.5rem; border-top:1px solid var(--panel-border); display:flex; flex-direction:column; gap:0.3rem; background:rgba(0,0,0,0.02);">
+            <div style="display:flex; gap:0.3rem;">
+                <button onclick="exportSavedWorlds()" class="btn-secondary" style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-upload"></i> export</button>
+                <button onclick="importSavedWorlds()" class="btn-secondary" style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-download"></i> import</button>
+            </div>
+            <button onclick="clearAllSavedWorlds()" class="btn-ghost clear-btn" style="width:100%; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-trash3"></i> clear all saved</button>
+        </div>
+    </div>
+</div>
+
+<p style="font-size:80%; margin-top:1rem; text-align:center;">
+    Uses the <a href="https://perchance.org/ai-text-plugin" target="_blank">ai-text-plugin</a> and <a
+        href="https://perchance.org/text-to-image-plugin" target="_blank">text-to-image-plugin</a>.
+</p>
+
+<div id="commentsCtn"></div>
+<br><br>
+
+
+
+<!-- FEEDBACK -->
+<div style="position:fixed; bottom:0.5rem; right:0.5rem; text-align:right; z-index:100;">
+    <div id="feedbackCommentsCtn"></div>
+    <button id="feedbackBtn893745ykfuhd"
+        onclick="window.toggleFeedbackPanel(this)" style="display:inline-flex; align-items:center; gap:0.4rem; border-radius:6px; background:var(--panel-header-bg); border:1px solid var(--panel-border); padding:0.4rem 0.8rem; color:var(--text-main); font-size:85%; cursor:pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25); transition: background 0.2s;"><i class="bi bi-chat-left-text"></i> feedback</button>
+</div>
+
