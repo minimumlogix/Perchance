@@ -1,10 +1,61 @@
 <link rel="icon" type="image/png" href="https://minimumlogix.github.io/VN_Engine/apps/single_vn/assets/favicon.png">
-<link rel="stylesheet" href="styles.css">
-<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
-<script src="app.js" defer></script>
-<script src="character-generator.js" defer></script>
-<script src="roleplay-generator.js" defer></script>
-<script src="world-generator.js" defer></script>
+<script>
+    (function() {
+        var isPerchance = window.location.hostname.indexOf('perchance.org') !== -1;
+        var fallbackBase = 'https://minimumlogix.github.io/Perchance/supreme/';
+        
+        // Helper to load stylesheet
+        window.loadStyle = function(href, fallback) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            if (fallback) {
+                link.onerror = function() {
+                    link.onerror = null;
+                    console.warn('Failed to load stylesheet: ' + href + '. Trying fallback: ' + fallback);
+                    link.href = fallback;
+                };
+            }
+            document.head.appendChild(link);
+        };
+
+        // Helper to load script
+        window.loadScript = function(src, fallback) {
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = false; // Ensure scripts run in exact order they are added
+            if (fallback) {
+                script.onerror = function() {
+                    script.onerror = null;
+                    console.warn('Failed to load script: ' + src + '. Trying fallback: ' + fallback);
+                    var fbScript = document.createElement('script');
+                    fbScript.src = fallback;
+                    fbScript.async = false;
+                    document.head.appendChild(fbScript);
+                };
+            }
+            document.head.appendChild(script);
+        };
+
+        // Load stylesheet
+        var styleHref = isPerchance ? fallbackBase + 'styles.css' : 'styles.css';
+        var styleFallback = isPerchance ? null : fallbackBase + 'styles.css';
+        loadStyle(styleHref, styleFallback);
+
+        // Load scripts in order
+        var scripts = [
+            { src: 'https://cdn.jsdelivr.net/npm/typed.js@2.0.12', fallback: null },
+            { src: isPerchance ? fallbackBase + 'app.js' : 'app.js', fallback: isPerchance ? null : fallbackBase + 'app.js' },
+            { src: isPerchance ? fallbackBase + 'character-generator.js' : 'character-generator.js', fallback: isPerchance ? null : fallbackBase + 'character-generator.js' },
+            { src: isPerchance ? fallbackBase + 'roleplay-generator.js' : 'roleplay-generator.js', fallback: isPerchance ? null : fallbackBase + 'roleplay-generator.js' },
+            { src: isPerchance ? fallbackBase + 'world-generator.js' : 'world-generator.js', fallback: isPerchance ? null : fallbackBase + 'world-generator.js' }
+        ];
+
+        scripts.forEach(function(s) {
+            loadScript(s.src, s.fallback);
+        });
+    })();
+</script>
 <div class="app-container">
     <!-- LEFT SIDEBAR -->
     <div class="left-sidebar">
