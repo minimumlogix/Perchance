@@ -42,18 +42,26 @@
         var styleFallback = isPerchance ? null : fallbackBase + 'styles.css';
         loadStyle(styleHref, styleFallback);
 
-        // Load scripts in order
-        var scripts = [
-            { src: 'https://cdn.jsdelivr.net/npm/typed.js@2.0.12', fallback: null },
-            { src: isPerchance ? fallbackBase + 'app.js' : 'app.js', fallback: isPerchance ? null : fallbackBase + 'app.js' },
-            { src: isPerchance ? fallbackBase + 'character-generator.js' : 'character-generator.js', fallback: isPerchance ? null : fallbackBase + 'character-generator.js' },
-            { src: isPerchance ? fallbackBase + 'roleplay-generator.js' : 'roleplay-generator.js', fallback: isPerchance ? null : fallbackBase + 'roleplay-generator.js' },
-            { src: isPerchance ? fallbackBase + 'world-generator.js' : 'world-generator.js', fallback: isPerchance ? null : fallbackBase + 'world-generator.js' }
-        ];
+        // Load scripts in order after DOM is parsed to ensure Perchance globals are defined
+        var initScripts = function() {
+            var scripts = [
+                { src: 'https://cdn.jsdelivr.net/npm/typed.js@2.0.12', fallback: null },
+                { src: isPerchance ? fallbackBase + 'app.js' : 'app.js', fallback: isPerchance ? null : fallbackBase + 'app.js' },
+                { src: isPerchance ? fallbackBase + 'character-generator.js' : 'character-generator.js', fallback: isPerchance ? null : fallbackBase + 'character-generator.js' },
+                { src: isPerchance ? fallbackBase + 'roleplay-generator.js' : 'roleplay-generator.js', fallback: isPerchance ? null : fallbackBase + 'roleplay-generator.js' },
+                { src: isPerchance ? fallbackBase + 'world-generator.js' : 'world-generator.js', fallback: isPerchance ? null : fallbackBase + 'world-generator.js' }
+            ];
 
-        scripts.forEach(function(s) {
-            loadScript(s.src, s.fallback);
-        });
+            scripts.forEach(function(s) {
+                loadScript(s.src, s.fallback);
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScripts);
+        } else {
+            initScripts();
+        }
     })();
 </script>
 <div class="app-container">
