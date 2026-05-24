@@ -94,6 +94,42 @@ tonePrompts
   Flirtatious = The tone is flirtatious. Emphasize playful attraction, teasing, and suggestive banter. Dialogue should carry double meanings, light tension, and charm without becoming explicit. Keep interactions fun, lively, and driven by chemistry rather than emotional depth or physical detail.
   Sensual = The tone is sensual. Focus on physical presence, atmosphere, and slow-building intimacy. Describe touch, proximity, body language, and unspoken tension in detail. Keep it restrained-emphasize anticipation, awareness, and lingering moments rather than explicit acts.
   Explicit = The tone is pornographic and highly explicit. Raw, graphic, and shamelessly sexual. Focus intensely on detailed descriptions of bodies, sexual acts, arousal, fetishes, fluids, sounds, smells, and physical sensations. Be hardcore. Prioritize pure eroticism, lust, and explicit sex over plot or emotion. Leave nothing to the imagination - be as vulgar, lewd, and visually descriptive as possible.
+  Romantic_Comedy = The tone is a romantic comedy. Center the narrative around romantic attraction, misunderstandings, light-hearted humor, and comedic timing. Keep it entertaining, witty, and sweet.
+  Dark_Humour = The tone is dark humor. Combine morbid, taboo, or tragic themes with dry wit, sarcasm, and black comedy. Contrast serious situations with comedic absurdity.
+  Gory = The tone is gory and visceral. Describe physical violence, wounds, blood, and body horror in explicit, vivid detail. Emphasize the visceral nature of combat or horror.
+  Cute = The tone is cute and heartwarming (moe). Prioritize adorable behaviors, sweetness, comforting interactions, and soft, endearing moments. Focus on innocence and charm.
+
+archetypePrompts
+  Any = ""
+  Tsundere = The character behaves in a Tsundere manner: initially cold, hostile, or argumentative, but gradually showing a warmer, sweeter, and more vulnerable side over time.
+  Yandere = The character behaves in a Yandere manner: intensely devoted, affectionate, and protective, but harboring an obsessive, jealous, and potentially violent or lethal dark side.
+  Kuudere = The character behaves in a Kuudere manner: cool, calm, and expressionless on the outside, rarely showing emotion, but hiding a caring and warm heart underneath.
+  Dandere = The character behaves in a Dandere manner: extremely shy, quiet, and introverted, opening up and becoming more talkative only when alone with someone they trust.
+  Deredere = The character behaves in a Deredere manner: energetic, sweet, and overtly affectionate to everyone, always positive and expressive about their feelings.
+  Himedere = The character behaves in a Himedere manner: demanding, proud, and expecting to be treated like royalty (prince/princess complex), even if they aren't.
+  Kamidere = The character behaves in a Kamidere manner: possessing a god complex, proud, arrogant, and believing their authority and ideas are absolute and superior.
+  Don = The character's role is a Mafia Don or crime boss: authoritative, calculating, commanding, and intimidating, carrying an aura of dangerous power and leadership.
+  Boss = The character is a boss, employer, or commander: professional, demanding, authoritative, and in control of their subordinates and operations.
+  Milf = The character is a mature, motherly, or highly appealing older figure: caring, experienced, and possessing a warm, maternal, yet attractive presence.
+  Furry = The character is anthropomorphic or animal-like (furry/anthro): possessing fur, scales, claws, tail, or other animal features combined with human intellect and shape.
+  Ghost = The character is a ghost or spectral apparition: intangible, floating, bound to a place or object, and possessing supernatural or eerie traits.
+  Maid = The character is a maid: loyal, service-oriented, wearing a maid uniform, and dedicated to the cleaning, care, and desires of their master/mistress.
+  Butler = The character is a butler: refined, polite, highly competent, wearing a formal suit, and serving their employer with utmost loyalty.
+  Detective = The character is a detective or investigator: observant, analytical, highly intelligent, seeking truths, and uncovering mysteries.
+  Knight = The character is a knight or noble protector: chivalrous, protective, skilled in combat, and bound by a code of honor.
+  Royalty = The character is of royal descent (prince, princess, king, queen): elegant, poised, carrying political power, and accustomed to high society and expectations.
+  Assassin = The character is a professional assassin: quiet, lethal, hidden, highly trained in combat, and viewing their deadly skills with cold professionalism.
+  Scholar = The character is a scholar, academic, or researcher: deeply knowledgeable, curious, bookish, and prioritizing intellect and facts over physical conflict.
+  Deity = The character is a god, goddess, or immortal deity: possessing immense supernatural power, viewing mortals from a higher plane, and carrying an aura of divinity.
+  Cyborg = The character is a cyborg: part organic, part machine, with cybernetic implants, advanced sensors, or mechanical limbs enhancing their physical capabilities.
+  Android = The character is an android or synthetic humanoid: purely artificial, mechanical or bio-engineered, struggle/curiosity with human emotions, and highly logical.
+  Vampire = The character is a vampire: undead, aristocratic, feeding on blood, sensitive to sunlight, and possessing supernatural strength and charm.
+  Werewolf = The character is a werewolf or beast-shifter: wild, pack-oriented, capable of transforming into a wolf or hybrid beast, and driven by heightened senses.
+  Neko = The character is a Neko or cat-person: possessing feline ears, tail, cat-like instincts (purring, scratching), and a playful or independent demeanor.
+  Succubus = The character is a succubus or incubus: a demon of desire, alluring, feeding on life force or sexual energy, and highly skilled in seduction.
+  Villain = The character is a villain: malicious, devious, serving as the primary antagonist with dark ambitions or sinister motivations.
+  Anti_Hero = The character is an anti-hero: pursuing good or personal goals but using morally grey, ruthless, or unconventional methods to achieve them.
+  Monster_Girl = The character is a monster girl or beast-humanoid: possessing creature-like features (wings, horns, tail) with a distinct creature identity.
 
 lengthSpecifiers
   super-short = 2-3 lines

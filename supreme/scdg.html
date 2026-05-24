@@ -152,7 +152,18 @@
                             <div class="panel-badge">1</div>
                             <span>Core Identity & Parameters</span>
                         </div>
-                        <span class="panel-chevron bi bi-chevron-down"></span>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <button class="btn btn-primary" id="coreGenBtnEl" onclick="generateCoreIdentity()"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="coreStopBtnEl" onclick="stopCoreIdentityGeneration()"
+                                    style="display:none;"><i class="bi bi-stop-fill"></i> Stop</button>
+                                <button class="btn btn-danger btn-sm" onclick="clearCoreIdentity()"><i class="bi bi-trash"></i>
+                                    Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
                     </div>
                     <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
 
@@ -184,7 +195,7 @@
                             <div class="custom-dropdown" id="toneDropdown">
                                 <button class="dropdown-trigger" id="toneDropdownBtn"
                                     onclick="toggleCustomDropdown('toneDropdownMenu', event)">
-                                    <i class="bi bi-masks dropdown-icon"></i>
+                                    <i class="bi bi-mask dropdown-icon"></i>
                                     <span class="dropdown-label">Tone:</span>
                                     <span class="dropdown-value" id="toneDropdownLabel">Any</span>
                                     <i class="bi bi-chevron-down dropdown-arrow"></i>
@@ -270,6 +281,172 @@
                                                 onchange="handleToneChange()" style="accent-color:var(--accent-color);">
                                             <span>Explicit</span>
                                         </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="toneCheckbox" value="Romantic_Comedy"
+                                                onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Romantic Comedy</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="toneCheckbox" value="Dark_Humour"
+                                                onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dark Humour</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="toneCheckbox" value="Gory"
+                                                onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Gory</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="toneCheckbox" value="Cute"
+                                                onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Cute</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ARCHETYPE DROPDOWN -->
+                            <div class="custom-dropdown" id="archetypeDropdown" title="Add archetype tags to streamline character generation">
+                                <button class="dropdown-trigger" id="archetypeDropdownBtn"
+                                    onclick="toggleCustomDropdown('archetypeDropdownMenu', event)">
+                                    <i class="bi bi-tags dropdown-icon"></i>
+                                    <span class="dropdown-label">Archetypes:</span>
+                                    <span class="dropdown-value" id="archetypeDropdownLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="archetypeDropdownMenu"
+                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:240px;"
+                                    onclick="event.stopPropagation()">
+                                    <div class="dropdown-options">
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" id="archetypeAnyCheckbox" value="Any"
+                                                onchange="handleArchetypeAnyToggle(this)"
+                                                style="accent-color:var(--accent-color);">
+                                            <span>Any</span>
+                                        </label>
+                                        <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+                                        
+                                        <!-- DERE TYPES -->
+                                        <div style="font-size:75%; text-transform:uppercase; color:var(--accent-color); font-weight:700; padding:0.3rem 0.6rem; letter-spacing:0.05em;">Dere Types</div>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Tsundere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Tsundere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Yandere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Yandere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Kuudere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Kuudere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Dandere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dandere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Deredere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Deredere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Himedere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Himedere</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Kamidere" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Kamidere</span>
+                                        </label>
+                                        
+                                        <!-- ROLES / ARCHETYPES -->
+                                        <div style="font-size:75%; text-transform:uppercase; color:var(--accent-color); font-weight:700; padding:0.3rem 0.6rem; letter-spacing:0.05em; margin-top:0.4rem;">Roles & Archetypes</div>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Don" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Don (Mafia)</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Boss" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Boss</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Milf" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Milf</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Furry" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Furry</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Ghost" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Ghost</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Maid" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Maid</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Butler" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Butler</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Detective" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Detective</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Knight" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Knight</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Royalty" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Royalty</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Assassin" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Assassin</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Scholar" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Scholar</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Deity" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Deity</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Cyborg" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Cyborg</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Android" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Android</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Vampire" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Vampire</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Werewolf" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Werewolf</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Neko" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Neko</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Succubus" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Succubus/Incubus</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Villain" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Villain</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Anti_Hero" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Anti-Hero</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="archetypeCheckbox" value="Monster_Girl" onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                                            <span>Monster Girl/Guy</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -308,16 +485,16 @@
                             <div
                                 style="font-size: 90%; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                                 <span>Identity Details</span>
-                                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                                    <button class="btn btn-primary" id="detailsGenBtnEl" onclick="generateIdentityDetails()"
-                                        style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i
-                                            class="bi bi-sparkles"></i> Generate Details</button>
-                                    <button class="btn btn-secondary btn-sm" id="detailsStopBtnEl" onclick="stopDetailsGeneration()"
-                                        style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i
-                                            class="bi bi-stop-circle"></i> Stop</button>
-                                    <button class="btn btn-danger btn-sm" onclick="clearDetails()"
-                                        style="font-size: 75%; padding: 0.15rem 0.45rem;"><i class="bi bi-trash"></i>
-                                        Clear Details</button>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="detailsGenBtnEl" onclick="generateIdentityDetails(null, undefined, undefined, true)"
+                                        title="Regenerate details" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="detailsStopBtnEl" onclick="stopDetailsGeneration()"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" onclick="clearDetails()"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear details"><i 
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
                                 </div>
                             </div>
                             <div id="detailsStatusEl" class="section-status"></div>
@@ -381,17 +558,17 @@
                                         style="opacity:0.5; font-size:85%; font-weight:normal; margin-left:0.2rem;">Optional
                                         - context seed for all generated sections</span>
                                 </div>
-                                <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                                    <button class="btn btn-primary" id="overviewGenBtnEl"
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="overviewGenBtnEl"
                                         onclick="generateOverviewNotes('textarea')"
-                                        style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i
-                                            class="bi bi-sparkles"></i> Generate Overview</button>
-                                    <button class="btn btn-secondary btn-sm" id="overviewStopBtnEl" onclick="stopOverviewGeneration()"
-                                        style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i
-                                            class="bi bi-stop-circle"></i> Stop</button>
-                                    <button class="btn btn-danger btn-sm" id="overviewClearBtnEl" onclick="clearOverviewNotes()"
-                                        style="font-size: 78%; padding: 0.25rem 0.5rem;"><i
-                                            class="bi bi-trash"></i> Clear</button>
+                                        title="Regenerate overview" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="overviewStopBtnEl" onclick="stopOverviewGeneration()"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="overviewClearBtnEl" onclick="clearOverviewNotes()"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear overview"><i
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
                                 </div>
                             </div>
                             <div id="overviewStatusEl" class="section-status"></div>
@@ -1174,7 +1351,7 @@
                             <div class="custom-dropdown" id="wToneDropdown">
                                 <button class="dropdown-trigger" id="wToneDropdownBtn"
                                     onclick="toggleCustomDropdown('wToneDropdownMenu', event)">
-                                    <i class="bi bi-masks dropdown-icon"></i>
+                                    <i class="bi bi-mask dropdown-icon"></i>
                                     <span class="dropdown-label">Tone:</span>
                                     <span class="dropdown-value" id="wToneDropdownLabel">Any</span>
                                     <i class="bi bi-chevron-down dropdown-arrow"></i>
@@ -1249,6 +1426,26 @@
                                                 onchange="handleWorldToneChange()"
                                                 style="accent-color:var(--accent-color);">
                                             <span>Epic</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Romantic_Comedy"
+                                                onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Romantic Comedy</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Dark_Humour"
+                                                onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dark Humour</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Gory"
+                                                onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Gory</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="wToneCheckbox" value="Cute"
+                                                onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Cute</span>
                                         </label>
                                     </div>
                                 </div>
@@ -1335,6 +1532,9 @@
                         </div>
                     </div>
                     <div class="panel-body">
+                        <textarea id="w-overviewNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for overview  -  e.g. detailed focus on radioactive rain, corporate skylines..."></textarea>
                         <div id="w-overviewStatusEl" class="section-status"></div>
                         <div id="w-overviewOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1370,6 +1570,9 @@
                         </div>
                     </div>
                     <div class="panel-body">
+                        <textarea id="w-factionsNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for factions  -  e.g. highlight the green rebel coalition and corporate military assets..."></textarea>
                         <div id="w-factionsStatusEl" class="section-status"></div>
                         <div id="w-factionsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1403,6 +1606,9 @@
                         </div>
                     </div>
                     <div class="panel-body">
+                        <textarea id="w-rulesNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for laws  -  e.g. neural link overload risks, code-based magic frequencies..."></textarea>
                         <div id="w-rulesStatusEl" class="section-status"></div>
                         <div id="w-rulesOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
@@ -1436,6 +1642,9 @@
                         </div>
                     </div>
                     <div class="panel-body">
+                        <textarea id="w-locationsNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for locations  -  e.g. focus on floating crystal ruins, deep ocean rifts..."></textarea>
                         <div id="w-locationsStatusEl" class="section-status"></div>
                         <div id="w-locationsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1471,6 +1680,9 @@
                         </div>
                     </div>
                     <div class="panel-body">
+                        <textarea id="w-conflictsNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for conflicts  -  e.g. impending grid collapse, resources wars in undercity..."></textarea>
                         <div id="w-conflictsStatusEl" class="section-status"></div>
                         <div id="w-conflictsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1571,7 +1783,7 @@
                             <div class="custom-dropdown" id="rpToneDropdown">
                                 <button class="dropdown-trigger" id="rpToneDropdownBtn"
                                     onclick="toggleCustomDropdown('rpToneDropdownMenu', event)">
-                                    <i class="bi bi-masks dropdown-icon"></i>
+                                    <i class="bi bi-mask dropdown-icon"></i>
                                     <span class="dropdown-label">Tone:</span>
                                     <span class="dropdown-value" id="rpToneDropdownLabel">Any</span>
                                     <i class="bi bi-chevron-down dropdown-arrow"></i>
@@ -1670,6 +1882,26 @@
                                                 onchange="handleRoleplayToneChange()"
                                                 style="accent-color:var(--accent-color);">
                                             <span>Explicit</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Romantic_Comedy"
+                                                onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Romantic Comedy</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Dark_Humour"
+                                                onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Dark Humour</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Gory"
+                                                onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Gory</span>
+                                        </label>
+                                        <label class="dropdown-option-item-checkbox">
+                                            <input type="checkbox" class="rpToneCheckbox" value="Cute"
+                                                onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
+                                            <span>Cute</span>
                                         </label>
                                     </div>
                                 </div>

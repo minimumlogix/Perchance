@@ -14,6 +14,13 @@
             locations: "",
             conflicts: ""
         },
+        sectionNotes: {
+            overview: "",
+            factions: "",
+            rules: "",
+            locations: "",
+            conflicts: ""
+        },
         isGenerating: {
             overview: false,
             factions: false,
@@ -44,6 +51,14 @@
             window.worldState.name = document.getElementById("wNameEl")?.value || "";
             window.worldState.themes = document.getElementById("wThemesEl")?.value || "";
             window.worldState.activeLength = document.getElementById("wLengthEl")?.value || "medium";
+            
+            window.worldState.sectionNotes = {
+                overview: document.getElementById("w-overviewNotesEl")?.value || "",
+                factions: document.getElementById("w-factionsNotesEl")?.value || "",
+                rules: document.getElementById("w-rulesNotesEl")?.value || "",
+                locations: document.getElementById("w-locationsNotesEl")?.value || "",
+                conflicts: document.getElementById("w-conflictsNotesEl")?.value || ""
+            };
 
             // Dropdowns setting & tones are managed on change
             localStorage.activeWorldState = JSON.stringify({
@@ -53,6 +68,7 @@
                 themes: window.worldState.themes,
                 bannerUrl: window.worldState.bannerUrl,
                 sections: window.worldState.sections,
+                sectionNotes: window.worldState.sectionNotes,
                 activeWorldId: window.worldState.activeWorldId,
                 activeLength: window.worldState.activeLength
             });
@@ -217,6 +233,7 @@
         let wSetting = window.worldState.setting;
         let wTones = window.worldState.tones.join(", ");
         let wThemes = window.worldState.themes || "general fantasy/sci-fi elements";
+        let sectionNotes = window.worldState.sectionNotes?.[section] || "";
         
         let lengthVal = window.worldState.activeLength || "medium";
         let lengthInstruction = getLengthInstruction(lengthVal);
@@ -252,7 +269,7 @@ WORLD DETAILS:
 - World Name: ${wName}
 - Setting Genre: ${wSetting}
 - Atmospheric Tones: ${wTones}
-- Core Themes / Keywords: ${wThemes}
+- Core Themes / Keywords: ${wThemes}${sectionNotes.trim() ? `\n- Section Notes/Directives: ${sectionNotes}` : ""}
 
 SECTION TARGET:
 Compile the ${config.role}.
@@ -470,6 +487,9 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                 window.worldState.themes = "";
                 window.worldState.bannerUrl = "";
                 window.worldState.activeWorldId = null;
+                window.worldState.sectionNotes = {
+                    overview: "", factions: "", rules: "", locations: "", conflicts: ""
+                };
 
                 // Clear sections
                 let list = ["overview", "factions", "rules", "locations", "conflicts"];
@@ -483,6 +503,8 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                     if (copy) copy.style.display = "none";
                     let stat = document.getElementById(`w-${s}StatusEl`);
                     if (stat) stat.textContent = "";
+                    let note = document.getElementById(`w-${s}NotesEl`);
+                    if (note) note.value = "";
                 });
 
                 selectWorldSetting("Any", false);
@@ -529,6 +551,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                         themes: window.worldState.themes,
                         bannerUrl: window.worldState.bannerUrl,
                         sections: Object.assign({}, window.worldState.sections),
+                        sectionNotes: Object.assign({}, window.worldState.sectionNotes),
                         timestamp: Date.now()
                     };
                     localStorage.savedWorlds = JSON.stringify(saved);
@@ -548,6 +571,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                 themes: window.worldState.themes,
                 bannerUrl: window.worldState.bannerUrl,
                 sections: Object.assign({}, window.worldState.sections),
+                sectionNotes: Object.assign({}, window.worldState.sectionNotes),
                 timestamp: Date.now()
             });
             localStorage.savedWorlds = JSON.stringify(saved);
@@ -604,12 +628,28 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                 window.worldState.themes = w.themes || "";
                 window.worldState.bannerUrl = w.bannerUrl || "";
                 window.worldState.sections = Object.assign({}, w.sections);
+                window.worldState.sectionNotes = Object.assign({
+                    overview: "", factions: "", rules: "", locations: "", conflicts: ""
+                }, w.sectionNotes || {});
 
                 // Populate DOM
                 let nameEl = document.getElementById("wNameEl");
                 let themesEl = document.getElementById("wThemesEl");
                 if (nameEl) nameEl.value = w.name;
                 if (themesEl) themesEl.value = w.themes || "";
+
+                let notes = window.worldState.sectionNotes;
+                let overviewNotesEl = document.getElementById("w-overviewNotesEl");
+                let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+                let rulesNotesEl = document.getElementById("w-rulesNotesEl");
+                let locationsNotesEl = document.getElementById("w-locationsNotesEl");
+                let conflictsNotesEl = document.getElementById("w-conflictsNotesEl");
+
+                if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
+                if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
+                if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
+                if (locationsNotesEl) locationsNotesEl.value = notes.locations || "";
+                if (conflictsNotesEl) conflictsNotesEl.value = notes.conflicts || "";
 
                 selectWorldSetting(w.setting, false);
                 loadWorldTones();
@@ -1029,6 +1069,19 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
         if (nameEl) nameEl.value = window.worldState.name || "";
         if (themesEl) themesEl.value = window.worldState.themes || "";
         if (lengthEl) lengthEl.value = window.worldState.activeLength || "medium";
+
+        let notes = window.worldState.sectionNotes || {};
+        let overviewNotesEl = document.getElementById("w-overviewNotesEl");
+        let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+        let rulesNotesEl = document.getElementById("w-rulesNotesEl");
+        let locationsNotesEl = document.getElementById("w-locationsNotesEl");
+        let conflictsNotesEl = document.getElementById("w-conflictsNotesEl");
+
+        if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
+        if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
+        if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
+        if (locationsNotesEl) locationsNotesEl.value = notes.locations || "";
+        if (conflictsNotesEl) conflictsNotesEl.value = notes.conflicts || "";
 
         // Custom setting and tones dropdown configurations
         initCustomWorldSettingDropdown();

@@ -511,11 +511,19 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         let toneParts = tones
             .filter(t => t !== "Any" && root.tonePrompts[t])
             .map(t => root.tonePrompts[t].evaluateItem);
+        
+        let archetypes = typeof getSelectedArchetypes === "function" ? getSelectedArchetypes() : ["Any"];
+        let archetypeParts = archetypes
+            .filter(a => a !== "Any" && root.archetypePrompts && root.archetypePrompts[a])
+            .map(a => root.archetypePrompts[a].evaluateItem);
+
         let parts = [];
         if (setting.trim()) parts.push("Setting: " + setting);
         if (toneParts.length > 0) parts.push("Tone: " + toneParts.join(" Additionally: "));
+        if (archetypeParts.length > 0) parts.push("Character Archetype/Traits: " + archetypeParts.join(" Also: "));
+        
         if (parts.length === 0) return "";
-        return "IMPORTANT SETTING AND TONE  -  follow these closely:\n" + parts.join("\n");
+        return "IMPORTANT SETTING, TONE, AND ARCHETYPE PARAMETERS  -  follow these closely:\n" + parts.join("\n");
     };
 
     window.getReferencedCharacters = function () {
@@ -565,7 +573,15 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         return lines.join("\n\n");
     };
 
-    window.generateIdentityDetails = async function (sectionNotes, overviewOverride, worldLoreOverride) {
+    window.generateIdentityDetails = async function (sectionNotes, overviewOverride, worldLoreOverride, force) {
+        if (force) {
+            ["Name", "Age", "Gender", "Orientation", "Race", "Ethnicity"].forEach(f => {
+                let el = document.getElementById("detail" + f + "El");
+                if (el) el.value = "";
+                localStorage.removeItem("detail" + f);
+            });
+            if (typeof clearAvatar === "function") clearAvatar();
+        }
         let d = getDetailsContext();
         let allFilled = d.name && d.age && d.gender && d.orientation && d.species && d.ethnicity;
         
@@ -1868,6 +1884,7 @@ ${NO_EM_DASH_RULE}`;
             visualStyleName: visualStyleEl.value,
             setting: settingEl.value,
             tone: getSelectedTones(),
+            archetype: typeof getSelectedArchetypes === "function" ? getSelectedArchetypes() : ["Any"],
             overviewNotes: (document.getElementById("overviewNotesEl") || {}).value || "",
             worldLore: (document.getElementById("worldLoreEl") || {}).value || "",
             worldName: (document.getElementById("worldNameEl") || {}).value || localStorage.worldName || "",
@@ -2025,6 +2042,23 @@ ${NO_EM_DASH_RULE}`;
                     }
                     updateToneLabel();
                     saveTones();
+                }
+
+                // Restore selected archetypes
+                if (typeof updateArchetypeLabel === "function") {
+                    document.querySelectorAll(".archetypeCheckbox").forEach(box => box.checked = false);
+                    let anyArchetypeBox = document.getElementById("archetypeAnyCheckbox");
+                    if (c.archetype && c.archetype.length > 0 && !c.archetype.includes("Any")) {
+                        if (anyArchetypeBox) anyArchetypeBox.checked = false;
+                        c.archetype.forEach(a => {
+                            let box = document.querySelector(`.archetypeCheckbox[value="${a}"]`);
+                            if (box) box.checked = true;
+                        });
+                    } else {
+                        if (anyArchetypeBox) anyArchetypeBox.checked = true;
+                    }
+                    updateArchetypeLabel();
+                    saveArchetypes();
                 }
 
                 let overviewEl = document.getElementById("overviewNotesEl");
@@ -2607,6 +2641,46 @@ ${NO_EM_DASH_RULE}`;
         }
         let statusEl = document.getElementById("overviewStatusEl");
         if (statusEl) statusEl.innerText = "";
+    };
+
+    window.generateCoreIdentity = async function () {
+        let btn = document.getElementById("coreGenBtnEl");
+        let stopBtn = document.getElementById("coreStopBtnEl");
+        if (btn) btn.disabled = true;
+        if (stopBtn) stopBtn.style.display = "inline-block";
+        window.coreIdentityGenRunning = true;
+
+        try {
+            // 1. Generate identity details
+            let success = await generateIdentityDetails();
+            if (!success || !window.coreIdentityGenRunning) return;
+
+            // 2. Generate overview notes
+            setGenerationStatus("Conceptualizing masterpiece archetype...");
+            await generateOverviewNotes('textarea');
+        } catch (e) {
+            console.error("Error during generateCoreIdentity:", e);
+        } finally {
+            window.coreIdentityGenRunning = false;
+            if (btn) btn.disabled = false;
+            if (stopBtn) stopBtn.style.display = "none";
+            setGenerationStatus("");
+        }
+    };
+
+    window.stopCoreIdentityGeneration = function () {
+        window.coreIdentityGenRunning = false;
+        stopDetailsGeneration();
+        stopOverviewGeneration();
+        let btn = document.getElementById("coreGenBtnEl");
+        let stopBtn = document.getElementById("coreStopBtnEl");
+        if (btn) btn.disabled = false;
+        if (stopBtn) stopBtn.style.display = "none";
+    };
+
+    window.clearCoreIdentity = function () {
+        clearDetails();
+        clearOverviewNotes();
     };
 
     window.clearAllSections = function () {

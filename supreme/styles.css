@@ -663,6 +663,12 @@
         background: rgba(248, 113, 113, 0.15);
     }
 
+    .btn-ghost.btn-danger:hover {
+        color: #f87171 !important;
+        background: rgba(248, 113, 113, 0.1) !important;
+        border-color: transparent !important;
+    }
+
     .btn-sm {
         padding: 0.3rem 0.6rem;
         font-size: 80%;

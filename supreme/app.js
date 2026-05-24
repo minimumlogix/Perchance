@@ -419,10 +419,69 @@
         }
     };
 
+    // Archetype Dropdown functions
+    window.getSelectedArchetypes = function () {
+        let checked = [...document.querySelectorAll(".archetypeCheckbox:checked")].map(c => c.value);
+        return checked.length > 0 ? checked : ["Any"];
+    };
+
+    window.handleArchetypeChange = function () {
+        let checked = [...document.querySelectorAll(".archetypeCheckbox:checked")];
+        let anyBox = document.getElementById("archetypeAnyCheckbox");
+        if (checked.length > 0 && anyBox) anyBox.checked = false;
+        updateArchetypeLabel();
+        saveArchetypes();
+    };
+
+    window.handleArchetypeAnyToggle = function (checkbox) {
+        if (checkbox.checked) {
+            document.querySelectorAll(".archetypeCheckbox").forEach(c => c.checked = false);
+        }
+        updateArchetypeLabel();
+        saveArchetypes();
+    };
+
+    window.updateArchetypeLabel = function () {
+        let archs = getSelectedArchetypes();
+        let label = document.getElementById("archetypeDropdownLabel");
+        if (label) {
+            if (archs[0] === "Any") label.textContent = "Any";
+            else if (archs.length === 1) label.textContent = archs[0].replace(/_/g, " ");
+            else label.textContent = archs[0].replace(/_/g, " ") + " +" + (archs.length - 1);
+        }
+    };
+
+    window.saveArchetypes = function () {
+        localStorage.archetypes = JSON.stringify(getSelectedArchetypes());
+        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+    };
+
+    window.loadArchetypes = function () {
+        try {
+            let saved = JSON.parse(localStorage.archetypes || '["Any"]');
+            let anyBox = document.getElementById("archetypeAnyCheckbox");
+            if (!saved || saved.length === 0 || saved[0] === "Any") {
+                if (anyBox) anyBox.checked = true;
+            } else {
+                if (anyBox) anyBox.checked = false;
+                saved.forEach(t => {
+                    let box = document.querySelector(`.archetypeCheckbox[value="${t}"]`);
+                    if (box) box.checked = true;
+                });
+            }
+            updateArchetypeLabel();
+        } catch (e) {
+            let anyBox = document.getElementById("archetypeAnyCheckbox");
+            if (anyBox) anyBox.checked = true;
+            updateArchetypeLabel();
+        }
+    };
+
     // Initialize custom dropdowns on load
     setTimeout(() => {
         initCustomSettingDropdown();
         loadTones();
+        loadArchetypes();
     }, 20);
 
     window.setAccentTheme = function (themeName) {
