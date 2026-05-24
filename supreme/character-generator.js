@@ -516,8 +516,31 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         return "STRICT FORMATTING RULE: " + ruleParts.join(" ");
     };
     window.sanitizeOutput = function (text) {
-        // Post-process safety net: strip any remaining em dashes from AI output
-        return text.replace(/\u2014/g, " - ");
+        let result = text;
+        
+        let banEmDash = localStorage.getItem("banEmDash") !== "false";
+        let banBolding = localStorage.getItem("banBolding") === "true";
+        let customBanned = (localStorage.getItem("customBanned") || "").trim();
+        
+        if (banEmDash) {
+            result = result.replace(/\u2014/g, " - ").replace(/\u2013/g, " - ");
+        }
+        
+        if (banBolding) {
+            result = result.replace(/\*\*/g, "");
+        }
+        
+        if (customBanned) {
+            let terms = customBanned.split(",").map(t => t.trim()).filter(t => t.length > 0);
+            for (let term of terms) {
+                // Remove custom banned terms case-insensitively
+                let escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let regex = new RegExp(escaped, 'gi');
+                result = result.replace(regex, "");
+            }
+        }
+        
+        return result;
     };
 
     window.getLengthInstruction = function (lengthVal) {
