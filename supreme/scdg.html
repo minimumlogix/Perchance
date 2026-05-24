@@ -1289,6 +1289,10 @@
                                 <div style="display: flex; align-items: center; gap: 0.4rem;">
                                     <i class="bi bi-compass" style="color:var(--accent-color);"></i>
                                     Scenario Context
+                                    <label style="margin-left: 0.5rem; font-size: 80%; font-weight: normal; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;" title="If checked, the scenario context will be written without any first-person or third-person constraints, reading like a general introduction.">
+                                        <input type="checkbox" id="ignorePerspectiveToggle" checked onchange="localStorage.ignorePerspective=this.checked" style="accent-color:var(--accent-color);">
+                                        Ignore Perspective
+                                    </label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:0.3rem;">
                                     <button class="btn btn-ghost btn-sm" id="introScenarioGenBtnEl" onclick="generateSection('introScenario')"
@@ -2310,6 +2314,56 @@
                             </label>
                         </div>
 
+                    </div>
+                </div>
+                <!-- BANNED WORDS & FORMATTING PANEL -->
+                <div class="panel" style="margin-top: 1rem;">
+                    <div class="panel-header" style="cursor: default;">
+                        <div class="panel-title">
+                            <b style="font-weight:600; display:flex; align-items:center; gap:0.5rem;"><i
+                                    class="bi bi-slash-circle" style="color:var(--accent-color);"></i> Generation Constraints</b>
+                        </div>
+                    </div>
+                    <div class="panel-body"
+                        style="display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem;">
+
+                        <!-- BAN EM-DASHES -->
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);">
+                            <div style="flex: 1;">
+                                <b
+                                    style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Ban Em-Dashes (—)</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">Instruct the AI to avoid using em-dashes in its output.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingBanEmDashEl"
+                                    onchange="localStorage.banEmDash = this.checked ? 'true' : 'false'">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- BAN BOLDING -->
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--panel-border);">
+                            <div style="flex: 1;">
+                                <b
+                                    style="font-size: 95%; color: var(--text-main); display: block; margin-bottom: 0.2rem;">Ban Bolding (**)</b>
+                                <span style="font-size: 82%; color: var(--text-muted);">Instruct the AI to avoid using bold text formatting.</span>
+                            </div>
+                            <label class="switch-toggle">
+                                <input type="checkbox" id="settingBanBoldingEl"
+                                    onchange="localStorage.banBolding = this.checked ? 'true' : 'false'">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- CUSTOM BANNED WORDS -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <b style="font-size: 95%; color: var(--text-main); display: block;">Custom Banned Words & Characters</b>
+                            <span style="font-size: 82%; color: var(--text-muted);">Comma-separated list of additional words or characters the AI should never use.</span>
+                            <textarea id="settingCustomBannedEl" class="detail-input" style="min-height: 3rem; padding: 0.5rem; border-radius: 6px;"
+                                placeholder="e.g. smirk, chuckle, ~" oninput="localStorage.customBanned = this.value"></textarea>
+                        </div>
                     </div>
                 </div>
 

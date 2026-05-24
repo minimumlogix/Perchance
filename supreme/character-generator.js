@@ -38,7 +38,7 @@ Good example output (for "Contemporary Japan, college life"):
 
 Respond with ONLY the world lore facts (and WORLD_NAME line if requested). No heading, no intro, no prose filler.
 
-${NO_EM_DASH_RULE}`;
+${getBannedFormattingRule()}`;
 
         worldLoreEl.value = "";
         worldLoreEl.placeholder = "Generating...";
@@ -489,9 +489,32 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
     };
 
     // ─── PROMPT BUILDING ──────────────────────────────────────────────
-    // ⚠️ STRICT GLOBAL RULE: Apply to every AI prompt  -  em dash is FORBIDDEN.
-    var NO_EM_DASH_RULE = "STRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. It is strictly prohibited. Replace any em dash with a comma, semicolon, colon, or rewrite the sentence to avoid it entirely.";
-
+    // ⚠️ STRICT GLOBAL RULE: Apply to every AI prompt  -  dynamically build banned formatting rules
+    window.getBannedFormattingRule = function () {
+        let ruleParts = [];
+        
+        let banEmDash = localStorage.getItem("banEmDash") !== "false"; // Default true
+        let banBolding = localStorage.getItem("banBolding") === "true"; // Default false
+        let customBanned = (localStorage.getItem("customBanned") || "").trim();
+        
+        if (banEmDash) {
+            ruleParts.push("Do NOT use the em dash character (\u2014) or en dash character (\u2013) anywhere in your response. Replace them with a comma, semicolon, colon, or rewrite the sentence to avoid them entirely.");
+        }
+        
+        if (banBolding) {
+            ruleParts.push("Do NOT use markdown bolding (**) in your output.");
+        }
+        
+        if (customBanned) {
+            let terms = customBanned.split(",").map(t => t.trim()).filter(t => t.length > 0);
+            if (terms.length > 0) {
+                ruleParts.push("Do NOT use any of the following words or characters: " + terms.map(t => `"${t}"`).join(", ") + ".");
+            }
+        }
+        
+        if (ruleParts.length === 0) return "";
+        return "STRICT FORMATTING RULE: " + ruleParts.join(" ");
+    };
     window.sanitizeOutput = function (text) {
         // Post-process safety net: strip any remaining em dashes from AI output
         return text.replace(/\u2014/g, " - ");
@@ -631,7 +654,7 @@ Respond with ONLY a JSON object containing the missing fields, exactly like this
   "species": "...",
   "ethnicity": "..."
 }
-No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
+No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
 
         if (genBtn) genBtn.disabled = true;
         if (stopBtn) stopBtn.style.display = "inline-block";
@@ -704,7 +727,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -721,7 +744,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -737,7 +760,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -753,7 +776,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -769,7 +792,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -785,7 +808,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -803,7 +826,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -847,8 +870,20 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
             ? "IMPORTANT NARRATION PERSPECTIVE: All narration and actions inside the roleplay examples must be written in the FIRST-PERSON perspective from the character's point of view (using 'I', 'me', 'my' for the character's actions and thoughts). Do NOT write narration in the third person."
             : "IMPORTANT NARRATION PERSPECTIVE: All narration must be written in the THIRD-PERSON perspective (using the character's name or 'he/she/they' for narration/actions).";
 
+        let robustFormatRule = `FORMATTING RULES:
+You MUST strictly follow this structured format for the roleplay examples:
+START_OF_DIALOG
+user: [user's dialogue here]
+<character-name>: [character's dialogue here] *[actions, imperfections, context, etc. You can add imperfections between dialogues in italic or asterisks]*
+user: [user's dialogue here]
+<character-name>: [character's dialogue here] *[actions, imperfections, context, etc.]*
+... up to 10 back to back interactions
+END_OF_DIALOG
+Note: Only add multiple characters if there are any. Write their dialogue in the same way.`;
+
         let parts = [p.instruction.evaluateItem];
         parts.push(p.format.evaluateItem);
+        parts.push(robustFormatRule);
         parts.push(perspectiveRule);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -856,7 +891,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -866,15 +901,23 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         let lengthInstruction = getLengthInstruction(lengthVal);
         let perspective = getSelectedPerspective();
         
-        let perspectiveRule = perspective === "First_Person"
-            ? "PERSPECTIVE: Write the scenario context description from the character's first-person perspective, reflecting their thoughts and observations of the environment (using 'I', 'me', 'my')."
-            : "PERSPECTIVE: Write the scenario context description from a third-person narrative perspective.";
+        let ignorePerspective = true;
+        let ignorePerspectiveToggle = document.getElementById("ignorePerspectiveToggle");
+        if (ignorePerspectiveToggle) {
+            ignorePerspective = ignorePerspectiveToggle.checked;
+        }
             
         let parts = [
             "You are writing the SCENARIO CONTEXT / SCENE CONTEXT for a roleplay session with the character.",
-            "INSTRUCTIONS:\n- Describe the starting physical environment, the time/weather, the situation, the proximity between the character and the user, and the current mood/atmosphere.\n- DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context.\n- Make it immersive, visual, and atmospheric.\n- Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:').",
-            perspectiveRule
+            "INSTRUCTIONS:\n- Describe the starting physical environment, the time/weather, the situation, the proximity between the character and the user, and the current mood/atmosphere.\n- Focus on introducing the world, the characters, and the user's role in an engaging and fluent way based on the tone.\n- DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context.\n- Make it immersive, visual, and atmospheric.\n- Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:').\n- CRITICAL: The entire scenario context MUST be strictly one paragraph maximum. Do not exceed one paragraph."
         ];
+        
+        if (!ignorePerspective) {
+            let perspectiveRule = perspective === "First_Person"
+                ? "PERSPECTIVE: Write the scenario context description from the character's first-person perspective, reflecting their thoughts and observations of the environment (using 'I', 'me', 'my')."
+                : "PERSPECTIVE: Write the scenario context description from a third-person narrative perspective.";
+            parts.push(perspectiveRule);
+        }
         
         if (lengthInstruction) parts.push(lengthInstruction);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
@@ -883,7 +926,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -916,7 +959,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (notes) parts.push("\nSection-specific notes: " + notes);
         if (referencedCtx) parts.push("\n" + referencedCtx);
         if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(NO_EM_DASH_RULE);
+        parts.push(getBannedFormattingRule());
         return parts.join("\n\n");
     };
 
@@ -1322,7 +1365,7 @@ Backstory: [A brief, masterpiece concept of their backstory or origin that shape
 - Do NOT write a long biography or use bullet points within the sections  -  write a brief, cohesive, evocative description for each section.
 - Keep it focused and descriptive.
 
-${NO_EM_DASH_RULE}`;
+${getBannedFormattingRule()}`;
 
         if (statusEl) {
             statusEl.textContent = (target === 'textarea') 
@@ -2755,7 +2798,7 @@ ${NO_EM_DASH_RULE}`;
             }
             setGenerationStatus("🧠 Extracting character data...");
             let wikiOverride = (document.getElementById("wikiOverrideEl") || {}).value || "";
-            let instruction = `TASK: Extract character information from the provided text to populate a complete character profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "age": "...",\n  "gender": "...",\n  "orientation": "...",\n  "race": "...",\n  "ethnicity": "...",\n  "role": "...",\n  "appearance": "...",\n  "background": "...",\n  "personality": "...",\n  "beliefs": "...",\n  "preferences": "...",\n  "lore": "...",\n  "roleplay": "..."\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- role: 3-sentence description of the character's narrative role and relationship to the user/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.${wikiOverride.trim() ? `\n\nIMPORTANT CREATIVE TWIST  -  apply this override to ALL sections of the character: "${wikiOverride.trim()}". Reinterpret the source material fully through this lens. Keep the core identity (name, age, gender, race, appearance) grounded in source, but personality, role, background, beliefs, preferences, lore and roleplay must strongly reflect this twist.` : ""}\n\n${NO_EM_DASH_RULE}`;
+            let instruction = `TASK: Extract character information from the provided text to populate a complete character profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "age": "...",\n  "gender": "...",\n  "orientation": "...",\n  "race": "...",\n  "ethnicity": "...",\n  "role": "...",\n  "appearance": "...",\n  "background": "...",\n  "personality": "...",\n  "beliefs": "...",\n  "preferences": "...",\n  "lore": "...",\n  "roleplay": "..."\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- role: 3-sentence description of the character's narrative role and relationship to the user/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.${wikiOverride.trim() ? `\n\nIMPORTANT CREATIVE TWIST  -  apply this override to ALL sections of the character: "${wikiOverride.trim()}". Reinterpret the source material fully through this lens. Keep the core identity (name, age, gender, race, appearance) grounded in source, but personality, role, background, beliefs, preferences, lore and roleplay must strongly reflect this twist.` : ""}\n\n${getBannedFormattingRule()}`;
             let res = await ai({ instruction });
             let jsonText = res.text || "";
             let jsonMatch = jsonText.match(/\{[\s\S]*\}/);
@@ -3529,6 +3572,24 @@ ${NO_EM_DASH_RULE}`;
 
         let introNotesEl = document.getElementById("introNotesEl");
         if (introNotesEl) introNotesEl.value = localStorage.introNotes || "";
+
+        let ignorePerspectiveToggle = document.getElementById("ignorePerspectiveToggle");
+        if (ignorePerspectiveToggle) {
+            if (localStorage.getItem("ignorePerspective") !== null) {
+                ignorePerspectiveToggle.checked = localStorage.ignorePerspective === "true";
+            } else {
+                ignorePerspectiveToggle.checked = true; // Default to true
+            }
+        }
+
+        let settingBanEmDashEl = document.getElementById("settingBanEmDashEl");
+        if (settingBanEmDashEl) settingBanEmDashEl.checked = localStorage.getItem("banEmDash") !== "false";
+
+        let settingBanBoldingEl = document.getElementById("settingBanBoldingEl");
+        if (settingBanBoldingEl) settingBanBoldingEl.checked = localStorage.getItem("banBolding") === "true";
+
+        let settingCustomBannedEl = document.getElementById("settingCustomBannedEl");
+        if (settingCustomBannedEl) settingCustomBannedEl.value = localStorage.customBanned || "";
 
         let galleryContentEl = document.getElementById('galleryContentEl');
         if (galleryContentEl && typeof root !== 'undefined' && root.image) {
