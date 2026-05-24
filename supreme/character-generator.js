@@ -1336,10 +1336,29 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         
         try {
             let scenario = getSectionText("introScenario") || "A scenic background";
-            let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, refined aesthetics, sharp, clean linework";
+            let artstyle = "semi-realistic manhwa style, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, refined aesthetics, sharp, clean linework, beautiful scenery, highly detailed environment";
             
-            let prompt = `Scenery only, empty background, no characters. ${scenario}. Artstyle: ${artstyle}.`;
-            let negative = "photorealistic, characters, people, flat lighting, overexposed";
+            let bgDescription = scenario;
+            
+            // Extract only the background using AI if the text is long enough
+            if (scenario && scenario.length > 15 && typeof window.ai !== "undefined") {
+                try {
+                    if (statusEl) statusEl.textContent = "Analyzing Scene...";
+                    let extractPrompt = `Extract ONLY the physical setting, environment, lighting, and atmosphere from the following text into a concise visual description. Do NOT mention any people, characters, actions, or dialogue. Just describe the empty scenery:\\n\\n${scenario}`;
+                    let aiResult = await window.ai(extractPrompt);
+                    if (aiResult && aiResult.generatedText) {
+                        bgDescription = aiResult.generatedText.trim();
+                    } else if (aiResult) {
+                        bgDescription = aiResult.toString().trim();
+                    }
+                } catch(e) {
+                    console.error("AI scene extraction error:", e);
+                }
+                if (statusEl) statusEl.textContent = "Generating Background...";
+            }
+            
+            let prompt = `Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`;
+            let negative = "photorealistic, characters, people, person, human, face, flat lighting, overexposed";
             
             if (promptEl) promptEl.value = prompt;
             
