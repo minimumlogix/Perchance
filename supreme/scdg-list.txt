@@ -132,23 +132,17 @@ archetypePrompts
   Monster_Girl = The character is a monster girl or beast-humanoid: possessing creature-like features (wings, horns, tail) with a distinct creature identity.
 
 lengthSpecifiers
-  super-short = 2-3 lines
-  short = at most 1 FULL short paragraph
-  medium = 1-2 FULL paragraphs
-  long = 2-4 FULL paragraphs
-  super-long = 5-10 FULL paragraphs
+  super-short = ~100-200 characters
+  short = ~300-500 characters
+  medium = ~600-900 characters
+  long = ~1000-1500 characters
+  super-long = ~2000+ characters
 
 galleryOptions
   gallery = true
   sort = recent
   hideIfScoreIsBelow = -2
   adaptiveHeight = false
-
-commentsOptions
-  channel = feedback
-  width = min(750px, 100%)
-  height = min(70vh, 600px)
-  adminPasswordHash = 8abba5925c2b4487df64c23b404a82be85c4c7d3612a7b612364e2e86c6fdf5f
 
 prompts
   role

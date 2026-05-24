@@ -502,7 +502,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         }
         
         if (banBolding) {
-            ruleParts.push("Do NOT use markdown bolding (**) in your output.");
+            ruleParts.push("Do NOT use markdown bolding (**) anywhere in your output. Do NOT bold headings or keywords. Use plain text only.");
         }
         
         if (customBanned) {
@@ -544,10 +544,11 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
     };
 
     window.getLengthInstruction = function (lengthVal) {
-        if (lengthVal === "super-short") return "IMPORTANT: Keep this section EXTREMELY SHORT - 2-3 lines maximum. Be concise and punchy.";
-        if (lengthVal === "short") return "IMPORTANT: Keep this section SHORT - no more than 1 brief paragraph.";
-        if (lengthVal === "long") return "IMPORTANT: Go into real depth - rich details, layered history, vivid specifics. This section should be LONG AND DETAILED.";
-        if (lengthVal === "super-long") return "IMPORTANT: Write extensively and without restraint. This section must be VERY LONG AND EXHAUSTIVELY DETAILED.";
+        if (lengthVal === "super-short") return "IMPORTANT: Keep this section EXTREMELY SHORT (approximately 100-200 characters). Be concise and punchy.";
+        if (lengthVal === "short") return "IMPORTANT: Keep this section SHORT (approximately 300-500 characters).";
+        if (lengthVal === "medium") return "IMPORTANT: Keep this section MEDIUM length (approximately 600-900 characters).";
+        if (lengthVal === "long") return "IMPORTANT: Go into real depth - rich details, layered history, vivid specifics. This section should be LONG AND DETAILED (approximately 1000-1500 characters).";
+        if (lengthVal === "super-long") return "IMPORTANT: Write extensively and without restraint. This section must be VERY LONG AND EXHAUSTIVELY DETAILED (approximately 2000+ characters).";
         return "";
     };
 
@@ -1380,7 +1381,7 @@ ${detailsStr ? "\n" + detailsStr : ""}
 Requirements:
 - Focus on creating a high-quality character concept seed that will serve as the foundation for this character. It must be highly creative and feel like a masterpiece.
 - Strictly base the concept sections on the Character Details provided. Do not contradict, ignore, or omit them.
-- Format the output strictly under these headings:
+- Format the output strictly under these plain text headings (do NOT bold them):
 Appearance: [A brief, masterpiece concept of their appearance and design, incorporating their Age, Gender, Species, and Ethnicity if provided]
 Personality: [A brief, masterpiece concept of their personality, core traits, and intriguing quirks, aligning with their details]
 Context: [A brief, masterpiece concept of their current situation, role, and relationship context with the user in terms of roleplaying (how they view the user, their dynamic, etc.)]
