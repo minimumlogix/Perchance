@@ -544,11 +544,10 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
     };
 
     window.getLengthInstruction = function (lengthVal) {
-        if (lengthVal === "super-short") return "IMPORTANT: Keep this section EXTREMELY SHORT (approximately 100-200 characters). Be concise and punchy.";
-        if (lengthVal === "short") return "IMPORTANT: Keep this section SHORT (approximately 300-500 characters).";
-        if (lengthVal === "medium") return "IMPORTANT: Keep this section MEDIUM length (approximately 600-900 characters).";
-        if (lengthVal === "long") return "IMPORTANT: Go into real depth - rich details, layered history, vivid specifics. This section should be LONG AND DETAILED (approximately 1000-1500 characters).";
-        if (lengthVal === "super-long") return "IMPORTANT: Write extensively and without restraint. This section must be VERY LONG AND EXHAUSTIVELY DETAILED (approximately 2000+ characters).";
+        if (!lengthVal || lengthVal === "custom") return "";
+        if (typeof root !== 'undefined' && root.lengthSpecifiers && root.lengthSpecifiers[lengthVal]) {
+            return "IMPORTANT Length Constraint: " + root.lengthSpecifiers[lengthVal].evaluateItem;
+        }
         return "";
     };
 
@@ -744,6 +743,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.role;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -760,6 +761,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.appearance;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         parts.push(p.notes.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
@@ -777,6 +780,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.background;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -793,6 +798,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.personality;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -809,6 +816,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.beliefs;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -825,6 +834,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.preferences;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
@@ -841,6 +852,8 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.lore;
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         parts.push(p.notes.evaluateItem);
         parts.push(p.footer.evaluateItem);
@@ -906,6 +919,8 @@ END_OF_DIALOG
 Note: Only add multiple characters if there are any. Write their dialogue in the same way.`;
 
         let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
         parts.push(robustFormatRule);
         parts.push(perspectiveRule);
