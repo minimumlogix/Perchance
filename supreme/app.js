@@ -689,6 +689,20 @@
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
+    // ─── COPY HELPERS ──────────────────────────────────────────────────
+    window.copyText = function(text, btn) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            if (btn) {
+                let origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
+            }
+        }).catch(err => {
+            console.warn("Clipboard write failed:", err);
+        });
+    };
+
     // ─── COPY SECTION TEXT ────────────────────────────────────────────
     window.copySectionText = function (section) {
         let text = "";

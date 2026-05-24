@@ -1344,6 +1344,48 @@
                                     style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
                             </div>
                         </div>
+
+                        <!-- Roleplay Intro Images Subsection -->
+                        <div id="introImageContainer" style="display: none; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="bi bi-image" style="color:var(--accent-color);"></i>
+                                    Roleplay Scene Preview
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="introImageBgGenBtn" onclick="generateRoleplayImageBg()" title="Regenerate Background" style="padding: 0.25rem; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i class="bi bi-image"></i> BG</button>
+                                    <button class="btn btn-ghost btn-sm" id="introImageCharGenBtn" onclick="generateRoleplayImageChar()" title="Regenerate Character" style="padding: 0.25rem; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i class="bi bi-person"></i> Char</button>
+                                </div>
+                            </div>
+                            
+                            <div id="introImageStage" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #111; overflow: hidden; border-radius: 8px; border: 1px solid var(--panel-border); display: flex; justify-content: center; align-items: flex-end;">
+                                <!-- Name tag -->
+                                <div id="introImageNameTag" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: #cc0000; color: white; padding: 4px 16px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; font-weight: bold; font-family: sans-serif; z-index: 10; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); text-shadow: 1px 1px 2px rgba(0,0,0,0.8); display: none;">Name</div>
+                                
+                                <!-- Background Image -->
+                                <div id="introImageBg" style="position: absolute; inset: 0; width: 100%; height: 100%; filter: brightness(0.5); background-size: cover; background-position: center; transition: opacity 0.3s ease;"></div>
+                                
+                                <!-- Character Image -->
+                                <canvas id="introImageCharCanvas" style="position: relative; z-index: 5; max-height: 100%; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8)); transition: opacity 0.3s ease;"></canvas>
+
+                                <!-- Loading Status -->
+                                <div id="introImageStatus" style="position: absolute; inset: 0; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); color: white; z-index: 20; font-weight: bold; font-size: 0.9rem; text-align: center; padding: 1rem; display: none;"></div>
+                            </div>
+
+                            <div style="font-size: 75%; color: var(--text-muted); margin-top: 0.5rem;">
+                                <strong>Prompts Used:</strong>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem; flex-direction: column;">
+                                    <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                                        <button class="btn btn-secondary btn-sm" onclick="copyText(document.getElementById('introBgPromptEl').value, this)" style="padding: 0.1rem 0.4rem; font-size: 90%;"><i class="bi bi-clipboard"></i> BG</button>
+                                        <textarea id="introBgPromptEl" readonly style="flex: 1; height: 40px; font-size: 90%; opacity: 0.8; resize: none; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 4px; color: var(--text-color);"></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                                        <button class="btn btn-secondary btn-sm" onclick="copyText(document.getElementById('introCharPromptEl').value, this)" style="padding: 0.1rem 0.4rem; font-size: 90%;"><i class="bi bi-clipboard"></i> Char</button>
+                                        <textarea id="introCharPromptEl" readonly style="flex: 1; height: 40px; font-size: 90%; opacity: 0.8; resize: none; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 4px; color: var(--text-color);"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

@@ -1147,7 +1147,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             if (window.generateIntroRunning) {
                 let success = await generateSection("introScenario");
                 if (success && window.generateIntroRunning) {
-                    await generateSection("introStart");
+                    let startSuccess = await generateSection("introStart");
+                    if (startSuccess && window.generateIntroRunning) {
+                        await generateRoleplayImages();
+                    }
                 }
             }
         } finally {
@@ -1286,6 +1289,117 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (menu && !silent) menu.style.display = "none";
         // Update per-section selects UI
         updateGlobalLengthUI(val);
+    };
+
+    window.removeWhiteBackground = function(canvas, tolerance = 240) {
+        let ctx = canvas.getContext("2d");
+        let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i], g = data[i+1], b = data[i+2];
+            // If pixel is near-white, set alpha to 0
+            if (r >= tolerance && g >= tolerance && b >= tolerance) {
+                data[i+3] = 0;
+            }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        return canvas;
+    };
+
+    window.generateRoleplayImages = async function() {
+        let container = document.getElementById("introImageContainer");
+        if (container) container.style.display = "flex";
+        
+        let d = getDetailsContext();
+        let nameTag = document.getElementById("introImageNameTag");
+        if (nameTag && d.name) {
+            nameTag.textContent = d.name;
+            nameTag.style.display = "block";
+        } else if (nameTag) {
+            nameTag.style.display = "none";
+        }
+        
+        await Promise.all([
+            generateRoleplayImageBg(),
+            generateRoleplayImageChar()
+        ]);
+    };
+
+    window.generateRoleplayImageBg = async function() {
+        let statusEl = document.getElementById("introImageStatus");
+        let bgEl = document.getElementById("introImageBg");
+        let promptEl = document.getElementById("introBgPromptEl");
+        let btn = document.getElementById("introImageBgGenBtn");
+        
+        if (btn) btn.disabled = true;
+        if (statusEl) { statusEl.style.display = "flex"; statusEl.textContent = "Generating Background..."; }
+        
+        try {
+            let scenario = getSectionText("introScenario") || "A scenic background";
+            let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, refined aesthetics, sharp, clean linework";
+            
+            let prompt = `Scenery only, empty background, no characters. ${scenario}. Artstyle: ${artstyle}.`;
+            let negative = "photorealistic, characters, people, flat lighting, overexposed";
+            
+            if (promptEl) promptEl.value = prompt;
+            
+            let result = await image({
+                prompt: prompt,
+                negativePrompt: negative,
+                resolution: "768x512"
+            });
+            
+            if (bgEl && result && result.dataUrl) {
+                bgEl.style.backgroundImage = `url(${result.dataUrl})`;
+            }
+        } catch (e) {
+            console.error("Error generating bg image:", e);
+        } finally {
+            if (btn) btn.disabled = false;
+            if (statusEl) statusEl.style.display = "none";
+        }
+    };
+
+    window.generateRoleplayImageChar = async function() {
+        let statusEl = document.getElementById("introImageStatus");
+        let charCanvas = document.getElementById("introImageCharCanvas");
+        let promptEl = document.getElementById("introCharPromptEl");
+        let btn = document.getElementById("introImageCharGenBtn");
+        
+        if (btn) btn.disabled = true;
+        if (statusEl) { statusEl.style.display = "flex"; statusEl.textContent = "Generating Character Sprite..."; }
+        
+        try {
+            let appearanceText = getSectionText("appearance") || "";
+            let attireText = getSectionText("attire") || "";
+            let itemsText = getSectionText("items") || "";
+            
+            let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, Noona-type character design, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, delicate facial features, refined aesthetics, sharp, clean linework";
+            
+            let prompt = `Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`;
+            let negative = "photorealistic, flat lighting, overexposed, symmetrical face, expressionless, text, watermark";
+            
+            if (promptEl) promptEl.value = prompt;
+            
+            let result = await image({
+                prompt: prompt,
+                negativePrompt: negative,
+                resolution: "512x512"
+            });
+            
+            if (charCanvas && result && result.canvas) {
+                charCanvas.width = result.canvas.width;
+                charCanvas.height = result.canvas.height;
+                let ctx = charCanvas.getContext("2d");
+                ctx.drawImage(result.canvas, 0, 0);
+                removeWhiteBackground(charCanvas, 240);
+            }
+        } catch (e) {
+            console.error("Error generating char image:", e);
+        } finally {
+            if (btn) btn.disabled = false;
+            if (statusEl) statusEl.style.display = "none";
+        }
     };
 
     window.updateGlobalLengthUI = function (val) {
