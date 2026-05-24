@@ -493,6 +493,8 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
     window.getBannedFormattingRule = function () {
         let ruleParts = [];
         
+        ruleParts.push("IMPORTANT: Always refer to the user as {{user}}. Do not write out the word 'user', always use the exact macro {{user}}.");
+        
         let banEmDash = localStorage.getItem("banEmDash") !== "false"; // Default true
         let banBolding = localStorage.getItem("banBolding") === "true"; // Default false
         let customBanned = (localStorage.getItem("customBanned") || "").trim();
@@ -801,6 +803,7 @@ No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
         let lenInstr = getLengthInstruction(lengthVal);
         if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
+        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
         if (overview) parts.push("\nGeneral character overview: " + overview);
@@ -922,6 +925,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let lenInstr = getLengthInstruction(lengthVal);
         if (lenInstr) parts.push(lenInstr);
         parts.push(p.format.evaluateItem);
+        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
         parts.push(robustFormatRule);
         parts.push(perspectiveRule);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
@@ -950,6 +954,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             "You are writing the SCENARIO CONTEXT / SCENE CONTEXT for a roleplay session with the character.",
             "INSTRUCTIONS:\n- Describe the starting physical environment, the time/weather, the situation, the proximity between the character and the user, and the current mood/atmosphere.\n- Focus on introducing the world, the characters, and the user's role in an engaging and fluent way based on the tone.\n- DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context.\n- Make it immersive, visual, and atmospheric.\n- Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:').\n- CRITICAL: The entire scenario context MUST be strictly one paragraph maximum. Do not exceed one paragraph."
         ];
+        
+        parts.push("CRITICAL: The narrative voice MUST strongly reflect the selected Tone.");
+        parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
         
         if (!ignorePerspective) {
             let perspectiveRule = perspective === "First_Person"
@@ -986,6 +993,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             "INSTRUCTIONS:\n- Write the character's opening message, including direct dialogue addressing the user and accompanying narration/actions.\n- Focus on physical expressions, body language, speech patterns, and personality traits.\n- Format actions and narration inside asterisks (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').",
             perspectiveRule
         ];
+        
+        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
+        parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
         
         if (scenarioContext) {
             parts.push("SCENARIO CONTEXT (The scene takes place in this context):\n---\n" + scenarioContext + "\n---");
