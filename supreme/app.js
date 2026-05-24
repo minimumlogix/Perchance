@@ -1,7 +1,8 @@
     // ─── PERCHANCE CONTEXT STANDALONE MOCK ────────────────────────────────
     // This allows the HTML file to run and be tested standalone in a local browser,
     // while seamlessly using the live Perchance engine bindings when compiled online.
-    if (typeof window.root === "undefined") {
+    const isPerchance = window.location.hostname.includes("perchance.org");
+    if (typeof window.root === "undefined" && !isPerchance) {
         console.info("🔧 Supreme Character Description: Running in standalone local context. Injected developer mocks for Perchance engine.");
         
         window.root = {

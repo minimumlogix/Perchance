@@ -13,9 +13,12 @@
         plugins.forEach(name => {
             Object.defineProperty(window, name, {
                 get: function () {
-                    // 1. If compiled on Perchance, use the compiled plugin from the global 'root' object
+                    // 1. If compiled on Perchance, use the compiled plugin from the global 'root' or window.root object
                     if (typeof window.root !== "undefined" && typeof window.root[name] !== "undefined") {
                         return window.root[name];
+                    }
+                    if (typeof root !== "undefined" && typeof root[name] !== "undefined") {
+                        return root[name];
                     }
                     // 2. Fallback to local mock if defined
                     return mocks[name];
