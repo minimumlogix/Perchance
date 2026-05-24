@@ -102,6 +102,7 @@ tonePrompts
   Smut = The tone is smut and pure erotica. Focus intensely on graphic, unapologetic sexual intimacy, desire, arousal, and physical interactions. Prioritize raw lust and explicit detail, leaving nothing to the imagination. The plot serves strictly as a vehicle for sexual encounters.
   GenZ_Casual = The tone is Gen-Z casual. Characters use modern internet slang, text-speak, and contemporary casual phrasing. Emphasize a laid-back, highly informal, sarcastic, or culturally-aware voice. Dialogue should feel like a modern group chat or TikTok comment section.
   Documentary = The tone is documentary. The narrative is objective, analytical, and highly descriptive, as if observed through a camera lens by a detached third-party narrator. Focus on observable facts, environments, and behavioral analysis rather than inner subjective emotions.
+  Slow_Burn = The tone is a slow burn. Emphasize gradual pacing, deep emotional development, and an escalating, undeniable tension that builds over a long period before any significant romantic or physical payoff occurs. Keep the immediate satisfaction low and the lingering anticipation high.
 
 archetypePrompts
   Any = ""
