@@ -228,7 +228,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
                 </div>
                 <div style="padding:0.6rem 0.7rem 0.5rem; display:flex; flex-direction:column; gap:0.4rem; flex:1;">
                     <div style="font-size:79%; opacity:0.72; line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${truncated.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-                    <button class="gen-btn" onclick="restoreWorldLore(${i})" style="align-self:stretch; font-size:80%; padding:0.3rem 0.6rem; margin-top:auto;"><i class="bi bi-box-arrow-in-down"></i> Load World</button>
+                    <button class="btn btn-primary btn-sm" onclick="restoreWorldLore(${i})" style="align-self:stretch; font-size:80%; padding:0.3rem 0.6rem; margin-top:auto;"><i class="bi bi-box-arrow-in-down"></i> Load World</button>
                 </div>
             </div>
             `;
@@ -1489,7 +1489,7 @@ ${NO_EM_DASH_RULE}`;
             wrapper += image(promptData).evaluateItem;
             wrapper += '<div class="image-card-actions">';
             wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-            wrapper += '<button class="image-card-btn" onclick="chatWithCharacterButtonClickHandler(this)"><i class="bi bi-chat-dots"></i> Chat</button>';
+            
             wrapper += '</div></div>';
             imageHtml += wrapper;
         }
@@ -1703,7 +1703,7 @@ ${NO_EM_DASH_RULE}`;
             let time = new Date(h.timestamp).toLocaleTimeString();
             itemsHtml += '<div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0; border-bottom:1px solid var(--panel-border);">';
             itemsHtml += '<span style="flex:1; font-size:88%;">' + h.name + ' <span style="opacity:0.5; font-size:80%;">' + time + '</span></span>';
-            itemsHtml += '<button class="small-btn" onclick="restoreFromHistory(' + i + ')" style="font-size:80%;">↩ restore</button>';
+            itemsHtml += '<button class="btn btn-secondary btn-sm" onclick="restoreFromHistory(' + i + ')" style="font-size:80%;">↩ restore</button>';
             itemsHtml += '</div>';
         });
         let historyHtml = '<div style="min-width:300px;"><div style="font-weight:bold; margin-bottom:0.5rem;">🕓 Generation History</div>';
@@ -2056,7 +2056,7 @@ ${NO_EM_DASH_RULE}`;
                         wrapper += '<img src="' + url + '">';
                         wrapper += '<div class="image-card-actions">';
                         wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-                        wrapper += '<button class="image-card-btn" onclick="chatWithCharacterButtonClickHandler(this)"><i class="bi bi-chat-dots"></i> Chat</button>';
+                        
                         wrapper += '</div></div>';
                         imageHtml += wrapper;
                     });
@@ -2128,10 +2128,10 @@ ${NO_EM_DASH_RULE}`;
                 card += '<label for="ref-' + c.id + '" ondblclick="renameSavedCharacter(\'' + c.id + '\', this)" style="font-weight:bold; font-size:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; flex:1; color:var(--text-main);" title="Double-click to rename">' + c.name + '</label>';
                 card += '</div>';
                 card += '<div style="display:flex; gap:0.25rem;">';
-                card += '<button onclick="loadCharacter(\'' + c.id + '\')" class="btn-secondary" style="flex:1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Load character"><i class="bi bi-folder-open"></i> load</button>';
-                card += '<button onclick="updateCharacter(\'' + c.id + '\')" class="btn-secondary" style="flex:1.1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Update slot with screen edits"><i class="bi bi-floppy"></i> update</button>';
-                card += '<button onclick="duplicateCharacter(\'' + c.id + '\')" class="btn-secondary" style="flex:0.8; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Duplicate"><i class="bi bi-copy"></i> dupe</button>';
-                card += '<button onclick="deleteCharacter(\'' + c.id + '\')" class="btn-secondary clear-btn" style="flex:0.5; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center;" title="Delete"><i class="bi bi-trash"></i></button>';
+                card += '<button onclick="loadCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Load character"><i class="bi bi-folder-open"></i> load</button>';
+                card += '<button onclick="updateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:1.1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Update slot with screen edits"><i class="bi bi-floppy"></i> update</button>';
+                card += '<button onclick="duplicateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:0.8; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Duplicate"><i class="bi bi-copy"></i> dupe</button>';
+                card += '<button onclick="deleteCharacter(\'' + c.id + '\')" class="btn btn-danger btn-sm" style="flex:0.5; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center;" title="Delete"><i class="bi bi-trash"></i></button>';
                 card += '</div></div>';
                 listHtml += card;
             }
@@ -2402,7 +2402,7 @@ ${NO_EM_DASH_RULE}`;
             let shareUrl = `https://perchance.org/ai-character-chat?data=${encodeURIComponent(json.addCharacter.name)}~${fileName}`;
             let colorScheme = getCurrentColorScheme();
             await prompt2({
-                content: { type: "none", html: `<div style="display:flex; gap:0.5rem;"><input value="${shareUrl}" style="flex-grow:1; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text-main); border-radius:4px; padding:0.35rem 0.5rem; outline:none;"> <button class="small-btn" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('input').value);">📋 copy</button> </div>` },
+                content: { type: "none", html: `<div style="display:flex; gap:0.5rem;"><input value="${shareUrl}" style="flex-grow:1; background:var(--input-bg); border:1px solid var(--input-border); color:var(--text-main); border-radius:4px; padding:0.35rem 0.5rem; outline:none;"> <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('input').value);">📋 copy</button> </div>` },
             }, { cancelButtonText: null, submitButtonText: "finished", verticallyCenter: true });
         }
     }
@@ -2599,6 +2599,16 @@ ${NO_EM_DASH_RULE}`;
         if (typeof clearAvatar === "function") clearAvatar();
     };
 
+    window.clearOverviewNotes = function () {
+        let el = document.getElementById("overviewNotesEl");
+        if (el) {
+            el.value = "";
+            localStorage.removeItem("overviewNotes");
+        }
+        let statusEl = document.getElementById("overviewStatusEl");
+        if (statusEl) statusEl.innerText = "";
+    };
+
     window.clearAllSections = function () {
         window.showConfirmDialog(
             "Are you sure you want to clear all sections and details from the screen? This cannot be undone.",
@@ -2606,6 +2616,7 @@ ${NO_EM_DASH_RULE}`;
             () => {
                 ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "intro"].forEach(s => clearSection(s));
                 clearDetails();
+                clearOverviewNotes();
                 if (typeof clearWorldLore === "function") clearWorldLore();
                 if (typeof imagesAreaEl !== 'undefined') imagesAreaEl.style.display = "none";
                 if (typeof imagesEl !== 'undefined') imagesEl.innerHTML = "";
@@ -3124,7 +3135,7 @@ ${NO_EM_DASH_RULE}`;
                 wrapper += '<img src="' + url + '">';
                 wrapper += '<div class="image-card-actions">';
                 wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-                wrapper += '<button class="image-card-btn" onclick="chatWithCharacterButtonClickHandler(this)"><i class="bi bi-chat-dots"></i> Chat</button>';
+                
                 wrapper += '</div></div>';
                 imageHtml += wrapper;
             });

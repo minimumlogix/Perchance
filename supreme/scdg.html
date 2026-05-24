@@ -97,25 +97,25 @@
 
                 <!-- TOP ACTION ROW -->
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <button id="generateAllBtn" onclick="generateAll()" class="btn-primary"><i
+                    <button id="generateAllBtn" onclick="generateAll()" class="btn btn-primary"><i
                             class="bi bi-sparkles"></i> Generate All</button>
-                    <button id="stopAllBtn" onclick="stopAll()" class="btn-secondary" style="display:none;"><i
+                    <button id="stopAllBtn" onclick="stopAll()" class="btn btn-secondary" style="display:none;"><i
                             class="bi bi-stop-circle"></i> Stop All</button>
-                    <button id="clearAllBtn" onclick="clearAllSections()" class="btn-ghost"><i class="bi bi-trash"></i>
+                    <button id="clearAllBtn" onclick="clearAllSections()" class="btn btn-ghost"><i class="bi bi-trash"></i>
                         Clear All</button>
-                    <button id="exportMdBtn" onclick="exportAsMarkdown()" class="btn-secondary"
+                    <button id="exportMdBtn" onclick="exportAsMarkdown()" class="btn btn-secondary"
                         style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i
                             class="bi bi-file-earmark-arrow-down"></i> Export Markdown</button>
-                    <button id="exportZipBtn" onclick="exportAsZip()" class="btn-secondary"
+                    <button id="exportZipBtn" onclick="exportAsZip()" class="btn btn-secondary"
                         style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i
                             class="bi bi-file-zip"></i> Download Archive</button>
                     <div id="saveButtonsContainer"
                         style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                        <button id="saveCharacterTopBtn" onclick="saveCharacterFromTopBar(this)" class="btn-secondary"
+                        <button id="saveCharacterTopBtn" onclick="saveCharacterFromTopBar(this)" class="btn btn-secondary"
                             style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i
                                 class="bi bi-floppy"></i> Save Character</button>
                     </div>
-                    <button id="historyBtn" onclick="showHistoryModal()" class="btn-secondary"
+                    <button id="historyBtn" onclick="showHistoryModal()" class="btn btn-secondary"
                         style="display:none; font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i
                             class="bi bi-clock-history"></i> history</button>
                 </div>
@@ -134,7 +134,7 @@
                         <div style="display:flex; gap:0.5rem;">
                             <input type="text" id="wikiUrlEl" class="detail-input" style="flex-grow:1;"
                                 placeholder="https://genshin-impact.fandom.com/wiki/Raiden_Shogun">
-                            <button class="gen-btn" id="wikiImportBtnEl"
+                            <button class="btn btn-primary" id="wikiImportBtnEl"
                                 onclick="importFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i>
                                 import</button>
                         </div>
@@ -309,13 +309,13 @@
                                 style="font-size: 90%; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                                 <span>Identity Details</span>
                                 <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                                    <button class="gen-btn" id="detailsGenBtnEl" onclick="generateIdentityDetails()"
+                                    <button class="btn btn-primary" id="detailsGenBtnEl" onclick="generateIdentityDetails()"
                                         style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i
                                             class="bi bi-sparkles"></i> Generate Details</button>
-                                    <button class="small-btn" id="detailsStopBtnEl" onclick="stopDetailsGeneration()"
+                                    <button class="btn btn-secondary btn-sm" id="detailsStopBtnEl" onclick="stopDetailsGeneration()"
                                         style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i
                                             class="bi bi-stop-circle"></i> Stop</button>
-                                    <button class="small-btn clear-btn" onclick="clearDetails()"
+                                    <button class="btn btn-danger btn-sm" onclick="clearDetails()"
                                         style="font-size: 75%; padding: 0.15rem 0.45rem;"><i class="bi bi-trash"></i>
                                         Clear Details</button>
                                 </div>
@@ -329,7 +329,7 @@
                                         style="width: 120px; height: 180px; border-radius: 8px; border: 1px solid var(--panel-border); background: var(--input-bg); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--text-muted); position: relative; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);">
                                         <i class="bi bi-person-fill" id="avatarPlaceholderIcon"></i>
                                     </div>
-                                    <button class="small-btn clear-btn" id="clearAvatarBtn" onclick="clearAvatar(event)"
+                                    <button class="btn btn-danger btn-sm" id="clearAvatarBtn" onclick="clearAvatar(event)"
                                         style="font-size: 70%; padding: 0.15rem 0.4rem; display: none; align-items: center; gap: 0.2rem;"><i
                                             class="bi bi-trash"></i> Remove</button>
                                 </div>
@@ -382,13 +382,16 @@
                                         - context seed for all generated sections</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                                    <button class="gen-btn" id="overviewGenBtnEl"
+                                    <button class="btn btn-primary" id="overviewGenBtnEl"
                                         onclick="generateOverviewNotes('textarea')"
                                         style="font-size: 78%; padding: 0.25rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem;"><i
                                             class="bi bi-sparkles"></i> Generate Overview</button>
-                                    <button class="small-btn" id="overviewStopBtnEl" onclick="stopOverviewGeneration()"
+                                    <button class="btn btn-secondary btn-sm" id="overviewStopBtnEl" onclick="stopOverviewGeneration()"
                                         style="display:none; font-size: 78%; padding: 0.25rem 0.5rem;"><i
                                             class="bi bi-stop-circle"></i> Stop</button>
+                                    <button class="btn btn-danger btn-sm" id="overviewClearBtnEl" onclick="clearOverviewNotes()"
+                                        style="font-size: 78%; padding: 0.25rem 0.5rem;"><i
+                                            class="bi bi-trash"></i> Clear</button>
                                 </div>
                             </div>
                             <div id="overviewStatusEl" class="section-status"></div>
@@ -409,10 +412,10 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="small-btn" id="worldLoreHistoryBtnEl"
+                                <button class="btn btn-secondary btn-sm" id="worldLoreHistoryBtnEl"
                                     onclick="showWorldLoreHistoryModal()"><i class="bi bi-clock-history"></i>
                                     History</button>
-                                <button class="gen-btn" id="worldLoreGenBtnEl" onclick="generateWorldLore(true)"><i
+                                <button class="btn btn-primary" id="worldLoreGenBtnEl" onclick="generateWorldLore(true)"><i
                                         class="bi bi-sparkles"></i> Generate</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-right"></span>
@@ -440,8 +443,8 @@
                                             style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;"><i
                                                 class="bi bi-download"></i> Load World</label>
                                         <select id="charWorldImportSelector"
-                                            onchange="loadSavedWorldIntoCharGen(this.value)" class="length-select"
-                                            style="flex:1; padding:0.35rem 0.5rem; height:28px; cursor: pointer;">
+                                            onchange="loadSavedWorldIntoCharGen(this.value)" class="select-input"
+                                            style="flex:1; height:28px; cursor: pointer;">
                                             <option value="">-- Load Saved World --</option>
                                         </select>
                                     </div>
@@ -464,7 +467,7 @@
                                     <div id="worldLoreThumbEl"
                                         style="width:80px; height:80px; border-radius:4px; background:var(--input-bg); background-size:cover; background-position:center; border:1px solid var(--panel-border);">
                                     </div>
-                                    <button class="small-btn" onclick="generateWorldLoreImage(worldLoreEl.value)"
+                                    <button class="btn btn-secondary btn-sm" onclick="generateWorldLoreImage(worldLoreEl.value)"
                                         style="font-size:70%; padding:0.1rem 0.3rem; width:100%;"
                                         title="Regenerate Image"><i class="bi bi-arrow-clockwise"></i> regen
                                         img</button>
@@ -476,11 +479,11 @@
                                     placeholder="e.g. A decaying futuristic city where magic has begun to leak back into reality through the digital network..."></textarea>
                                 <div
                                     style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                                    <button class="small-btn" id="worldLoreEditBtnEl" onclick="toggleWorldLoreEdit()"><i
+                                    <button class="btn btn-secondary btn-sm" id="worldLoreEditBtnEl" onclick="toggleWorldLoreEdit()"><i
                                             class="bi bi-pencil-square"></i> edit</button>
-                                    <button class="small-btn clear-btn" onclick="clearWorldLore()"><i
+                                    <button class="btn btn-danger btn-sm" onclick="clearWorldLore()"><i
                                             class="bi bi-trash"></i> clear</button>
-                                    <button class="small-btn" id="worldLoreStopBtnEl" onclick="stopSection('worldLore')"
+                                    <button class="btn btn-secondary btn-sm" id="worldLoreStopBtnEl" onclick="stopSection('worldLore')"
                                         style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                                 </div>
                             </div>
@@ -500,7 +503,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="appearanceLengthEl"
+                                <select class="select-input length-select" id="appearanceLengthEl"
                                     onchange="localStorage.appearanceLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -508,10 +511,10 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="appearanceGenBtnEl"
+                                <button class="btn btn-primary" id="appearanceGenBtnEl"
                                     onclick="generateSection('appearance')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn clear-btn" id="appearanceClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="appearanceClearBtnEl"
                                     onclick="clearSection('appearance')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -525,11 +528,11 @@
                         <div id="appearanceOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="appearanceEditBtnEl" onclick="toggleSectionEdit('appearance')"
+                            <button class="btn btn-secondary btn-sm" id="appearanceEditBtnEl" onclick="toggleSectionEdit('appearance')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="appearanceCopyBtnEl" onclick="copySectionText('appearance')"
+                            <button class="btn btn-secondary btn-sm" id="appearanceCopyBtnEl" onclick="copySectionText('appearance')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="appearanceStopBtnEl" onclick="stopSection('appearance')"
+                            <button class="btn btn-secondary btn-sm" id="appearanceStopBtnEl" onclick="stopSection('appearance')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
 
@@ -567,15 +570,15 @@
                                     </div>
 
                                     <div style="display:flex; gap:0.5rem; align-items:stretch;">
-                                        <button id="regenImagesBtn" class="gen-btn" onclick="generateImages()"
+                                        <button id="regenImagesBtn" class="btn btn-primary" onclick="generateImages()"
                                             style="flex:1.2; font-size:80%; display:inline-flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; height:100%;">
                                             <i class="bi bi-arrow-clockwise"></i> Generate
                                         </button>
-                                        <button id="stopImageGenBtn" class="small-btn" onclick="stopImageGeneration()"
+                                        <button id="stopImageGenBtn" class="btn btn-secondary btn-sm" onclick="stopImageGeneration()"
                                             style="display:none; font-size:80%; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.5); color:#ef4444;">
                                             <i class="bi bi-stop-circle"></i> Stop
                                         </button>
-                                        <button id="regenImagePromptBtn" class="small-btn"
+                                        <button id="regenImagePromptBtn" class="btn btn-secondary btn-sm"
                                             onclick="regenerateImagePrompt()"
                                             style="flex:0.8; font-size:80%; display:inline-flex; align-items:center; justify-content:center; gap:0.35rem; border-radius:8px; height:100%;">
                                             <i class="bi bi-pencil-square"></i> Prompt
@@ -617,7 +620,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="roleLengthEl"
+                                <select class="select-input length-select" id="roleLengthEl"
                                     onchange="localStorage.roleLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -625,9 +628,9 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="roleGenBtnEl" onclick="generateSection('role')"><i
+                                <button class="btn btn-primary" id="roleGenBtnEl" onclick="generateSection('role')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn clear-btn" id="roleClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="roleClearBtnEl"
                                     onclick="clearSection('role')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -640,11 +643,11 @@
                         <div id="roleOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="roleEditBtnEl" onclick="toggleSectionEdit('role')"
+                            <button class="btn btn-secondary btn-sm" id="roleEditBtnEl" onclick="toggleSectionEdit('role')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="roleCopyBtnEl" onclick="copySectionText('role')"
+                            <button class="btn btn-secondary btn-sm" id="roleCopyBtnEl" onclick="copySectionText('role')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="roleStopBtnEl" onclick="stopSection('role')"
+                            <button class="btn btn-secondary btn-sm" id="roleStopBtnEl" onclick="stopSection('role')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -660,7 +663,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="personalityLengthEl"
+                                <select class="select-input length-select" id="personalityLengthEl"
                                     onchange="localStorage.personalityLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -668,10 +671,10 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="personalityGenBtnEl"
+                                <button class="btn btn-primary" id="personalityGenBtnEl"
                                     onclick="generateSection('personality')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn clear-btn" id="personalityClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="personalityClearBtnEl"
                                     onclick="clearSection('personality')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -685,12 +688,12 @@
                         <div id="personalityOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="personalityEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="personalityEditBtnEl"
                                 onclick="toggleSectionEdit('personality')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="personalityCopyBtnEl" onclick="copySectionText('personality')"
+                            <button class="btn btn-secondary btn-sm" id="personalityCopyBtnEl" onclick="copySectionText('personality')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="personalityStopBtnEl" onclick="stopSection('personality')"
+                            <button class="btn btn-secondary btn-sm" id="personalityStopBtnEl" onclick="stopSection('personality')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -706,7 +709,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="beliefsLengthEl"
+                                <select class="select-input length-select" id="beliefsLengthEl"
                                     onchange="localStorage.beliefsLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -714,9 +717,9 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="beliefsGenBtnEl" onclick="generateSection('beliefs')"><i
+                                <button class="btn btn-primary" id="beliefsGenBtnEl" onclick="generateSection('beliefs')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn clear-btn" id="beliefsClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="beliefsClearBtnEl"
                                     onclick="clearSection('beliefs')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -730,11 +733,11 @@
                         <div id="beliefsOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="beliefsEditBtnEl" onclick="toggleSectionEdit('beliefs')"
+                            <button class="btn btn-secondary btn-sm" id="beliefsEditBtnEl" onclick="toggleSectionEdit('beliefs')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="beliefsCopyBtnEl" onclick="copySectionText('beliefs')"
+                            <button class="btn btn-secondary btn-sm" id="beliefsCopyBtnEl" onclick="copySectionText('beliefs')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="beliefsStopBtnEl" onclick="stopSection('beliefs')"
+                            <button class="btn btn-secondary btn-sm" id="beliefsStopBtnEl" onclick="stopSection('beliefs')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -750,7 +753,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="preferencesLengthEl"
+                                <select class="select-input length-select" id="preferencesLengthEl"
                                     onchange="localStorage.preferencesLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -758,10 +761,10 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="preferencesGenBtnEl"
+                                <button class="btn btn-primary" id="preferencesGenBtnEl"
                                     onclick="generateSection('preferences')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn clear-btn" id="preferencesClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="preferencesClearBtnEl"
                                     onclick="clearSection('preferences')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -775,12 +778,12 @@
                         <div id="preferencesOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="preferencesEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="preferencesEditBtnEl"
                                 onclick="toggleSectionEdit('preferences')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="preferencesCopyBtnEl" onclick="copySectionText('preferences')"
+                            <button class="btn btn-secondary btn-sm" id="preferencesCopyBtnEl" onclick="copySectionText('preferences')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="preferencesStopBtnEl" onclick="stopSection('preferences')"
+                            <button class="btn btn-secondary btn-sm" id="preferencesStopBtnEl" onclick="stopSection('preferences')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -796,7 +799,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="backgroundLengthEl"
+                                <select class="select-input length-select" id="backgroundLengthEl"
                                     onchange="localStorage.backgroundLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -804,10 +807,10 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="backgroundGenBtnEl"
+                                <button class="btn btn-primary" id="backgroundGenBtnEl"
                                     onclick="generateSection('background')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn clear-btn" id="backgroundClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="backgroundClearBtnEl"
                                     onclick="clearSection('background')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -821,11 +824,11 @@
                         <div id="backgroundOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"
+                            <button class="btn btn-secondary btn-sm" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="backgroundCopyBtnEl" onclick="copySectionText('background')"
+                            <button class="btn btn-secondary btn-sm" id="backgroundCopyBtnEl" onclick="copySectionText('background')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="backgroundStopBtnEl" onclick="stopSection('background')"
+                            <button class="btn btn-secondary btn-sm" id="backgroundStopBtnEl" onclick="stopSection('background')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -841,9 +844,9 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="loreGenBtnEl" onclick="generateSection('lore')"><i
+                                <button class="btn btn-primary" id="loreGenBtnEl" onclick="generateSection('lore')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn clear-btn" id="loreClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="loreClearBtnEl"
                                     onclick="clearSection('lore')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -959,11 +962,11 @@
                         </div>
 
                         <div style="margin-top:0.75rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="loreExportJsonBtnEl" onclick="exportLoreAsJson()"><i
+                            <button class="btn btn-secondary btn-sm" id="loreExportJsonBtnEl" onclick="exportLoreAsJson()"><i
                                     class="bi bi-file-earmark-arrow-down"></i> Export as JSON</button>
-                            <button class="small-btn" id="loreCopyBtnEl" onclick="copySectionText('lore')"
+                            <button class="btn btn-secondary btn-sm" id="loreCopyBtnEl" onclick="copySectionText('lore')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> Copy JSON</button>
-                            <button class="small-btn" id="loreStopBtnEl" onclick="stopSection('lore')"
+                            <button class="btn btn-secondary btn-sm" id="loreStopBtnEl" onclick="stopSection('lore')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -979,7 +982,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="roleplayLengthEl"
+                                <select class="select-input length-select" id="roleplayLengthEl"
                                     onchange="localStorage.roleplayLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -987,9 +990,9 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="roleplayGenBtnEl" onclick="generateSection('roleplay')"><i
+                                <button class="btn btn-primary" id="roleplayGenBtnEl" onclick="generateSection('roleplay')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn clear-btn" id="roleplayClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="roleplayClearBtnEl"
                                     onclick="clearSection('roleplay')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -1003,11 +1006,11 @@
                         <div id="roleplayOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"
+                            <button class="btn btn-secondary btn-sm" id="roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="roleplayCopyBtnEl" onclick="copySectionText('roleplay')"
+                            <button class="btn btn-secondary btn-sm" id="roleplayCopyBtnEl" onclick="copySectionText('roleplay')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="roleplayStopBtnEl" onclick="stopSection('roleplay')"
+                            <button class="btn btn-secondary btn-sm" id="roleplayStopBtnEl" onclick="stopSection('roleplay')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -1023,7 +1026,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="length-select" id="introLengthEl"
+                                <select class="select-input length-select" id="introLengthEl"
                                     onchange="localStorage.introLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
@@ -1031,9 +1034,9 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="gen-btn" id="introGenBtnEl" onclick="generateSection('intro')"><i
+                                <button class="btn btn-primary" id="introGenBtnEl" onclick="generateSection('intro')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn clear-btn" id="introClearBtnEl"
+                                <button class="btn btn-danger btn-sm" id="introClearBtnEl"
                                     onclick="clearSection('intro')"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -1046,11 +1049,11 @@
                         <div id="introOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="introEditBtnEl" onclick="toggleSectionEdit('intro')"
+                            <button class="btn btn-secondary btn-sm" id="introEditBtnEl" onclick="toggleSectionEdit('intro')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="introCopyBtnEl" onclick="copySectionText('intro')"
+                            <button class="btn btn-secondary btn-sm" id="introCopyBtnEl" onclick="copySectionText('intro')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="small-btn" id="introStopBtnEl" onclick="stopSection('intro')"
+                            <button class="btn btn-secondary btn-sm" id="introStopBtnEl" onclick="stopSection('intro')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
@@ -1099,9 +1102,9 @@
 
                 <!-- TOP ACTION ROW -->
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <button id="wGenerateAllBtn" onclick="generateAllWorldSections()" class="btn-primary"><i
+                    <button id="wGenerateAllBtn" onclick="generateAllWorldSections()" class="btn btn-primary"><i
                             class="bi bi-sparkles"></i> Generate All Sections</button>
-                    <button id="wClearAllBtn" onclick="clearWorldState()" class="btn-ghost"><i class="bi bi-trash"></i>
+                    <button id="wClearAllBtn" onclick="clearWorldState()" class="btn btn-ghost"><i class="bi bi-trash"></i>
                         Clear World</button>
                     <div id="saveWorldButtonsContainer"
                         style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
@@ -1122,7 +1125,7 @@
                         <div style="display:flex; gap:0.5rem;">
                             <input type="text" id="wWikiUrlEl" class="detail-input" style="flex-grow:1;"
                                 placeholder="https://genshin-impact.fandom.com/wiki/Teyvat">
-                            <button class="gen-btn" id="wWikiImportBtnEl"
+                            <button class="btn btn-primary" id="wWikiImportBtnEl"
                                 onclick="importWorldFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i>
                                 import</button>
                         </div>
@@ -1257,7 +1260,7 @@
                                 <i class="bi bi-text-left" style="color: var(--accent-color);"></i>
                                 <span style="font-size: 85%; color: var(--text-muted); font-weight: 500;">Section
                                     Length:</span>
-                                <select id="wLengthEl" class="length-select"
+                                <select id="wLengthEl" class="select-input length-select"
                                     style="background:transparent; border:none; color:var(--text-main); font-weight:600; cursor:pointer; outline:none; font-size:85%;"
                                     onchange="window.saveWorldState()">
                                     <option value="short">Short</option>
@@ -1277,10 +1280,10 @@
                                     <i class="bi bi-image" style="font-size:2.5rem; color:var(--text-muted);"></i>
                                 </div>
                                 <div style="display:flex; gap:0.5rem;">
-                                    <button class="gen-btn" id="wBannerGenBtn" onclick="generateWorldBanner()"
+                                    <button class="btn btn-primary" id="wBannerGenBtn" onclick="generateWorldBanner()"
                                         style="flex:1; font-size:78%; padding:0.3rem 0.5rem;"><i
                                             class="bi bi-sparkles"></i> Render Banner</button>
-                                    <button class="small-btn clear-btn" id="wClearBannerBtn"
+                                    <button class="btn btn-danger btn-sm" id="wClearBannerBtn"
                                         onclick="clearWorldBanner(event)"
                                         style="display:none; font-size:75%; padding:0.3rem 0.5rem;"><i
                                             class="bi bi-trash"></i></button>
@@ -1321,10 +1324,10 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="w-overviewGenBtnEl"
+                                <button class="btn btn-primary" id="w-overviewGenBtnEl"
                                     onclick="generateWorldSection('overview')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn" id="w-overviewStopBtnEl"
+                                <button class="btn btn-secondary btn-sm" id="w-overviewStopBtnEl"
                                     onclick="stopWorldSection('overview')" style="display:none;"><i
                                         class="bi bi-stop-circle"></i> Stop</button>
                             </div>
@@ -1336,10 +1339,10 @@
                         <div id="w-overviewOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="w-overviewEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-overviewEditBtnEl"
                                 onclick="toggleWorldSectionEdit('overview')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="w-overviewCopyBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-overviewCopyBtnEl"
                                 onclick="copyWorldSectionText('overview')" style="display:none;"><i
                                     class="bi bi-clipboard"></i> copy</button>
                         </div>
@@ -1356,10 +1359,10 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="w-factionsGenBtnEl"
+                                <button class="btn btn-primary" id="w-factionsGenBtnEl"
                                     onclick="generateWorldSection('factions')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn" id="w-factionsStopBtnEl"
+                                <button class="btn btn-secondary btn-sm" id="w-factionsStopBtnEl"
                                     onclick="stopWorldSection('factions')" style="display:none;"><i
                                         class="bi bi-stop-circle"></i> Stop</button>
                             </div>
@@ -1371,10 +1374,10 @@
                         <div id="w-factionsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="w-factionsEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-factionsEditBtnEl"
                                 onclick="toggleWorldSectionEdit('factions')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="w-factionsCopyBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-factionsCopyBtnEl"
                                 onclick="copyWorldSectionText('factions')" style="display:none;"><i
                                     class="bi bi-clipboard"></i> copy</button>
                         </div>
@@ -1391,9 +1394,9 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i
+                                <button class="btn btn-primary" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="small-btn" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')"
+                                <button class="btn btn-secondary btn-sm" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')"
                                     style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
@@ -1404,9 +1407,9 @@
                         <div id="w-rulesOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="w-rulesEditBtnEl" onclick="toggleWorldSectionEdit('rules')"
+                            <button class="btn btn-secondary btn-sm" id="w-rulesEditBtnEl" onclick="toggleWorldSectionEdit('rules')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="w-rulesCopyBtnEl" onclick="copyWorldSectionText('rules')"
+                            <button class="btn btn-secondary btn-sm" id="w-rulesCopyBtnEl" onclick="copyWorldSectionText('rules')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
                         </div>
                     </div>
@@ -1422,10 +1425,10 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="w-locationsGenBtnEl"
+                                <button class="btn btn-primary" id="w-locationsGenBtnEl"
                                     onclick="generateWorldSection('locations')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn" id="w-locationsStopBtnEl"
+                                <button class="btn btn-secondary btn-sm" id="w-locationsStopBtnEl"
                                     onclick="stopWorldSection('locations')" style="display:none;"><i
                                         class="bi bi-stop-circle"></i> Stop</button>
                             </div>
@@ -1437,10 +1440,10 @@
                         <div id="w-locationsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="w-locationsEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-locationsEditBtnEl"
                                 onclick="toggleWorldSectionEdit('locations')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="w-locationsCopyBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-locationsCopyBtnEl"
                                 onclick="copyWorldSectionText('locations')" style="display:none;"><i
                                     class="bi bi-clipboard"></i> copy</button>
                         </div>
@@ -1457,10 +1460,10 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="gen-btn" id="w-conflictsGenBtnEl"
+                                <button class="btn btn-primary" id="w-conflictsGenBtnEl"
                                     onclick="generateWorldSection('conflicts')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
-                                <button class="small-btn" id="w-conflictsStopBtnEl"
+                                <button class="btn btn-secondary btn-sm" id="w-conflictsStopBtnEl"
                                     onclick="stopWorldSection('conflicts')" style="display:none;"><i
                                         class="bi bi-stop-circle"></i> Stop</button>
                             </div>
@@ -1472,10 +1475,10 @@
                         <div id="w-conflictsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="small-btn" id="w-conflictsEditBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-conflictsEditBtnEl"
                                 onclick="toggleWorldSectionEdit('conflicts')" style="display:none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" id="w-conflictsCopyBtnEl"
+                            <button class="btn btn-secondary btn-sm" id="w-conflictsCopyBtnEl"
                                 onclick="copyWorldSectionText('conflicts')" style="display:none;"><i
                                     class="bi bi-clipboard"></i> copy</button>
                         </div>
@@ -1497,11 +1500,11 @@
 
                 <!-- TOP ACTION ROW -->
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; flex-wrap: wrap;">
-                    <button id="rpGenerateBtn" onclick="generateRoleplay()" class="btn-primary"><i
+                    <button id="rpGenerateBtn" onclick="generateRoleplay()" class="btn btn-primary"><i
                             class="bi bi-sparkles"></i> Generate Roleplay</button>
-                    <button id="rpStopBtn" onclick="stopRoleplayGeneration()" class="btn-secondary"
+                    <button id="rpStopBtn" onclick="stopRoleplayGeneration()" class="btn btn-secondary"
                         style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
-                    <button id="rpClearBtn" onclick="clearRoleplayData()" class="btn-ghost"><i class="bi bi-trash"></i>
+                    <button id="rpClearBtn" onclick="clearRoleplayData()" class="btn btn-ghost"><i class="bi bi-trash"></i>
                         Clear All</button>
                 </div>
 
@@ -1518,7 +1521,7 @@
                         <div style="display:flex; gap:0.5rem;">
                             <input type="text" id="rpWikiUrlEl" class="detail-input" style="flex-grow:1;"
                                 placeholder="https://genshin-impact.fandom.com/wiki/Archon_Quests">
-                            <button class="gen-btn" id="rpWikiImportBtnEl"
+                            <button class="btn btn-primary" id="rpWikiImportBtnEl"
                                 onclick="importRoleplayFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i>
                                 import</button>
                         </div>
@@ -1675,11 +1678,11 @@
                             <!-- SAVED WORLDS SELECTOR DROPDOWN & SYNC -->
                             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
                                 <select id="rpWorldImportSelector" onchange="loadSavedWorldIntoRoleplay(this.value)"
-                                    class="length-select"
-                                    style="font-size: 75%; padding: 0.2rem 0.4rem; height: 28px; cursor: pointer;">
+                                    class="select-input"
+                                    style="font-size: 75%; height: 28px; cursor: pointer;">
                                     <option value="">-- Load Saved World --</option>
                                 </select>
-                                <button class="small-btn" onclick="syncWorldFromCharGen()"
+                                <button class="btn btn-secondary btn-sm" onclick="syncWorldFromCharGen()"
                                     style="font-size: 75%; padding: 0.25rem 0.5rem; height: 28px;"
                                     title="Import active World Name & World Lore from the Characters tab"><i
                                         class="bi bi-arrow-down-up"></i> Sync Active World</button>
@@ -1718,7 +1721,7 @@
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">World Lore &
                                     Setting Description</label>
-                                <button class="gen-btn" onclick="generateRoleplayWorldLore(this)"
+                                <button class="btn btn-primary" onclick="generateRoleplayWorldLore(this)"
                                     style="font-size: 75%; padding: 0.2rem 0.5rem;"
                                     title="Generate world lore via AI"><i class="bi bi-sparkles"></i> Generate World
                                     Lore</button>
@@ -1780,7 +1783,7 @@
 
                         <!-- Card Controls -->
                         <div style="display: flex; gap: 0.5rem; justify-content: flex-start; margin-top: 0.5rem;">
-                            <button class="btn-secondary" onclick="addNPC()"
+                            <button class="btn btn-secondary" onclick="addNPC()"
                                 style="font-size: 85%; padding: 0.4rem 0.8rem;"><i class="bi bi-plus-lg"></i> Add
                                 Character</button>
                         </div>
@@ -1802,7 +1805,7 @@
                             <div style="display: flex; align-items: center; gap: 0.4rem;">
                                 <span style="font-size: 82%; font-weight: 600; color: var(--text-muted);">Starter
                                     Length:</span>
-                                <select id="rpLengthEl" class="length-select" style="padding: 0.3rem 0.6rem;"
+                                <select id="rpLengthEl" class="select-input length-select" 
                                     onchange="saveRoleplayState()">
                                     <option value="short">Short (1-2 paragraphs)</option>
                                     <option value="medium" selected>Medium (3-4 paragraphs)</option>
@@ -1814,7 +1817,7 @@
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario
                                     Details & Plot Hook Notes</label>
-                                <button class="gen-btn" onclick="generateRoleplayScenarioNotes(this)"
+                                <button class="btn btn-primary" onclick="generateRoleplayScenarioNotes(this)"
                                     style="font-size: 75%; padding: 0.2rem 0.5rem;"
                                     title="Generate scenario plot hook via AI"><i class="bi bi-sparkles"></i> Generate
                                     Plot Hook</button>
@@ -1844,11 +1847,11 @@
                         <!-- TAB SELECTOR FOR OUTPUT -->
                         <div
                             style="display: flex; border-bottom: 1px solid var(--panel-border); margin-bottom: 1rem; gap: 0.2rem;">
-                            <button id="rpOutputTabBtn-scenario" class="btn-ghost"
+                            <button id="rpOutputTabBtn-scenario" class="btn btn-ghost"
                                 onclick="switchRpOutputTab('scenario')"
                                 style="font-size: 85%; padding: 0.4rem 0.8rem; border-radius: 6px 6px 0 0; margin-bottom: -1px; border-bottom: 2px solid var(--accent-color); font-weight: 600; color: var(--accent-color);">Scenario
                                 Sheet</button>
-                            <button id="rpOutputTabBtn-starter" class="btn-ghost" onclick="switchRpOutputTab('starter')"
+                            <button id="rpOutputTabBtn-starter" class="btn btn-ghost" onclick="switchRpOutputTab('starter')"
                                 style="font-size: 85%; padding: 0.4rem 0.8rem; border-radius: 6px 6px 0 0; margin-bottom: -1px; border-bottom: 2px solid transparent; opacity: 0.6;">Roleplay
                                 Starter Post</button>
                         </div>
@@ -1866,11 +1869,11 @@
                         <!-- ACTIONS ROW -->
                         <div
                             style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                            <button class="small-btn" id="rpEditBtn" onclick="toggleRpEdit()" style="display: none;"><i
+                            <button class="btn btn-secondary btn-sm" id="rpEditBtn" onclick="toggleRpEdit()" style="display: none;"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="small-btn" onclick="copyRpText()"><i class="bi bi-clipboard"></i> copy
+                            <button class="btn btn-secondary btn-sm" onclick="copyRpText()"><i class="bi bi-clipboard"></i> copy
                                 current tab</button>
-                            <button class="small-btn" onclick="downloadRpMarkdown()"><i
+                            <button class="btn btn-secondary btn-sm" onclick="downloadRpMarkdown()"><i
                                     class="bi bi-file-earmark-arrow-down"></i> download scenario (.md)</button>
                         </div>
                     </div>
@@ -2118,15 +2121,15 @@
         <!-- Action row -->
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button id="overviewModalRegenBtn" class="btn-secondary" onclick="regenOverviewModal()"
+                <button id="overviewModalRegenBtn" class="btn btn-secondary" onclick="regenOverviewModal()"
                     style="font-size:86%; padding:0.45rem 0.9rem; display:inline-flex; align-items:center; gap:0.35rem;">
                     <i class="bi bi-arrow-clockwise"></i> Regen
                 </button>
-                <button id="overviewModalApproveBtn" class="btn-primary" onclick="approveOverviewAndGenerateAll()"
+                <button id="overviewModalApproveBtn" class="btn btn-primary" onclick="approveOverviewAndGenerateAll()"
                     style="font-size:86%; padding:0.45rem 0.9rem; display:inline-flex; align-items:center; gap:0.35rem;">
                     <i class="bi bi-check-lg"></i> Approve &amp; Generate All
                 </button>
-                <button class="btn-ghost" onclick="closeOverviewConfirmModal()"
+                <button class="btn btn-ghost" onclick="closeOverviewConfirmModal()"
                     style="font-size:86%; padding:0.45rem 0.9rem;">
                     Cancel
                 </button>
@@ -2153,7 +2156,7 @@
   transition:transform 0.25s ease;
   box-shadow:-4px 0 16px rgba(0,0,0,0.15);
 ">
-    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="btn-secondary"
+    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="btn btn-secondary"
         style="position:absolute; top:0.5rem; left:0; transform:translateX(-100%); border-radius:8px 0 0 8px; border-right:none; padding:0.4rem 0.7rem; font-size:85%; white-space:nowrap; z-index:1001; display:flex; align-items:center; gap:0.3rem; background:var(--sidebar-bg); color:var(--text-main); box-shadow:-4px 0 12px rgba(0,0,0,0.15);">
         <i class="bi bi-floppy"></i> saved <span id="savedCountBadgeEl"
             style="display:none; background:var(--accent-color); color:white; border-radius:10px; padding:0 5px; font-size:90%; margin-left:2px;"></span>
@@ -2162,7 +2165,7 @@
         style="padding:0.75rem 1rem; border-bottom:1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center; color:var(--text-main);">
         <b style="font-size:92%; display:flex; align-items:center; gap:0.4rem;" id="sidebarHeaderTitleEl"><i
                 class="bi bi-floppy-fill" style="color:var(--accent-color);"></i> Saved Characters</b>
-        <button onclick="toggleSidebar()" class="btn-ghost"
+        <button onclick="toggleSidebar()" class="btn btn-ghost"
             style="font-size:80%; padding:0.25rem 0.4rem; display:flex; align-items:center; justify-content:center;"><i
                 class="bi bi-x-lg"></i></button>
     </div>
@@ -2206,13 +2209,13 @@
         <div
             style="padding:0.5rem; border-top:1px solid var(--panel-border); display:flex; flex-direction:column; gap:0.3rem; background:rgba(0,0,0,0.02);">
             <div style="display:flex; gap:0.3rem;">
-                <button onclick="exportSavedCharacters()" class="btn-secondary"
+                <button onclick="exportSavedCharacters()" class="btn btn-secondary"
                     style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-upload"></i> export</button>
-                <button onclick="importSavedCharacters()" class="btn-secondary"
+                <button onclick="importSavedCharacters()" class="btn btn-secondary"
                     style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-download"></i>
                     import</button>
             </div>
-            <button onclick="clearAllSavedCharacters()" class="btn-ghost clear-btn"
+            <button onclick="clearAllSavedCharacters()" class="btn btn-danger btn-sm"
                 style="width:100%; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-trash3"></i> clear all
                 saved</button>
         </div>
@@ -2243,13 +2246,13 @@
         <div
             style="padding:0.5rem; border-top:1px solid var(--panel-border); display:flex; flex-direction:column; gap:0.3rem; background:rgba(0,0,0,0.02);">
             <div style="display:flex; gap:0.3rem;">
-                <button onclick="exportSavedWorlds()" class="btn-secondary"
+                <button onclick="exportSavedWorlds()" class="btn btn-secondary"
                     style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-upload"></i> export</button>
-                <button onclick="importSavedWorlds()" class="btn-secondary"
+                <button onclick="importSavedWorlds()" class="btn btn-secondary"
                     style="flex:1; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-download"></i>
                     import</button>
             </div>
-            <button onclick="clearAllSavedWorlds()" class="btn-ghost clear-btn"
+            <button onclick="clearAllSavedWorlds()" class="btn btn-danger btn-sm"
                 style="width:100%; font-size:75%; padding:0.35rem 0.5rem;"><i class="bi bi-trash3"></i> clear all
                 saved</button>
         </div>

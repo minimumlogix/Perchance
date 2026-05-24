@@ -253,12 +253,12 @@
                         <span style="font-size: 82%; font-weight: 700; color: var(--accent-color);"><i class="bi bi-person-fill"></i> NPC #${index + 1}</span>
                         <div style="display: flex; align-items: center; gap: 0.4rem;">
                             <!-- Import dropdown -->
-                            <select onchange="importSavedCharToNPC(${index}, this.value)" class="length-select" style="font-size: 78%; padding: 0.15rem 0.4rem; max-width: 90px; height: 22px; cursor: pointer;">
+                            <select onchange="importSavedCharToNPC(${index}, this.value)" class="select-input" style="font-size: 78%; padding: 0.15rem 1.4rem 0.15rem 0.4rem; max-width: 90px; height: 22px; cursor: pointer;">
                                 <option value="">Import...</option>
                                 ${importOptions}
                             </select>
-                            <button onclick="generateRoleplayNPC(${index}, this)" class="gen-btn" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px; display: inline-flex; align-items: center; justify-content: center; border: none; box-shadow: none; text-shadow: none;" title="Generate NPC details via AI"><i class="bi bi-sparkles"></i></button>
-                            <button onclick="removeNPC(${index})" class="small-btn clear-btn" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px; display: inline-flex; align-items: center; justify-content: center;" title="Remove NPC"><i class="bi bi-trash"></i></button>
+                            <button onclick="generateRoleplayNPC(${index}, this)" class="btn btn-primary btn-sm" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px;" title="Generate NPC details via AI"><i class="bi bi-sparkles"></i></button>
+                            <button onclick="removeNPC(${index})" class="btn btn-danger btn-sm" style="padding: 0.15rem 0.35rem; font-size: 75%; height: 22px;" title="Remove NPC"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                     

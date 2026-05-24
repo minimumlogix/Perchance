@@ -567,12 +567,12 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
         let activeId = window.worldState.activeWorldId;
         if (activeId) {
             container.innerHTML = `
-                <button onclick="saveWorldButtonClickHandler(this)" class="btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy-fill"></i> Update Save</button>
-                <button onclick="saveWorldAsNew()" class="btn-ghost" style="font-size:85%; padding:0.45rem 0.7rem; height:fit-content;" title="Save as a separate world slot"><i class="bi bi-plus-square"></i> Save As New</button>
+                <button onclick="saveWorldButtonClickHandler(this)" class="btn btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy-fill"></i> Update Save</button>
+                <button onclick="saveWorldAsNew()" class="btn btn-ghost" style="font-size:85%; padding:0.45rem 0.7rem; height:fit-content;" title="Save as a separate world slot"><i class="bi bi-plus-square"></i> Save As New</button>
             `;
         } else {
             container.innerHTML = `
-                <button onclick="saveWorldButtonClickHandler(this)" class="btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy"></i> Save World</button>
+                <button onclick="saveWorldButtonClickHandler(this)" class="btn btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy"></i> Save World</button>
             `;
         }
     };
@@ -741,8 +741,8 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
                     <div style="display:flex; justify-content:space-between; align-items:center; z-index:1; gap:0.3rem;">
                         <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" style="font-size:82%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; flex:1;" title="Double-click to rename">${w.name}</b>
                         <div style="display:flex; gap:0.25rem;" onclick="event.stopPropagation()">
-                            <button class="small-btn" onclick="duplicateWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%; border:none; background:transparent;" title="Duplicate"><i class="bi bi-copy"></i></button>
-                            <button class="small-btn clear-btn" onclick="deleteWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%; border:none; background:transparent;" title="Delete"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-ghost btn-sm" onclick="duplicateWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%;" title="Duplicate"><i class="bi bi-copy"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%;" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                     <span style="font-size:70%; color:var(--text-muted); z-index:1;">Setting: ${settingLabel}</span>
