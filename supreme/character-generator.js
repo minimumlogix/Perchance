@@ -614,6 +614,8 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
 
 IMPORTANT  -  scan the user notes and overview carefully before generating. If an explicit value for any field is stated anywhere (e.g. "25 year old", "she/her", "human", "asian"), you MUST use that exact value. Do not infer or reinterpret. Only invent a value if no indication exists anywhere in the provided context.
 
+REGENERATION RULE: If a field is blank and listed in the "Fields to generate" list, it is because we want to replace the old value. Do NOT reuse the old value of this field even if it is mentioned in the existing character context below (e.g. if "name" is to be generated, do not reuse the old name mentioned in the background or personality sections; generate a completely new name instead).
+
 ${existingContext ? "Existing character context:\n---\n" + existingContext + "\n---\n" : ""}
 ${worldLoreVal ? "World Lore (ambient background knowledge):\n" + worldLoreVal + "\n" : ""}
 ${allUserNotes ? "User notes  -  scan these first for any explicit field values:\n" + allUserNotes + "\n" : ""}
@@ -674,6 +676,18 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (stopBtn) stopBtn.style.display = "none";
         if (statusEl) statusEl.textContent = "⛔ Stopped.";
         setGenerationStatus("");
+    };
+
+    window.regenerateSingleDetail = async function (field) {
+        let el = document.getElementById("detail" + field + "El");
+        if (el) {
+            el.value = "";
+            let lsKey = "detail" + field;
+            localStorage.removeItem(lsKey);
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        }
+        // Force is false here because we only want to generate the specific cleared field
+        await generateIdentityDetails(null, undefined, undefined, false);
     };
 
     window.maybeGenerateDetails = window.generateIdentityDetails;
