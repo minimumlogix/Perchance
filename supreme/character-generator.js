@@ -561,12 +561,12 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         if (d.ethnicity) detailParts.push("Ethnicity: " + d.ethnicity);
         if (detailParts.length > 0) lines.push(detailParts.join("\n"));
 
-        let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "intro"];
+        let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "introScenario", "introStart"];
         for (let s of sections) {
             if (s === excludeSection) continue;
             let text = getSectionText(s);
             if (text) {
-                let label = s === "appearance" ? "Physical Appearance" : s === "background" ? "Background" : s === "personality" ? "Personality" : s === "beliefs" ? "Beliefs & Morals" : s === "preferences" ? "Preferences" : s === "role" ? "Role" : s === "lore" ? "Lore" : s === "roleplay" ? "Roleplay Examples" : "Roleplay Intro";
+                let label = s === "appearance" ? "Physical Appearance" : s === "background" ? "Background" : s === "personality" ? "Personality" : s === "beliefs" ? "Beliefs & Morals" : s === "preferences" ? "Preferences" : s === "role" ? "Role" : s === "lore" ? "Lore" : s === "roleplay" ? "Roleplay Examples" : s === "introScenario" ? "Roleplay Intro - Scenario Context" : "Roleplay Intro - Dialogue & Narration";
                 lines.push(label + ":\n" + text);
             }
         }
@@ -793,12 +793,49 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         return parts.join("\n\n");
     };
 
+    window.splitOldIntroText = function (text) {
+        if (!text) return { scenario: "", start: "" };
+        
+        let parts = text.split(/(?:Scene Context:|Scenario Context:|### Scene Context|### Scenario Context|Scene Context\s*:\s*|Scenario Context\s*:\s*)/i);
+        let mainText = text;
+        if (parts.length > 1) {
+            mainText = parts[1];
+        }
+        
+        let splitPattern = /(?:Intro Script:|Roleplay Intro Script:|Roleplay Intro:|Intro:|Start:|Dialogue & Narration:|### Intro Script|# Roleplay Intro Script|=== ROLEPLAY_STARTER_SEPARATOR ===)/i;
+        let mainParts = mainText.split(splitPattern);
+        
+        let scenarioPart = "";
+        let startPart = "";
+        if (mainParts.length > 1) {
+            scenarioPart = mainParts[0].trim();
+            startPart = mainParts[1].trim();
+        } else {
+            startPart = text.trim();
+        }
+        
+        scenarioPart = scenarioPart.replace(/^(?:Scene Context|Scenario Context|Context|Scenario)\s*:\s*/i, "").trim();
+        startPart = startPart.replace(/^(?:Intro Script|Roleplay Intro Script|Intro|Start|Dialogue & Narration)\s*:\s*/i, "").trim();
+        
+        return {
+            scenario: scenarioPart,
+            start: startPart
+        };
+    };
+
     window.buildRoleplayExamplePrompt = function (context, notes, lengthVal, overview, worldLore) {
         let settingAndTone = getSettingAndToneContext();
         let referencedCtx = getReferencedCharactersContext();
         let p = root.prompts.roleplay;
+        let perspective = getSelectedPerspective();
+        
+        let perspectiveRule = perspective === "First_Person"
+            ? "IMPORTANT NARRATION PERSPECTIVE: All narration and actions inside the roleplay examples must be written in the FIRST-PERSON perspective from the character's point of view (using 'I', 'me', 'my' for the character's actions and thoughts). Do NOT write narration in the third person."
+            : "IMPORTANT NARRATION PERSPECTIVE: All narration must be written in the THIRD-PERSON perspective (using the character's name or 'he/she/they' for narration/actions).";
+
         let parts = [p.instruction.evaluateItem];
         parts.push(p.format.evaluateItem);
+        parts.push(perspectiveRule);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
         if (overview) parts.push("\nGeneral character overview: " + overview);
@@ -809,13 +846,56 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         return parts.join("\n\n");
     };
 
-    window.buildIntroPrompt = function (context, notes, lengthVal, overview, worldLore) {
+    window.buildIntroScenarioPrompt = function (context, notes, lengthVal, overview, worldLore) {
         let settingAndTone = getSettingAndToneContext();
         let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.intro;
-        let parts = [p.instruction.evaluateItem];
-        parts.push(p.format.evaluateItem);
-        parts.push(p.notes.evaluateItem);
+        let lengthInstruction = getLengthInstruction(lengthVal);
+        let perspective = getSelectedPerspective();
+        
+        let perspectiveRule = perspective === "First_Person"
+            ? "PERSPECTIVE: Write the scenario context description from the character's first-person perspective, reflecting their thoughts and observations of the environment (using 'I', 'me', 'my')."
+            : "PERSPECTIVE: Write the scenario context description from a third-person narrative perspective.";
+            
+        let parts = [
+            "You are writing the SCENARIO CONTEXT / SCENE CONTEXT for a roleplay session with the character.",
+            "INSTRUCTIONS:\n- Describe the starting physical environment, the time/weather, the situation, the proximity between the character and the user, and the current mood/atmosphere.\n- DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context.\n- Make it immersive, visual, and atmospheric.\n- Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:').",
+            perspectiveRule
+        ];
+        
+        if (lengthInstruction) parts.push(lengthInstruction);
+        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+        if (overview) parts.push("\nGeneral character overview: " + overview);
+        if (notes) parts.push("\nSection-specific notes: " + notes);
+        if (referencedCtx) parts.push("\n" + referencedCtx);
+        if (settingAndTone) parts.push("\n" + settingAndTone);
+        parts.push(NO_EM_DASH_RULE);
+        return parts.join("\n\n");
+    };
+
+    window.buildIntroStartPrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let settingAndTone = getSettingAndToneContext();
+        let referencedCtx = getReferencedCharactersContext();
+        let lengthInstruction = getLengthInstruction(lengthVal);
+        let perspective = getSelectedPerspective();
+        
+        let perspectiveRule = perspective === "First_Person"
+            ? "IMPORTANT NARRATION PERSPECTIVE: The narration and actions must be written in the FIRST-PERSON perspective from the character's point of view (using 'I', 'me', 'my' for the character's actions and thoughts). Do NOT write narration in the third person."
+            : "IMPORTANT NARRATION PERSPECTIVE: The narration must be written in the THIRD-PERSON perspective (using the character's name or 'he/she/they' for narration/actions).";
+            
+        let scenarioContext = getSectionText("introScenario");
+        
+        let parts = [
+            "You are writing the ROLEPLAY START (Dialogue & Narration) / greeting message for the character.",
+            "INSTRUCTIONS:\n- Write the character's opening message, including direct dialogue addressing the user and accompanying narration/actions.\n- Focus on physical expressions, body language, speech patterns, and personality traits.\n- Format actions and narration inside asterisks (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').",
+            perspectiveRule
+        ];
+        
+        if (scenarioContext) {
+            parts.push("SCENARIO CONTEXT (The scene takes place in this context):\n---\n" + scenarioContext + "\n---");
+        }
+        
+        if (lengthInstruction) parts.push(lengthInstruction);
         if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
         if (overview) parts.push("\nGeneral character overview: " + overview);
@@ -835,7 +915,12 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         setSectionStatus(section, "⏳ Fleshing out character identity...");
         setGenerationStatus("Fleshing out character identity...");
 
-        let notes = (document.getElementById(section + "NotesEl") || {}).value || "";
+        let notes = "";
+        if (section === "introScenario" || section === "introStart") {
+            notes = (document.getElementById("introNotesEl") || {}).value || "";
+        } else {
+            notes = (document.getElementById(section + "NotesEl") || {}).value || "";
+        }
         let lengthVal = getEffectiveLengthForSection(section);
         let overview = (document.getElementById("overviewNotesEl") || {}).value || "";
         let worldLore = (document.getElementById("worldLoreEl") || {}).value || "";
@@ -862,7 +947,8 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         if (section === "background") instruction = buildBackgroundPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "lore") instruction = buildLorePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "roleplay") instruction = buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "intro") instruction = buildIntroPrompt(context, notes, lengthVal, overview, worldLore);
+        if (section === "introScenario") instruction = buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
+        if (section === "introStart") instruction = buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
 
         let premiumLabel = {
             appearance: "Designing physical appearance",
@@ -873,7 +959,8 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
             background: "Forging backstory & origins",
             lore: "Crafting world lore entries",
             roleplay: "Simulating roleplay examples",
-            intro: "Composing roleplay intro"
+            introScenario: "Structuring scenario context",
+            introStart: "Composing roleplay start"
         }[section] || ("Generating " + section);
         setSectionStatus(section, "⏳ " + premiumLabel + "...");
         setGenerationStatus(premiumLabel + "...");
@@ -968,6 +1055,43 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         return true;
     };
 
+    window.generateIntro = async function () {
+        let btn = document.getElementById("introGenBtnEl");
+        let stopBtn = document.getElementById("introStopBtnEl");
+        if (btn) btn.disabled = true;
+        if (stopBtn) stopBtn.style.display = "inline-block";
+        window.generateIntroRunning = true;
+        
+        try {
+            if (window.generateIntroRunning) {
+                let success = await generateSection("introScenario");
+                if (success && window.generateIntroRunning) {
+                    await generateSection("introStart");
+                }
+            }
+        } finally {
+            window.generateIntroRunning = false;
+            if (btn) btn.disabled = false;
+            if (stopBtn) stopBtn.style.display = "none";
+        }
+    };
+
+    window.stopIntroGeneration = function () {
+        window.generateIntroRunning = false;
+        stopSection("introScenario");
+        stopSection("introStart");
+    };
+
+    window.clearIntro = function () {
+        clearSection("introScenario");
+        clearSection("introStart");
+        let introNotesEl = document.getElementById("introNotesEl");
+        if (introNotesEl) {
+            introNotesEl.value = "";
+            localStorage.removeItem("introNotes");
+        }
+    };
+
     window.generateAll = async function (bypassOverviewCheck) {
         // Check overview notes  -  if empty, handle it first
         let overviewEl = document.getElementById("overviewNotesEl");
@@ -1012,7 +1136,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
             }
 
             // 4. Generate other sections sequentially
-            for (let section of ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "intro"]) {
+            for (let section of ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "introScenario", "introStart"]) {
                 if (!window.generateAllRunning) break;
                 let success = await generateSection(section);
                 if (!success) break;
@@ -1044,7 +1168,7 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
         setSectionStatus("worldLore", "⛔ Stopped.");
 
         // Stop sections
-        ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "intro"].forEach(s => stopSection(s));
+        ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "introScenario", "introStart"].forEach(s => stopSection(s));
         
         let btn = document.getElementById("generateAllBtn");
         let stopBtn = document.getElementById("stopAllBtn");
@@ -1064,7 +1188,8 @@ No explanation, no extra text.\n\n${NO_EM_DASH_RULE}`;
     window.getEffectiveLengthForSection = function (section) {
         let globalVal = localStorage.globalLength || 'custom';
         if (globalVal && globalVal !== 'custom') return globalVal;
-        return (document.getElementById(section + "LengthEl") || {}).value || "medium";
+        let id = (section === "introScenario" || section === "introStart") ? "intro" : section;
+        return (document.getElementById(id + "LengthEl") || {}).value || "medium";
     };
 
     window.setGlobalLength = function (val, silent) {
@@ -1688,7 +1813,8 @@ ${NO_EM_DASH_RULE}`;
             backgroundText: getSectionText("background"),
             loreText: getSectionText("lore"),
             roleplayText: getSectionText("roleplay"),
-            introText: getSectionText("intro"),
+            introScenarioText: getSectionText("introScenario"),
+            introStartText: getSectionText("introStart"),
             worldLore: worldLoreEl.value,
             visualKeyphrasesText: window.lastCharacterData?.visualKeyphrasesText || "",
             visualStyleName: window.lastCharacterData?.visualStyleName || "",
@@ -1755,7 +1881,23 @@ ${NO_EM_DASH_RULE}`;
             clearSection("lore");
         }
         if (h.roleplayText) setSectionOutput("roleplay", formatSectionText(h.roleplayText));
-        if (h.introText) setSectionOutput("intro", formatSectionText(h.introText));
+        if (h.introScenarioText !== undefined || h.introStartText !== undefined) {
+            let scen = h.introScenarioText || "";
+            let start = h.introStartText || "";
+            setSectionOutput("introScenario", formatSectionText(scen));
+            window.characterSections["introScenario"] = scen;
+            setSectionOutput("introStart", formatSectionText(start));
+            window.characterSections["introStart"] = start;
+        } else if (h.introText) {
+            let split = splitOldIntroText(h.introText);
+            setSectionOutput("introScenario", formatSectionText(split.scenario));
+            window.characterSections["introScenario"] = split.scenario;
+            setSectionOutput("introStart", formatSectionText(split.start));
+            window.characterSections["introStart"] = split.start;
+        } else {
+            clearSection("introScenario");
+            clearSection("introStart");
+        }
         if (h.worldLore !== undefined) {
             worldLoreEl.value = h.worldLore;
             localStorage.worldLore = h.worldLore;
@@ -1805,7 +1947,8 @@ ${NO_EM_DASH_RULE}`;
         let background = getSectionText("background");
         let lore = getSectionText("lore");
         let roleplay = getSectionText("roleplay");
-        let intro = getSectionText("intro");
+        let introScenario = getSectionText("introScenario");
+        let introStart = getSectionText("introStart");
 
         if (appearance) lines.push("\nAppearance & Attire:\n" + appearance);
         if (role) lines.push("\nRole & Rules:\n" + role);
@@ -1815,7 +1958,16 @@ ${NO_EM_DASH_RULE}`;
         if (background) lines.push("\nBackground & Goals:\n" + background);
         if (lore) lines.push("\nLore / World Facts:\n" + lore);
         if (roleplay) lines.push("\nRoleplay Examples:\n" + roleplay);
-        if (intro) lines.push("\nRoleplay Intro:\n" + intro);
+        if (introScenario || introStart) {
+            let introLines = ["\nRoleplay Intro:"];
+            if (introScenario) {
+                introLines.push("Scene Context:\n" + introScenario);
+            }
+            if (introStart) {
+                introLines.push("Intro Script:\n" + introStart);
+            }
+            lines.push(introLines.join("\n"));
+        }
 
         let worldLore = worldLoreEl.value.trim();
         if (worldLore) lines.push("\nWorld Lore:\n" + worldLore);
@@ -1874,7 +2026,8 @@ ${NO_EM_DASH_RULE}`;
             loreNotes: (document.getElementById("loreNotesEl") || {}).value || "",
             roleplayText: getSectionText("roleplay"),
             roleplayNotes: (document.getElementById("roleplayNotesEl") || {}).value || "",
-            introText: getSectionText("intro"),
+            introScenarioText: getSectionText("introScenario"),
+            introStartText: getSectionText("introStart"),
             introNotes: (document.getElementById("introNotesEl") || {}).value || "",
             generatedText: assembleFullCharacterText(),
             
@@ -1971,7 +2124,7 @@ ${NO_EM_DASH_RULE}`;
                 saveDetails();
                 // Restore outputs and notes for all sections
                 window.characterSections = {};
-                let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "intro"];
+                let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay"];
                 sections.forEach(s => {
                     let textKey = s + "Text";
                     let notesKey = s + "Notes";
@@ -2008,6 +2161,43 @@ ${NO_EM_DASH_RULE}`;
                         }
                     }
                 });
+
+                // Restore split intro sections
+                let introNotesEl = document.getElementById("introNotesEl");
+                
+                if (c.introNotes !== undefined) {
+                    if (introNotesEl) {
+                        introNotesEl.value = c.introNotes;
+                        localStorage.introNotes = c.introNotes;
+                    }
+                } else {
+                    if (introNotesEl) {
+                        introNotesEl.value = "";
+                        localStorage.removeItem("introNotes");
+                    }
+                }
+                
+                if (c.introScenarioText !== undefined || c.introStartText !== undefined) {
+                    let scenText = c.introScenarioText || "";
+                    let startText = c.introStartText || "";
+                    
+                    setSectionOutput("introScenario", formatSectionText(scenText));
+                    window.characterSections["introScenario"] = scenText;
+                    
+                    setSectionOutput("introStart", formatSectionText(startText));
+                    window.characterSections["introStart"] = startText;
+                } else if (c.introText) {
+                    let split = splitOldIntroText(c.introText);
+                    
+                    setSectionOutput("introScenario", formatSectionText(split.scenario));
+                    window.characterSections["introScenario"] = split.scenario;
+                    
+                    setSectionOutput("introStart", formatSectionText(split.start));
+                    window.characterSections["introStart"] = split.start;
+                } else {
+                    clearSection("introScenario");
+                    clearSection("introStart");
+                }
 
                 // Restore chosen avatar
                 let avatarUrl = c.selectedAvatarUrl || c.imageDataUrl || "";
@@ -2688,7 +2878,12 @@ ${NO_EM_DASH_RULE}`;
             "Are you sure you want to clear all sections and details from the screen? This cannot be undone.",
             'warnOnClear',
             () => {
-                ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "intro"].forEach(s => clearSection(s));
+                ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "introScenario", "introStart"].forEach(s => clearSection(s));
+                let introNotesEl = document.getElementById("introNotesEl");
+                if (introNotesEl) {
+                    introNotesEl.value = "";
+                    localStorage.removeItem("introNotes");
+                }
                 clearDetails();
                 clearOverviewNotes();
                 if (typeof clearWorldLore === "function") clearWorldLore();
@@ -2756,7 +2951,8 @@ ${NO_EM_DASH_RULE}`;
                     loreNotes: (document.getElementById("loreNotesEl") || {}).value || "",
                     roleplayText: getSectionText("roleplay"),
                     roleplayNotes: (document.getElementById("roleplayNotesEl") || {}).value || "",
-                    introText: getSectionText("intro"),
+                    introScenarioText: getSectionText("introScenario"),
+                    introStartText: getSectionText("introStart"),
                     introNotes: (document.getElementById("introNotesEl") || {}).value || "",
                     generatedText: assembleFullCharacterText(),
                     
@@ -2847,7 +3043,8 @@ ${NO_EM_DASH_RULE}`;
             { id: "background", label: "Background" },
             { id: "lore", label: "Lore Entries" },
             { id: "roleplay", label: "Roleplay Examples" },
-            { id: "intro", label: "Roleplay Intro" }
+            { id: "introScenario", label: "Roleplay Intro - Scenario Context" },
+            { id: "introStart", label: "Roleplay Intro - Dialogue & Narration" }
         ];
         
         sections.forEach(s => {
@@ -2911,7 +3108,8 @@ ${NO_EM_DASH_RULE}`;
             { id: "preferences", label: "Preferences" },
             { id: "background", label: "Background" },
             { id: "roleplay", label: "Roleplay Examples" },
-            { id: "intro", label: "Roleplay Intro" }
+            { id: "introScenario", label: "Roleplay Intro - Scenario Context" },
+            { id: "introStart", label: "Roleplay Intro - Dialogue & Narration" }
         ];
         sections.forEach(s => {
             let text = getSectionText(s.id);

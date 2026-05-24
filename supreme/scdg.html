@@ -478,6 +478,31 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- NARRATION PERSPECTIVE DROPDOWN -->
+                            <div class="custom-dropdown" id="perspectiveDropdown"
+                                title="Change the narration perspective in roleplay intro and roleplay example">
+                                <button class="dropdown-trigger"
+                                    onclick="toggleCustomDropdown('perspectiveDropdownMenu', event)">
+                                    <i class="bi bi-person-bounding-box dropdown-icon"></i>
+                                    <span class="dropdown-label">Perspective:</span>
+                                    <span class="dropdown-value" id="perspectiveLabel">Third Person</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="perspectiveDropdownMenu"
+                                    style="display:none; width:175px;" onclick="event.stopPropagation()">
+                                    <div class="dropdown-options">
+                                        <div class="dropdown-option-item" data-value="Third_Person" onclick="selectPerspective('Third_Person')">
+                                            <span>Third Person</span>
+                                            <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
+                                        </div>
+                                        <div class="dropdown-option-item" data-value="First_Person" onclick="selectPerspective('First_Person')">
+                                            <span>First Person</span>
+                                            <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- IDENTITY DETAILS -->
@@ -1211,27 +1236,76 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="btn btn-primary" id="introGenBtnEl" onclick="generateSection('intro')"><i
+                                <button class="btn btn-primary" id="introGenBtnEl" onclick="generateIntro()"><i
                                         class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="introStopBtnEl" onclick="stopIntroGeneration()"
+                                    style="display:none;"><i class="bi bi-stop-fill"></i> Stop</button>
                                 <button class="btn btn-danger btn-sm" id="introClearBtnEl"
-                                    onclick="clearSection('intro')"><i class="bi bi-trash"></i> Clear</button>
+                                    onclick="clearIntro()"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
-                    <div class="panel-body">
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
                         <textarea id="introNotesEl" class="section-notes" oninput="localStorage.introNotes=this.value"
-                            placeholder="Notes for intro  -  e.g. focus on physical reactions, uncesnsored, describe setting..."></textarea>
-                        <div id="introStatusEl" class="section-status"></div>
-                        <div id="introOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                            placeholder="Notes for intro  -  e.g. focus on physical reactions, uncensored, describe setting..."></textarea>
+                        
+                        <!-- Scenario Context Subsection -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="bi bi-compass" style="color:var(--accent-color);"></i>
+                                    Scenario Context
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="introScenarioGenBtnEl" onclick="generateSection('introScenario')"
+                                        title="Regenerate Scenario Context" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="introScenarioStopBtnEl" onclick="stopSection('introScenario')"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introScenario')"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear Scenario Context"><i
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
+                                </div>
+                            </div>
+                            <div id="introScenarioStatusEl" class="section-status"></div>
+                            <div id="introScenarioOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" id="introScenarioEditBtnEl" onclick="toggleSectionEdit('introScenario')"
+                                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="introScenarioCopyBtnEl" onclick="copySectionText('introScenario')"
+                                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            </div>
                         </div>
-                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="introEditBtnEl" onclick="toggleSectionEdit('intro')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="introCopyBtnEl" onclick="copySectionText('intro')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
-                            <button class="btn btn-secondary btn-sm" id="introStopBtnEl" onclick="stopSection('intro')"
-                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+
+                        <!-- Roleplay Start Subsection -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="bi bi-chat-left-text" style="color:var(--accent-color);"></i>
+                                    Roleplay Start (Dialogue & Narration)
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="introStartGenBtnEl" onclick="generateSection('introStart')"
+                                        title="Regenerate Roleplay Start" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="introStartStopBtnEl" onclick="stopSection('introStart')"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introStart')"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear Roleplay Start"><i
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
+                                </div>
+                            </div>
+                            <div id="introStartStatusEl" class="section-status"></div>
+                            <div id="introStartOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" id="introStartEditBtnEl" onclick="toggleSectionEdit('introStart')"
+                                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="introStartCopyBtnEl" onclick="copySectionText('introStart')"
+                                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            </div>
                         </div>
                     </div>
                 </div>

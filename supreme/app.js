@@ -34,7 +34,8 @@
                     footer: { evaluateItem: "Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }." }
                 },
                 roleplay: { instruction: { evaluateItem: "You are writing the ROLEPLAY EXAMPLES section." }, format: { evaluateItem: "Format: <user>: ... CharacterName: ..." } },
-                intro: { instruction: { evaluateItem: "You are writing the SCENE CONTEXT and ROLEPLAY INTRO SCRIPT section." }, format: { evaluateItem: "Format: Scene Context: ... Intro Script: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } }
+                introScenario: { instruction: { evaluateItem: "You are writing the SCENE CONTEXT / SCENARIO CONTEXT section." }, format: { evaluateItem: "Format: Scene Context: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } },
+                introStart: { instruction: { evaluateItem: "You are writing the ROLEPLAY START (Dialogue & Narration) section." }, format: { evaluateItem: "Format: Intro Script: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } }
             }, {
                 get: (target, prop) => {
                     if (prop in target) {
@@ -477,11 +478,49 @@
         }
     };
 
+    // Perspective Dropdown functions
+    window.getSelectedPerspective = function () {
+        return localStorage.perspective || "Third_Person";
+    };
+
+    window.selectPerspective = function (value, closeMenu = true) {
+        localStorage.perspective = value;
+        let labelEl = document.getElementById("perspectiveLabel");
+        if (labelEl) {
+            labelEl.textContent = value.replace(/_/g, " ");
+        }
+
+        // Update active checkmarks
+        let items = document.querySelectorAll("#perspectiveDropdownMenu .dropdown-option-item");
+        items.forEach(item => {
+            let check = item.querySelector("i");
+            if (item.getAttribute("data-value") === value) {
+                item.classList.add("active");
+                if (check) check.style.display = "inline-block";
+            } else {
+                item.classList.remove("active");
+                if (check) check.style.display = "none";
+            }
+        });
+
+        if (closeMenu) {
+            let menu = document.getElementById("perspectiveDropdownMenu");
+            if (menu) menu.style.display = "none";
+        }
+        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+    };
+
+    window.loadPerspective = function () {
+        let val = localStorage.perspective || "Third_Person";
+        selectPerspective(val, false);
+    };
+
     // Initialize custom dropdowns on load
     setTimeout(() => {
         initCustomSettingDropdown();
         loadTones();
         loadArchetypes();
+        loadPerspective();
     }, 20);
 
     window.setAccentTheme = function (themeName) {
