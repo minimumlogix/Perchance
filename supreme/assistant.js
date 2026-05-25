@@ -1,0 +1,205 @@
+// assistant.js
+
+document.addEventListener("DOMContentLoaded", () => {
+    const chatInput = document.getElementById("chatInputEl");
+    if (chatInput) {
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendAssistantMessage();
+            }
+        });
+        
+        chatInput.addEventListener("input", function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.value.trim() === "") {
+                this.style.height = 'auto';
+            }
+        });
+    }
+});
+
+function getAssistantContext() {
+    let context = "Context:\n";
+    // Check if sections have content (from app.js / character-generator.js logic)
+    if (typeof getSectionText === "function") {
+        const sections = ["role", "personality", "appearance", "background", "lore"];
+        sections.forEach(sec => {
+            let text = getSectionText(sec);
+            if (text && text.trim().length > 0) {
+                context += `[Character ${sec.toUpperCase()}]: ${text.trim()}\n`;
+            }
+        });
+    }
+    
+    // Add world context if available
+    let worldEl = document.getElementById("worldTextEl");
+    if (worldEl && worldEl.value && worldEl.value.trim().length > 0) {
+        context += `[World Setting]: ${worldEl.value.trim()}\n`;
+    }
+    
+    return context;
+}
+
+function appendUserMessage(text) {
+    const messagesEl = document.getElementById("chatMessagesEl");
+    const wrapper = document.createElement("div");
+    wrapper.className = "chat-message user";
+    wrapper.innerHTML = `<div class="message-bubble">${escapeHTML(text)}</div>`;
+    messagesEl.appendChild(wrapper);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function createAssistantMessageBlock() {
+    const messagesEl = document.getElementById("chatMessagesEl");
+    const wrapper = document.createElement("div");
+    wrapper.className = "chat-message assistant";
+    
+    // Thinking block
+    const thinkingBlock = document.createElement("div");
+    thinkingBlock.className = "thinking-block";
+    thinkingBlock.innerHTML = `Thinking <div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    
+    // Methodology block (hidden by default)
+    const methodologyBlock = document.createElement("div");
+    methodologyBlock.className = "methodology-content";
+    thinkingBlock.appendChild(methodologyBlock);
+    
+    // Message bubble
+    const bubble = document.createElement("div");
+    bubble.className = "message-bubble";
+    bubble.style.display = "none";
+    
+    wrapper.appendChild(thinkingBlock);
+    wrapper.appendChild(bubble);
+    messagesEl.appendChild(wrapper);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    
+    return { wrapper, thinkingBlock, methodologyBlock, bubble };
+}
+
+async function sendAssistantMessage() {
+    const inputEl = document.getElementById("chatInputEl");
+    const sendBtn = document.getElementById("chatSendBtnEl");
+    const text = inputEl.value.trim();
+    
+    if (!text) return;
+    
+    inputEl.value = "";
+    inputEl.style.height = 'auto';
+    inputEl.disabled = true;
+    sendBtn.disabled = true;
+    
+    appendUserMessage(text);
+    const msgBlock = createAssistantMessageBlock();
+    
+    const context = getAssistantContext();
+    
+    try {
+        // Phase 1: Assess Intention
+        msgBlock.thinkingBlock.childNodes[0].nodeValue = "Assessing intent ";
+        const intentInstruction = `You are a router. Based on the user request, output strictly ONE WORD from this list: "image", "text", "both". If they ask to see, draw, or generate an image/portrait, output "image" or "both". Otherwise output "text".\nUser Request: ${text}`;
+        
+        let intentResult = await window.ai({ instruction: intentInstruction });
+        let intentText = (intentResult.generatedText || intentResult.text || "").toLowerCase().trim();
+        
+        let intent = "text";
+        if (intentText.includes("both")) intent = "both";
+        else if (intentText.includes("image")) intent = "image";
+        
+        // Phase 2: Methodology
+        msgBlock.thinkingBlock.childNodes[0].nodeValue = "Developing methodology ";
+        const methodInstruction = `Generate a brief step-by-step methodology to fulfill this user request. Only output the steps. \n${context}\nRequest: ${text}`;
+        
+        let methodResult = await window.ai({ instruction: methodInstruction });
+        let methodology = (methodResult.generatedText || methodResult.text || "").trim();
+        
+        // Typewriter effect for methodology using Typed.js if requested, or just show it if expanded
+        // (We keep it hidden by default per requirements, but available in DOM)
+        msgBlock.methodologyBlock.textContent = methodology;
+        
+        // Phase 3: Final Output
+        msgBlock.thinkingBlock.style.display = "none"; // Hide thinking indicator once done
+        msgBlock.bubble.style.display = "block";
+        
+        if (intent === "text" || intent === "both") {
+            const finalInstruction = `Fulfill the user request based on the methodology.\n${context}\nMethodology: ${methodology}\nUser Request: ${text}`;
+            
+            let finalResult = await window.ai({ instruction: finalInstruction });
+            let finalOutput = (finalResult.generatedText || finalResult.text || "").trim();
+            finalOutput = escapeHTML(finalOutput).replace(/\n/g, "<br>");
+            
+            // Support typewriter.js as explicitly requested
+            if (typeof Typed !== 'undefined') {
+                new Typed(msgBlock.bubble, {
+                    strings: [finalOutput],
+                    typeSpeed: 10,
+                    showCursor: false,
+                    contentType: 'html',
+                    onStringTyped: function() {
+                        document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
+                    }
+                });
+            } else {
+                msgBlock.bubble.innerHTML = finalOutput;
+                document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
+            }
+        }
+        
+        if (intent === "image" || intent === "both") {
+            if (intent === "image") {
+                msgBlock.bubble.innerHTML = `<em>Generating image...</em>`;
+            } else {
+                msgBlock.bubble.innerHTML += `<br><br><em>Generating image...</em>`;
+            }
+            
+            // Generate Image Prompt
+            const imgPromptInstruction = `Write a succinct image generation prompt for text-to-image AI based on the user request. Describe the visuals clearly. Only output the prompt.\n${context}\nRequest: ${text}`;
+            let imgPromptResult = await window.ai({ instruction: imgPromptInstruction });
+            let finalImgPrompt = (imgPromptResult.generatedText || imgPromptResult.text || "").trim();
+            
+            let imgResult = await window.image(finalImgPrompt);
+            
+            if (intent === "image") {
+                msgBlock.bubble.innerHTML = "";
+            } else {
+                msgBlock.bubble.innerHTML = msgBlock.bubble.innerHTML.replace('<em>Generating image...</em>', '');
+            }
+            
+            if (imgResult.canvas) {
+                imgResult.canvas.className = "message-image";
+                msgBlock.bubble.appendChild(imgResult.canvas);
+            } else if (imgResult.dataUrl) {
+                const img = document.createElement("img");
+                img.src = imgResult.dataUrl;
+                img.className = "message-image";
+                msgBlock.bubble.appendChild(img);
+            }
+        }
+        
+    } catch (e) {
+        console.error("Assistant Error:", e);
+        msgBlock.thinkingBlock.style.display = "none";
+        msgBlock.bubble.style.display = "block";
+        msgBlock.bubble.innerHTML = `<span style="color: #ff6b6b;">Error: ${e.message || "Failed to generate response."}</span>`;
+    }
+    
+    inputEl.disabled = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+    document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
+}
+
+function escapeHTML(str) {
+    if (!str) return "";
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag])
+    );
+}

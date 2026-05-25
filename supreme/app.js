@@ -776,10 +776,12 @@
         let settingsTab = document.getElementById('settingsTabEl');
         let roleplayTab = document.getElementById('roleplayTabEl');
         let worldTab = document.getElementById('worldTabEl');
+        let assistantTab = document.getElementById('assistantTabEl');
         if (generatorTab) generatorTab.style.display = 'none';
         if (settingsTab) settingsTab.style.display = 'none';
         if (roleplayTab) roleplayTab.style.display = 'none';
         if (worldTab) worldTab.style.display = 'none';
+        if (assistantTab) assistantTab.style.display = 'none';
         
         if (tabName === 'characters') {
             let activeItem = document.getElementById('sidebar-item-characters');
@@ -793,6 +795,10 @@
             let activeItem = document.getElementById('sidebar-item-roleplay');
             if (activeItem) activeItem.classList.add('active');
             if (roleplayTab) roleplayTab.style.display = 'flex';
+        } else if (tabName === 'assistant') {
+            let activeItem = document.getElementById('sidebar-item-assistant');
+            if (activeItem) activeItem.classList.add('active');
+            if (assistantTab) assistantTab.style.display = 'flex';
         } else if (tabName === 'settings') {
             let activeItem = document.getElementById('sidebar-item-settings');
             if (activeItem) activeItem.classList.add('active');

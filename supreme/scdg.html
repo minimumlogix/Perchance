@@ -36,6 +36,8 @@
 <script src="https://minimumlogix.github.io/Perchance/supreme/character-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/roleplay-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/world-generator.js" defer></script>
+<link rel="stylesheet" href="assistant.css">
+<script src="assistant.js" defer></script>
 <div class="app-container">
     <!-- LEFT SIDEBAR -->
     <div class="left-sidebar">
@@ -56,6 +58,8 @@
                     class="bi bi-controller"></i> Roleplay</div>
             <div id="sidebar-item-settings" class="sidebar-item" onclick="switchTab('settings')"><i
                     class="bi bi-gear-fill"></i> Settings</div>
+            <div id="sidebar-item-assistant" class="sidebar-item" onclick="switchTab('assistant')"><i
+                    class="bi bi-robot"></i> Assistant</div>
         </div>
         <!-- SIDEBAR STATUS & TOGGLES PANEL -->
         <div id="sidebarStatusPanel"
@@ -84,6 +88,27 @@
     <!-- MAIN CONTENT -->
     <div class="main-content">
         <div class="content-wrapper">
+            <!-- ASSISTANT TAB -->
+            <div id="assistantTabEl" style="display: none; flex-direction: column; height: 100%; width: 100%;">
+                <div class="assistant-header">
+                    <i class="bi bi-robot" style="font-size: 1.2rem; color: var(--accent-color);"></i>
+                    <h2>AI Assistant</h2>
+                </div>
+                <div class="chat-messages" id="chatMessagesEl">
+                    <div class="chat-message assistant">
+                        <div class="message-bubble">Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?</div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea id="chatInputEl" rows="1" placeholder="Type your message here..."></textarea>
+                        <button class="chat-send-btn" id="chatSendBtnEl" onclick="sendAssistantMessage()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- GENERATOR TAB -->
             <div id="generatorTabEl" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
                 <!-- HEADER -->
