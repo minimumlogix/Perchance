@@ -108,43 +108,38 @@ async function sendAssistantMessage() {
         if (intentText.includes("both")) intent = "both";
         else if (intentText.includes("image")) intent = "image";
         
-        // Phase 2: Methodology
-        msgBlock.thinkingBlock.childNodes[0].nodeValue = "Developing methodology ";
-        const methodInstruction = `Generate a brief step-by-step methodology to fulfill this user request. Only output the steps. \n${context}\nRequest: ${text}`;
+        const enableThinking = document.getElementById("aiThinkingToggleEl") ? document.getElementById("aiThinkingToggleEl").checked : true;
+        let methodology = "";
         
-        let methodResult = await window.ai({ instruction: methodInstruction });
-        let methodology = (methodResult.generatedText || methodResult.text || "").trim();
-        
-        // Typewriter effect for methodology using Typed.js if requested, or just show it if expanded
-        // (We keep it hidden by default per requirements, but available in DOM)
-        msgBlock.methodologyBlock.textContent = methodology;
+        if (enableThinking) {
+            // Phase 2: Methodology
+            msgBlock.thinkingBlock.childNodes[0].nodeValue = "Developing methodology ";
+            const methodInstruction = `Generate a brief step-by-step methodology to fulfill this user request. Only output the steps. \n${context}\nRequest: ${text}`;
+            
+            let methodResult = await window.ai({ instruction: methodInstruction });
+            methodology = (methodResult.generatedText || methodResult.text || "").trim();
+            
+            msgBlock.methodologyBlock.textContent = methodology;
+        } else {
+            msgBlock.thinkingBlock.childNodes[0].nodeValue = "Generating ";
+        }
         
         // Phase 3: Final Output
         msgBlock.thinkingBlock.style.display = "none"; // Hide thinking indicator once done
         msgBlock.bubble.style.display = "block";
         
         if (intent === "text" || intent === "both") {
-            const finalInstruction = `Fulfill the user request based on the methodology.\n${context}\nMethodology: ${methodology}\nUser Request: ${text}`;
+            const finalInstruction = enableThinking
+                ? `Fulfill the user request based on the methodology.\n${context}\nMethodology: ${methodology}\nUser Request: ${text}`
+                : `Fulfill the user request.\n${context}\nUser Request: ${text}`;
             
-            let finalResult = await window.ai({ instruction: finalInstruction });
-            let finalOutput = (finalResult.generatedText || finalResult.text || "").trim();
-            finalOutput = escapeHTML(finalOutput).replace(/\n/g, "<br>");
-            
-            // Support typewriter.js as explicitly requested
-            if (typeof Typed !== 'undefined') {
-                new Typed(msgBlock.bubble, {
-                    strings: [finalOutput],
-                    typeSpeed: 10,
-                    showCursor: false,
-                    contentType: 'html',
-                    onStringTyped: function() {
-                        document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
-                    }
-                });
-            } else {
-                msgBlock.bubble.innerHTML = finalOutput;
-                document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
-            }
+            await window.ai({
+                instruction: finalInstruction,
+                onChunk: function(data) {
+                    msgBlock.bubble.innerHTML = escapeHTML(data.fullTextSoFar).replace(/\n/g, "<br>");
+                    document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
+                }
+            });
         }
         
         if (intent === "image" || intent === "both") {

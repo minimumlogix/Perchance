@@ -90,9 +90,14 @@
         <div class="content-wrapper">
             <!-- ASSISTANT TAB -->
             <div id="assistantTabEl" style="display: none; flex-direction: column; height: 100%; width: 100%;">
-                <div class="assistant-header">
-                    <i class="bi bi-robot" style="font-size: 1.2rem; color: var(--accent-color);"></i>
-                    <h2>AI Assistant</h2>
+                <div class="assistant-header" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-robot" style="font-size: 1.2rem; color: var(--accent-color);"></i>
+                        <h2>AI Assistant</h2>
+                    </div>
+                    <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="aiThinkingToggleEl" checked style="accent-color: var(--accent-color); transform: scale(1.1);"> Thinking Mode
+                    </label>
                 </div>
                 <div class="chat-messages" id="chatMessagesEl">
                     <div class="chat-message assistant">
