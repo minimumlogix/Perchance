@@ -789,9 +789,8 @@ Establish an immediate danger, mystery, or conflict that unites the player and t
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
 
-        let prompt = `You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The user is the player of this roleplay.
-
-WORLD DATA:
+        let promptParts = [root.prompts.roleplayScenario.instruction.evaluateItem];
+        let contextData = `WORLD DATA:
 - World Name: ${worldName}
 - World Lore/Setting: ${worldLore}
 - Setting Genre: ${setting}
@@ -808,23 +807,15 @@ ${npcsText}
 SCENARIO INSTRUCTIONS:
 - Plot Hook / Situation: ${scenarioNotes}
 
-STRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite.
+${lengthInstruction}`;
 
-TASK:
-Generate a structured scenario document divided into exactly two blocks using the separator string "=== ROLEPLAY_STARTER_SEPARATOR ===".
+        promptParts.push(contextData);
+        promptParts.push(root.prompts.roleplayScenario.format.evaluateItem);
+        if (typeof getBannedFormattingRule === 'function') {
+            promptParts.push(getBannedFormattingRule());
+        }
 
-Before the separator, output the SCENARIO SHEET containing:
-1. **World Expansion**: 2-3 sentences expanding on the setting specifics for this scene.
-2. **Character Sheet Details**: A concise summary of each NPC's hidden motivations, initial attitude towards ${pName}, and their relationships.
-3. **Plot Setup & Objective**: What is the immediate conflict, and what is the group's goal?
-
-After the separator, output the ROLEPLAY STARTER POST:
-- Set the scene at the very beginning of the action. Describe the immediate surroundings, sensory details (sounds, weather, light), and character actions.
-- Write in third-person limited (or second-person if fitting) focusing on ${pName}'s perspective.
-- End the starter post with an action, dialogue, or event from one of the NPCs that directly prompts ${pName} to speak or act, creating a natural hook.
-- ${lengthInstruction}
-
-Respond using the separator "=== ROLEPLAY_STARTER_SEPARATOR ===" between the Scenario Sheet and the Starter Post. Output nothing else.`;
+        let prompt = promptParts.join("\n\n");
 
         if (tabScenario) {
             tabScenario.innerHTML = "";
@@ -888,8 +879,8 @@ Respond using the separator "=== ROLEPLAY_STARTER_SEPARATOR ===" between the Sce
                 window.roleplayState.outputStarter = starterPart;
 
                 // Format with HTML markup
-                if (tabScenario) tabScenario.innerHTML = formatSectionText(scenarioPart);
-                if (tabStarter) tabStarter.innerHTML = formatSectionText(starterPart);
+                if (tabScenario) tabScenario.innerHTML = formatSectionText(sanitizeOutput(scenarioPart));
+                if (tabStarter) tabStarter.innerHTML = formatSectionText(sanitizeOutput(starterPart));
 
                 if (statusEl) statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Roleplay ready! Check the tabs below.</span>`;
 
@@ -1074,8 +1065,8 @@ Respond using the separator "=== ROLEPLAY_STARTER_SEPARATOR ===" between the Sce
             let tabScenario = document.getElementById("rpOutputTabEl-scenario");
             let tabStarter = document.getElementById("rpOutputTabEl-starter");
 
-            if (tabScenario) tabScenario.innerHTML = formatSectionText(window.roleplayState.outputScenario);
-            if (tabStarter) tabStarter.innerHTML = formatSectionText(window.roleplayState.outputStarter);
+            if (tabScenario) tabScenario.innerHTML = formatSectionText(sanitizeOutput(window.roleplayState.outputScenario));
+            if (tabStarter) tabStarter.innerHTML = formatSectionText(sanitizeOutput(window.roleplayState.outputStarter));
 
             let editBtn = document.getElementById("rpEditBtn");
             if (editBtn) editBtn.style.display = "inline-flex";

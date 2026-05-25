@@ -615,7 +615,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
             let text = getSectionText(s);
             if (text) {
                 let label = s === "appearance" ? "Physical Appearance" : s === "background" ? "Background" : s === "personality" ? "Personality" : s === "beliefs" ? "Beliefs & Morals" : s === "preferences" ? "Preferences" : s === "role" ? "Role" : s === "lore" ? "Lore" : s === "roleplay" ? "Roleplay Examples" : s === "introScenario" ? "Roleplay Intro - Scenario Context" : "Roleplay Intro - Dialogue & Narration";
-                lines.push(label + ":\n" + text);
+                lines.push("### " + label + ":\n" + text);
             }
         }
         return lines.join("\n\n");
@@ -950,10 +950,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             ignorePerspective = ignorePerspectiveToggle.checked;
         }
             
-        let parts = [
-            "You are writing the SCENARIO CONTEXT / SCENE CONTEXT for a roleplay session with the character.",
-            "INSTRUCTIONS:\n- Describe the starting physical environment, the time/weather, the situation, the proximity between the character and the user, and the current mood/atmosphere.\n- Focus on introducing the world, the characters, and the user's role in an engaging and fluent way based on the tone.\n- DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context.\n- Make it immersive, visual, and atmospheric.\n- Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:').\n- CRITICAL: The entire scenario context MUST be strictly one paragraph maximum. Do not exceed one paragraph."
-        ];
+        let parts = [root.prompts.introScenario.instruction.evaluateItem];
+        parts.push(root.prompts.introScenario.format.evaluateItem);
         
         parts.push("CRITICAL: The narrative voice MUST strongly reflect the selected Tone.");
         parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
@@ -988,11 +986,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             
         let scenarioContext = getSectionText("introScenario");
         
-        let parts = [
-            "You are writing the ROLEPLAY START (Dialogue & Narration) / greeting message for the character.",
-            "INSTRUCTIONS:\n- Write the character's opening message, including direct dialogue addressing the user and accompanying narration/actions.\n- Focus on physical expressions, body language, speech patterns, and personality traits.\n- Format actions and narration inside asterisks (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').",
-            perspectiveRule
-        ];
+        let parts = [root.prompts.introStart.instruction.evaluateItem];
+        parts.push(root.prompts.introStart.format.evaluateItem);
+        parts.push(perspectiveRule);
         
         parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
         parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
@@ -3558,7 +3554,7 @@ ${getBannedFormattingRule()}`;
                 this.element.value = this.typedText + (this.queue.length > 0 ? "|" : "");
                 this.element.scrollTop = this.element.scrollHeight;
             } else {
-                this.element.innerHTML = formatSectionText(this.typedText);
+                this.element.innerHTML = formatSectionText(sanitizeOutput(this.typedText));
                 this.element.appendChild(this.cursor);
             }
 
