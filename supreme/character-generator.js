@@ -126,7 +126,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         let res = await ai({ instruction });
         let visualKeyphrases = res.text.trim().replace(/^"|"$/g, "");
 
-        let prompt = `landscape concept art, environment, cinematic lighting, ${visualKeyphrases}, high quality, detailed, masterpiece`;
+        let prompt = sanitizeImagePrompt(`landscape concept art, environment, cinematic lighting, ${visualKeyphrases}, high quality, detailed, masterpiece`);
         let img = image({
             prompt: prompt,
             resolution: "768x512",
@@ -441,8 +441,8 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
 
     window.formatSectionText = function (text) {
         if (!text) return "";
-        let r = text.replace(/(^|\n)([#a-zA-Z/ _\-0-9]{1,50})(:\s)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replaceAll("#", "").trim()}</b>` + p3);
-        return r.replace(/(^|\n)(#+[a-zA-Z/ _\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replaceAll("#", "").trim()}</b>` + p3);
+        let r = text.replace(/(^|\n)([#*a-zA-Z/ _\-0-9]{1,50})(:\s?)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + (p3 === ":" ? ": " : p3));
+        return r.replace(/(^|\n)([#*]+[a-zA-Z/ _\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + p3);
     };
 
     window.setGenerationStatus = function (message) {
@@ -1380,7 +1380,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 if (statusEl) statusEl.textContent = "Generating Background...";
             }
             
-            let prompt = `Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`;
+            let prompt = sanitizeImagePrompt(`Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`);
             let negative = "photorealistic, characters, people, person, human, face, flat lighting, overexposed";
             
             if (promptEl) promptEl.value = prompt;
@@ -1418,7 +1418,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             
             let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, Noona-type character design, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, delicate facial features, refined aesthetics, sharp, clean linework";
             
-            let prompt = `Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`;
+            let prompt = sanitizeImagePrompt(`Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`);
             let negative = "photorealistic, flat lighting, overexposed, symmetrical face, expressionless, text, watermark";
             
             if (promptEl) promptEl.value = prompt;

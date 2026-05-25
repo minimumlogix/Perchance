@@ -370,7 +370,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
         let style = document.getElementById("visualStyleEl")?.value || "Cinematic Realistic";
         let stylePrompt = root.visualStyles[style] ? root.visualStyles[style].prompt.evaluateItem : "concept art";
 
-        let prompt = `landscape environment concept art, high quality, detailed, masterpiece, ${keyphrase}, ${stylePrompt}`;
+        let prompt = sanitizeImagePrompt(`landscape environment concept art, high quality, detailed, masterpiece, ${keyphrase}, ${stylePrompt}`);
         let img = image({
             prompt: prompt,
             resolution: "768x512"

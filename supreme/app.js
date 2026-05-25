@@ -225,9 +225,14 @@
     // ─── PANEL COLLAPSE ───────────────────────────────────────────────
     window.togglePanel = function (panelId) {
         let panel = document.getElementById(panelId);
+        let header = panel.querySelector('.panel-header');
         let body = panel.querySelector('.panel-body');
         let chevron = panel.querySelector('.panel-chevron');
         let collapsed = panel.classList.toggle('collapsed');
+        
+        if (header) header.setAttribute('aria-expanded', !collapsed);
+        if (body) body.setAttribute('aria-hidden', collapsed);
+
         if (chevron) {
             if (collapsed) {
                 chevron.classList.remove('bi-chevron-down');
