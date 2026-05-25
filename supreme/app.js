@@ -756,6 +756,21 @@
         let stopBtn = document.getElementById(section + "StopBtnEl");
         if (genBtn) genBtn.disabled = isGenerating;
         if (stopBtn) stopBtn.style.display = isGenerating ? "inline-block" : "none";
+        
+        let outputEl = document.getElementById(section + "OutputEl");
+        if (outputEl) {
+            if (isGenerating) {
+                outputEl.classList.add("generating-pulse");
+                outputEl.style.display = "block";
+            } else {
+                outputEl.classList.remove("generating-pulse");
+            }
+        }
+    };
+
+    window.sanitizeImagePrompt = function(text) {
+        if (!text) return "";
+        return text.replace(/:::/g, ""); // Prevent Perchance image plugin prompt injection
     };
 
     window.updateClearAllBtn = function () {

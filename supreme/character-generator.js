@@ -440,6 +440,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
     };
 
     window.formatSectionText = function (text) {
+        if (!text) return "";
         let r = text.replace(/(^|\n)([#a-zA-Z/ _\-0-9]{1,50})(:\s)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replaceAll("#", "").trim()}</b>` + p3);
         return r.replace(/(^|\n)(#+[a-zA-Z/ _\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replaceAll("#", "").trim()}</b>` + p3);
     };
@@ -518,6 +519,7 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         return "STRICT FORMATTING RULE: " + ruleParts.join(" ");
     };
     window.sanitizeOutput = function (text) {
+        if (!text) return "";
         let result = text;
         
         let banEmDash = localStorage.getItem("banEmDash") !== "false";
@@ -1538,7 +1540,7 @@ Requirements:
 - Format the output strictly under these plain text headings (do NOT bold them):
 Appearance: [A brief, masterpiece concept of their appearance and design, incorporating their Age, Gender, Species, and Ethnicity if provided]
 Personality: [A brief, masterpiece concept of their personality, core traits, and intriguing quirks, aligning with their details]
-Context: [A brief, masterpiece concept of their current situation, role, and relationship context with the user in terms of roleplaying (how they view the user, their dynamic, etc.)]
+Context: [A brief, masterpiece concept of their current situation, role, and relationship context with the {{user}} in terms of roleplaying (how they view the {{user}}, their dynamic, etc.)]
 Backstory: [A brief, masterpiece concept of their backstory or origin that shaped who they are today, incorporating their details naturally]
 - Do NOT write a long biography or use bullet points within the sections  -  write a brief, cohesive, evocative description for each section.
 - Keep it focused and descriptive.
@@ -2703,7 +2705,7 @@ ${getBannedFormattingRule()}`;
 
     // ─── CHARACTER CHAT ───────────────────────────────────────────────
     window.buildRoleInstruction = function (condensedInstruction, writingStyle) {
-        let universalRules = "RULES:\n- Never write dialogue, actions, or thoughts for <user>}.\n- Never break character.";
+        let universalRules = "RULES:\n- Never write dialogue, actions, or thoughts for {{user}}}.\n- Never break character.";
         return [condensedInstruction, writingStyle, universalRules].filter(Boolean).join("\n\n");
     };
 
@@ -2976,7 +2978,7 @@ ${getBannedFormattingRule()}`;
             }
             setGenerationStatus("🧠 Extracting character data...");
             let wikiOverride = (document.getElementById("wikiOverrideEl") || {}).value || "";
-            let instruction = `TASK: Extract character information from the provided text to populate a complete character profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "age": "...",\n  "gender": "...",\n  "orientation": "...",\n  "race": "...",\n  "ethnicity": "...",\n  "role": "...",\n  "appearance": "...",\n  "background": "...",\n  "personality": "...",\n  "beliefs": "...",\n  "preferences": "...",\n  "lore": "...",\n  "roleplay": "..."\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- role: 3-sentence description of the character's narrative role and relationship to the user/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.${wikiOverride.trim() ? `\n\nIMPORTANT CREATIVE TWIST  -  apply this override to ALL sections of the character: "${wikiOverride.trim()}". Reinterpret the source material fully through this lens. Keep the core identity (name, age, gender, race, appearance) grounded in source, but personality, role, background, beliefs, preferences, lore and roleplay must strongly reflect this twist.` : ""}\n\n${getBannedFormattingRule()}`;
+            let instruction = `TASK: Extract character information from the provided text to populate a complete character profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "age": "...",\n  "gender": "...",\n  "orientation": "...",\n  "race": "...",\n  "ethnicity": "...",\n  "role": "...",\n  "appearance": "...",\n  "background": "...",\n  "personality": "...",\n  "beliefs": "...",\n  "preferences": "...",\n  "lore": "...",\n  "roleplay": "..."\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- role: 3-sentence description of the character's narrative role and relationship to the {{user}}/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.${wikiOverride.trim() ? `\n\nIMPORTANT CREATIVE TWIST  -  apply this override to ALL sections of the character: "${wikiOverride.trim()}". Reinterpret the source material fully through this lens. Keep the core identity (name, age, gender, race, appearance) grounded in source, but personality, role, background, beliefs, preferences, lore and roleplay must strongly reflect this twist.` : ""}\n\n${getBannedFormattingRule()}`;
             let res = await ai({ instruction });
             let jsonText = res.text || "";
             let jsonMatch = jsonText.match(/\{[\s\S]*\}/);

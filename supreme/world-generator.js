@@ -225,6 +225,7 @@
         if (genBtn) genBtn.disabled = true;
         if (stopBtn) stopBtn.style.display = "inline-flex";
         if (statusEl) statusEl.textContent = "⏳ Chronological compilation...";
+        if (outputEl) outputEl.classList.add("generating-pulse");
 
         window.worldState.isGenerating[section] = true;
         setGenerationStatus(`Writing world ${section}...`);
@@ -321,6 +322,7 @@ ${lengthInstruction}`;
             if (statusEl) statusEl.textContent = "❌ Failed.";
         } finally {
             window.worldState.isGenerating[section] = false;
+            if (outputEl) outputEl.classList.remove("generating-pulse");
             if (genBtn) genBtn.disabled = false;
             if (stopBtn) stopBtn.style.display = "none";
             window.saveWorldState();
