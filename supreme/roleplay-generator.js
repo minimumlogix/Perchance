@@ -322,6 +322,7 @@
         let keys = [
             "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
             "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
+            "Zombie_apocalypse", "Alien_apocalypse",
             "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
             "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
             "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",

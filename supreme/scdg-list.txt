@@ -58,6 +58,8 @@ settingPrompts
   Real_World_Fantasy = The setting is the contemporary real world but magic is real and many fantasy races exist alongside humans. Modern institutions and culture coexist with ancient magical powers. Any race is appropriate.
   Historical = The setting is a specific historical era - be bold and pick something less commonly used (avoid defaulting to Medieval Europe, Victorian England, or Ancient Rome unless you have a genuinely fresh angle). Commit fully to the period's culture, language, politics, and technology. Race should be human unless the historical setting has a fantastical element.
   Post_Apocalyptic = The setting is a post-apocalyptic world - civilisation has collapsed and survival is everything. Factions, scarcity, and moral compromise define daily life. Races should be human or mutated human unless otherwise specified.
+  Zombie_apocalypse = The setting is a zombie apocalypse. A viral outbreak or supernatural plague has reanimated the dead. Survivors scavenge for food, water, and ammunition in ruined cities while defending against swarms of infected.
+  Alien_apocalypse = The setting is an alien apocalypse. Earth has been invaded and conquered by a hostile, highly advanced extraterrestrial species. Humans are hunted, enslaved, or forced into hiding among the ruins of civilization.
   Horror = The setting is a horror world - dread, darkness, and the unknown lurk around every corner. The character should have a relationship with something deeply unsettling. Any race is appropriate but lean toward the uncanny.
   Mythology = The setting draws from real-world mythology - gods, heroes, monsters, and ancient powers made flesh. Any mythological race or creature is appropriate.
   Solarpunk = The setting is a solarpunk world - optimistic, ecological, communal, and beautifully overgrown. Technology and nature coexist. Any race is appropriate.
@@ -115,7 +117,7 @@ archetypePrompts
   Kamidere = The character behaves in a Kamidere manner: possessing a god complex, proud, arrogant, and believing their authority and ideas are absolute and superior.
   Don = The character's role is a Mafia Don or crime boss: authoritative, calculating, commanding, and intimidating, carrying an aura of dangerous power and leadership.
   Boss = The character is a boss, employer, or commander: professional, demanding, authoritative, and in control of their subordinates and operations.
-  Milf = The character is a mature, motherly, or highly appealing older figure: caring, experienced, and possessing a warm, maternal, yet attractive presence.
+  Milf = The character is a MILF, a mature, motherly, or highly appealing older figure: caring, experienced, and possessing a warm, maternal, yet attractive presence.
   Furry = The character is anthropomorphic or animal-like (furry/anthro): possessing fur, scales, claws, tail, or other animal features combined with human intellect and shape.
   Ghost = The character is a ghost or spectral apparition: intangible, floating, bound to a place or object, and possessing supernatural or eerie traits.
   Maid = The character is a maid: loyal, service-oriented, wearing a maid uniform, and dedicated to the cleaning, care, and desires of their master/mistress.
@@ -135,6 +137,10 @@ archetypePrompts
   Villain = The character is a villain: malicious, devious, serving as the primary antagonist with dark ambitions or sinister motivations.
   Anti_Hero = The character is an anti-hero: pursuing good or personal goals but using morally grey, ruthless, or unconventional methods to achieve them.
   Monster_Girl = The character is a monster girl or beast-humanoid: possessing creature-like features (wings, horns, tail) with a distinct creature identity.
+  Bully = The character behaves in a Bully manner: aggressive, domineering, and mocking, often picking on others or finding pleasure in asserting dominance and teasing, but hiding their own insecurities.
+  Enemy = The character behaves in an Enemy manner: hostile, adversarial, and competitive, viewing other characters as rivals, opponents, or threats to be defeated, showing constant friction and opposition.
+  Cute = The character behaves in a Cute manner: endearing, charming, sweet, and adorable, expressing innocent affection, playful behavior, and a gentle presence that brings warmth.
+  Psychopath = The character behaves in a Psychopath manner: manipulative, charming but superficial, lacking empathy, remorse, or guilt, behaving with calculated, unpredictable, and often chilling detachment.
 
 lengthSpecifiers
   super-short = 1 line each

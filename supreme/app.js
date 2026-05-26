@@ -12,7 +12,9 @@
                 High_Fantasy: { evaluateItem: "The setting is an epic high fantasy world." },
                 "Sci_Fi": { evaluateItem: "The setting is a science fiction universe with advanced technology." },
                 Cyberpunk: { evaluateItem: "The setting is a near-future cyberpunk megalopolis  -  neon-lit, corporate-controlled." },
-                "Real_World_Modern": { evaluateItem: "The setting is the contemporary real world." }
+                "Real_World_Modern": { evaluateItem: "The setting is the contemporary real world." },
+                Zombie_apocalypse: { evaluateItem: "The setting is a zombie apocalypse." },
+                Alien_apocalypse: { evaluateItem: "The setting is an alien apocalypse." }
             },
             tonePrompts: {
                 Any: { evaluateItem: "" },
@@ -289,6 +291,7 @@
     var SETTING_KEYS = [
         "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
         "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
+        "Zombie_apocalypse", "Alien_apocalypse",
         "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
         "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
         "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",

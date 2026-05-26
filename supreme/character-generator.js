@@ -1756,6 +1756,8 @@ ${getBannedFormattingRule()}`;
             "Real_World_Fantasy": { fantasyPortrait: 60, photo: 30, painting: 30 },
             "Historical": { oilPainting: 80, painting: 60, vintage: 50, sketch: 30 },
             "Post_Apocalyptic": { photo: 50, painting: 30, digitalPainting: 30, render: 30 },
+            "Zombie_apocalypse": { photo: 50, painting: 30, digitalPainting: 30, render: 30 },
+            "Alien_apocalypse": { photo: 40, digitalPainting: 40, render: 50, painting: 30 },
             "Horror": { oilPainting: 40, painting: 40, vintage: 30, sketch: 30 },
             "Mythology": { fantasyPortrait: 70, fantasy: 70, oilPainting: 50, painting: 60, japanese: 30 },
             "Solarpunk": { digitalPainting: 60, painting: 50, fantasy: 40, illustration: 50 },
