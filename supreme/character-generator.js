@@ -1197,6 +1197,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             introNotesEl.value = "";
             localStorage.removeItem("introNotes");
         }
+        if (typeof window.clearRoleplayImagesState === "function") {
+            window.clearRoleplayImagesState();
+        }
     };
 
     window.generateAll = async function (bypassOverviewCheck) {
@@ -1348,56 +1351,152 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         ]);
     };
 
+    window.introBgGenRunning = false;
+    window.introCharGenRunning = false;
+    window.overwrittenIntroBgPrompt = localStorage.overwrittenIntroBgPrompt || "";
+    window.overwrittenIntroCharPrompt = localStorage.overwrittenIntroCharPrompt || "";
+
+    window.clearRoleplayImagesState = function() {
+        window.overwrittenIntroBgPrompt = "";
+        window.overwrittenIntroCharPrompt = "";
+        localStorage.removeItem("overwrittenIntroBgPrompt");
+        localStorage.removeItem("overwrittenIntroCharPrompt");
+        localStorage.removeItem("introBgImageUrl");
+        localStorage.removeItem("introCharImageUrl");
+        
+        let introBgPromptEl = document.getElementById("introBgPromptEl");
+        let introCharPromptEl = document.getElementById("introCharPromptEl");
+        if (introBgPromptEl) introBgPromptEl.value = "";
+        if (introCharPromptEl) introCharPromptEl.value = "";
+        
+        let introBg = document.getElementById("introImageBg");
+        if (introBg) introBg.style.backgroundImage = "";
+        
+        let introCanvas = document.getElementById("introImageCharCanvas");
+        if (introCanvas) {
+            let ctx = introCanvas.getContext("2d");
+            if (ctx) ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+        }
+        
+        let nameTag = document.getElementById("introImageNameTag");
+        if (nameTag) nameTag.style.display = "none";
+        
+        let placeholder = document.getElementById("introImagePlaceholder");
+        if (placeholder) placeholder.style.display = "flex";
+    };
+
+    window.clearAppearanceImages = function() {
+        window.overwrittenVisualKeyphrasesText = "";
+        window.overwrittenStylePrompt = "";
+        localStorage.removeItem("overwrittenVisualKeyphrasesText");
+        localStorage.removeItem("overwrittenStylePrompt");
+        localStorage.removeItem("activeImages");
+        
+        let styleOverrideEl = document.getElementById("styleOverrideEl");
+        if (styleOverrideEl) styleOverrideEl.value = "";
+        
+        let promptEl = document.getElementById("appearancePromptTextarea");
+        if (promptEl) promptEl.value = "";
+        
+        let imagesEl = document.getElementById("imagesEl");
+        if (imagesEl) {
+            imagesEl.innerHTML = `
+                <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                    <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                    <span>No character images generated yet. Use the controls above to generate portrait images.</span>
+                </div>
+            `;
+        }
+        updateStyleOverridePlaceholder();
+    };
+
     window.generateRoleplayImageBg = async function() {
         let statusEl = document.getElementById("introImageStatus");
         let bgEl = document.getElementById("introImageBg");
         let promptEl = document.getElementById("introBgPromptEl");
         let btn = document.getElementById("introImageBgGenBtn");
+        let stopBtn = document.getElementById("introImageBgStopBtn");
         
-        if (btn) btn.disabled = true;
-        if (statusEl) { statusEl.style.display = "flex"; statusEl.textContent = "Generating Background..."; }
+        if (btn) btn.style.display = "none";
+        if (stopBtn) stopBtn.style.display = "inline-flex";
+        if (statusEl) {
+            statusEl.style.display = "flex";
+            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background...</div>`;
+        }
+        
+        window.introBgGenRunning = true;
         
         try {
-            let scenario = getSectionText("introScenario") || "A scenic background";
-            let artstyle = "semi-realistic manhwa style, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, refined aesthetics, sharp, clean linework, beautiful scenery, highly detailed environment";
+            let prompt = promptEl ? promptEl.value.trim() : "";
             
-            let bgDescription = scenario;
-            
-            // Extract only the background using AI if the text is long enough
-            if (scenario && scenario.length > 15 && typeof window.ai !== "undefined") {
-                try {
-                    if (statusEl) statusEl.textContent = "Analyzing Scene...";
-                    let extractPrompt = `Extract ONLY the physical setting, environment, lighting, and atmosphere from the following text into a concise visual description. Do NOT mention any people, characters, actions, or dialogue. Just describe the empty scenery:\\n\\n${scenario}`;
-                    let aiResult = await window.ai(extractPrompt);
-                    if (aiResult && aiResult.generatedText) {
-                        bgDescription = aiResult.generatedText.trim();
-                    } else if (aiResult) {
-                        bgDescription = aiResult.toString().trim();
+            if (!prompt) {
+                let scenario = getSectionText("introScenario") || "A scenic background";
+                let artstyle = "semi-realistic manhwa style, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, refined aesthetics, sharp, clean linework, beautiful scenery, highly detailed environment";
+                let bgDescription = scenario;
+                
+                if (scenario && scenario.length > 15 && typeof window.ai !== "undefined") {
+                    try {
+                        if (statusEl) {
+                            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Analyzing Scene...</div>`;
+                        }
+                        let extractPrompt = `Extract ONLY the physical setting, environment, lighting, and atmosphere from the following text into a concise visual description. Do NOT mention any people, characters, actions, or dialogue. Just describe the empty scenery:\n\n${scenario}`;
+                        let aiResult = await window.ai(extractPrompt);
+                        if (!window.introBgGenRunning) return;
+                        if (aiResult && aiResult.generatedText) {
+                            bgDescription = aiResult.generatedText.trim();
+                        } else if (aiResult) {
+                            bgDescription = aiResult.toString().trim();
+                        }
+                    } catch(e) {
+                        console.error("AI scene extraction error:", e);
                     }
-                } catch(e) {
-                    console.error("AI scene extraction error:", e);
                 }
-                if (statusEl) statusEl.textContent = "Generating Background...";
+                
+                prompt = sanitizeImagePrompt(`Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`);
+                if (promptEl) promptEl.value = prompt;
+                window.overwrittenIntroBgPrompt = prompt;
             }
             
-            let prompt = sanitizeImagePrompt(`Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`);
-            let negative = "photorealistic, characters, people, person, human, face, flat lighting, overexposed";
-            
-            if (promptEl) promptEl.value = prompt;
+            if (!window.introBgGenRunning) return;
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background Image...</div>`;
+            }
             
             let result = await image({
                 prompt: prompt,
-                negativePrompt: negative,
+                negativePrompt: "photorealistic, characters, people, person, human, face, flat lighting, overexposed",
                 resolution: "768x512"
             });
             
+            if (!window.introBgGenRunning) return;
+            
             if (bgEl && result && result.dataUrl) {
                 bgEl.style.backgroundImage = `url(${result.dataUrl})`;
+                localStorage.introBgImageUrl = result.dataUrl;
+                let placeholder = document.getElementById("introImagePlaceholder");
+                if (placeholder) placeholder.style.display = "none";
             }
         } catch (e) {
             console.error("Error generating bg image:", e);
         } finally {
-            if (btn) btn.disabled = false;
+            window.introBgGenRunning = false;
+            if (btn) btn.style.display = "inline-flex";
+            if (stopBtn) stopBtn.style.display = "none";
+            if (!window.introBgGenRunning && !window.introCharGenRunning) {
+                if (statusEl) statusEl.style.display = "none";
+            }
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        }
+    };
+
+    window.stopRoleplayImageBgGen = function() {
+        window.introBgGenRunning = false;
+        let btn = document.getElementById("introImageBgGenBtn");
+        let stopBtn = document.getElementById("introImageBgStopBtn");
+        let statusEl = document.getElementById("introImageStatus");
+        if (btn) btn.style.display = "inline-flex";
+        if (stopBtn) stopBtn.style.display = "none";
+        if (!window.introBgGenRunning && !window.introCharGenRunning) {
             if (statusEl) statusEl.style.display = "none";
         }
     };
@@ -1407,27 +1506,43 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let charCanvas = document.getElementById("introImageCharCanvas");
         let promptEl = document.getElementById("introCharPromptEl");
         let btn = document.getElementById("introImageCharGenBtn");
+        let stopBtn = document.getElementById("introImageCharStopBtn");
         
-        if (btn) btn.disabled = true;
-        if (statusEl) { statusEl.style.display = "flex"; statusEl.textContent = "Generating Character Sprite..."; }
+        if (btn) btn.style.display = "none";
+        if (stopBtn) stopBtn.style.display = "inline-flex";
+        if (statusEl) {
+            statusEl.style.display = "flex";
+            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite...</div>`;
+        }
+        
+        window.introCharGenRunning = true;
         
         try {
-            let appearanceText = getSectionText("appearance") || "";
-            let attireText = getSectionText("attire") || "";
-            let itemsText = getSectionText("items") || "";
+            let prompt = promptEl ? promptEl.value.trim() : "";
             
-            let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, Noona-type character design, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, delicate facial features, refined aesthetics, sharp, clean linework";
+            if (!prompt) {
+                let appearanceText = getSectionText("appearance") || "";
+                let attireText = getSectionText("attire") || "";
+                let itemsText = getSectionText("items") || "";
+                let artstyle = "mature Korean-style Manhwa Art style, semi-realistic manhwa style, mature/sexy style, Noona-type character design, painterly rendering, soft shading, Anime cel shading, artstation quality, gorgeous, delicate facial features, refined aesthetics, sharp, clean linework";
+                
+                prompt = sanitizeImagePrompt(`Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`);
+                if (promptEl) promptEl.value = prompt;
+                window.overwrittenIntroCharPrompt = prompt;
+            }
             
-            let prompt = sanitizeImagePrompt(`Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`);
-            let negative = "photorealistic, flat lighting, overexposed, symmetrical face, expressionless, text, watermark";
-            
-            if (promptEl) promptEl.value = prompt;
+            if (!window.introCharGenRunning) return;
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite Image...</div>`;
+            }
             
             let result = await image({
                 prompt: prompt,
-                negativePrompt: negative,
+                negativePrompt: "photorealistic, flat lighting, overexposed, symmetrical face, expressionless, text, watermark",
                 resolution: "512x512"
             });
+            
+            if (!window.introCharGenRunning) return;
             
             if (charCanvas && result && result.canvas) {
                 charCanvas.width = result.canvas.width;
@@ -1435,11 +1550,31 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 let ctx = charCanvas.getContext("2d");
                 ctx.drawImage(result.canvas, 0, 0);
                 removeWhiteBackground(charCanvas, 240);
+                localStorage.introCharImageUrl = charCanvas.toDataURL("image/png");
+                let placeholder = document.getElementById("introImagePlaceholder");
+                if (placeholder) placeholder.style.display = "none";
             }
         } catch (e) {
             console.error("Error generating char image:", e);
         } finally {
-            if (btn) btn.disabled = false;
+            window.introCharGenRunning = false;
+            if (btn) btn.style.display = "inline-flex";
+            if (stopBtn) stopBtn.style.display = "none";
+            if (!window.introBgGenRunning && !window.introCharGenRunning) {
+                if (statusEl) statusEl.style.display = "none";
+            }
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        }
+    };
+
+    window.stopRoleplayImageCharGen = function() {
+        window.introCharGenRunning = false;
+        let btn = document.getElementById("introImageCharGenBtn");
+        let stopBtn = document.getElementById("introImageCharStopBtn");
+        let statusEl = document.getElementById("introImageStatus");
+        if (btn) btn.style.display = "inline-flex";
+        if (stopBtn) stopBtn.style.display = "none";
+        if (!window.introBgGenRunning && !window.introCharGenRunning) {
             if (statusEl) statusEl.style.display = "none";
         }
     };
@@ -1804,10 +1939,19 @@ ${getBannedFormattingRule()}`;
 
         setGenerationStatus("🎨 Generating image prompt...");
 
+        let textarea = document.getElementById("appearancePromptTextarea");
+        if (textarea) {
+            textarea.value = "";
+            textarea.placeholder = "Generating image prompt...";
+        }
+
         let captionObj;
         let captionPromptObj = {
             instruction: getCaptionPromptInstruction(appearanceText, settingValue, toneValues),
             onChunk: (data) => {
+                if (textarea) {
+                    textarea.value = data.fullTextSoFar;
+                }
                 if (data.fullTextSoFar.length > 500) {
                     let terms = data.fullTextSoFar.split(", ");
                     let uniqueTerms = [...new Set(terms)];
@@ -1819,7 +1963,6 @@ ${getBannedFormattingRule()}`;
         captionObj = ai(captionPromptObj);
         window.lastImageCaptionPromptStreamObj = captionObj;
         window.activeImageCaptionStream = captionObj;
-        imagePromptEl.innerHTML = "<b>Generating image prompt...</b> " + captionObj.loadingIndicatorHtml;
 
         let captionResult = await captionObj;
         window.activeImageCaptionStream = null;
@@ -1831,7 +1974,12 @@ ${getBannedFormattingRule()}`;
             return;
         }
 
-        let visualKeyphrasesText = captionResult.text.replace(/\n+/g, " ");
+        let visualKeyphrasesText = captionResult.text.replace(/\n+/g, " ").trim();
+        if (textarea) {
+            textarea.value = visualKeyphrasesText;
+        }
+        window.overwrittenVisualKeyphrasesText = visualKeyphrasesText;
+
         let bestStyle = pickBestVisualStyle();
         if (!window.overwrittenStylePrompt) {
             visualStyleEl.value = bestStyle;
@@ -1844,18 +1992,43 @@ ${getBannedFormattingRule()}`;
         window.lastCharacterData.appearanceText = appearanceText;
         window.lastCharacterData.visualStyleName = visualStyleEl.value;
 
-        regenImagesBtn.disabled = false;
-        regenImagePromptBtn.disabled = false;
-        if (stopBtn) stopBtn.style.display = "none";
-        generateImages();
+        await generateImages();
         setGenerationStatus("");
     };
 
-    window.generateImages = function () {
-        if (!window.lastCharacterData || !window.lastCharacterData.visualKeyphrasesText) return;
-        let { visualKeyphrasesText } = window.lastCharacterData;
+    window.generateImages = async function () {
+        let textarea = document.getElementById("appearancePromptTextarea");
+        let basePrompt = (window.overwrittenVisualKeyphrasesText || (textarea ? textarea.value : "") || "").trim();
+        
+        if (!basePrompt && window.lastCharacterData && window.lastCharacterData.visualKeyphrasesText) {
+            basePrompt = window.lastCharacterData.visualKeyphrasesText;
+        }
+
+        // If no prompt, try generating one first
+        if (!basePrompt) {
+            let appearanceText = getSectionText("appearance") || "";
+            if (appearanceText) {
+                await window.triggerImageGeneration(appearanceText);
+                return;
+            } else {
+                alert("Please generate or enter an appearance description first.");
+                return;
+            }
+        }
+
+        window.appearanceImageGenRunning = true;
+
+        let regenBtn = document.getElementById("regenImagesBtn");
+        let promptBtn = document.getElementById("regenImagePromptBtn");
+        let stopBtn = document.getElementById("stopImageGenBtn");
+
+        if (regenBtn) regenBtn.disabled = true;
+        if (promptBtn) promptBtn.disabled = true;
+        if (stopBtn) stopBtn.style.display = "inline-flex";
+
         let count = parseInt(imageCountEl.value) || 4;
-        let basePrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
+        let imagesEl = document.getElementById("imagesEl");
+
         let imageHtml = "";
         for (let i = 0; i < count; i++) {
             let styleOverride = window.overwrittenStylePrompt || "";
@@ -1869,20 +2042,52 @@ ${getBannedFormattingRule()}`;
             wrapper += image(promptData).evaluateItem;
             wrapper += '<div class="image-card-actions">';
             wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-            
             wrapper += '</div></div>';
             imageHtml += wrapper;
         }
-        let promptHtml = '<div style="display:flex; flex-direction:column; gap:0.5rem; text-align:left; width:100%; box-sizing:border-box;">';
-        promptHtml += '<div><b style="font-size:80%; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-pencil-fill" style="color:var(--accent-color);"></i> Image Prompt <span style="opacity:0.6;">(editable)</span>:</b>';
-        promptHtml += '<textarea oninput="window.overwrittenVisualKeyphrasesText=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" class="image-tools-textarea" style="min-height:5rem; margin-top:0.25rem;">' + (window.overwrittenVisualKeyphrasesText || visualKeyphrasesText) + '</textarea></div></div>';
-        imagePromptEl.innerHTML = promptHtml;
-        imagesEl.innerHTML = imageHtml;
+
+        if (imagesEl) imagesEl.innerHTML = imageHtml;
         updateStyleOverridePlaceholder();
-        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+
+        // Monitor image loading to hide the Stop button when all are loaded (or hit error)
+        if (imagesEl) {
+            let images = imagesEl.querySelectorAll("img");
+            if (images.length > 0) {
+                let loadedCount = 0;
+                images.forEach(img => {
+                    let handleLoad = () => {
+                        loadedCount++;
+                        if (loadedCount >= images.length) {
+                            if (window.appearanceImageGenRunning) {
+                                window.appearanceImageGenRunning = false;
+                                if (stopBtn) stopBtn.style.display = "none";
+                                if (regenBtn) regenBtn.disabled = false;
+                                if (promptBtn) promptBtn.disabled = false;
+                                if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+                            }
+                        }
+                    };
+                    img.addEventListener("load", handleLoad);
+                    img.addEventListener("error", handleLoad);
+                });
+            } else {
+                window.appearanceImageGenRunning = false;
+                if (stopBtn) stopBtn.style.display = "none";
+                if (regenBtn) regenBtn.disabled = false;
+                if (promptBtn) promptBtn.disabled = false;
+                if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+            }
+        } else {
+            window.appearanceImageGenRunning = false;
+            if (stopBtn) stopBtn.style.display = "none";
+            if (regenBtn) regenBtn.disabled = false;
+            if (promptBtn) promptBtn.disabled = false;
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        }
     };
 
     window.stopImageGeneration = function () {
+        window.appearanceImageGenRunning = false;
         // Stop the active caption stream if still running
         if (window.activeImageCaptionStream) {
             try { window.activeImageCaptionStream.stop(); } catch(e) {}
@@ -1900,8 +2105,13 @@ ${getBannedFormattingRule()}`;
         if (promptBtn) promptBtn.disabled = false;
         // Clear the images area to indicate generation was cancelled
         let imagesContainer = document.getElementById("imagesEl");
-        if (imagesContainer && imagesContainer.innerHTML === "") {
-            imagesContainer.innerHTML = '<div style="padding:1rem; text-align:center; opacity:0.5; font-size:85%;">⛔ Image generation stopped.</div>';
+        if (imagesContainer) {
+            imagesContainer.innerHTML = `
+                <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                    <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                    <span>Image generation stopped. Use the controls above to generate portrait images.</span>
+                </div>
+            `;
         }
         setGenerationStatus("");
     };
@@ -2286,6 +2496,10 @@ ${getBannedFormattingRule()}`;
             visualKeyphrasesText: window.lastCharacterData?.visualKeyphrasesText || "",
             overwrittenVisualKeyphrasesText: window.overwrittenVisualKeyphrasesText || "",
             overwrittenStylePrompt: window.overwrittenStylePrompt || "",
+            overwrittenIntroBgPrompt: window.overwrittenIntroBgPrompt || "",
+            overwrittenIntroCharPrompt: window.overwrittenIntroCharPrompt || "",
+            introBgImageUrl: localStorage.introBgImageUrl || "",
+            introCharImageUrl: localStorage.introCharImageUrl || "",
             activeImages: (function() {
                 let imgUrls = [];
                 document.querySelectorAll("#imagesEl img").forEach(img => {
@@ -2316,6 +2530,8 @@ ${getBannedFormattingRule()}`;
         localStorage.selectedAvatarUrl = window.selectedAvatarUrl || "";
         localStorage.overwrittenVisualKeyphrasesText = window.overwrittenVisualKeyphrasesText || "";
         localStorage.overwrittenStylePrompt = window.overwrittenStylePrompt || "";
+        localStorage.overwrittenIntroBgPrompt = window.overwrittenIntroBgPrompt || "";
+        localStorage.overwrittenIntroCharPrompt = window.overwrittenIntroCharPrompt || "";
         localStorage.lastCharacterData = JSON.stringify(window.lastCharacterData || null);
         
         let imgUrls = [];
@@ -2511,8 +2727,32 @@ ${getBannedFormattingRule()}`;
                 }
 
                 let imgUrls = c.activeImages || (c.imageDataUrl ? [c.imageDataUrl] : []);
+                if (imagesAreaEl) imagesAreaEl.style.display = "block";
+                
+                window.overwrittenVisualKeyphrasesText = c.overwrittenVisualKeyphrasesText || "";
+                window.overwrittenStylePrompt = c.overwrittenStylePrompt || "";
+                if (window.lastCharacterData) {
+                    window.lastCharacterData.visualKeyphrasesText = c.visualKeyphrasesText || "";
+                    window.lastCharacterData.appearanceText = c.appearanceText || "";
+                    window.lastCharacterData.visualStyleName = c.visualStyleName || "";
+                } else {
+                    window.lastCharacterData = {
+                        visualKeyphrasesText: c.visualKeyphrasesText || "",
+                        appearanceText: c.appearanceText || "",
+                        visualStyleName: c.visualStyleName || ""
+                    };
+                }
+                
+                let promptEl = document.getElementById("appearancePromptTextarea");
+                if (promptEl) promptEl.value = c.overwrittenVisualKeyphrasesText || c.visualKeyphrasesText || "";
+                
+                let styleOverrideEl = document.getElementById("styleOverrideEl");
+                if (styleOverrideEl) {
+                    styleOverrideEl.value = c.overwrittenStylePrompt || "";
+                }
+                updateStyleOverridePlaceholder();
+
                 if (imgUrls && imgUrls.length > 0) {
-                    imagesAreaEl.style.display = "block";
                     let imageHtml = "";
                     imgUrls.forEach(url => {
                         let isSelected = (url === avatarUrl) ? " selected-avatar" : "";
@@ -2520,33 +2760,71 @@ ${getBannedFormattingRule()}`;
                         wrapper += '<img src="' + url + '">';
                         wrapper += '<div class="image-card-actions">';
                         wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-                        
                         wrapper += '</div></div>';
                         imageHtml += wrapper;
                     });
-                    imagesEl.innerHTML = imageHtml;
-                    
-                    // Re-render editable prompt textarea
-                    let basePrompt = c.overwrittenVisualKeyphrasesText || c.visualKeyphrasesText || "";
-                    let promptHtml = '<div style="display:flex; flex-direction:column; gap:0.5rem; text-align:left; width:100%; box-sizing:border-box;">';
-                    promptHtml += '<div><b style="font-size:80%; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-pencil-fill" style="color:var(--accent-color);"></i> Image Prompt <span style="opacity:0.6;">(editable)</span>:</b>';
-                    promptHtml += '<textarea oninput="window.overwrittenVisualKeyphrasesText=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" class="image-tools-textarea" style="min-height:5rem; margin-top:0.25rem;">' + basePrompt + '</textarea></div></div>';
-                    imagePromptEl.innerHTML = promptHtml;
-                    
-                    // Update style override field
-                    if (typeof styleOverrideEl !== 'undefined' && styleOverrideEl) {
-                        if (c.overwrittenStylePrompt) {
-                            styleOverrideEl.value = c.overwrittenStylePrompt;
-                        } else {
-                            updateStyleOverridePlaceholder();
-                        }
-                    } else {
-                        updateStyleOverridePlaceholder();
-                    }
+                    if (imagesEl) imagesEl.innerHTML = imageHtml;
                 } else {
-                    if (typeof imagesAreaEl !== 'undefined') imagesAreaEl.style.display = "none";
-                    if (typeof imagesEl !== 'undefined') imagesEl.innerHTML = "";
-                    if (typeof imagePromptEl !== 'undefined') imagePromptEl.innerHTML = "";
+                    if (imagesEl) {
+                        imagesEl.innerHTML = `
+                            <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                                <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                                <span>No character images generated yet. Use the controls above to generate portrait images.</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Restore intro images and prompts
+                window.overwrittenIntroBgPrompt = c.overwrittenIntroBgPrompt || "";
+                window.overwrittenIntroCharPrompt = c.overwrittenIntroCharPrompt || "";
+                localStorage.overwrittenIntroBgPrompt = window.overwrittenIntroBgPrompt;
+                localStorage.overwrittenIntroCharPrompt = window.overwrittenIntroCharPrompt;
+                
+                let introBgPromptEl = document.getElementById("introBgPromptEl");
+                let introCharPromptEl = document.getElementById("introCharPromptEl");
+                if (introBgPromptEl) introBgPromptEl.value = window.overwrittenIntroBgPrompt;
+                if (introCharPromptEl) introCharPromptEl.value = window.overwrittenIntroCharPrompt;
+                
+                localStorage.introBgImageUrl = c.introBgImageUrl || "";
+                localStorage.introCharImageUrl = c.introCharImageUrl || "";
+                
+                let introBg = document.getElementById("introImageBg");
+                let introCanvas = document.getElementById("introImageCharCanvas");
+                let hasPreview = false;
+                
+                if (localStorage.introBgImageUrl) {
+                    if (introBg) introBg.style.backgroundImage = `url(${localStorage.introBgImageUrl})`;
+                    hasPreview = true;
+                } else {
+                    if (introBg) introBg.style.backgroundImage = "";
+                }
+                
+                if (localStorage.introCharImageUrl) {
+                    let img = new Image();
+                    img.onload = function() {
+                        if (introCanvas) {
+                            introCanvas.width = img.width;
+                            introCanvas.height = img.height;
+                            let ctx = introCanvas.getContext("2d");
+                            if (ctx) {
+                                ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                                ctx.drawImage(img, 0, 0);
+                            }
+                        }
+                    };
+                    img.src = localStorage.introCharImageUrl;
+                    hasPreview = true;
+                } else {
+                    if (introCanvas) {
+                        let ctx = introCanvas.getContext("2d");
+                        if (ctx) ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                    }
+                }
+                
+                let placeholder = document.getElementById("introImagePlaceholder");
+                if (placeholder) {
+                    placeholder.style.display = hasPreview ? "none" : "flex";
                 }
                 
                 window.sheetsState = c.sheetData || null;
@@ -3137,9 +3415,15 @@ ${getBannedFormattingRule()}`;
                 clearDetails();
                 clearOverviewNotes();
                 if (typeof clearWorldLore === "function") clearWorldLore();
-                if (typeof imagesAreaEl !== 'undefined') imagesAreaEl.style.display = "none";
-                if (typeof imagesEl !== 'undefined') imagesEl.innerHTML = "";
-                if (typeof imagePromptEl !== 'undefined') imagePromptEl.innerHTML = "";
+                if (typeof window.clearAppearanceImages === "function") {
+                    window.clearAppearanceImages();
+                } else {
+                    if (typeof imagesEl !== 'undefined') imagesEl.innerHTML = "";
+                    if (typeof imagePromptEl !== 'undefined') imagePromptEl.innerHTML = "";
+                }
+                if (typeof window.clearRoleplayImagesState === "function") {
+                    window.clearRoleplayImagesState();
+                }
                 
                 window.lastCharacterData = null;
                 window.overwrittenVisualKeyphrasesText = "";
@@ -3224,6 +3508,10 @@ ${getBannedFormattingRule()}`;
                     visualKeyphrasesText: window.lastCharacterData?.visualKeyphrasesText || saved[idx].visualKeyphrasesText || "",
                     overwrittenVisualKeyphrasesText: window.overwrittenVisualKeyphrasesText || saved[idx].overwrittenVisualKeyphrasesText || "",
                     overwrittenStylePrompt: window.overwrittenStylePrompt || saved[idx].overwrittenStylePrompt || "",
+                    overwrittenIntroBgPrompt: window.overwrittenIntroBgPrompt || "",
+                    overwrittenIntroCharPrompt: window.overwrittenIntroCharPrompt || "",
+                    introBgImageUrl: localStorage.introBgImageUrl || "",
+                    introCharImageUrl: localStorage.introCharImageUrl || "",
                     activeImages: (function() {
                         let imgUrls = [];
                         document.querySelectorAll("#imagesEl img").forEach(img => {
@@ -3652,11 +3940,61 @@ ${getBannedFormattingRule()}`;
         updateStyleOverridePlaceholder();
     }
     
+    // Restore active character prompts
+    window.overwrittenIntroBgPrompt = localStorage.overwrittenIntroBgPrompt || "";
+    window.overwrittenIntroCharPrompt = localStorage.overwrittenIntroCharPrompt || "";
+    let introBgPromptEl = document.getElementById("introBgPromptEl");
+    let introCharPromptEl = document.getElementById("introCharPromptEl");
+    if (introBgPromptEl) introBgPromptEl.value = window.overwrittenIntroBgPrompt;
+    if (introCharPromptEl) introCharPromptEl.value = window.overwrittenIntroCharPrompt;
+
+    let introBg = document.getElementById("introImageBg");
+    let introCanvas = document.getElementById("introImageCharCanvas");
+    let hasPreview = false;
+    
+    if (localStorage.introBgImageUrl) {
+        if (introBg) introBg.style.backgroundImage = `url(${localStorage.introBgImageUrl})`;
+        hasPreview = true;
+    }
+    if (localStorage.introCharImageUrl) {
+        let img = new Image();
+        img.onload = function() {
+            if (introCanvas) {
+                introCanvas.width = img.width;
+                introCanvas.height = img.height;
+                let ctx = introCanvas.getContext("2d");
+                if (ctx) {
+                    ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                    ctx.drawImage(img, 0, 0);
+                }
+            }
+        };
+        img.src = localStorage.introCharImageUrl;
+        hasPreview = true;
+    }
+    let placeholder = document.getElementById("introImagePlaceholder");
+    if (placeholder) {
+        placeholder.style.display = hasPreview ? "none" : "flex";
+    }
+
     // Restore generated images
     try {
         let imgUrls = JSON.parse(localStorage.activeImages || "[]");
-        if (imgUrls && imgUrls.length > 0) {
+        let promptEl = document.getElementById("appearancePromptTextarea");
+        let styleOverrideEl = document.getElementById("styleOverrideEl");
+        
+        window.overwrittenVisualKeyphrasesText = localStorage.overwrittenVisualKeyphrasesText || "";
+        window.overwrittenStylePrompt = localStorage.overwrittenStylePrompt || "";
+        
+        if (promptEl) promptEl.value = window.overwrittenVisualKeyphrasesText || (window.lastCharacterData && window.lastCharacterData.visualKeyphrasesText) || "";
+        if (styleOverrideEl) styleOverrideEl.value = window.overwrittenStylePrompt || "";
+        updateStyleOverridePlaceholder();
+        
+        if (typeof imagesAreaEl !== 'undefined' && imagesAreaEl) {
             imagesAreaEl.style.display = "block";
+        }
+        
+        if (imgUrls && imgUrls.length > 0) {
             let imageHtml = "";
             imgUrls.forEach(url => {
                 let isSelected = (url === window.selectedAvatarUrl) ? " selected-avatar" : "";
@@ -3664,19 +4002,19 @@ ${getBannedFormattingRule()}`;
                 wrapper += '<img src="' + url + '">';
                 wrapper += '<div class="image-card-actions">';
                 wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-                
                 wrapper += '</div></div>';
                 imageHtml += wrapper;
             });
-            imagesEl.innerHTML = imageHtml;
-            
-            // Re-render editable prompt textarea
-            let basePrompt = window.overwrittenVisualKeyphrasesText || window.lastCharacterData?.visualKeyphrasesText || "";
-            let promptHtml = '<div style="display:flex; flex-direction:column; gap:0.5rem; text-align:left; width:100%; box-sizing:border-box;">';
-            promptHtml += '<div><b style="font-size:80%; display:inline-flex; align-items:center; gap:0.3rem;"><i class="bi bi-pencil-fill" style="color:var(--accent-color);"></i> Image Prompt <span style="opacity:0.6;">(editable)</span>:</b>';
-            promptHtml += '<textarea oninput="window.overwrittenVisualKeyphrasesText=this.value; saveActiveWorkspaceState();" class="image-tools-textarea" style="min-height:5rem; margin-top:0.25rem;">' + basePrompt + '</textarea></div></div>';
-            imagePromptEl.innerHTML = promptHtml;
-            updateStyleOverridePlaceholder();
+            if (imagesEl) imagesEl.innerHTML = imageHtml;
+        } else {
+            if (imagesEl) {
+                imagesEl.innerHTML = `
+                    <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                        <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                        <span>No character images generated yet. Use the controls above to generate portrait images.</span>
+                    </div>
+                `;
+            }
         }
     } catch(e) {
         console.warn("Failed to restore active images:", e);

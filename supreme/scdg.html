@@ -36,7 +36,7 @@
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/app.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/character-generator.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/sheets-generator.js" defer></script>
+<script src="https://minimumlogix.github.io/Perchance/supreme/character-sheet-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/roleplay-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/world-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/assistant.js" defer></script>
@@ -54,7 +54,7 @@
         <div style="display: flex; flex-direction: column; padding: 0.5rem; gap: 0.2rem; flex: 1;">
             <div id="sidebar-item-characters" class="sidebar-item active" onclick="switchTab('characters')"><i
                     class="bi bi-people-fill"></i> Characters</div>
-            <div id="sidebar-item-sheets" class="sidebar-item" onclick="switchTab('sheets')"><i
+            <div id="sidebar-item-character-sheet" class="sidebar-item" onclick="switchTab('character-sheet')"><i
                     class="bi bi-file-earmark-person-fill"></i> Character Sheet</div>
             <div id="sidebar-item-world" class="sidebar-item" onclick="switchTab('world')"><i
                     class="bi bi-globe-americas"></i> World</div>
@@ -848,7 +848,7 @@
 
                         <!-- IMAGE AREA -->
                         <div id="imagesAreaEl"
-                            style="display:none; width:100%; margin-top:1.25rem; border-top:1px dashed var(--panel-border); padding-top:1.25rem;">
+                            style="width:100%; margin-top:1.25rem; border-top:1px dashed var(--panel-border); padding-top:1.25rem;">
                             <div class="image-tools-section">
                                 <div
                                     style="font-size:90%; font-weight:600; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem; color:var(--text-main);">
@@ -899,7 +899,13 @@
                                 <!-- Prompt inputs container -->
                                 <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.75rem;">
                                     <!-- Generated caption editor -->
-                                    <div id="imagePromptEl"></div>
+                                    <div id="imagePromptEl">
+                                        <b style="font-size:80%; display:inline-flex; align-items:center; gap:0.3rem; color:var(--text-main);"><i
+                                                class="bi bi-pencil-fill" style="color:var(--accent-color);"></i> Image Prompt <span style="opacity:0.6;">(editable)</span>:</b>
+                                        <textarea id="appearancePromptTextarea" class="image-tools-textarea" style="min-height:5rem; margin-top:0.25rem;"
+                                            placeholder="No image prompt generated yet. Click 'Generate' to generate automatically, or write your own here..."
+                                            oninput="window.overwrittenVisualKeyphrasesText=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();"></textarea>
+                                    </div>
 
                                     <!-- Style override editor -->
                                     <div>
@@ -915,7 +921,12 @@
                             </div>
 
                             <!-- Premium Scrollable Image Row -->
-                            <div id="imagesEl" class="images-scroll-container"></div>
+                            <div id="imagesEl" class="images-scroll-container">
+                                <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                                    <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                                    <span>No character images generated yet. Use the controls above to generate portrait images.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1421,42 +1432,61 @@
                         </div>
 
                         <!-- Roleplay Intro Images Subsection -->
-                        <div id="introImageContainer" style="display: none; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
-                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <div id="introImageContainer" class="image-tools-section" style="margin-top: 1.25rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-main);">
                                     <i class="bi bi-image" style="color:var(--accent-color);"></i>
                                     Roleplay Scene Preview
                                 </div>
-                                <div style="display:flex; align-items:center; gap:0.3rem;">
-                                    <button class="btn btn-ghost btn-sm" id="introImageBgGenBtn" onclick="generateRoleplayImageBg()" title="Regenerate Background" style="padding: 0.25rem; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i class="bi bi-image"></i> BG</button>
-                                    <button class="btn btn-ghost btn-sm" id="introImageCharGenBtn" onclick="generateRoleplayImageChar()" title="Regenerate Character" style="padding: 0.25rem; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i class="bi bi-person"></i> Char</button>
+                                <div style="display:flex; align-items:center; gap:0.4rem;">
+                                    <button class="btn btn-ghost btn-sm" id="introImageBgGenBtn" onclick="generateRoleplayImageBg()" title="Generate/Regenerate Background" style="padding: 0.25rem 0.5rem; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-image"></i> BG</button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="introImageBgStopBtn" onclick="stopRoleplayImageBgGen()" title="Stop Background Generation" style="display: none; padding: 0.25rem 0.5rem; height: 30px; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-stop-circle"></i> Stop BG</button>
+                                    
+                                    <button class="btn btn-ghost btn-sm" id="introImageCharGenBtn" onclick="generateRoleplayImageChar()" title="Generate/Regenerate Character Sprite" style="padding: 0.25rem 0.5rem; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-person"></i> Char</button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="introImageCharStopBtn" onclick="stopRoleplayImageCharGen()" title="Stop Character Generation" style="display: none; padding: 0.25rem 0.5rem; height: 30px; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-stop-circle"></i> Stop Char</button>
                                 </div>
                             </div>
                             
-                            <div id="introImageStage" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #111; overflow: hidden; border-radius: 8px; border: 1px solid var(--panel-border); display: flex; justify-content: center; align-items: flex-end;">
+                            <div id="introImageStage" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #0f111a; overflow: hidden; border-radius: 12px; border: 1px solid var(--panel-border); display: flex; justify-content: center; align-items: flex-end; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                                <!-- Stage Placeholder -->
+                                <div id="introImagePlaceholder" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text-muted); pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(124,58,237,0.05) 0%, rgba(15,17,26,0.85) 100%); text-align: center;">
+                                    <i class="bi bi-image" style="font-size: 2.5rem; color: var(--accent-color); opacity: 0.6; filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb), 0.35));"></i>
+                                    <span style="font-size: 85%; font-weight: 500; opacity: 0.8;">No Scene Preview Generated Yet</span>
+                                    <span style="font-size: 75%; opacity: 0.5;">Use the controls above to generate BG and Character sprite.</span>
+                                </div>
+
                                 <!-- Name tag -->
-                                <div id="introImageNameTag" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: #cc0000; color: white; padding: 4px 16px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; font-weight: bold; font-family: sans-serif; z-index: 10; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); text-shadow: 1px 1px 2px rgba(0,0,0,0.8); display: none;">Name</div>
+                                <div id="introImageNameTag" style="position: absolute; top: 12px; left: 12px; background: rgba(15, 17, 26, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 4px 12px; border-radius: 6px; font-weight: 600; font-family: inherit; z-index: 10; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none;">Name</div>
                                 
                                 <!-- Background Image -->
                                 <div id="introImageBg" style="position: absolute; inset: 0; width: 100%; height: 100%; filter: brightness(0.5); background-size: cover; background-position: center; transition: opacity 0.3s ease;"></div>
                                 
                                 <!-- Character Image -->
-                                <canvas id="introImageCharCanvas" style="position: relative; z-index: 5; max-height: 100%; filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8)); transition: opacity 0.3s ease;"></canvas>
+                                <canvas id="introImageCharCanvas" style="position: relative; z-index: 5; max-height: 100%; filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb), 0.6)); transition: opacity 0.3s ease;"></canvas>
 
                                 <!-- Loading Status -->
-                                <div id="introImageStatus" style="position: absolute; inset: 0; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); color: white; z-index: 20; font-weight: bold; font-size: 0.9rem; text-align: center; padding: 1rem; display: none;"></div>
+                                <div id="introImageStatus" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,17,26,0.85); backdrop-filter: blur(6px); color: white; z-index: 20; gap: 0.5rem; font-weight: 500; font-size: 0.9rem; text-align: center; padding: 1rem; display: none;"></div>
                             </div>
 
-                            <div style="font-size: 75%; color: var(--text-muted); margin-top: 0.5rem;">
-                                <strong>Prompts Used:</strong>
-                                <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem; flex-direction: column;">
-                                    <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                                        <button class="btn btn-secondary btn-sm" onclick="copyText(document.getElementById('introBgPromptEl').value, this)" style="padding: 0.1rem 0.4rem; font-size: 90%;"><i class="bi bi-clipboard"></i> BG</button>
-                                        <textarea id="introBgPromptEl" readonly style="flex: 1; height: 40px; font-size: 90%; opacity: 0.8; resize: none; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 4px; color: var(--text-color);"></textarea>
+                            <div style="font-size: 80%; color: var(--text-muted); margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--panel-border); padding-top: 0.75rem;">
+                                <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.35rem;">
+                                    <i class="bi bi-pencil-fill" style="color: var(--accent-color);"></i>
+                                    <span>Scene Prompts (Editable)</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem;">
+                                    <div style="display: flex; gap: 0.35rem; flex-direction: column; text-align: left;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 85%; font-weight: 500; color: var(--text-main);">Background Prompt</span>
+                                            <button class="btn btn-ghost btn-sm" onclick="copyText(document.getElementById('introBgPromptEl').value, this)" style="padding: 0.1rem 0.3rem;" title="Copy Background Prompt"><i class="bi bi-clipboard"></i></button>
+                                        </div>
+                                        <textarea id="introBgPromptEl" class="image-tools-textarea" style="min-height: 4rem;" oninput="window.overwrittenIntroBgPrompt=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" placeholder="No background prompt generated. Click 'BG' above to generate."></textarea>
                                     </div>
-                                    <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                                        <button class="btn btn-secondary btn-sm" onclick="copyText(document.getElementById('introCharPromptEl').value, this)" style="padding: 0.1rem 0.4rem; font-size: 90%;"><i class="bi bi-clipboard"></i> Char</button>
-                                        <textarea id="introCharPromptEl" readonly style="flex: 1; height: 40px; font-size: 90%; opacity: 0.8; resize: none; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 4px; color: var(--text-color);"></textarea>
+                                    <div style="display: flex; gap: 0.35rem; flex-direction: column; text-align: left;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 85%; font-weight: 500; color: var(--text-main);">Character Sprite Prompt</span>
+                                            <button class="btn btn-ghost btn-sm" onclick="copyText(document.getElementById('introCharPromptEl').value, this)" style="padding: 0.1rem 0.3rem;" title="Copy Character Prompt"><i class="bi bi-clipboard"></i></button>
+                                        </div>
+                                        <textarea id="introCharPromptEl" class="image-tools-textarea" style="min-height: 4rem;" oninput="window.overwrittenIntroCharPrompt=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" placeholder="No character prompt generated. Click 'Char' above to generate."></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -2391,8 +2421,8 @@
 
             </div><!-- end roleplayTabEl -->
 
-            <!-- SHEETS TAB -->
-            <div id="sheetsTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
+            <!-- CHARACTER SHEET TAB -->
+            <div id="characterSheetTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
                 <!-- HEADER -->
                 <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                     <div>
@@ -2455,7 +2485,7 @@
                 <div id="sheetContentCtn" class="sheet-container" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
                     <!-- Rendered dynamically -->
                 </div>
-            </div><!-- end sheetsTabEl -->
+            </div><!-- end characterSheetTabEl -->
 
             <!-- SETTINGS TAB -->
             <div id="settingsTabEl" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">

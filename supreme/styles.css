@@ -378,13 +378,22 @@
     }
 
     .image-tools-section {
-        background: rgba(255, 255, 255, 0.015);
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--panel-border);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1rem;
+        border-radius: 14px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
         width: 100%;
         box-sizing: border-box;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .image-tools-section:hover {
+        border-color: rgba(var(--accent-color-rgb), 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 15px rgba(var(--accent-color-rgb), 0.05);
     }
 
     .image-tools-grid {
@@ -397,14 +406,19 @@
     }
 
     .image-tool-card {
-        background: rgba(23, 25, 35, 0.4);
+        background: rgba(15, 17, 26, 0.5);
         border: 1px solid var(--panel-border);
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
+        border-radius: 10px;
+        padding: 0.6rem 0.85rem;
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 0.35rem;
         box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+
+    .image-tool-card:hover {
+        border-color: rgba(var(--accent-color-rgb), 0.35);
     }
 
     .image-tool-label {
