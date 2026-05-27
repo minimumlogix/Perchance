@@ -109,15 +109,19 @@
                         ]
                     });
                 } else if (instruction.includes("OVERVIEW section")) {
-                    responseText = "This is a comprehensive overview of the world. It details the physical geography, spanning from neon-lit high-altitude metropolises to decaying industrial lowlands. The weather patterns are unstable, often characterized by heavy radioactive rains and dense auroral fogs. Core societal structures revolve around corporate enclaves and underground networks of scavengers.";
-                } else if (instruction.includes("FACTIONS section")) {
-                    responseText = "1. The Solarpunk Coalition: A green-tech faction dedicated to restoring natural biomes using organic technology.\n2. Arasaka Conglomerate: A ruthless military corporation controlling major urban sectors and cybernetic assets.\n3. The Subterranean Rust Guild: A group of scavengers, hackers, and engineers living in the abandoned sewer networks, smuggling tech.";
+                    responseText = "- The Setting : A majestic solarpunk city built on high cliffs overlooking a sea of endless clouds, constantly battered by gale-force winds.\n- Technology: High-level clean energy grids, wind-turbines, airships, and mechanical wings.\n- Daily Life: Wind-harvesters, engineers, and sky pirates thrive in the breezy sky sectors.\n- Secrets: The wind turbines are slowly draining the planetary core energy, leading to eventual atmospheric collapse.";
                 } else if (instruction.includes("RULES section")) {
-                    responseText = "Magic functions through nano-computational frequencies present in the atmosphere. Access is restricted to those with cerebral augmentations or ancient genetic markers. Limitations include neural burnout and biological cell degradation if overused. The technological epoch is late-stage cyberpunk, with crude fusion reactors and quantum-encrypted nets.";
-                } else if (instruction.includes("LOCATIONS section")) {
-                    responseText = "1. Neo-Genoa: A towering city-state built on granite pillars above a radioactive sea.\n2. The Whispering Gardens: A massive, overgrown biosphere located inside a dome-shaped corporate research facility.\n3. Sector 9 Ruins: A scarred valley filled with crashed starships and active security drones.";
-                } else if (instruction.includes("CONFLICTS section")) {
-                    responseText = "The main tensions arise from a resource war between the corporate coalition and the solar syndicates. The immediate threat is a massive energy grid failure that could plunge the undercity into absolute darkness. The long-term threat is the slow expansion of the toxic dust wasteland, encroaching upon the arable domes.";
+                    responseText = "1. Gravity shifts randomly at night; tethering is mandatory.\n2. Storm harvesting is restricted to certified syndicates.\n3. Organic matter cannot be imported to the floating city.\n4. Standard tech uses steam-compression instead of electrical combustion.\n5. Defying the Wind Marshal is punishable by exile into the Cloud Sea.";
+                } else if (instruction.includes("RACES section")) {
+                    responseText = "- Aether-born: Ethereal humanoids with pale, glowing skin who can naturally manipulate atmospheric pressure. They lead the green research initiatives.\n- Rust-dwellers: Sturdy, heavily augmented humanoids who work the under-turbines and scavenge drifting iron wreckage.";
+                } else if (instruction.includes("REGIONS section")) {
+                    responseText = "- Galeport: The main trading hub city perched on the edge of the highest cliff.\n- The Howling Spires: Tall stone needle formations where storm winds are at their peak density.\n- The Cloud Sea Basin: The mysterious foggy expanse beneath the cliffs, mostly unexplored.\n- Whisperwood Domes: Biodomes sheltering the only organic flora on the planet.\n- The Rust Shallows: A valley of wrecked airships and active defense drones.";
+                } else if (instruction.includes("FACTIONS section")) {
+                    responseText = "- The Cloud-Harvester Guild: A public, wealthy organization managing clean energy harvesting and distribution.\n- Sky Raiders: Outlaws who scavenge drifting sky ruins, publicly known and feared.\n- Solarpunk Initiative: A green-tech research faction aiming to restore the planet's core.\n- The Whisperers: A secret faction working in the shadows to sabotage turbine operations and save the core.";
+                } else if (instruction.includes("BESTIARY section")) {
+                    responseText = "- Sky Leviathan: Colossal winged creatures that float through the Cloud Sea, feeding on storm static. Danger level: Extreme.\n- Gale Hawk: Rapid predatory birds that navigate the spires. Danger level: Medium.\n- Rust Spiders: Small mechanical scavengers that clean the city structures. Danger level: Low.\n- Auroral Jellyfish: Floating glowing invertebrates found in the Whisperwood domes. Danger level: None.\n\n- Common animals: wind-mice, cliff-gulls, and storm-beetles.";
+                } else if (instruction.includes("CHARACTERS section")) {
+                    responseText = "- Captain Zephyr (Age 34): A dashing airship pilot with a wind-carved face and cybernetic eye. He seeks to uncover the harvesters' secret plots.\n- Cinder (Age 22): A twitchy, fire-obsessed mechanical engineer who keeps the engines running. Her goal is to build the first infinite-range glider.\n- Arch-Marshal Vance (Age 52): The stern ruler of Galeport, determined to maintain order and energy supply at any cost.\n- Lyra the Rogue (Age 26): A quiet information broker who knows the truth about the core's decay and smuggles data to the Whisperers.";
                 } else if (instruction.includes("concise world overview (3-4 sentences maximum)")) {
                     responseText = "Neo-Genoa is a high-tech metropolis built over a toxic ocean. Solar-powered spires shelter the wealthy, while the working class dwells in neon-lit shadow sectors. A fragile peace exists between green-tech syndicates and heavy-industry corporations.";
                 } else if (instruction.includes("Generate a single creative NPC profile")) {
@@ -153,11 +157,13 @@
                         setting: "Fantasy",
                         tones: ["Mysterious", "Epic"],
                         themes: "crystal magic, floating islands, ancient sky ruins",
-                        overview: "Luminaria is a majestic world composed of shattered continents suspended in a vast glowing aether. Gravity operates irregularly, anchored by massive floating crystals.",
-                        factions: "- Crystal Sentinels: Guard the core levitation crystals.\n- Sky Pirates: Outlaws who scavenge drifting ruins.",
-                        rules: "Magic is fueled by raw aetheric energy tapped from the float-stones. Limitations include crystal decay and gravity field collapses.",
-                        locations: "- The Prism Tower: An ancient monolith floating at the center.\n- Aether Rift: A deep rift of raw gravity energy.",
-                        conflicts: "A slowly spreading darkness is decaying the levitation crystals, causing islands to fall into the abyss."
+                        overview: "- The Setting : A majestic world composed of shattered continents suspended in a vast glowing aether.\n- Technology: Float-stones, crystal engines, and ancient runes.\n- Daily Life: Airship sailors, miners of crystals, and floating hermits.\n- Secrets: The crystals are living deities slowly dying.",
+                        rules: "1. Magic requires attunement to a float-stone.\n2. Islands falling below the clouds cannot be recovered.\n3. Crystal pollution causes physical crystallization.",
+                        races: "- Aether-born: Ethereal humanoids with pale, glowing skin who can naturally manipulate atmospheric pressure.\n- Rust-dwellers: Sturdy, heavily augmented humanoids who work the under-turbines.",
+                        regions: "- Galeport: The main trading hub city.\n- The Howling Spires: Tall stone needle formations.\n- The Cloud Sea Basin: The mysterious foggy expanse.\n- Whisperwood Domes: Biodomes sheltering organic flora.\n- The Rust Shallows: A valley of wrecked airships.",
+                        factions: "- Crystal Sentinels: A public, wealthy organization managing clean energy.\n- Sky Pirates: Outlaws who scavenge drifting sky ruins.\n- Solarpunk Initiative: A green-tech research faction.\n- The Whisperers: A secret faction working in the shadows.",
+                        bestiary: "- Sky Leviathan: Colossal winged creatures.\n- Gale Hawk: Rapid predatory birds.\n- Rust Spiders: Small mechanical scavengers.\n- Auroral Jellyfish: Floating glowing invertebrates.\n\n- Common animals: wind-mice, cliff-gulls, and storm-beetles.",
+                        characters: "- Captain Zephyr (Age 34): A dashing airship pilot.\n- Cinder (Age 22): A twitchy, fire-obsessed mechanical engineer.\n- Arch-Marshal Vance (Age 52): The stern ruler of Galeport.\n- Lyra the Rogue (Age 26): A quiet information broker."
                     });
                 } else if (instruction.includes("Extract roleplay scenario details")) {
                     responseText = JSON.stringify({
@@ -254,12 +260,21 @@
         document.querySelectorAll(".dropdown-menu-custom").forEach(menu => {
             if (menu.id !== menuId) {
                 menu.style.display = "none";
+                let dropdown = menu.closest(".custom-dropdown");
+                if (dropdown) dropdown.classList.remove("open");
             }
         });
 
         let menu = document.getElementById(menuId);
         if (menu) {
-            menu.style.display = menu.style.display === "none" ? "block" : "none";
+            let dropdown = menu.closest(".custom-dropdown");
+            if (menu.style.display === "none") {
+                menu.style.display = "block";
+                if (dropdown) dropdown.classList.add("open");
+            } else {
+                menu.style.display = "none";
+                if (dropdown) dropdown.classList.remove("open");
+            }
             // Focus search input if opening setting dropdown
             if ((menuId === "settingDropdownMenu" || menuId === "wSettingDropdownMenu" || menuId === "rpSettingDropdownMenu") && menu.style.display === "block") {
                 let search = menu.querySelector(".dropdown-search-input");
@@ -284,6 +299,7 @@
             let dropdown = menu.closest(".custom-dropdown");
             if (dropdown && !dropdown.contains(e.target)) {
                 menu.style.display = "none";
+                dropdown.classList.remove("open");
             }
         });
     });

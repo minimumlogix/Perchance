@@ -86,6 +86,10 @@
         font-size: 85%;
     }
 
+    .custom-dropdown.open {
+        z-index: 1001;
+    }
+
     .dropdown-trigger {
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid var(--input-border);
@@ -610,6 +614,10 @@
         overflow: hidden;
         min-height: 0;
         transition: opacity 0.2s ease-in-out, padding 0.3s ease-in-out;
+    }
+
+    .panel:not(.collapsed) .panel-body {
+        overflow: visible;
     }
 
     .panel.collapsed .panel-body {

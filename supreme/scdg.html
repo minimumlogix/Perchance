@@ -1824,7 +1824,7 @@
                     <div class="panel-body">
                         <textarea id="w-overviewNotesEl" class="section-notes"
                             oninput="saveWorldState()"
-                            placeholder="Notes for overview  -  e.g. detailed focus on radioactive rain, corporate skylines..."></textarea>
+                            placeholder="Notes for overview  -  e.g. setting description, technological level, daily life across groups, hidden secrets..."></textarea>
                         <div id="w-overviewStatusEl" class="section-status"></div>
                         <div id="w-overviewOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1839,12 +1839,118 @@
                     </div>
                 </div>
 
-                <!-- SECTION 3: FACTIONS & SOCIETIES -->
+                <!-- SECTION 3: RULES -->
+                <div class="panel" id="wRulesPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wRulesPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">3</div>
+                            <span>Rules</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <button class="btn btn-primary" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')"
+                                    style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="w-rulesNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for rules  -  e.g. rules shaping survival, values, economics, culture, conflict, or behavior (max 5)..."></textarea>
+                        <div id="w-rulesStatusEl" class="section-status"></div>
+                        <div id="w-rulesOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                        </div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="w-rulesEditBtnEl" onclick="toggleWorldSectionEdit('rules')"
+                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="w-rulesCopyBtnEl" onclick="copyWorldSectionText('rules')"
+                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: RACES -->
+                <div class="panel" id="wRacesPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wRacesPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">4</div>
+                            <span>Races</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <button class="btn btn-primary" id="w-racesGenBtnEl" onclick="generateWorldSection('races')"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="w-racesStopBtnEl" onclick="stopWorldSection('races')"
+                                    style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="w-racesNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for races  -  e.g. appearance, origins, culture, social structure, strengths, weaknesses..."></textarea>
+                        <div id="w-racesStatusEl" class="section-status"></div>
+                        <div id="w-racesOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                        </div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="w-racesEditBtnEl" onclick="toggleWorldSectionEdit('races')"
+                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="w-racesCopyBtnEl" onclick="copyWorldSectionText('races')"
+                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: REGIONS -->
+                <div class="panel" id="wRegionsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wRegionsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge">5</div>
+                            <span>Regions</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <button class="btn btn-primary" id="w-regionsGenBtnEl"
+                                    onclick="generateWorldSection('regions')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="w-regionsStopBtnEl"
+                                    onclick="stopWorldSection('regions')" style="display:none;"><i
+                                        class="bi bi-stop-circle"></i> Stop</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="w-regionsNotesEl" class="section-notes"
+                            oninput="saveWorldState()"
+                            placeholder="Notes for regions  -  e.g. landscape and climate of at least 5 different regions..."></textarea>
+                        <div id="w-regionsStatusEl" class="section-status"></div>
+                        <div id="w-regionsOutputEl" class="section-output" contenteditable="false"
+                            style="display:none;"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="w-regionsEditBtnEl"
+                                onclick="toggleWorldSectionEdit('regions')" style="display:none;"><i
+                                    class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="w-regionsCopyBtnEl"
+                                onclick="copyWorldSectionText('regions')" style="display:none;"><i
+                                    class="bi bi-clipboard"></i> copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: MAJOR FACTIONS -->
                 <div class="panel" id="wFactionsPanelEl">
                     <div class="panel-header" onclick="togglePanel('wFactionsPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge">3</div>
-                            <span>Factions & Societies</span>
+                            <div class="panel-badge">6</div>
+                            <span>Major Factions</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
@@ -1862,7 +1968,7 @@
                     <div class="panel-body">
                         <textarea id="w-factionsNotesEl" class="section-notes"
                             oninput="saveWorldState()"
-                            placeholder="Notes for factions  -  e.g. highlight the green rebel coalition and corporate military assets..."></textarea>
+                            placeholder="Notes for factions  -  e.g. identity, leadership, goals, quotes, symbols, and public/secret status for at least 4 factions..."></textarea>
                         <div id="w-factionsStatusEl" class="section-status"></div>
                         <div id="w-factionsOutputEl" class="section-output" contenteditable="false"
                             style="display:none;"></div>
@@ -1877,112 +1983,70 @@
                     </div>
                 </div>
 
-                <!-- SECTION 4: LAWS OF MAGIC & TECHNOLOGY -->
-                <div class="panel" id="wRulesPanelEl">
-                    <div class="panel-header" onclick="togglePanel('wRulesPanelEl')">
+                <!-- SECTION 7: BESTIARY -->
+                <div class="panel" id="wBestiaryPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wBestiaryPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge">4</div>
-                            <span>Laws of Magic & Technology</span>
+                            <div class="panel-badge">7</div>
+                            <span>Bestiary</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="btn btn-primary" id="w-rulesGenBtnEl" onclick="generateWorldSection('rules')"><i
+                                <button class="btn btn-primary" id="w-bestiaryGenBtnEl" onclick="generateWorldSection('bestiary')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="btn btn-secondary btn-sm" id="w-rulesStopBtnEl" onclick="stopWorldSection('rules')"
+                                <button class="btn btn-secondary btn-sm" id="w-bestiaryStopBtnEl" onclick="stopWorldSection('bestiary')"
                                     style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
-                        <textarea id="w-rulesNotesEl" class="section-notes"
+                        <textarea id="w-bestiaryNotesEl" class="section-notes"
                             oninput="saveWorldState()"
-                            placeholder="Notes for laws  -  e.g. neural link overload risks, code-based magic frequencies..."></textarea>
-                        <div id="w-rulesStatusEl" class="section-status"></div>
-                        <div id="w-rulesOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                            placeholder="Notes for bestiary  -  e.g. appearance, habitat, behavior, and danger level of at least 4 creatures, plus common animals..."></textarea>
+                        <div id="w-bestiaryStatusEl" class="section-status"></div>
+                        <div id="w-bestiaryOutputEl" class="section-output" contenteditable="false" style="display:none;">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="w-rulesEditBtnEl" onclick="toggleWorldSectionEdit('rules')"
+                            <button class="btn btn-secondary btn-sm" id="w-bestiaryEditBtnEl" onclick="toggleWorldSectionEdit('bestiary')"
                                 style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="w-rulesCopyBtnEl" onclick="copyWorldSectionText('rules')"
+                            <button class="btn btn-secondary btn-sm" id="w-bestiaryCopyBtnEl" onclick="copyWorldSectionText('bestiary')"
                                 style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECTION 5: KEY LOCATIONS & LANDMARKS -->
-                <div class="panel" id="wLocationsPanelEl">
-                    <div class="panel-header" onclick="togglePanel('wLocationsPanelEl')">
+                <!-- SECTION 8: IMPORTANT CHARACTERS -->
+                <div class="panel" id="wCharactersPanelEl">
+                    <div class="panel-header" onclick="togglePanel('wCharactersPanelEl')">
                         <div class="panel-title">
-                            <div class="panel-badge">5</div>
-                            <span>Key Locations & Landmarks</span>
+                            <div class="panel-badge">8</div>
+                            <span>Important Characters</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="btn btn-primary" id="w-locationsGenBtnEl"
-                                    onclick="generateWorldSection('locations')"><i class="bi bi-sparkles"></i>
-                                    Generate</button>
-                                <button class="btn btn-secondary btn-sm" id="w-locationsStopBtnEl"
-                                    onclick="stopWorldSection('locations')" style="display:none;"><i
-                                        class="bi bi-stop-circle"></i> Stop</button>
+                                <button class="btn btn-primary" id="w-charactersGenBtnEl" onclick="generateWorldSection('characters')"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="w-charactersStopBtnEl" onclick="stopWorldSection('characters')"
+                                    style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-down"></span>
                         </div>
                     </div>
                     <div class="panel-body">
-                        <textarea id="w-locationsNotesEl" class="section-notes"
+                        <textarea id="w-charactersNotesEl" class="section-notes"
                             oninput="saveWorldState()"
-                            placeholder="Notes for locations  -  e.g. focus on floating crystal ruins, deep ocean rifts..."></textarea>
-                        <div id="w-locationsStatusEl" class="section-status"></div>
-                        <div id="w-locationsOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
+                            placeholder="Notes for characters  -  e.g. name, age, appearance, personality, role, and story for at least 4 characters..."></textarea>
+                        <div id="w-charactersStatusEl" class="section-status"></div>
+                        <div id="w-charactersOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                        </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="w-locationsEditBtnEl"
-                                onclick="toggleWorldSectionEdit('locations')" style="display:none;"><i
-                                    class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="w-locationsCopyBtnEl"
-                                onclick="copyWorldSectionText('locations')" style="display:none;"><i
-                                    class="bi bi-clipboard"></i> copy</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 6: CONFLICTS & HISTORY -->
-                <div class="panel" id="wConflictsPanelEl">
-                    <div class="panel-header" onclick="togglePanel('wConflictsPanelEl')">
-                        <div class="panel-title">
-                            <div class="panel-badge">6</div>
-                            <span>Conflicts & History</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <div style="display:flex; align-items:center; gap:0.5rem;"
-                                onclick="event.stopPropagation()">
-                                <button class="btn btn-primary" id="w-conflictsGenBtnEl"
-                                    onclick="generateWorldSection('conflicts')"><i class="bi bi-sparkles"></i>
-                                    Generate</button>
-                                <button class="btn btn-secondary btn-sm" id="w-conflictsStopBtnEl"
-                                    onclick="stopWorldSection('conflicts')" style="display:none;"><i
-                                        class="bi bi-stop-circle"></i> Stop</button>
-                            </div>
-                            <span class="panel-chevron bi bi-chevron-down"></span>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <textarea id="w-conflictsNotesEl" class="section-notes"
-                            oninput="saveWorldState()"
-                            placeholder="Notes for conflicts  -  e.g. impending grid collapse, resources wars in undercity..."></textarea>
-                        <div id="w-conflictsStatusEl" class="section-status"></div>
-                        <div id="w-conflictsOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
-                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="w-conflictsEditBtnEl"
-                                onclick="toggleWorldSectionEdit('conflicts')" style="display:none;"><i
-                                    class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="w-conflictsCopyBtnEl"
-                                onclick="copyWorldSectionText('conflicts')" style="display:none;"><i
-                                    class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="w-charactersEditBtnEl" onclick="toggleWorldSectionEdit('characters')"
+                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="w-charactersCopyBtnEl" onclick="copyWorldSectionText('characters')"
+                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
                         </div>
                     </div>
                 </div>

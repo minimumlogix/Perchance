@@ -9,24 +9,30 @@
         bannerUrl: "",
         sections: {
             overview: "",
-            factions: "",
             rules: "",
-            locations: "",
-            conflicts: ""
+            races: "",
+            regions: "",
+            factions: "",
+            bestiary: "",
+            characters: ""
         },
         sectionNotes: {
             overview: "",
-            factions: "",
             rules: "",
-            locations: "",
-            conflicts: ""
+            races: "",
+            regions: "",
+            factions: "",
+            bestiary: "",
+            characters: ""
         },
         isGenerating: {
             overview: false,
-            factions: false,
             rules: false,
-            locations: false,
-            conflicts: false,
+            races: false,
+            regions: false,
+            factions: false,
+            bestiary: false,
+            characters: false,
             banner: false
         },
         activeWorldId: null
@@ -54,10 +60,12 @@
             
             window.worldState.sectionNotes = {
                 overview: document.getElementById("w-overviewNotesEl")?.value || "",
-                factions: document.getElementById("w-factionsNotesEl")?.value || "",
                 rules: document.getElementById("w-rulesNotesEl")?.value || "",
-                locations: document.getElementById("w-locationsNotesEl")?.value || "",
-                conflicts: document.getElementById("w-conflictsNotesEl")?.value || ""
+                races: document.getElementById("w-racesNotesEl")?.value || "",
+                regions: document.getElementById("w-regionsNotesEl")?.value || "",
+                factions: document.getElementById("w-factionsNotesEl")?.value || "",
+                bestiary: document.getElementById("w-bestiaryNotesEl")?.value || "",
+                characters: document.getElementById("w-charactersNotesEl")?.value || ""
             };
 
             // Dropdowns setting & tones are managed on change
@@ -243,24 +251,32 @@
         // Build prompts based on section
         let promptConfig = {
             overview: {
-                role: "overview of its core features, geography, climate, and overall societal structures",
-                rules: "1. Write 2-3 detailed paragraphs.\n2. Establish the core premise of this setting.\n3. Make it evocative and actionable."
-            },
-            factions: {
-                role: "prominent factions, guilds, megacorporations, or organizations that shape global power structures",
-                rules: "1. List exactly 3 major factions.\n2. For each faction, provide their name, core motivation, alignment, and relationship with others.\n3. Keep descriptions factual and concise."
+                role: "World Overview, including Setting, Technology, Daily Life, and Secrets",
+                rules: "Format your response EXACTLY as follows (Do NOT use markdown bold/italic inside headers/text, output as clean lines/bullets):\n- The Setting : A paragraph covering the core setting, themes, underlying reality, and emotional atmosphere.\n- Technology: A paragraph explaining technology level, infrastructure, and everyday practical life.\n- Daily Life: A paragraph describing lifestyle across different social groups.\n- Secrets: A paragraph revealing truths about the world that are hidden from people living inside it."
             },
             rules: {
-                role: "laws governing Magic, technology, physics, and supernatural phenomena in this setting",
-                rules: "1. Explain how magic/technology functions. Who has access? What are the limitations or costs?\n2. Detail the technological epoch or mystical boundaries."
+                role: "Rules of the world",
+                rules: "Format your response EXACTLY as follows:\nList world rules that shape survival, values, economics, culture, conflict, or behavior. Provide a maximum of 5 rules as a clean bulleted list."
             },
-            locations: {
-                role: "key locations, major cities, continents, landmarks, or focal points",
-                rules: "1. Detail 2-3 important locations.\n2. For each, cover its name, atmosphere, strategic importance, and current status."
+            races: {
+                role: "Races residing in this world",
+                rules: "For each race (fill as per appropriate race count for the setting, e.g. 2-4 major races), write its name followed by description.\nFormat each race EXACTLY as follows:\n- Race_Name: A paragraph describing appearance, origins, culture, social structure, strengths, weaknesses, relationships with others, and role in the world."
             },
-            conflicts: {
-                role: "ongoing wars, political disputes, ecological crises, or upcoming historical turning points",
-                rules: "1. Establish the main tensions. What conflicts define the current era?\n2. Detail one immediate threat and one long-term threat."
+            regions: {
+                role: "Regions of the world",
+                rules: "Provide a list of at least 5 regions.\nFormat each region EXACTLY as follows:\n- Region_Name: A paragraph description of the region's climate, landscape, landmarks, and significance."
+            },
+            factions: {
+                role: "Major Factions shaping global power structures",
+                rules: "Provide a list of at least 4 factions.\nFormat each faction EXACTLY as follows:\n- Faction_Name: A paragraph including identity, leadership, goals, one representative quote, and flag/symbol/sign information. Also talk about if its a secret group or publically known."
+            },
+            bestiary: {
+                role: "Bestiary and common animals of the world",
+                rules: "Provide at least 4 important creatures/beasts and a list of common animals.\nFormat EXACTLY as follows:\n- Creature_Name: A paragraph describing appearance, habitat, behavior, danger level, ecological role, folklore, and any unusual traits or uses.\n\n- Common animals: a list, as a sentence, comma-separated."
+            },
+            characters: {
+                role: "Important Characters of this world",
+                rules: "Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."
             }
         };
 
@@ -417,7 +433,7 @@
 
     // Generate All sections in order
     window.generateAllWorldSections = async function () {
-        let sections = ["overview", "factions", "rules", "locations", "conflicts"];
+        let sections = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
         for (let s of sections) {
             // Check if user has already cancelled/stopped
             if (document.getElementById("wGenerateAllBtn")?.style.display === "none") {
@@ -483,11 +499,11 @@
                 window.worldState.bannerUrl = "";
                 window.worldState.activeWorldId = null;
                 window.worldState.sectionNotes = {
-                    overview: "", factions: "", rules: "", locations: "", conflicts: ""
+                    overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
                 };
 
                 // Clear sections
-                let list = ["overview", "factions", "rules", "locations", "conflicts"];
+                let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
                 list.forEach(s => {
                     window.worldState.sections[s] = "";
                     let out = document.getElementById(`w-${s}OutputEl`);
@@ -624,7 +640,7 @@
                 window.worldState.bannerUrl = w.bannerUrl || "";
                 window.worldState.sections = Object.assign({}, w.sections);
                 window.worldState.sectionNotes = Object.assign({
-                    overview: "", factions: "", rules: "", locations: "", conflicts: ""
+                    overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
                 }, w.sectionNotes || {});
 
                 // Populate DOM
@@ -635,23 +651,27 @@
 
                 let notes = window.worldState.sectionNotes;
                 let overviewNotesEl = document.getElementById("w-overviewNotesEl");
-                let factionsNotesEl = document.getElementById("w-factionsNotesEl");
                 let rulesNotesEl = document.getElementById("w-rulesNotesEl");
-                let locationsNotesEl = document.getElementById("w-locationsNotesEl");
-                let conflictsNotesEl = document.getElementById("w-conflictsNotesEl");
+                let racesNotesEl = document.getElementById("w-racesNotesEl");
+                let regionsNotesEl = document.getElementById("w-regionsNotesEl");
+                let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+                let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
+                let charactersNotesEl = document.getElementById("w-charactersNotesEl");
 
                 if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
-                if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
                 if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
-                if (locationsNotesEl) locationsNotesEl.value = notes.locations || "";
-                if (conflictsNotesEl) conflictsNotesEl.value = notes.conflicts || "";
+                if (racesNotesEl) racesNotesEl.value = notes.races || "";
+                if (regionsNotesEl) regionsNotesEl.value = notes.regions || "";
+                if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
+                if (bestiaryNotesEl) bestiaryNotesEl.value = notes.bestiary || "";
+                if (charactersNotesEl) charactersNotesEl.value = notes.characters || "";
 
                 selectWorldSetting(w.setting, false);
                 loadWorldTones();
                 updateWorldBannerUI(w.bannerUrl);
 
                 // Populate sections
-                let list = ["overview", "factions", "rules", "locations", "conflicts"];
+                let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
                 list.forEach(s => {
                     let text = w.sections[s] || "";
                     let out = document.getElementById(`w-${s}OutputEl`);
@@ -1012,7 +1032,7 @@
             }
 
             // Sections
-            let list = ["overview", "factions", "rules", "locations", "conflicts"];
+            let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
             list.forEach(s => {
                 if (json[s]) {
                     let cleanedVal = json[s].replace(/\u2014/g, " - ");
@@ -1069,16 +1089,20 @@
 
         let notes = window.worldState.sectionNotes || {};
         let overviewNotesEl = document.getElementById("w-overviewNotesEl");
-        let factionsNotesEl = document.getElementById("w-factionsNotesEl");
         let rulesNotesEl = document.getElementById("w-rulesNotesEl");
-        let locationsNotesEl = document.getElementById("w-locationsNotesEl");
-        let conflictsNotesEl = document.getElementById("w-conflictsNotesEl");
+        let racesNotesEl = document.getElementById("w-racesNotesEl");
+        let regionsNotesEl = document.getElementById("w-regionsNotesEl");
+        let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+        let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
+        let charactersNotesEl = document.getElementById("w-charactersNotesEl");
 
         if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
-        if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
         if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
-        if (locationsNotesEl) locationsNotesEl.value = notes.locations || "";
-        if (conflictsNotesEl) conflictsNotesEl.value = notes.conflicts || "";
+        if (racesNotesEl) racesNotesEl.value = notes.races || "";
+        if (regionsNotesEl) regionsNotesEl.value = notes.regions || "";
+        if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
+        if (bestiaryNotesEl) bestiaryNotesEl.value = notes.bestiary || "";
+        if (charactersNotesEl) charactersNotesEl.value = notes.characters || "";
 
         // Custom setting and tones dropdown configurations
         initCustomWorldSettingDropdown();
@@ -1086,7 +1110,7 @@
         updateWorldBannerUI(window.worldState.bannerUrl);
 
         // Populate dynamic section text outputs
-        let list = ["overview", "factions", "rules", "locations", "conflicts"];
+        let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
         list.forEach(s => {
             let text = window.worldState.sections[s] || "";
             let out = document.getElementById(`w-${s}OutputEl`);

@@ -187,19 +187,25 @@ prompts
   world
     overview
       instruction = You are writing the WORLD OVERVIEW and CORE LORE section for a setting profile.
-      format = ["Format your response EXACTLY as follows:\\nOverview: In a paragraph, describe the world's core premise, tone, and environment.\\n\\nGeography: In a paragraph, describe the physical geography, weather patterns, and notable landmarks."]
-    factions
-      instruction = You are writing the FACTIONS, ORGANIZATIONS, and SOCIETIES section for a setting profile.
-      format = ["Format your response EXACTLY as follows:\\nFactions: In 3 brief bullet points, describe the major factions, their goals, and their current influence. (e.g., - Faction A: Desc...)"]
+      format = ["Format your response EXACTLY as follows:\\n- The Setting : A paragraph covering the core setting, themes, underlying reality, and emotional atmosphere.\\n- Technology: A paragraph explaining technology level, infrastructure, and everyday practical life.\\n- Daily Life: A paragraph describing lifestyle across different social groups.\\n- Secrets: A paragraph revealing truths about the world that are hidden from people living inside it."]
     rules
-      instruction = You are writing the MAGIC, TECHNOLOGY, and SCIENTIFIC RULES section for a setting profile.
-      format = ["Format your response EXACTLY as follows:\\nRules: In a paragraph, explain how magic or advanced technology functions in this world, who has access to it, and what its limitations or costs are."]
-    locations
-      instruction = You are writing the GEOGRAPHY, LOCATIONS, and LANDMARKS section for a setting profile.
-      format = ["Format your response EXACTLY as follows:\\nLocations: In 3 brief bullet points, list key cities, dungeons, territories, or coordinates and what they are known for."]
-    conflicts
-      instruction = You are writing the CONFLICTS, HISTORY, and ONGOING EVENTS section for a setting profile.
-      format = ["Format your response EXACTLY as follows:\\nConflicts: In a paragraph, explain the main political, social, or military tensions currently defining this world's era."] 
+      instruction = You are writing the RULES section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\nList world rules that shape survival, values, economics, culture, conflict, or behavior. Provide a maximum of 5 rules as a clean bulleted list."]
+    races
+      instruction = You are writing the RACES section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\n- Race_Name: A paragraph describing appearance, origins, culture, social structure, strengths, weaknesses, relationships with others, and role in the world."]
+    regions
+      instruction = You are writing the REGIONS section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\n- Region_Name: A paragraph description."]
+    factions
+      instruction = You are writing the MAJOR FACTIONS section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\n- Faction_Name: A paragraph including identity, leadership, goals, one representative quote, and flag/symbol/sign information. Also talk about if its a secret group or publically known."]
+    bestiary
+      instruction = You are writing the BESTIARY section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\n- Creature_Name: A paragraph describing appearance, habitat, behavior, danger level, ecological role, folklore, and any unusual traits or uses.\\n\\n- Common animals: a list, as a sentence, comma-separated."]
+    characters
+      instruction = You are writing the IMPORTANT CHARACTERS section for a setting profile.
+      format = ["Format your response EXACTLY as follows:\\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."] 
   introScenario
     instruction = You are writing the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
     format = ["Write a single short paragraph that introduces the scene, characters, {{user}}'s role, etc.Start by clearly describing the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."]
@@ -238,7 +244,7 @@ prompts
     bannerImage
       instruction = ["Based on the world setting and overview details below, extract 6-8 visual keyphrases for an environment/landscape concept art prompt.\\nName: " + literal(wName || "Unnamed") + "\\nSetting: " + literal(wSetting) + "\\nTones: " + literal(wTones) + "\\nOverview details: " + literal(overviewText) + "\\n\\nRespond with ONLY a comma-separated list of visual descriptors. Focus on structures, color palette, lighting, climate, and landmarks. No introductory or concluding text."]
     wikiImport
-      instruction = ["TASK: Extract world-building and setting details from the provided text to populate a complete world setting profile.\\n\\nText:\\n" + literal(content.slice(0, 12000)) + "\\n\\nRespond with ONLY a JSON object in this format:\\n{\\n  \"name\": \"...\",\\n  \"setting\": \"...\",\\n  \"tones\": [\"...\", \"...\"],\\n  \"themes\": \"...\",\\n  \"overview\": \"...\",\\n  \"factions\": \"...\",\\n  \"rules\": \"...\",\\n  \"locations\": \"...\",\\n  \"conflicts\": \"...\"\\n}\\n- Keep \"name\" and \"setting\" (e.g. Fantasy, Cyberpunk) short.\\n- tones: array of tones (choose from: Grounded, Thrilling Action, Dark Gritty, Light-hearted Comedic, Mysterious, Romantic, Erotic, Tragic, Whimsical, Epic, Affectionate, Flirtatious, Sensual).\\n- themes: comma-separated core themes.\\n- overview, factions, rules, locations, and conflicts should be detailed descriptions (or bullet points for factions/locations) describing each area based on the text.\\n- If a field is unknown, use null." + (override.trim() ? "\\n\\nIMPORTANT CREATIVE TWIST - apply this override: \\\"" + literal(override.trim()) + "\\\". Reinterpret the world fully through this lens." : "") + "\\n\\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite."]
+      instruction = ["TASK: Extract world-building and setting details from the provided text to populate a complete world setting profile.\\n\\nText:\\n" + literal(content.slice(0, 12000)) + "\\n\\nRespond with ONLY a JSON object in this format:\\n{\\n  \"name\": \"...\",\\n  \"setting\": \"...\",\\n  \"tones\": [\"...\", \"...\"],\\n  \"themes\": \"...\",\\n  \"overview\": \"...\",\\n  \"rules\": \"...\",\\n  \"races\": \"...\",\\n  \"regions\": \"...\",\\n  \"factions\": \"...\",\\n  \"bestiary\": \"...\",\\n  \"characters\": \"...\"\\n}\\n- Keep \"name\" and \"setting\" (e.g. Fantasy, Cyberpunk) short.\\n- tones: array of tones (choose from: Grounded, Thrilling Action, Dark Gritty, Light-hearted Comedic, Mysterious, Romantic, Erotic, Tragic, Whimsical, Epic, Affectionate, Flirtatious, Sensual).\\n- themes: comma-separated core themes.\\n- overview, rules, races, regions, factions, bestiary, and characters should be detailed descriptions describing each area based on the text.\\n- If a field is unknown, use null." + (override.trim() ? "\\n\\nIMPORTANT CREATIVE TWIST - apply this override: \\\"" + literal(override.trim()) + "\\\". Reinterpret the world fully through this lens." : "") + "\\n\\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite."]
 
   roleplayPage
     wikiImport
