@@ -265,22 +265,16 @@
         };
 
         let config = promptConfig[section];
-        let instruction = `You are an expert world-builder and lore compiler. You are writing the ${section.toUpperCase()} section for a detailed world log.
-
-WORLD DETAILS:
-- World Name: ${wName}
-- Setting Genre: ${wSetting}
-- Atmospheric Tones: ${wTones}
-- Core Themes / Keywords: ${wThemes}${sectionNotes.trim() ? `\n- Section Notes/Directives: ${sectionNotes}` : ""}
-
-SECTION TARGET:
-Compile the ${config.role}.
-
-STRICT RULES:
-${config.rules}
-4. DO NOT use the em dash character (\u2014) anywhere in your response. Replace it with a comma, semicolon, colon, or rewrite.
-5. Do not write introductory or concluding prose. Output the section content immediately.
-${lengthInstruction}`;
+        root.section = section;
+        root.wName = wName;
+        root.wSetting = wSetting;
+        root.wTones = wTones;
+        root.wThemes = wThemes;
+        root.sectionNotes = sectionNotes;
+        root.configRole = config.role;
+        root.configRules = config.rules;
+        root.lengthInstruction = lengthInstruction;
+        let instruction = root.prompts.worldPage.sectionGeneration.instruction.evaluateItem;
 
         if (outputEl) {
             outputEl.innerHTML = "";
@@ -351,13 +345,11 @@ ${lengthInstruction}`;
         setGenerationStatus("Creating world visualization banner...");
 
         let overviewText = window.worldState.sections.overview || window.worldState.themes || "";
-        let instruction = `Based on the world setting and overview details below, extract 6-8 visual keyphrases for an environment/landscape concept art prompt.
-Name: ${window.worldState.name || "Unnamed"}
-Setting: ${window.worldState.setting}
-Tones: ${window.worldState.tones.join(", ")}
-Overview details: ${overviewText}
-
-Respond with ONLY a comma-separated list of visual descriptors. Focus on structures, color palette, lighting, climate, and landmarks. No introductory or concluding text.`;
+        root.wName = window.worldState.name || "Unnamed";
+        root.wSetting = window.worldState.setting;
+        root.wTones = window.worldState.tones.join(", ");
+        root.overviewText = overviewText;
+        let instruction = root.prompts.worldPage.bannerImage.instruction.evaluateItem;
 
         let keyphrase = "beautiful landscape, concept art";
         try {
@@ -981,7 +973,9 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on structu
             }
             setGenerationStatus("🧠 Extracting world setting...");
             let override = (document.getElementById("wWikiOverrideEl") || {}).value || "";
-            let instruction = `TASK: Extract world-building and setting details from the provided text to populate a complete world setting profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "setting": "...",\n  "tones": ["...", "..."],\n  "themes": "...",\n  "overview": "...",\n  "factions": "...",\n  "rules": "...",\n  "locations": "...",\n  "conflicts": "..."\n}\n- Keep "name" and "setting" (e.g. Fantasy, Cyberpunk) short.\n- tones: array of tones (choose from: Grounded, Thrilling Action, Dark Gritty, Light-hearted Comedic, Mysterious, Romantic, Erotic, Tragic, Whimsical, Epic, Affectionate, Flirtatious, Sensual).\n- themes: comma-separated core themes.\n- overview, factions, rules, locations, and conflicts should be detailed descriptions (or bullet points for factions/locations) describing each area based on the text.\n- If a field is unknown, use null.${override.trim() ? `\n\nIMPORTANT CREATIVE TWIST - apply this override: "${override.trim()}". Reinterpret the world fully through this lens.` : ""}\n\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite.`;
+            root.content = content;
+            root.override = override;
+            let instruction = root.prompts.worldPage.wikiImport.instruction.evaluateItem;
             
             let res = await ai({ instruction });
             let jsonText = res.text || "";

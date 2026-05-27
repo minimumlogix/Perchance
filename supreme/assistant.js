@@ -99,7 +99,8 @@ async function sendAssistantMessage() {
     try {
         // Phase 1: Assess Intention
         msgBlock.thinkingBlock.childNodes[0].nodeValue = "Assessing intent ";
-        const intentInstruction = `You are a router. Based on the user request, output strictly ONE WORD from this list: "image", "text", "both". If they ask to see, draw, or generate an image/portrait, output "image" or "both". Otherwise output "text".\nUser Request: ${text}`;
+        root.text = text;
+        const intentInstruction = root.prompts.assistantPage.assessIntention.instruction.evaluateItem;
         
         let intentResult = await window.ai({ instruction: intentInstruction });
         let intentText = (intentResult.generatedText || intentResult.text || "").toLowerCase().trim();
@@ -114,7 +115,9 @@ async function sendAssistantMessage() {
         if (enableThinking) {
             // Phase 2: Methodology
             msgBlock.thinkingBlock.childNodes[0].nodeValue = "Developing methodology ";
-            const methodInstruction = `Generate a brief step-by-step methodology to fulfill this user request. Only output the steps. \n${context}\nRequest: ${text}`;
+            root.context = context;
+            root.text = text;
+            const methodInstruction = root.prompts.assistantPage.methodology.instruction.evaluateItem;
             
             let methodResult = await window.ai({ instruction: methodInstruction });
             methodology = (methodResult.generatedText || methodResult.text || "").trim();
@@ -129,9 +132,12 @@ async function sendAssistantMessage() {
         msgBlock.bubble.style.display = "block";
         
         if (intent === "text" || intent === "both") {
+            root.context = context;
+            root.methodology = methodology;
+            root.text = text;
             const finalInstruction = enableThinking
-                ? `Fulfill the user request based on the methodology.\n${context}\nMethodology: ${methodology}\nUser Request: ${text}`
-                : `Fulfill the user request.\n${context}\nUser Request: ${text}`;
+                ? root.prompts.assistantPage.finalOutputThinking.instruction.evaluateItem
+                : root.prompts.assistantPage.finalOutputNoThinking.instruction.evaluateItem;
             
             await window.ai({
                 instruction: finalInstruction,
@@ -150,7 +156,9 @@ async function sendAssistantMessage() {
             }
             
             // Generate Image Prompt
-            const imgPromptInstruction = `Write a succinct image generation prompt for text-to-image AI based on the user request. Describe the visuals clearly. Only output the prompt.\n${context}\nRequest: ${text}`;
+            root.context = context;
+            root.text = text;
+            const imgPromptInstruction = root.prompts.assistantPage.imagePrompt.instruction.evaluateItem;
             let imgPromptResult = await window.ai({ instruction: imgPromptInstruction });
             let finalImgPrompt = (imgPromptResult.generatedText || imgPromptResult.text || "").trim();
             

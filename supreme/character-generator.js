@@ -17,28 +17,12 @@
         let existingWorldName = (document.getElementById("worldNameEl") || {}).value || "";
         let needsName = !existingWorldName.trim();
 
-        let instruction = `You are writing a concise, factual "World Lore" summary for a character generator. This text will be used by AI to generate consistent characters, so it must contain actionable facts  -  NOT atmospheric prose.
-Setting: ${settingValue}
-Tones: ${toneStr}${userNotes ? `\nUser Hints / Notes: ${userNotes}` : ""}${existingWorldName ? `\nWorld Name: ${existingWorldName}` : ""}
-
-Rules (STRICTLY FOLLOW):
-1. Write 3-5 SHORT bullet points or brief sentences. Each one is a concrete, specific fact.
-2. Cover: time period & location, technology/magic level, society/political structure, daily life tone, and one major ongoing conflict or theme.
-3. DO NOT write flowery prose, metaphors, poetic imagery, or literary descriptions.
-4. DO NOT write vague statements like "magic exists"  -  be specific: what kind, how it works, who has it.
-5. Format: plain sentences or short bullet points. No headers. No intro/outro.
-6. Aim for 60-120 words maximum.${needsName ? `\n7. At the very end, on its own line, output exactly: WORLD_NAME: [A short, creative 1-4 word name for this world, fitting the setting]` : ""}
-
-Good example output (for "Contemporary Japan, college life"):
-- Contemporary Tokyo, Japan, year 2026.
-- High-tech society; smartphones, social media, and convenience stores define daily life.
-- Characters are primarily college students navigating academic pressure, part-time jobs, and social hierarchies.
-- Society values harmony and group belonging, but young people increasingly struggle with loneliness and identity.
-- Major tension: the gap between tradition (family expectations, senpai/kouhai culture) and individual freedom.
-
-Respond with ONLY the world lore facts (and WORLD_NAME line if requested). No heading, no intro, no prose filler.
-
-${getBannedFormattingRule()}`;
+        root.settingValue = settingValue;
+        root.toneStr = toneStr;
+        root.userNotes = userNotes;
+        root.existingWorldName = existingWorldName;
+        root.needsName = needsName;
+        let instruction = root.prompts.characterPage.worldLore.instruction.evaluateItem;
 
         worldLoreEl.value = "";
         worldLoreEl.placeholder = "Generating...";
@@ -118,10 +102,8 @@ ${getBannedFormattingRule()}`;
         setSectionStatus("worldLore", "🎨 Generating world visualization...");
         setGenerationStatus("Generating world visualization...");
 
-        let instruction = `Based on the world lore below, extract 5-8 vivid visual keyphrases for an environment/landscape concept art prompt.
-Lore: ${text}
-
-Respond with ONLY a comma-separated list of visual descriptors. Focus on colors, architecture, weather, and landmarks. No extra text.`;
+        root.text = text;
+        let instruction = root.prompts.characterPage.worldLoreImage.instruction.evaluateItem;
 
         let res = await ai({ instruction });
         let visualKeyphrases = res.text.trim().replace(/^"|"$/g, "");
@@ -660,28 +642,12 @@ Respond with ONLY a comma-separated list of visual descriptors. Focus on colors,
         let overviewNotes = overviewOverride !== undefined ? overviewOverride : (document.getElementById("overviewNotesEl") || {}).value || "";
         let worldLoreVal = worldLoreOverride !== undefined ? worldLoreOverride : (document.getElementById("worldLoreEl") || {}).value || "";
         let allUserNotes = [sectionNotes || "", overviewNotes].filter(Boolean).join("\n");
-        let instruction = `You are filling in missing identity fields for a character. Generate ONLY the missing fields listed below  -  do not generate anything else.
-
-IMPORTANT  -  scan the user notes and overview carefully before generating. If an explicit value for any field is stated anywhere (e.g. "25 year old", "she/her", "human", "asian"), you MUST use that exact value. Do not infer or reinterpret. Only invent a value if no indication exists anywhere in the provided context.
-
-REGENERATION RULE: If a field is blank and listed in the "Fields to generate" list, it is because we want to replace the old value. Do NOT reuse the old value of this field even if it is mentioned in the existing character context below (e.g. if "name" is to be generated, do not reuse the old name mentioned in the background or personality sections; generate a completely new name instead).
-
-${existingContext ? "Existing character context:\n---\n" + existingContext + "\n---\n" : ""}
-${worldLoreVal ? "World Lore (ambient background knowledge):\n" + worldLoreVal + "\n" : ""}
-${allUserNotes ? "User notes  -  scan these first for any explicit field values:\n" + allUserNotes + "\n" : ""}
-${settingAndTone ? settingAndTone + "\n" : ""}
-Fields to generate: ${blankFields.join(", ")}
-
-Respond with ONLY a JSON object containing the missing fields, exactly like this:
-{
-  "name": "...",
-  "age": "...",
-  "gender": "...",
-  "orientation": "...",
-  "species": "...",
-  "ethnicity": "..."
-}
-No explanation, no extra text.\n\n${getBannedFormattingRule()}`;
+        root.existingContext = existingContext;
+        root.worldLoreVal = worldLoreVal;
+        root.allUserNotes = allUserNotes;
+        root.settingAndTone = settingAndTone;
+        root.blankFields = blankFields.join(", ");
+        let instruction = root.prompts.characterPage.identityDetails.instruction.evaluateItem;
 
         if (genBtn) genBtn.disabled = true;
         if (stopBtn) stopBtn.style.display = "inline-block";
@@ -1439,7 +1405,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                         if (statusEl) {
                             statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Analyzing Scene...</div>`;
                         }
-                        let extractPrompt = `Extract ONLY the physical setting, environment, lighting, and atmosphere from the following text into a concise visual description. Do NOT mention any people, characters, actions, or dialogue. Just describe the empty scenery:\n\n${scenario}`;
+                        root.scenario = scenario;
+                        let extractPrompt = root.prompts.characterPage.backgroundImage.instruction.evaluateItem;
                         let aiResult = await window.ai(extractPrompt);
                         if (!window.introBgGenRunning) return;
                         if (aiResult && aiResult.generatedText) {
@@ -1662,25 +1629,11 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (d.ethnicity) detailsParts.push(`Ethnicity: ${d.ethnicity}`);
         let detailsStr = `Character Details (you MUST strictly base the concept on these fields):\n${detailsParts.join("\n")}`;
 
-        let instruction = `You are a master character concept designer. Generate exactly one single creative, masterpiece, original, non-cliche character concept. Do not generate multiple characters or options.
-
-Setting: ${settingValue || "unspecified"}
-Tone: ${toneStr}
-${worldLoreVal ? "World Lore: " + worldLoreVal : ""}
-${detailsStr ? "\n" + detailsStr : ""}
-
-Requirements:
-- Focus on creating a high-quality character concept seed that will serve as the foundation for this character. It must be highly creative and feel like a masterpiece.
-- Strictly base the concept sections on the Character Details provided. Do not contradict, ignore, or omit them.
-- Format the output strictly under these plain text headings (do NOT bold them):
-Appearance: [A brief, masterpiece concept of their appearance and design, incorporating their Age, Gender, Species, and Ethnicity if provided]
-Personality: [A brief, masterpiece concept of their personality, core traits, and intriguing quirks, aligning with their details]
-Context: [A brief, masterpiece concept of their current situation, role, and relationship context with the {{user}} in terms of roleplaying (how they view the {{user}}, their dynamic, etc.)]
-Backstory: [A brief, masterpiece concept of their backstory or origin that shaped who they are today, incorporating their details naturally]
-- Do NOT write a long biography or use bullet points within the sections  -  write a brief, cohesive, evocative description for each section.
-- Keep it focused and descriptive.
-
-${getBannedFormattingRule()}`;
+        root.settingValue = settingValue;
+        root.toneStr = toneStr;
+        root.worldLoreVal = worldLoreVal;
+        root.detailsStr = detailsStr;
+        let instruction = root.prompts.characterPage.conceptArchetype.instruction.evaluateItem;
 
         if (statusEl) {
             statusEl.textContent = (target === 'textarea') 
@@ -1776,13 +1729,10 @@ ${getBannedFormattingRule()}`;
     // ─── IMAGE GENERATION ─────────────────────────────────────────────
     window.getCaptionPromptInstruction = function (appearanceText, settingValue, toneValues) {
         let toneStr = toneValues.length > 0 && toneValues[0] !== "Any" ? toneValues.join(", ") : "unspecified";
-        let parts = [];
-        parts.push("You are generating an image prompt for an AI image generator. Below is a character's physical appearance description. Extract the purely VISUAL elements and format them as a comma-separated list of descriptive keyphrases.");
-        parts.push("Rules:\n1. Only include things that can be seen in an image. Do NOT include personality traits, backstory, abstract concepts, or emotions.\n2. DO include specific visual details: hair colour and style, eye colour, skin tone, clothing style and colour, notable accessories, body type, distinguishing features, apparent age range, gender presentation, race/species.\n3. Include ONE concise colour palette phrase at the end if apparent.\n4. Let the setting and tone subtly influence HOW you describe visual elements.\n5. Keep each keyphrase short and concrete.\n6. Order keyphrases from most important to least.\n7. Avoid redundant or low-impact details.");
-        parts.push("Setting: " + (settingValue || "unspecified") + "\nTone: " + toneStr);
-        parts.push("Physical appearance description:\n---\n" + appearanceText + "\n---");
-        parts.push("Respond with ONLY the comma-separated keyphrases  -  no preamble, no explanation.");
-        return parts.join("\n\n");
+        root.settingValue = settingValue;
+        root.toneStr = toneStr;
+        root.appearanceText = appearanceText;
+        return root.prompts.characterPage.imageCaption.instruction.evaluateItem;
     };
 
     window.buildNegativePrompt = function () {
@@ -3007,12 +2957,10 @@ ${getBannedFormattingRule()}`;
         let loadingModal = window.chatPrepLoadingModal;
 
         loadingModal.updateContent("🎨 Preparing chat: generating character style...");
-        let cssParts = [];
-        cssParts.push("You are generating CSS styling for an AI character chat interface message bubble. The interface uses a dark background.");
-        cssParts.push("Character description:\n---\n" + generatedText + "\n---\nSetting: " + settingValue + "\nTone: " + toneValues.join(", "));
-        cssParts.push("Generate atmospheric CSS styling that suits this character's personality, aesthetic, and tone.");
-        cssParts.push('Respond with ONLY a valid JSON object in this format:\n{\n  "css": "...",\n  "googleFont": "..."\n}');
-        let cssInstruction = cssParts.join("\n\n");
+        root.generatedText = generatedText;
+        root.settingValue = settingValue;
+        root.toneValues = toneValues.join(", ");
+        let cssInstruction = root.prompts.characterPage.chatCss.instruction.evaluateItem;
 
         let cssResultStream = ai({ instruction: cssInstruction });
         let cssRes = await cssResultStream;
@@ -3025,10 +2973,7 @@ ${getBannedFormattingRule()}`;
         } catch (e) { cssJson = { css: "", googleFont: null }; }
 
         loadingModal.updateContent("📖 Preparing chat: building role instruction and lorebook...");
-        let loreParts = [];
-        loreParts.push("You are preparing a character for an AI roleplay chat system.");
-        loreParts.push('Respond with ONLY valid JSON:\n{\n  "roleInstruction": "...",\n  "loreEntries": ["..."]\n}');
-        let loreInstruction = loreParts.join("\n\n");
+        let loreInstruction = root.prompts.characterPage.chatLore.instruction.evaluateItem;
 
         let loreResultStream = ai({ instruction: loreInstruction });
         let loreRes = await loreResultStream;
@@ -3041,7 +2986,7 @@ ${getBannedFormattingRule()}`;
         } catch (e) { loreJson = { roleInstruction: generatedText, loreEntries: [] }; }
 
         loadingModal.updateContent("✍️ Preparing chat: generating writing style...");
-        let wrapperInstruction = "Write a concise style guide for an AI roleplaying as this character...";
+        let wrapperInstruction = root.prompts.characterPage.chatStyleGuide.instruction.evaluateItem;
         let wrapperResultStream = ai({ instruction: wrapperInstruction });
         let wrapperRes = await wrapperResultStream;
         let writingStyle = (wrapperRes.text || "").trim();
@@ -3269,7 +3214,9 @@ ${getBannedFormattingRule()}`;
             }
             setGenerationStatus("🧠 Extracting character data...");
             let wikiOverride = (document.getElementById("wikiOverrideEl") || {}).value || "";
-            let instruction = `TASK: Extract character information from the provided text to populate a complete character profile.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "name": "...",\n  "age": "...",\n  "gender": "...",\n  "orientation": "...",\n  "race": "...",\n  "ethnicity": "...",\n  "role": "...",\n  "appearance": "...",\n  "background": "...",\n  "personality": "...",\n  "beliefs": "...",\n  "preferences": "...",\n  "lore": "...",\n  "roleplay": "..."\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- role: 3-sentence description of the character's narrative role and relationship to the {{user}}/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.${wikiOverride.trim() ? `\n\nIMPORTANT CREATIVE TWIST  -  apply this override to ALL sections of the character: "${wikiOverride.trim()}". Reinterpret the source material fully through this lens. Keep the core identity (name, age, gender, race, appearance) grounded in source, but personality, role, background, beliefs, preferences, lore and roleplay must strongly reflect this twist.` : ""}\n\n${getBannedFormattingRule()}`;
+            root.content = content;
+            root.wikiOverride = wikiOverride;
+            let instruction = root.prompts.characterPage.wikiImport.instruction.evaluateItem;
             let res = await ai({ instruction });
             let jsonText = res.text || "";
             let jsonMatch = jsonText.match(/\{[\s\S]*\}/);

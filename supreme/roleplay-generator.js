@@ -463,7 +463,9 @@
             }
             setGenerationStatus("🧠 Extracting scenario details...");
             let override = (document.getElementById("rpWikiOverrideEl") || {}).value || "";
-            let instruction = `TASK: Extract roleplay scenario details from the provided text to populate a roleplay configuration.\n\nText:\n${content.slice(0, 12000)}\n\nRespond with ONLY a JSON object in this format:\n{\n  "worldName": "...",\n  "worldLore": "...",\n  "setting": "...",\n  "tones": ["...", "..."],\n  "themes": "...",\n  "userName": "...",\n  "userRole": "...",\n  "npcs": [\n    { "name": "...", "species": "...", "personality": "...", "role": "..." }\n  ],\n  "scenarioNotes": "..."\n}\n- worldName, userName, userRole: short text.\n- setting: short genre.\n- tones: array of tone names.\n- themes: comma-separated list of themes.\n- worldLore, scenarioNotes: detailed descriptions.\n- npcs: array of up to 4 major characters from the text, with name, species, personality summary, and role in story.\n- If a field is unknown, use null.${override.trim() ? `\n\nIMPORTANT CREATIVE TWIST - apply this override: "${override.trim()}". Reinterpret the scenario fully through this lens.` : ""}\n\nSTRICT FORMATTING RULE: Do NOT use the em dash character (\u2014) anywhere in your response. Replace any em dash with a comma, semicolon, colon, or rewrite.`;
+            root.content = content;
+            root.override = override;
+            let instruction = root.prompts.roleplayPage.wikiImport.instruction.evaluateItem;
 
             let res = await ai({ instruction });
             let jsonText = res.text || "";
@@ -558,12 +560,10 @@
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        let instruction = `Write a concise world overview (3-4 sentences maximum) for a roleplay setting. 
-World Name: ${name}
-Setting: ${setting}
-Tones: ${tonesStr}
-
-Do not include titles. Write in a factual, evocative style. Do not use the em-dash (\u2014) character. Output only the lore content.`;
+        root.name = name;
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        let instruction = root.prompts.roleplayPage.worldLore.instruction.evaluateItem;
 
         let loreEl = document.getElementById("rpWorldLoreEl");
         if (loreEl) {
@@ -597,21 +597,10 @@ Do not include titles. Write in a factual, evocative style. Do not use the em-da
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        let instruction = `Generate a single creative NPC profile fitting the world described below. 
-World Name: ${worldName}
-Lore: ${worldLore}
-Setting Genre: ${setting}
-
-You MUST respond with exactly a JSON object containing keys: "name", "species", "personality", "role".
-Example response:
-{
-  "name": "Kaito",
-  "species": "Cyborg",
-  "personality": "Quiet, tactical, distrustful.",
-  "role": "Infiltrator and guide."
-}
-
-Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks. Do not use em-dashes.`;
+        root.worldName = worldName;
+        root.worldLore = worldLore;
+        root.setting = setting;
+        let instruction = root.prompts.roleplayPage.npcGeneration.instruction.evaluateItem;
 
         try {
             let res = await ai({ instruction });
@@ -661,13 +650,11 @@ Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        let instruction = `Generate a creative RPG roleplay conflict scenario / plot hook (2-3 sentences maximum).
-World Name: ${worldName}
-World Lore: ${worldLore}
-NPCs: ${npcsText || "Generic side characters"}
-Player Role: ${userRole}
-
-Establish an immediate danger, mystery, or conflict that unites the player and the NPCs. Output only the scenario notes. Do not write titles. Do not use em-dashes.`;
+        root.worldName = worldName;
+        root.worldLore = worldLore;
+        root.npcsText = npcsText;
+        root.userRole = userRole;
+        let instruction = root.prompts.roleplayPage.scenarioNotes.instruction.evaluateItem;
 
         let notesEl = document.getElementById("rpScenarioNotesEl");
         if (notesEl) {
@@ -790,33 +777,18 @@ Establish an immediate danger, mystery, or conflict that unites the player and t
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
 
-        let promptParts = [root.prompts.roleplayScenario.instruction.evaluateItem];
-        let contextData = `WORLD DATA:
-- World Name: ${worldName}
-- World Lore/Setting: ${worldLore}
-- Setting Genre: ${setting}
-- Atmospheric Tones: ${tonesStr}
-- Themes/Keywords: ${themes}
+        root.worldName = worldName;
+        root.worldLore = worldLore;
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = themes;
+        root.pName = pName;
+        root.pRole = pRole;
+        root.npcsText = npcsText;
+        root.scenarioNotes = scenarioNotes;
+        root.lengthInstruction = lengthInstruction;
 
-PLAYER DATA (The User):
-- Player Name: ${pName}
-- Player Role/Background: ${pRole}
-
-NPC CAST SHEET:
-${npcsText}
-
-SCENARIO INSTRUCTIONS:
-- Plot Hook / Situation: ${scenarioNotes}
-
-${lengthInstruction}`;
-
-        promptParts.push(contextData);
-        promptParts.push(root.prompts.roleplayScenario.format.evaluateItem);
-        if (typeof getBannedFormattingRule === 'function') {
-            promptParts.push(getBannedFormattingRule());
-        }
-
-        let prompt = promptParts.join("\n\n");
+        let prompt = root.prompts.roleplayPage.roleplayScenario.instruction.evaluateItem;
 
         if (tabScenario) {
             tabScenario.innerHTML = "";

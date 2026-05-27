@@ -4,59 +4,47 @@ trigger: always_on
 
 # Overview of `literal-plugin`
 
-The **`literal-plugin`** is a utility for Perchance used to **escape** or **sanitize** text. By default, Perchance treats square brackets `[...]` and curly brackets `{...}` as special syntax for executing code or picking random options.
-
-If a user inputs text containing these brackets (e.g., a username like `[Cool][Kid]`), Perchance will attempt to parse them, resulting in a broken generator or a syntax error. The `literal-plugin` automatically inserts backslashes (`\`) before these characters so they are treated as literal text.
+The [Literal Plugin](https://perchance.org/literal-plugin) is used to sanitize or "escape" text inputs. It automatically places backslashes in front of square (`[]`) or curly (`{}`) brackets within a string of text. This ensures Perchance reads these characters as literal text rather than special generator syntax, preventing code errors when users input custom text containing brackets.
 
 ---
 
-## Step-by-Step Implementation
+### Step 1: Import the Plugin
 
-### 1. Import the Plugin
+To use the plugin, you must first assign it to a variable in your Perchance code. It is standard practice to name the variable `literal`.
 
-To use the plugin, you must first import it at the top of your Perchance code block:
+Add the following line to your code:
 
 ```perchance
 literal = {import:literal-plugin}
 
 ```
 
-### 2. Basic Usage (Escaping Brackets)
+---
 
-Wrap any unpredictable dynamic variables, user inputs (like HTML input box values), or text strings inside the `literal()` function.
+### Step 2: Basic Usage (Escaping Brackets)
+
+If you have an HTML input box (e.g., `<input id="nameBox">`) where users can type a nickname, they might input a name like `[C]ool[K]id`. If you call `[nameBox.value]` directly in your output, Perchance will attempt to evaluate `[C]` and `[K]` as lists and throw an error.
+
+To prevent this, wrap the input value in the `literal()` function:
 
 ```perchance
-// Scenario: nameBox.value contains user input like "[Hawk_Eye]"
-
 output
-  Your username is [literal(nameBox.value)]!
+  Your name is [literal(nameBox.value)] - what a {cool|interesting} name!
 
 ```
 
-* **Without the plugin:** Perchance looks for a list or variable named `Hawk_Eye`. If it doesn't exist, the generator crashes.
-* **With the plugin:** The output safely renders as `Your username is [Hawk_Eye]!`.
+By doing this, any brackets the user types will be printed exactly as they typed them without breaking your generator.
 
-### 3. Escaping HTML Characters
+---
 
-If you want to display raw HTML tags as plain text rather than letting the browser render them (e.g., showing the actual characters `<b>text</b>` instead of making the text **bold**), pass `"+html"` as the second argument.
+### Step 3: Advanced Usage (Sanitizing HTML)
+
+The plugin also includes a secondary function to convert HTML tags into plain text. If a user inputs `<b>blah</b>`, standard Perchance behavior will render the text as bold. If you want the exact characters `<b>blah</b>` to appear on the screen instead, you can pass `"+html"` as a second argument to the function.
+
+Add the `"+html"` parameter like so:
 
 ```perchance
-// Scenario: input contains "<b>Hello</b>"
-
 output
-  The raw code is: [literal(input.value, "+html")]
+  Your name is [literal(nameBox.value, "+html")] ...
 
 ```
-
----
-
-## Quick Reference Summary
-
-| Feature | Syntax | Example Input | Resulting Output |
-| --- | --- | --- | --- |
-| **Standard Escaping** | `[literal(variable)]` | `{Awesome}` | `{Awesome}` (as plain text) |
-| **HTML Escaping** | `[literal(variable, "+html")]` | `<i>Text</i>` | `<i>Text</i>` (not italicized) |
-
----
-
-> ℹ️ **Note:** In general software development, this process is standard practice and is typically referred to as **escaping** or **sanitizing** input data to prevent code injection or compilation errors.
