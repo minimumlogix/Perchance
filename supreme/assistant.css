@@ -40,6 +40,7 @@
     display: flex;
     flex-direction: column;
     max-width: 85%;
+    position: relative;
 }
 
 .chat-message.user {
@@ -51,12 +52,111 @@
 }
 
 .message-bubble {
-    padding: 0.8rem 1.2rem;
+    padding: 0.8rem 2.2rem 0.8rem 1.2rem;
     border-radius: 12px;
     font-size: 0.95rem;
     line-height: 1.5;
     word-wrap: break-word;
     color: var(--text-main, #eee);
+    text-align: left;
+}
+
+/* Copy Button */
+.copy-msg-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border, #333);
+    color: var(--text-muted, #888);
+    border-radius: 6px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    font-size: 0.75rem;
+    z-index: 10;
+    padding: 0;
+}
+
+.chat-message:hover .copy-msg-btn {
+    opacity: 1;
+}
+
+.copy-msg-btn:hover {
+    background: var(--accent-color, #7c3aed);
+    color: white !important;
+    border-color: var(--accent-color, #7c3aed);
+}
+
+.copy-msg-btn:active {
+    transform: scale(0.92);
+}
+
+/* Markdown Support Inside message-bubble */
+.message-bubble h1, .message-bubble h2, .message-bubble h3, 
+.message-bubble h4, .message-bubble h5, .message-bubble h6 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-main, #eee);
+    font-weight: 600;
+    line-height: 1.25;
+}
+.message-bubble h1 { font-size: 1.3rem; }
+.message-bubble h2 { font-size: 1.15rem; }
+.message-bubble h3 { font-size: 1.05rem; }
+.message-bubble h4, .message-bubble h5, .message-bubble h6 { font-size: 0.95rem; }
+
+.message-bubble p {
+    margin: 0 0 0.6rem 0;
+}
+.message-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble ul, .message-bubble ol {
+    margin: 0.4rem 0 0.6rem 0;
+    padding-left: 1.25rem;
+}
+.message-bubble li {
+    margin-bottom: 0.25rem;
+}
+
+.message-bubble pre {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    border: 1px solid var(--panel-border, #333);
+}
+
+.message-bubble code {
+    font-family: monospace;
+    font-size: 0.85em;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    color: #f685a2;
+}
+
+.message-bubble pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font-size: 0.8rem;
+}
+
+.message-bubble blockquote {
+    border-left: 3px solid var(--accent-color, #7c3aed);
+    margin: 0.5rem 0;
+    padding-left: 0.8rem;
+    color: var(--text-muted, #888);
 }
 
 .chat-message.user .message-bubble {

@@ -46,11 +46,74 @@ function getAssistantContext() {
     return context;
 }
 
+function renderMarkdown(text) {
+    if (window.marked && typeof window.marked.parse === 'function') {
+        window.marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+        return window.marked.parse(text);
+    }
+    // Fallback: simple escapes & basic markdown parsing
+    return escapeHTML(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+}
+
+function copyMessageText(btn) {
+    const messageEl = btn.closest('.chat-message');
+    const bubble = messageEl.querySelector('.message-bubble');
+    const rawText = bubble ? (bubble.getAttribute('data-raw-text') || bubble.innerText) : '';
+    
+    navigator.clipboard.writeText(rawText).then(() => {
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = "bi bi-check2";
+        }
+        btn.style.backgroundColor = "var(--accent-color, #7c3aed)";
+        btn.style.color = "white";
+        btn.style.borderColor = "var(--accent-color, #7c3aed)";
+        setTimeout(() => {
+            if (icon) {
+                icon.className = "bi bi-copy";
+            }
+            btn.style.backgroundColor = "";
+            btn.style.color = "";
+            btn.style.borderColor = "";
+        }, 2000);
+    }).catch(err => {
+        console.error("Failed to copy text: ", err);
+    });
+}
+
+function clearAssistantChat() {
+    if (confirm("Are you sure you want to clear the chat history?")) {
+        const messagesEl = document.getElementById("chatMessagesEl");
+        if (messagesEl) {
+            messagesEl.innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="message-bubble" data-raw-text="Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?">Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?</div>
+                    <button class="copy-msg-btn" onclick="copyMessageText(this)" title="Copy message"><i class="bi bi-copy"></i></button>
+                </div>
+            `;
+        }
+    }
+}
+
+// Expose functions to window scope for HTML onclick access
+window.copyMessageText = copyMessageText;
+window.clearAssistantChat = clearAssistantChat;
+
 function appendUserMessage(text) {
     const messagesEl = document.getElementById("chatMessagesEl");
     const wrapper = document.createElement("div");
     wrapper.className = "chat-message user";
-    wrapper.innerHTML = `<div class="message-bubble">${escapeHTML(text)}</div>`;
+    wrapper.innerHTML = `
+        <div class="message-bubble" data-raw-text="${escapeHTML(text)}">${escapeHTML(text)}</div>
+        <button class="copy-msg-btn" onclick="copyMessageText(this)" title="Copy message"><i class="bi bi-copy"></i></button>
+    `;
     messagesEl.appendChild(wrapper);
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
@@ -75,12 +138,21 @@ function createAssistantMessageBlock() {
     bubble.className = "message-bubble";
     bubble.style.display = "none";
     
+    // Copy button
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "copy-msg-btn";
+    copyBtn.style.display = "none";
+    copyBtn.title = "Copy message";
+    copyBtn.setAttribute("onclick", "copyMessageText(this)");
+    copyBtn.innerHTML = `<i class="bi bi-copy"></i>`;
+    
     wrapper.appendChild(thinkingBlock);
     wrapper.appendChild(bubble);
+    wrapper.appendChild(copyBtn);
     messagesEl.appendChild(wrapper);
     messagesEl.scrollTop = messagesEl.scrollHeight;
     
-    return { wrapper, thinkingBlock, methodologyBlock, bubble };
+    return { wrapper, thinkingBlock, methodologyBlock, bubble, copyBtn };
 }
 
 async function sendAssistantMessage() {
@@ -146,7 +218,8 @@ async function sendAssistantMessage() {
             await window.ai({
                 instruction: finalInstruction,
                 onChunk: function(data) {
-                    msgBlock.bubble.innerHTML = escapeHTML(data.fullTextSoFar).replace(/\n/g, "<br>");
+                    msgBlock.bubble.setAttribute('data-raw-text', data.fullTextSoFar);
+                    msgBlock.bubble.innerHTML = renderMarkdown(data.fullTextSoFar);
                     document.getElementById("chatMessagesEl").scrollTop = document.getElementById("chatMessagesEl").scrollHeight;
                 }
             });
@@ -183,13 +256,22 @@ async function sendAssistantMessage() {
                 img.className = "message-image";
                 msgBlock.bubble.appendChild(img);
             }
+            
+            // For image/both, if there's no raw text set yet, set the image prompt as raw text
+            if (!msgBlock.bubble.getAttribute('data-raw-text')) {
+                msgBlock.bubble.setAttribute('data-raw-text', finalImgPrompt);
+            }
         }
+        
+        // Show copy button once generation is completed successfully
+        msgBlock.copyBtn.style.display = "flex";
         
     } catch (e) {
         console.error("Assistant Error:", e);
         msgBlock.thinkingBlock.style.display = "none";
         msgBlock.bubble.style.display = "block";
         msgBlock.bubble.innerHTML = `<span style="color: #ff6b6b;">Error: ${e.message || "Failed to generate response."}</span>`;
+        msgBlock.copyBtn.style.display = "none";
     }
     
     inputEl.disabled = false;

@@ -34,6 +34,7 @@
     })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/app.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/character-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/character-sheet-generator.js" defer></script>
@@ -94,18 +95,24 @@
         <div class="content-wrapper">
             <!-- ASSISTANT TAB -->
             <div id="assistantTabEl" style="display: none; flex-direction: column; height: 100%; width: 100%;">
-                <div class="assistant-header" style="justify-content: space-between;">
+                <div class="assistant-header" style="justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <i class="bi bi-robot" style="font-size: 1.2rem; color: var(--accent-color);"></i>
                         <h2>AI Assistant</h2>
                     </div>
-                    <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                        <input type="checkbox" id="aiThinkingToggleEl" style="accent-color: var(--accent-color); transform: scale(1.1);"> Thinking Mode
-                    </label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <label style="font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-muted); cursor: pointer; user-select: none; margin: 0;">
+                            <input type="checkbox" id="aiThinkingToggleEl" style="accent-color: var(--accent-color); transform: scale(1.1);"> Thinking Mode
+                        </label>
+                        <button id="clearChatBtnEl" onclick="clearAssistantChat()" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 80%;">
+                            <i class="bi bi-trash3"></i> Clear Chat
+                        </button>
+                    </div>
                 </div>
                 <div class="chat-messages" id="chatMessagesEl">
                     <div class="chat-message assistant">
-                        <div class="message-bubble">Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?</div>
+                        <div class="message-bubble" data-raw-text="Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?">Hello! I am your AI Assistant. I can help you craft characters, build worlds, or generate images based on your current project. What do you need?</div>
+                        <button class="copy-msg-btn" onclick="copyMessageText(this)" title="Copy message"><i class="bi bi-copy"></i></button>
                     </div>
                 </div>
                 <div class="chat-input-container">
