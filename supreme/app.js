@@ -23,6 +23,24 @@
                 Light_hearted_Comedic: { evaluateItem: "The tone is lighthearted and comedic." },
                 Mysterious: { evaluateItem: "The tone is mysterious and atmospheric." }
             },
+            archetypePrompts: {
+                Any: { evaluateItem: "" },
+                Tsundere: { evaluateItem: "The character behaves in a Tsundere manner." },
+                Yandere: { evaluateItem: "The character behaves in a Yandere manner." },
+                Kuudere: { evaluateItem: "The character behaves in a Kuudere manner." },
+                Dandere: { evaluateItem: "The character behaves in a Dandere manner." },
+                Deredere: { evaluateItem: "The character behaves in a Deredere manner." },
+                Himedere: { evaluateItem: "The character behaves in a Himedere manner." },
+                Kamidere: { evaluateItem: "The character behaves in a Kamidere manner." },
+                Female: { evaluateItem: "The character is female." },
+                Male: { evaluateItem: "The character is male." },
+                Femboy: { evaluateItem: "The character is a femboy." },
+                Tomboy: { evaluateItem: "The character is a tomboy." },
+                Futa: { evaluateItem: "The character is a futanari." },
+                childhood_friend: { evaluateItem: "The character is a childhood friend." },
+                Bestie: { evaluateItem: "The character is a best friend." },
+                FWB: { evaluateItem: "The character is friends with benefits." }
+            },
             prompts: new Proxy({
                 role: { instruction: { evaluateItem: "You are writing the ROLE and RULES section." }, format: { evaluateItem: "Format: Role: ... Rules: ..." } },
                 appearance: { instruction: { evaluateItem: "You are writing the APPEARANCE, ATTIRE, and ITEMS section." }, format: { evaluateItem: "Format: Appearance: ... Attire: ..." }, notes: { evaluateItem: "Be specific and visual." } },
@@ -275,18 +293,19 @@
                 menu.style.display = "none";
                 if (dropdown) dropdown.classList.remove("open");
             }
-            // Focus search input if opening setting dropdown
-            if ((menuId === "settingDropdownMenu" || menuId === "wSettingDropdownMenu" || menuId === "rpSettingDropdownMenu") && menu.style.display === "block") {
+            // Focus search input if opening setting/tone/archetype dropdown
+            if (menu.style.display === "block") {
                 let search = menu.querySelector(".dropdown-search-input");
                 if (search) {
                     search.value = "";
-                    if (menuId === "settingDropdownMenu") {
-                        filterSettings("");
-                    } else if (menuId === "wSettingDropdownMenu" && typeof filterWorldSettings === "function") {
-                        filterWorldSettings("");
-                    } else if (menuId === "rpSettingDropdownMenu" && typeof filterRoleplaySettings === "function") {
-                        filterRoleplaySettings("");
-                    }
+                    if (menuId === "settingDropdownMenu") filterSettings("");
+                    else if (menuId === "wSettingDropdownMenu" && typeof filterWorldSettings === "function") filterWorldSettings("");
+                    else if (menuId === "rpSettingDropdownMenu" && typeof filterRoleplaySettings === "function") filterRoleplaySettings("");
+                    else if (menuId === "toneDropdownMenu" && typeof filterTones === "function") filterTones("");
+                    else if (menuId === "wToneDropdownMenu" && typeof filterWorldTones === "function") filterWorldTones("");
+                    else if (menuId === "rpToneDropdownMenu" && typeof filterRoleplayTones === "function") filterRoleplayTones("");
+                    else if (menuId === "archetypeDropdownMenu" && typeof filterArchetypes === "function") filterArchetypes("");
+                    
                     setTimeout(() => search.focus(), 50);
                 }
             }
@@ -304,6 +323,43 @@
         });
     });
 
+    window.getPerchanceListKeys = function (listObj) {
+        if (!listObj || typeof listObj !== "object") return [];
+        const ignored = new Set([
+            'selectOne', 'evaluateItem', 'selectMany', 'selectUnique', 
+            'joinItems', 'consumableList', 'getName', 'toString', 
+            'valueOf', 'constructor', 'hasOwnProperty', 'isPrototypeOf',
+            'propertyIsEnumerable', 'toLocaleString'
+        ]);
+        return Object.keys(listObj).filter(k => {
+            if (k.startsWith('$')) return false;
+            if (ignored.has(k)) return false;
+            if (typeof listObj[k] === 'function' && k !== 'evaluateItem') return false;
+            return true;
+        });
+    };
+
+    window.getDropdownDisplayLabel = function (key) {
+        const specialMap = {
+            "Thrilling_Action": "Thrilling / Action",
+            "Dark_Gritty": "Dark / Gritty",
+            "Light_hearted_Comedic": "Light-hearted / Comedic",
+            "Romantic_Comedy": "Romantic Comedy",
+            "Dark_Humour": "Dark Humour",
+            "Dark_Romance": "Dark Romance",
+            "GenZ_Casual": "GenZ Casual",
+            "Slow_Burn": "Slow Burn",
+            "Don": "Don (Mafia)",
+            "Succubus": "Succubus/Incubus",
+            "Anti_Hero": "Anti-Hero",
+            "Monster_Girl": "Monster Girl/Guy",
+            "childhood_friend": "Childhood Friend",
+            "FWB": "FWB"
+        };
+        if (specialMap[key]) return specialMap[key];
+        return key.replace(/_/g, " ");
+    };
+
     var SETTING_KEYS = [
         "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
         "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
@@ -314,14 +370,40 @@
         "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
     ];
 
+    var TONE_KEYS = [
+        "Any", "Grounded", "Thrilling_Action", "Dark_Gritty", "Light_hearted_Comedic",
+        "Mysterious", "Romantic", "Erotic", "Tragic", "Whimsical", "Epic",
+        "Affectionate", "Flirtatious", "Sensual", "Explicit", "Romantic_Comedy",
+        "Dark_Humour", "Gory", "Cute", "Dark_Romance", "Smut", "GenZ_Casual",
+        "Documentary", "Slow_Burn"
+    ];
+
+    var ARCHETYPE_KEYS = [
+        "Any", "Tsundere", "Yandere", "Kuudere", "Dandere", "Deredere", "Himedere", "Kamidere",
+        "Female", "Male", "Femboy", "Tomboy", "Futa", "childhood_friend", "Bestie", "FWB",
+        "Don", "Boss", "Milf", "Furry", "Ghost", "Maid", "Butler", "Detective", "Knight", "Royalty",
+        "Assassin", "Scholar", "Deity", "Cyborg", "Android", "Vampire", "Werewolf", "Neko",
+        "Succubus", "Villain", "Anti_Hero", "Monster_Girl", "Bully", "Enemy", "Cute", "Psychopath"
+    ];
+
     window.initCustomSettingDropdown = function () {
         let listEl = document.getElementById("settingOptionsList");
         if (!listEl) return;
         
-        let keys = SETTING_KEYS;
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.settingPrompts) {
+            keys = window.getPerchanceListKeys(window.root.settingPrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = SETTING_KEYS;
+        }
+        if (!keys.includes("Any")) {
+            keys.unshift("Any");
+        }
         
         listEl.innerHTML = keys.map(k => {
-            let label = k.replace(/_/g, " ");
+            let label = window.getDropdownDisplayLabel(k);
             return `
                 <div class="dropdown-option-item" data-value="${k}" onclick="selectSetting('${k}', true)">
                     <span>${label}</span>
@@ -503,6 +585,118 @@
         }
     };
 
+    window.initCustomToneDropdown = function () {
+        let listEl = document.getElementById("toneOptionsList");
+        if (!listEl) return;
+        
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.tonePrompts) {
+            keys = window.getPerchanceListKeys(window.root.tonePrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = TONE_KEYS;
+        }
+        
+        keys = keys.filter(k => k !== "Any");
+        
+        let html = `
+            <label class="dropdown-option-item-checkbox">
+                <input type="checkbox" id="toneAnyCheckbox" value="Any"
+                    onchange="handleToneAnyToggle(this)"
+                    style="accent-color:var(--accent-color);">
+                <span>Any</span>
+            </label>
+            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+        `;
+        
+        html += keys.map(k => {
+            let label = window.getDropdownDisplayLabel(k);
+            return `
+                <label class="dropdown-option-item-checkbox">
+                    <input type="checkbox" class="toneCheckbox" value="${k}"
+                        onchange="handleToneChange()" style="accent-color:var(--accent-color);">
+                    <span>${label}</span>
+                </label>
+            `;
+        }).join("");
+        
+        listEl.innerHTML = html;
+    };
+
+    window.initCustomArchetypeDropdown = function () {
+        let listEl = document.getElementById("archetypeOptionsList");
+        if (!listEl) return;
+        
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.archetypePrompts) {
+            keys = window.getPerchanceListKeys(window.root.archetypePrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = ARCHETYPE_KEYS;
+        }
+        
+        keys = keys.filter(k => k !== "Any");
+        
+        let html = `
+            <label class="dropdown-option-item-checkbox">
+                <input type="checkbox" id="archetypeAnyCheckbox" value="Any"
+                    onchange="handleArchetypeAnyToggle(this)"
+                    style="accent-color:var(--accent-color);">
+                <span>Any</span>
+            </label>
+            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+        `;
+        
+        html += keys.map(k => {
+            let label = window.getDropdownDisplayLabel(k);
+            return `
+                <label class="dropdown-option-item-checkbox">
+                    <input type="checkbox" class="archetypeCheckbox" value="${k}"
+                        onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
+                    <span>${label}</span>
+                </label>
+            `;
+        }).join("");
+        
+        listEl.innerHTML = html;
+    };
+
+    window.filterTones = function (query) {
+        let q = query.toLowerCase().trim();
+        let items = document.querySelectorAll("#toneOptionsList .dropdown-option-item-checkbox");
+        items.forEach(item => {
+            let text = item.querySelector("span").textContent.toLowerCase();
+            if (item.querySelector("#toneAnyCheckbox")) {
+                item.style.display = "flex";
+                return;
+            }
+            if (text.includes(q)) {
+                item.style.display = "flex";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    };
+
+    window.filterArchetypes = function (query) {
+        let q = query.toLowerCase().trim();
+        let items = document.querySelectorAll("#archetypeOptionsList .dropdown-option-item-checkbox");
+        items.forEach(item => {
+            let text = item.querySelector("span").textContent.toLowerCase();
+            if (item.querySelector("#archetypeAnyCheckbox")) {
+                item.style.display = "flex";
+                return;
+            }
+            if (text.includes(q)) {
+                item.style.display = "flex";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    };
+
     // Perspective Dropdown functions
     window.getSelectedPerspective = function () {
         return localStorage.perspective || "Third_Person";
@@ -543,6 +737,8 @@
     // Initialize custom dropdowns on load
     setTimeout(() => {
         initCustomSettingDropdown();
+        initCustomToneDropdown();
+        initCustomArchetypeDropdown();
         loadTones();
         loadArchetypes();
         loadPerspective();

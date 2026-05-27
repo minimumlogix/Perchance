@@ -117,18 +117,28 @@
         let listEl = document.getElementById("wSettingOptionsList");
         if (!listEl) return;
         
-        let keys = [
-            "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
-            "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
-            "Zombie_apocalypse", "Alien_apocalypse",
-            "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
-            "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
-            "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",
-            "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
-        ];
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.settingPrompts) {
+            keys = window.getPerchanceListKeys(window.root.settingPrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = window.SETTING_KEYS || [
+                "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
+                "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
+                "Zombie_apocalypse", "Alien_apocalypse",
+                "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
+                "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
+                "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",
+                "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
+            ];
+        }
+        if (!keys.includes("Any")) {
+            keys.unshift("Any");
+        }
         
         listEl.innerHTML = keys.map(k => {
-            let label = k.replace(/_/g, " ");
+            let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
             return `
                 <div class="dropdown-option-item" data-value="${k}" onclick="selectWorldSetting('${k}', true)">
                     <span>${label}</span>
@@ -140,6 +150,68 @@
         // Select initial value
         let val = window.worldState.setting || "Any";
         selectWorldSetting(val, false);
+    };
+
+    window.initCustomWorldToneDropdown = function () {
+        let listEl = document.getElementById("wToneOptionsList");
+        if (!listEl) return;
+        
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.tonePrompts) {
+            keys = window.getPerchanceListKeys(window.root.tonePrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = window.TONE_KEYS || [
+                "Any", "Grounded", "Thrilling_Action", "Dark_Gritty", "Light_hearted_Comedic",
+                "Mysterious", "Romantic", "Erotic", "Tragic", "Whimsical", "Epic",
+                "Affectionate", "Flirtatious", "Sensual", "Explicit", "Romantic_Comedy",
+                "Dark_Humour", "Gory", "Cute", "Dark_Romance", "Smut", "GenZ_Casual",
+                "Documentary", "Slow_Burn"
+            ];
+        }
+        
+        keys = keys.filter(k => k !== "Any");
+        
+        let html = `
+            <label class="dropdown-option-item-checkbox">
+                <input type="checkbox" id="wToneAnyCheckbox" value="Any"
+                    onchange="handleWorldToneAnyToggle(this)"
+                    style="accent-color:var(--accent-color);">
+                <span>Any</span>
+            </label>
+            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+        `;
+        
+        html += keys.map(k => {
+            let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+            return `
+                <label class="dropdown-option-item-checkbox">
+                    <input type="checkbox" class="wToneCheckbox" value="${k}"
+                        onchange="handleWorldToneChange()" style="accent-color:var(--accent-color);">
+                    <span>${label}</span>
+                </label>
+            `;
+        }).join("");
+        
+        listEl.innerHTML = html;
+    };
+
+    window.filterWorldTones = function (query) {
+        let q = query.toLowerCase().trim();
+        let items = document.querySelectorAll("#wToneOptionsList .dropdown-option-item-checkbox");
+        items.forEach(item => {
+            let text = item.querySelector("span").textContent.toLowerCase();
+            if (item.querySelector("#wToneAnyCheckbox")) {
+                item.style.display = "flex";
+                return;
+            }
+            if (text.includes(q)) {
+                item.style.display = "flex";
+            } else {
+                item.style.display = "none";
+            }
+        });
     };
 
     window.filterWorldSettings = function (query) {
@@ -1106,6 +1178,7 @@
 
         // Custom setting and tones dropdown configurations
         initCustomWorldSettingDropdown();
+        initCustomWorldToneDropdown();
         loadWorldTones();
         updateWorldBannerUI(window.worldState.bannerUrl);
 
