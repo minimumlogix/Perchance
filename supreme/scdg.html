@@ -1,6 +1,7 @@
 <link rel="icon" type="image/png" href="https://minimumlogix.github.io/Perchance/supreme/SCG_favicon.png">
 <link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/styles.css">
 <link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/assistant.css">
+<link rel="stylesheet" id="sheet-styles-link" href="">
 <script>
     // Bind Perchance plugins to the global window scope.
     // This allows external modular scripts (which are loaded as standard third-party scripts and
@@ -54,7 +55,7 @@
             <div id="sidebar-item-characters" class="sidebar-item active" onclick="switchTab('characters')"><i
                     class="bi bi-people-fill"></i> Characters</div>
             <div id="sidebar-item-sheets" class="sidebar-item" onclick="switchTab('sheets')"><i
-                    class="bi bi-file-earmark-person-fill"></i> Sheets</div>
+                    class="bi bi-file-earmark-person-fill"></i> Character Sheet</div>
             <div id="sidebar-item-world" class="sidebar-item" onclick="switchTab('world')"><i
                     class="bi bi-globe-americas"></i> World</div>
             <div id="sidebar-item-roleplay" class="sidebar-item" onclick="switchTab('roleplay')"><i
@@ -2426,6 +2427,16 @@
                                 <div id="sheet-theme-dot-crimson" onclick="setSheetTheme('crimson')" class="sheet-theme-dot" style="background:#ef4444; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Crimson Red"></div>
                                 <div id="sheet-theme-dot-amethyst" onclick="setSheetTheme('amethyst')" class="sheet-theme-dot" style="background:#7c3aed; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Amethyst Purple"></div>
                             </div>
+                        </div>
+
+                        <!-- SHEET STYLE LAYOUT -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--panel-header-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.4rem 0.75rem; height: 38px; box-sizing: border-box;">
+                            <i class="bi bi-window" style="color: var(--accent-color);"></i>
+                            <span style="font-size: 85%; color: var(--text-muted); font-weight: 500; white-space: nowrap;">Style Layout:</span>
+                            <select id="sheetStyleSelector" onchange="setSheetStyleLayout(this.value)" style="background:transparent; border:none; color:var(--text-main); font-weight:600; cursor:pointer; outline:none; font-size:85%;">
+                                <option value="default">Default Glass</option>
+                                <option value="cyberpunk">Cyberpunk Neon</option>
+                            </select>
                         </div>
                     </div>
 

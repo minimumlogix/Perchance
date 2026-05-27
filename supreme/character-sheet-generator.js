@@ -168,7 +168,7 @@
 
     // ─── TAB RENDER & CONTROL ───
     
-    window.renderSheetTab = function() {
+    window.renderCharacterSheetTab = function() {
         let selector = document.getElementById("sheetCharacterSelector");
         if (!selector) return;
         
