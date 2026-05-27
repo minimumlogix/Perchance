@@ -2249,6 +2249,7 @@ ${getBannedFormattingRule()}`;
             id: newId,
             name,
             details: d,
+            sheetData: window.sheetsState || JSON.parse(localStorage.activeSheetData || "null") || null,
             roleText: getSectionText("role"),
             roleNotes: (document.getElementById("roleNotesEl") || {}).value || "",
             personalityText: getSectionText("personality"),
@@ -2548,6 +2549,16 @@ ${getBannedFormattingRule()}`;
                     if (typeof imagePromptEl !== 'undefined') imagePromptEl.innerHTML = "";
                 }
                 
+                window.sheetsState = c.sheetData || null;
+                if (c.sheetData) {
+                    localStorage.activeSheetData = JSON.stringify(c.sheetData);
+                } else {
+                    localStorage.removeItem("activeSheetData");
+                }
+                let sheetSelector = document.getElementById("sheetCharacterSelector");
+                if (sheetSelector) {
+                    sheetSelector.value = id;
+                }
                 window.activeCharacterId = id;
                 if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
                 if (window.updateTopBarSaveButtons) window.updateTopBarSaveButtons();
@@ -3137,6 +3148,12 @@ ${getBannedFormattingRule()}`;
                     styleOverrideEl.value = "";
                 }
                 
+                window.sheetsState = null;
+                localStorage.removeItem("activeSheetData");
+                let sheetSelector = document.getElementById("sheetCharacterSelector");
+                if (sheetSelector) {
+                    sheetSelector.value = "active";
+                }
                 setGenerationStatus("");
                 window.activeCharacterId = null;
                 if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
@@ -3174,6 +3191,7 @@ ${getBannedFormattingRule()}`;
                 saved[idx] = Object.assign(saved[idx], {
                     name,
                     details: d,
+                    sheetData: window.sheetsState || JSON.parse(localStorage.activeSheetData || "null") || null,
                     roleText: getSectionText("role"),
                     roleNotes: (document.getElementById("roleNotesEl") || {}).value || "",
                     personalityText: getSectionText("personality"),

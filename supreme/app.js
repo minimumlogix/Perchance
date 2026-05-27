@@ -796,11 +796,13 @@
         
         // Hide all tabs
         let generatorTab = document.getElementById('generatorTabEl');
+        let sheetsTab = document.getElementById('sheetsTabEl');
         let settingsTab = document.getElementById('settingsTabEl');
         let roleplayTab = document.getElementById('roleplayTabEl');
         let worldTab = document.getElementById('worldTabEl');
         let assistantTab = document.getElementById('assistantTabEl');
         if (generatorTab) generatorTab.style.display = 'none';
+        if (sheetsTab) sheetsTab.style.display = 'none';
         if (settingsTab) settingsTab.style.display = 'none';
         if (roleplayTab) roleplayTab.style.display = 'none';
         if (worldTab) worldTab.style.display = 'none';
@@ -810,6 +812,11 @@
             let activeItem = document.getElementById('sidebar-item-characters');
             if (activeItem) activeItem.classList.add('active');
             if (generatorTab) generatorTab.style.display = 'flex';
+        } else if (tabName === 'sheets') {
+            let activeItem = document.getElementById('sidebar-item-sheets');
+            if (activeItem) activeItem.classList.add('active');
+            if (sheetsTab) sheetsTab.style.display = 'flex';
+            if (typeof renderSheetTab === 'function') renderSheetTab();
         } else if (tabName === 'world') {
             let activeItem = document.getElementById('sidebar-item-world');
             if (activeItem) activeItem.classList.add('active');
