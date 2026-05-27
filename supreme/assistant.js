@@ -1,6 +1,10 @@
 // assistant.js
 
 document.addEventListener("DOMContentLoaded", () => {
+    const aiThinkingToggle = document.getElementById("aiThinkingToggleEl");
+    if (aiThinkingToggle) {
+        aiThinkingToggle.checked = false;
+    }
     const chatInput = document.getElementById("chatInputEl");
     if (chatInput) {
         chatInput.addEventListener("keydown", (e) => {
@@ -109,7 +113,7 @@ async function sendAssistantMessage() {
         if (intentText.includes("both")) intent = "both";
         else if (intentText.includes("image")) intent = "image";
         
-        const enableThinking = document.getElementById("aiThinkingToggleEl") ? document.getElementById("aiThinkingToggleEl").checked : true;
+        const enableThinking = document.getElementById("aiThinkingToggleEl") ? document.getElementById("aiThinkingToggleEl").checked : false;
         let methodology = "";
         
         if (enableThinking) {

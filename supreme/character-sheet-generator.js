@@ -160,7 +160,7 @@
             let idVal = isNaN(Number(val)) ? val : Number(val);
             let idx = saved.findIndex(x => x.id === idVal);
             if (idx !== -1) {
-                saved[idx].sheetData = window.sheetsState;
+                saved[idx].sheetData = window.translateActiveToCharKeys(window.sheetsState, idVal);
                 localStorage.savedCharacters = JSON.stringify(saved);
             }
         }
@@ -273,7 +273,7 @@
     };
 
     // Renders the structured data inside sheetsState into HTML
-    function renderSheetContent() {
+    async function renderSheetContent() {
         let container = document.getElementById("sheetContentCtn");
         if (!container) return;
         
@@ -296,7 +296,8 @@
         let theme = window.sheetsState.theme || "emerald";
         container.className = "sheet-container theme-" + theme;
         container.innerHTML = renderSheetMarkup(false);
-    };
+        await window.resolveLazyCacheImages(container);
+    }
 
     // ─── GENERATE AI SHEET ───
     
@@ -476,7 +477,7 @@
 
     // ─── CUSTOM IMAGE PICKER MODAL ───
     
-    window.openImagePicker = function(slotName) {
+    window.openImagePicker = async function(slotName) {
         let charData = getSelectedCharacterData();
         if (!charData) return;
         let activeImages = charData.activeImages || [];
@@ -524,7 +525,7 @@
                 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:0.75rem; max-height:320px; overflow-y:auto; padding:0.25rem;">
                     ${activeImages.map(img => `
                         <div class="image-picker-thumbnail" onclick="selectImageForSlot('${slotName}', '${img}'); this.closest('.image-picker-overlay').remove();" style="aspect-ratio:1; border-radius:8px; overflow:hidden; border:2px solid var(--panel-border); cursor:pointer; transition:all 0.2s;">
-                            <img src="${img}" style="width:100%; height:100%; object-fit:cover;">
+                            <img data-src="${img}" src="" style="width:100%; height:100%; object-fit:cover;">
                         </div>
                     `).join('')}
                 </div>
@@ -548,6 +549,7 @@
         modal.innerHTML = titleHtml + imagesGridHtml;
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
+        await window.resolveLazyCacheImages(overlay);
     };
 
     window.selectImageForSlot = function(slotName, imgUrl) {
@@ -678,7 +680,13 @@
             `;
         }
         
+        let originalSheetsState = window.sheetsState;
+        let sheetsStateCopy = JSON.parse(JSON.stringify(originalSheetsState));
+        let resolvedSheetsState = await window.resolveObjectCacheKeysToBase64(sheetsStateCopy);
+        
+        window.sheetsState = resolvedSheetsState;
         let htmlContent = renderSheetMarkup(true);
+        window.sheetsState = originalSheetsState;
         
         let fullHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -717,6 +725,24 @@
         
         let s = window.sheetsState;
         let editAttr = isStatic ? "" : "contenteditable='true'";
+        
+        const getBgStyle = (url) => {
+            if (!url) return "";
+            if (isStatic) return `style="background-image: url('${url}')"`;
+            if (url.startsWith("https://scdg-local-cache/")) {
+                return `data-bg-src="${url}" style=""`;
+            }
+            return `style="background-image: url('${url}')"`;
+        };
+        
+        const getImgSrc = (url) => {
+            if (!url) return "";
+            if (isStatic) return `src="${url}"`;
+            if (url.startsWith("https://scdg-local-cache/")) {
+                return `data-src="${url}" src=""`;
+            }
+            return `src="${url}"`;
+        };
         
         let placeholderBanner = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80";
         let placeholderAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
@@ -773,7 +799,7 @@
                     <i class="bi bi-eye-fill"></i>
                     <span>Physical</span>
                 </div>
-                ${s.physicalUrl ? `<div class="sheet-card-image" style="background-image: url('${s.physicalUrl}')" ${isStatic ? "" : "onclick='openImagePicker(\"physicalUrl\")'"} title="${isStatic ? "" : "Click to change physical card image"}"></div>` : (isStatic ? "" : `<div style="padding:1rem; border:1px dashed var(--panel-border); border-radius:8px; text-align:center; cursor:pointer; font-size:80%; color:var(--text-muted);" onclick="openImagePicker('physicalUrl')"><i class="bi bi-image"></i> Select portrait image</div>`)}
+                ${s.physicalUrl ? `<div class="sheet-card-image" ${getBgStyle(s.physicalUrl)} ${isStatic ? "" : "onclick='openImagePicker(\"physicalUrl\")'"} title="${isStatic ? "" : "Click to change physical card image"}"></div>` : (isStatic ? "" : `<div style="padding:1rem; border:1px dashed var(--panel-border); border-radius:8px; text-align:center; cursor:pointer; font-size:80%; color:var(--text-muted);" onclick="openImagePicker('physicalUrl')"><i class="bi bi-image"></i> Select portrait image</div>`)}
                 <div class="sheet-field-list">
                     <div class="sheet-field-row">
                         <div class="sheet-field-label">Height</div>
@@ -803,6 +829,8 @@
             </div>
         `;
         
+        let alignmentHtml = s.psychology?.alignment || '';
+        let mbtiHtml = s.psychology?.mbti || '';
         let psychologyHtml = `
             <div class="sheet-card">
                 <div class="sheet-card-header">
@@ -810,17 +838,23 @@
                     <span>Psychology</span>
                 </div>
                 <div class="sheet-field-list">
-                    <div class="sheet-field-row">
-                        <div class="sheet-field-label">MBTI</div>
-                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'mbti', this.innerText)">${s.psychology?.mbti || ''}</div>
+                    <div class="sheet-field-row" style="grid-template-columns: 1fr 1fr; gap:0.5rem; border-bottom:1px solid var(--panel-border); padding-bottom:0.5rem; margin-bottom:0.5rem;">
+                        <div>
+                            <div class="sheet-field-label" style="font-size:75%; text-transform:uppercase;">MBTI</div>
+                            <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'mbti', this.innerText)" style="font-weight:bold; font-size:105%;">${mbtiHtml}</div>
+                        </div>
+                        <div style="border-left:1px solid var(--panel-border); padding-left:0.5rem;">
+                            <div class="sheet-field-label" style="font-size:75%; text-transform:uppercase;">Alignment</div>
+                            <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'alignment', this.innerText)" style="font-weight:bold; font-size:105%;">${alignmentHtml}</div>
+                        </div>
                     </div>
                     <div class="sheet-field-row">
-                        <div class="sheet-field-label">Alignment</div>
-                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'alignment', this.innerText)">${s.psychology?.alignment || ''}</div>
-                    </div>
-                    <div class="sheet-field-row">
-                        <div class="sheet-field-label">Motive</div>
+                        <div class="sheet-field-label">Motivation</div>
                         <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'motive', this.innerText)">${s.psychology?.motive || ''}</div>
+                    </div>
+                    <div class="sheet-field-row">
+                        <div class="sheet-field-label">Fears</div>
+                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'fears', this.innerText)">${s.psychology?.fears || ''}</div>
                     </div>
                     <div class="sheet-field-row">
                         <div class="sheet-field-label">Likes</div>
@@ -830,13 +864,9 @@
                         <div class="sheet-field-label">Dislikes</div>
                         <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'dislikes', this.innerText)">${s.psychology?.dislikes || ''}</div>
                     </div>
-                    <div class="sheet-field-row">
-                        <div class="sheet-field-label">Fears</div>
-                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'fears', this.innerText)">${s.psychology?.fears || ''}</div>
-                    </div>
-                    <div class="sheet-field-row">
-                        <div class="sheet-field-label">Summary</div>
-                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'summary', this.innerText)">${s.psychology?.summary || ''}</div>
+                    <div style="margin-top:0.4rem; border-top:1px solid var(--panel-border); padding-top:0.4rem;">
+                        <div class="sheet-field-label" style="font-size:75%; margin-bottom:0.15rem;">Personality Summary</div>
+                        <div class="sheet-field-value" ${editAttr} onblur="updateStateField('psychology', 'summary', this.innerText)" style="line-height:1.4; font-size:88%;">${s.psychology?.summary || ''}</div>
                     </div>
                 </div>
             </div>
@@ -847,7 +877,7 @@
             <div class="sheet-card">
                 <div class="sheet-card-header" style="justify-content: space-between; align-items: center;">
                     <div style="display:flex; align-items:center; gap:0.5rem;">
-                        <i class="bi bi-briefcase-fill"></i>
+                        <i class="bi bi-backpack-fill"></i>
                         <span>Inventory</span>
                     </div>
                     ${isStatic ? "" : `<button class="btn btn-ghost btn-sm" onclick="addBulletItem('inventory')" style="padding:0.1rem 0.3rem;"><i class="bi bi-plus-lg"></i></button>`}
@@ -874,7 +904,7 @@
                     </div>
                     ${isStatic ? "" : `<button class="btn btn-ghost btn-sm" onclick="addBulletItem('relations')" style="padding:0.1rem 0.3rem;"><i class="bi bi-plus-lg"></i></button>`}
                 </div>
-                ${s.relationsUrl ? `<div class="sheet-card-image" style="background-image: url('${s.relationsUrl}')" ${isStatic ? "" : "onclick='openImagePicker(\"relationsUrl\")'"} title="${isStatic ? "" : "Click to change relations image"}"></div>` : (isStatic ? "" : `<div style="padding:1rem; border:1px dashed var(--panel-border); border-radius:8px; text-align:center; cursor:pointer; font-size:80%; color:var(--text-muted);" onclick="openImagePicker('relationsUrl')"><i class="bi bi-image"></i> Select relations image</div>`)}
+                ${s.relationsUrl ? `<div class="sheet-card-image" ${getBgStyle(s.relationsUrl)} ${isStatic ? "" : "onclick='openImagePicker(\"relationsUrl\")'"} title="${isStatic ? "" : "Click to change relations image"}"></div>` : (isStatic ? "" : `<div style="padding:1rem; border:1px dashed var(--panel-border); border-radius:8px; text-align:center; cursor:pointer; font-size:80%; color:var(--text-muted);" onclick="openImagePicker('relationsUrl')"><i class="bi bi-image"></i> Select relations image</div>`)}
                 <ul class="sheet-bullet-list">
                     ${relationsList.map((item, idx) => `
                         <li style="position:relative; list-style-type:square; font-size:88%;">
@@ -940,7 +970,7 @@
                 <div class="sheet-gallery-grid">
                     ${activeImages.map(img => `
                         <div class="sheet-gallery-card">
-                            <img src="${img}">
+                            <img ${getImgSrc(img)}>
                         </div>
                     `).join('')}
                     ${activeImages.length === 0 ? `<div style="grid-column: 1/-1; padding:1.5rem; text-align:center; opacity:0.5; font-size:80%;">No gallery images found.</div>` : ""}
@@ -950,14 +980,14 @@
         
         let headerHtml = `
             <div class="sheet-banner-wrapper">
-                <div class="sheet-cover-banner" style="background-image: url('${coverImg}')" ${isStatic ? "" : "onclick='openImagePicker(\"coverUrl\")'"} title="${isStatic ? "" : "Click to change cover image"}">
+                <div class="sheet-cover-banner" ${getBgStyle(coverImg)} ${isStatic ? "" : "onclick='openImagePicker(\"coverUrl\")'"} title="${isStatic ? "" : "Click to change cover image"}">
                     <div class="sheet-cover-overlay"></div>
                     <div class="sheet-banner-name" ${editAttr} onblur="updateStateName(this.innerText)">${s.identity?.name || 'UNNAMED'}</div>
                 </div>
             </div>
             
             <div class="sheet-profile-card">
-                <div class="sheet-profile-avatar" style="background-image: url('${avatarImg}')" ${isStatic ? "" : "onclick='openImagePicker(\"avatarUrl\")'"} title="${isStatic ? "" : "Click to change profile picture"}"></div>
+                <div class="sheet-profile-avatar" ${getBgStyle(avatarImg)} ${isStatic ? "" : "onclick='openImagePicker(\"avatarUrl\")'"} title="${isStatic ? "" : "Click to change profile picture"}"></div>
                 <div class="sheet-profile-info">
                     <div class="sheet-tagline" ${editAttr} onblur="updateStateTagline(this.innerText)">${s.tagline || 'Click to add tagline...'}</div>
                     <div class="sheet-summary" ${editAttr} onblur="updateStateSummary(this.innerText)">${s.summary || 'Click to add character overview summary...'}</div>

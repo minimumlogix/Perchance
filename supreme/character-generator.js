@@ -1,3 +1,368 @@
+    // ─── CACHE STORAGE API MANAGER ─────────────────────────────────────
+    const CACHE_NAME = "scdg-image-cache";
+    let resolvedObjectUrls = new Map();
+
+    window.writeImageToCache = async function (virtualUrl, dataUrlOrBlob) {
+        if (!dataUrlOrBlob) return;
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            let blob;
+            if (dataUrlOrBlob instanceof Blob) {
+                blob = dataUrlOrBlob;
+            } else if (typeof dataUrlOrBlob === "string" && dataUrlOrBlob.startsWith("data:")) {
+                const response = await fetch(dataUrlOrBlob);
+                blob = await response.blob();
+            } else if (typeof dataUrlOrBlob === "string" && dataUrlOrBlob.startsWith("blob:")) {
+                const response = await fetch(dataUrlOrBlob);
+                blob = await response.blob();
+            } else {
+                return;
+            }
+            const response = new Response(blob, {
+                headers: { "Content-Type": blob.type || "image/png" }
+            });
+            await cache.put(virtualUrl, response);
+        } catch (e) {
+            console.error("Error writing to image cache:", e);
+        }
+    };
+
+    window.resolveCacheUrl = async function (virtualUrl) {
+        if (!virtualUrl) return "";
+        if (!virtualUrl.startsWith("https://scdg-local-cache/")) {
+            return virtualUrl;
+        }
+        if (resolvedObjectUrls.has(virtualUrl)) {
+            return resolvedObjectUrls.get(virtualUrl);
+        }
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const response = await cache.match(virtualUrl);
+            if (response) {
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                resolvedObjectUrls.set(virtualUrl, objectUrl);
+                return objectUrl;
+            }
+        } catch (e) {
+            console.error("Error resolving cache URL:", e);
+        }
+        return "";
+    };
+
+    window.getCachedImageAsBase64 = async function (virtualUrl) {
+        if (!virtualUrl || !virtualUrl.startsWith("https://scdg-local-cache/")) {
+            return virtualUrl;
+        }
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const response = await cache.match(virtualUrl);
+            if (response) {
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
+        } catch (e) {
+            console.error("Error reading cached image as base64:", e);
+        }
+        return "";
+    };
+
+    window.deleteCharacterCache = async function (id) {
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const keys = await cache.keys();
+            const prefix = `https://scdg-local-cache/characters/${id}/`;
+            for (let key of keys) {
+                if (key.url.startsWith(prefix)) {
+                    await cache.delete(key);
+                    if (resolvedObjectUrls.has(key.url)) {
+                        URL.revokeObjectURL(resolvedObjectUrls.get(key.url));
+                        resolvedObjectUrls.delete(key.url);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error deleting character cache:", e);
+        }
+    };
+
+    window.clearAllCharacterCache = async function () {
+        try {
+            await window.caches.delete(CACHE_NAME);
+            for (let objectUrl of resolvedObjectUrls.values()) {
+                URL.revokeObjectURL(objectUrl);
+            }
+            resolvedObjectUrls.clear();
+        } catch (e) {
+            console.error("Error clearing all character cache:", e);
+        }
+    };
+
+    window.copyActiveCacheToCharacter = async function (id) {
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const keys = await cache.keys();
+            const activePrefix = `https://scdg-local-cache/characters/active/`;
+            const charPrefix = `https://scdg-local-cache/characters/${id}/`;
+            
+            await window.deleteCharacterCache(id);
+            
+            for (let key of keys) {
+                if (key.url.startsWith(activePrefix)) {
+                    const response = await cache.match(key);
+                    if (response) {
+                        const blob = await response.blob();
+                        const newUrl = key.url.replace(activePrefix, charPrefix);
+                        const newResponse = new Response(blob, {
+                            headers: { "Content-Type": blob.type || "image/png" }
+                        });
+                        await cache.put(newUrl, newResponse);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error copying active cache to character:", e);
+        }
+    };
+
+    window.copyCharacterCacheToActive = async function (id) {
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const keys = await cache.keys();
+            const activePrefix = `https://scdg-local-cache/characters/active/`;
+            const charPrefix = `https://scdg-local-cache/characters/${id}/`;
+            
+            await window.deleteCharacterCache("active");
+            
+            for (let key of keys) {
+                if (key.url.startsWith(charPrefix)) {
+                    const response = await cache.match(key);
+                    if (response) {
+                        const blob = await response.blob();
+                        const newUrl = key.url.replace(charPrefix, activePrefix);
+                        const newResponse = new Response(blob, {
+                            headers: { "Content-Type": blob.type || "image/png" }
+                        });
+                        await cache.put(newUrl, newResponse);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error copying character cache to active:", e);
+        }
+    };
+
+    window.duplicateCharacterCache = async function (oldId, newId) {
+        try {
+            const cache = await window.caches.open(CACHE_NAME);
+            const keys = await cache.keys();
+            const oldPrefix = `https://scdg-local-cache/characters/${oldId}/`;
+            const newPrefix = `https://scdg-local-cache/characters/${newId}/`;
+            
+            for (let key of keys) {
+                if (key.url.startsWith(oldPrefix)) {
+                    const response = await cache.match(key);
+                    if (response) {
+                        const blob = await response.blob();
+                        const newUrl = key.url.replace(oldPrefix, newPrefix);
+                        const newResponse = new Response(blob, {
+                            headers: { "Content-Type": blob.type || "image/png" }
+                        });
+                        await cache.put(newUrl, newResponse);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error duplicating character cache:", e);
+        }
+    };
+
+    window.translateActiveToCharKeys = function (obj, id) {
+        if (!obj) return obj;
+        const activePrefix = `https://scdg-local-cache/characters/active/`;
+        const charPrefix = `https://scdg-local-cache/characters/${id}/`;
+        
+        const translateVal = (val) => {
+            if (typeof val === "string" && val.startsWith(activePrefix)) {
+                return val.replace(activePrefix, charPrefix);
+            }
+            if (Array.isArray(val)) {
+                return val.map(item => translateVal(item));
+            }
+            if (val && typeof val === "object") {
+                let copy = {};
+                for (let k in val) {
+                    copy[k] = translateVal(val[k]);
+                }
+                return copy;
+            }
+            return val;
+        };
+        
+        let copy = {};
+        for (let key in obj) {
+            copy[key] = translateVal(obj[key]);
+        }
+        return copy;
+    };
+
+    window.translateCharToActiveKeys = function (obj, id) {
+        if (!obj) return obj;
+        const activePrefix = `https://scdg-local-cache/characters/active/`;
+        const charPrefix = `https://scdg-local-cache/characters/${id}/`;
+        
+        const translateVal = (val) => {
+            if (typeof val === "string" && val.startsWith(charPrefix)) {
+                return val.replace(charPrefix, activePrefix);
+            }
+            if (Array.isArray(val)) {
+                return val.map(item => translateVal(item));
+            }
+            if (val && typeof val === "object") {
+                let copy = {};
+                for (let k in val) {
+                    copy[k] = translateVal(val[k]);
+                }
+                return copy;
+            }
+            return val;
+        };
+        
+        let copy = {};
+        for (let key in obj) {
+            copy[key] = translateVal(obj[key]);
+        }
+        return copy;
+    };
+
+    window.translateCharacterCacheKeys = function (obj, oldId, newId) {
+        if (!obj) return obj;
+        const oldPrefix = `https://scdg-local-cache/characters/${oldId}/`;
+        const newPrefix = `https://scdg-local-cache/characters/${newId}/`;
+        
+        const translateVal = (val) => {
+            if (typeof val === "string" && val.startsWith(oldPrefix)) {
+                return val.replace(oldPrefix, newPrefix);
+            }
+            if (Array.isArray(val)) {
+                return val.map(item => translateVal(item));
+            }
+            if (val && typeof val === "object") {
+                let copy = {};
+                for (let k in val) {
+                    copy[k] = translateVal(val[k]);
+                }
+                return copy;
+            }
+            return val;
+        };
+        
+        let copy = {};
+        for (let key in obj) {
+            copy[key] = translateVal(obj[key]);
+        }
+        return copy;
+    };
+
+    window.resolveLazyCacheImages = async function (container) {
+        if (!container) return;
+        const imgs = container.querySelectorAll("img[data-src^='https://scdg-local-cache/']");
+        for (let img of imgs) {
+            const virtualUrl = img.getAttribute("data-src");
+            const resolved = await window.resolveCacheUrl(virtualUrl);
+            if (resolved) {
+                img.src = resolved;
+            }
+        }
+        const bgs = container.querySelectorAll("[data-bg-src^='https://scdg-local-cache/']");
+        for (let el of bgs) {
+            const virtualUrl = el.getAttribute("data-bg-src");
+            const resolved = await window.resolveCacheUrl(virtualUrl);
+            if (resolved) {
+                el.style.backgroundImage = `url(${resolved})`;
+            }
+        }
+    };
+
+    window.syncActiveImagesToCache = async function () {
+        // 1. Avatar
+        let avatarUrl = window.selectedAvatarUrl || localStorage.selectedAvatarUrl || "";
+        if (avatarUrl && (avatarUrl.startsWith("data:") || avatarUrl.startsWith("blob:"))) {
+            const virtualUrl = "https://scdg-local-cache/characters/active/avatar";
+            await window.writeImageToCache(virtualUrl, avatarUrl);
+            window.selectedAvatarUrl = virtualUrl;
+            localStorage.selectedAvatarUrl = virtualUrl;
+            const avatarEl = document.getElementById("characterAvatarEl");
+            if (avatarEl) {
+                const resolved = await window.resolveCacheUrl(virtualUrl);
+                avatarEl.style.backgroundImage = `url(${resolved})`;
+            }
+        }
+        
+        // 2. World Lore Image
+        let worldLoreUrl = localStorage.worldLoreImageUrl || "";
+        if (worldLoreUrl && (worldLoreUrl.startsWith("data:") || worldLoreUrl.startsWith("blob:"))) {
+            const virtualUrl = "https://scdg-local-cache/characters/active/world-lore";
+            await window.writeImageToCache(virtualUrl, worldLoreUrl);
+            localStorage.worldLoreImageUrl = virtualUrl;
+            const thumb = document.getElementById("worldLoreThumbEl");
+            const bg = document.getElementById("worldLoreBgEl");
+            const resolved = await window.resolveCacheUrl(virtualUrl);
+            if (thumb) thumb.style.backgroundImage = `url(${resolved})`;
+            if (bg) bg.style.backgroundImage = `url(${resolved})`;
+        }
+        
+        // 3. Intro Background
+        let introBgUrl = localStorage.introBgImageUrl || "";
+        if (introBgUrl && (introBgUrl.startsWith("data:") || introBgUrl.startsWith("blob:"))) {
+            const virtualUrl = "https://scdg-local-cache/characters/active/intro-bg";
+            await window.writeImageToCache(virtualUrl, introBgUrl);
+            localStorage.introBgImageUrl = virtualUrl;
+            const introBg = document.getElementById("introImageBg");
+            const resolved = await window.resolveCacheUrl(virtualUrl);
+            if (introBg) introBg.style.backgroundImage = `url(${resolved})`;
+        }
+        
+        // 4. Intro Character
+        let introCharUrl = localStorage.introCharImageUrl || "";
+        if (introCharUrl && (introCharUrl.startsWith("data:") || introCharUrl.startsWith("blob:"))) {
+            const virtualUrl = "https://scdg-local-cache/characters/active/intro-char";
+            await window.writeImageToCache(virtualUrl, introCharUrl);
+            localStorage.introCharImageUrl = virtualUrl;
+        }
+        
+        // 5. Active Portrait Images
+        const portraitImgs = document.querySelectorAll("#imagesEl img");
+        let portraitUrls = [];
+        let idx = 0;
+        for (let img of portraitImgs) {
+            let src = img.src;
+            if (src) {
+                if (src.startsWith("data:") || src.startsWith("blob:")) {
+                    const virtualUrl = `https://scdg-local-cache/characters/active/portrait-${idx}`;
+                    await window.writeImageToCache(virtualUrl, src);
+                    img.src = await window.resolveCacheUrl(virtualUrl);
+                    portraitUrls.push(virtualUrl);
+                } else if (src.startsWith("https://scdg-local-cache/")) {
+                    portraitUrls.push(src);
+                } else {
+                    portraitUrls.push(src);
+                }
+                idx++;
+            }
+        }
+        if (portraitUrls.length > 0) {
+            localStorage.activeImages = JSON.stringify(portraitUrls);
+        }
+        
+        await window.checkStorageUsage();
+    };
+
     // ─── WORLD LORE ───────────────────────────────────────────────────
     window.generateWorldLore = async function (force = false) {
         if (!force && worldLoreEl.value.trim().length > 0) return;
@@ -124,20 +489,26 @@
         setGenerationStatus("");
     };
 
-    window.updateWorldLoreVisuals = function (url) {
+    window.updateWorldLoreVisuals = async function (url) {
         if (!url) return;
+        let virtualUrl = url;
+        if (url.startsWith("data:") || url.startsWith("blob:")) {
+            virtualUrl = "https://scdg-local-cache/characters/active/world-lore";
+            await window.writeImageToCache(virtualUrl, url);
+        }
+        let resolved = await window.resolveCacheUrl(virtualUrl);
         let thumb = document.getElementById("worldLoreThumbEl");
         let container = document.getElementById("worldLoreImgContainer");
         if (thumb) {
-            thumb.style.backgroundImage = `url(${url})`;
+            thumb.style.backgroundImage = `url(${resolved})`;
         }
         if (container) {
             container.style.display = "flex";
         }
         if (typeof worldLoreBgEl !== 'undefined') {
-            worldLoreBgEl.style.backgroundImage = `url(${url})`;
+            worldLoreBgEl.style.backgroundImage = `url(${resolved})`;
         }
-        localStorage.worldLoreImageUrl = url;
+        localStorage.worldLoreImageUrl = virtualUrl;
     };
 
     window.toggleWorldLoreEdit = function () {
@@ -453,22 +824,42 @@
         }
     };
 
-    window.checkStorageUsage = function () {
+    window.checkStorageUsage = async function () {
         try {
-            let total = 0;
+            let metadataTotal = 0;
             for (let key in localStorage) {
-                if (localStorage.hasOwnProperty(key)) total += (localStorage[key].length * 2);
+                if (localStorage.hasOwnProperty(key)) {
+                    metadataTotal += (localStorage[key].length * 2);
+                }
             }
-            let usedMB = (total / 1024 / 1024).toFixed(1);
+            let metadataMB = (metadataTotal / 1024 / 1024).toFixed(2);
+            
+            let cacheTotalBytes = 0;
+            if (window.caches) {
+                const cache = await window.caches.open(CACHE_NAME);
+                const keys = await cache.keys();
+                for (let key of keys) {
+                    const response = await cache.match(key);
+                    if (response) {
+                        const blob = await response.blob();
+                        cacheTotalBytes += blob.size;
+                    }
+                }
+            }
+            let cacheMB = (cacheTotalBytes / 1024 / 1024).toFixed(2);
+            
             let warningEl = document.getElementById("storageWarningEl");
             if (!warningEl) return;
-            if (usedMB > 4) {
-                warningEl.style.display = "block";
-                warningEl.textContent = "⚠️ Storage is " + usedMB + "MB / ~5MB limit. Consider deleting some saved characters.";
-            } else {
-                warningEl.style.display = "none";
-            }
-        } catch (e) { }
+            
+            warningEl.style.display = "block";
+            warningEl.style.background = "rgba(255,255,255,0.03)";
+            warningEl.style.border = "1px solid var(--panel-border)";
+            warningEl.style.color = "var(--text-muted)";
+            warningEl.style.marginTop = "0.4rem";
+            warningEl.innerHTML = `<i class="bi bi-hdd-fill"></i> Storage &middot; Metadata: <b>${metadataMB} MB</b> | Image Cache: <b>${cacheMB} MB</b>`;
+        } catch (e) {
+            console.error("Error checking storage usage:", e);
+        }
     };
 
     // ─── PROMPT BUILDING ──────────────────────────────────────────────
@@ -1438,8 +1829,11 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             if (!window.introBgGenRunning) return;
             
             if (bgEl && result && result.dataUrl) {
-                bgEl.style.backgroundImage = `url(${result.dataUrl})`;
-                localStorage.introBgImageUrl = result.dataUrl;
+                let virtualUrl = "https://scdg-local-cache/characters/active/intro-bg";
+                await window.writeImageToCache(virtualUrl, result.dataUrl);
+                let resolved = await window.resolveCacheUrl(virtualUrl);
+                bgEl.style.backgroundImage = `url(${resolved})`;
+                localStorage.introBgImageUrl = virtualUrl;
                 let placeholder = document.getElementById("introImagePlaceholder");
                 if (placeholder) placeholder.style.display = "none";
             }
@@ -1517,7 +1911,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 let ctx = charCanvas.getContext("2d");
                 ctx.drawImage(result.canvas, 0, 0);
                 removeWhiteBackground(charCanvas, 240);
-                localStorage.introCharImageUrl = charCanvas.toDataURL("image/png");
+                
+                let dataUrl = charCanvas.toDataURL("image/png");
+                let virtualUrl = "https://scdg-local-cache/characters/active/intro-char";
+                await window.writeImageToCache(virtualUrl, dataUrl);
+                localStorage.introCharImageUrl = virtualUrl;
+                
                 let placeholder = document.getElementById("introImagePlaceholder");
                 if (placeholder) placeholder.style.display = "none";
             }
@@ -2120,14 +2519,18 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
-    window.updateProfileAvatar = function (url) {
+    window.updateProfileAvatar = async function (url) {
         let avatarEl = document.getElementById("characterAvatarEl");
         let placeholderIcon = document.getElementById("avatarPlaceholderIcon");
         let removeBtn = document.getElementById("clearAvatarBtn");
         
         if (avatarEl) {
             if (url) {
-                avatarEl.style.backgroundImage = `url(${url})`;
+                let resolved = url;
+                if (url.startsWith("https://scdg-local-cache/")) {
+                    resolved = await window.resolveCacheUrl(url);
+                }
+                avatarEl.style.backgroundImage = `url(${resolved})`;
                 avatarEl.innerHTML = ""; // Clear any icon
                 if (placeholderIcon) placeholderIcon.style.display = "none";
                 if (removeBtn) removeBtn.style.display = "inline-flex";
@@ -2377,6 +2780,13 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let button = buttonEl || (pluginDataOrButton instanceof HTMLElement ? pluginDataOrButton : null);
         let data = buttonEl ? pluginDataOrButton : (pluginDataOrButton instanceof HTMLElement ? null : pluginDataOrButton);
 
+        // Ensure active cache is synced first
+        if (data?.dataUrl) {
+            await window.writeImageToCache("https://scdg-local-cache/characters/active/avatar", data.dataUrl);
+            window.selectedAvatarUrl = "https://scdg-local-cache/characters/active/avatar";
+        }
+        await window.syncActiveImagesToCache();
+
         let d = getDetailsContext();
         let name = d.name || "Unknown";
         
@@ -2398,14 +2808,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 }
                 if (!imageDataUrl) {
                     let img = wrapper.querySelector('img');
-                    if (img) imageDataUrl = img.src;
+                    if (img) imageDataUrl = img.getAttribute("data-src") || img.src;
                 }
             }
         }
         
         let newId = Date.now();
+        await window.copyActiveCacheToCharacter(newId);
+
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
-        saved.push({
+        let charObj = {
             id: newId,
             name,
             details: d,
@@ -2453,11 +2865,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             activeImages: (function() {
                 let imgUrls = [];
                 document.querySelectorAll("#imagesEl img").forEach(img => {
-                    if (img.src) imgUrls.push(img.src);
+                    let src = img.getAttribute("data-src") || img.src;
+                    if (src) imgUrls.push(src);
                 });
                 return imgUrls;
             })(),
-        });
+        };
+
+        charObj = window.translateActiveToCharKeys(charObj, newId);
+        saved.push(charObj);
+
         localStorage.savedCharacters = JSON.stringify(saved);
         window.activeCharacterId = newId;
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
@@ -2486,9 +2903,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         
         let imgUrls = [];
         document.querySelectorAll("#imagesEl img").forEach(img => {
-            if (img.src) imgUrls.push(img.src);
+            let src = img.getAttribute("data-src") || img.src;
+            if (src) imgUrls.push(src);
         });
         localStorage.activeImages = JSON.stringify(imgUrls);
+        
+        window.syncActiveImagesToCache();
     };
 
     window.updateTopBarSaveButtons = function () {
@@ -2519,9 +2939,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         window.showConfirmDialog(
             `Are you sure you want to load <b>${c.name}</b>? Any unsaved edits currently on the screen will be overwritten.`,
             'warnOnLoad',
-            () => {
-                let d = c.details || {};
-                detailNameEl.value = d.name || (c.name || "");
+            async () => {
+                await window.copyCharacterCacheToActive(id);
+                let cActive = window.translateCharToActiveKeys(c, id);
+
+                let d = cActive.details || {};
+                detailNameEl.value = d.name || (cActive.name || "");
                 detailAgeEl.value = d.age || "";
                 detailGenderEl.value = d.gender || "";
                 detailOrientationEl.value = d.orientation || "";
@@ -2539,26 +2962,26 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     let editBtn = document.getElementById(s + "EditBtnEl");
                     
                     if (s === "lore") {
-                        if (c[textKey] !== undefined) {
-                            window.loadLoreToUI(c[textKey]);
+                        if (cActive[textKey] !== undefined) {
+                            window.loadLoreToUI(cActive[textKey]);
                             if (editBtn) editBtn.style.display = "inline-block";
                         } else {
                             clearSection(s);
                         }
                     } else {
-                        if (c[textKey] !== undefined) {
-                            setSectionOutput(s, formatSectionText(c[textKey]));
-                            window.characterSections[s] = c[textKey];
+                        if (cActive[textKey] !== undefined) {
+                            setSectionOutput(s, formatSectionText(cActive[textKey]));
+                            window.characterSections[s] = cActive[textKey];
                             if (editBtn) editBtn.style.display = "inline-block";
                         } else {
                             clearSection(s);
                         }
                     }
                     
-                    if (c[notesKey] !== undefined) {
+                    if (cActive[notesKey] !== undefined) {
                         if (notesEl) {
-                            notesEl.value = c[notesKey];
-                            localStorage[s + "Notes"] = c[notesKey];
+                            notesEl.value = cActive[notesKey];
+                            localStorage[s + "Notes"] = cActive[notesKey];
                         }
                     } else {
                         if (notesEl) {
@@ -2571,10 +2994,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 // Restore split intro sections
                 let introNotesEl = document.getElementById("introNotesEl");
                 
-                if (c.introNotes !== undefined) {
+                if (cActive.introNotes !== undefined) {
                     if (introNotesEl) {
-                        introNotesEl.value = c.introNotes;
-                        localStorage.introNotes = c.introNotes;
+                        introNotesEl.value = cActive.introNotes;
+                        localStorage.introNotes = cActive.introNotes;
                     }
                 } else {
                     if (introNotesEl) {
@@ -2583,17 +3006,17 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     }
                 }
                 
-                if (c.introScenarioText !== undefined || c.introStartText !== undefined) {
-                    let scenText = c.introScenarioText || "";
-                    let startText = c.introStartText || "";
+                if (cActive.introScenarioText !== undefined || cActive.introStartText !== undefined) {
+                    let scenText = cActive.introScenarioText || "";
+                    let startText = cActive.introStartText || "";
                     
                     setSectionOutput("introScenario", formatSectionText(scenText));
                     window.characterSections["introScenario"] = scenText;
                     
                     setSectionOutput("introStart", formatSectionText(startText));
                     window.characterSections["introStart"] = startText;
-                } else if (c.introText) {
-                    let split = splitOldIntroText(c.introText);
+                } else if (cActive.introText) {
+                    let split = splitOldIntroText(cActive.introText);
                     
                     setSectionOutput("introScenario", formatSectionText(split.scenario));
                     window.characterSections["introScenario"] = split.scenario;
@@ -2606,32 +3029,32 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 }
 
                 // Restore chosen avatar
-                let avatarUrl = c.selectedAvatarUrl || c.imageDataUrl || "";
-                updateProfileAvatar(avatarUrl);
+                let avatarUrl = cActive.selectedAvatarUrl || cActive.imageDataUrl || "";
+                await window.updateProfileAvatar(avatarUrl);
 
                 window.lastCharacterData = {
-                    appearanceText: c.appearanceText || "",
-                    loreText: c.loreText || "",
-                    visualKeyphrasesText: c.visualKeyphrasesText || "",
-                    visualStyleName: c.visualStyleName || "",
-                    imageDataUrl: c.imageDataUrl || "",
+                    appearanceText: cActive.appearanceText || "",
+                    loreText: cActive.loreText || "",
+                    visualKeyphrasesText: cActive.visualKeyphrasesText || "",
+                    visualStyleName: cActive.visualStyleName || "",
+                    imageDataUrl: cActive.imageDataUrl || "",
                 };
-                window.overwrittenVisualKeyphrasesText = c.overwrittenVisualKeyphrasesText || null;
-                window.overwrittenStylePrompt = c.overwrittenStylePrompt || null;
-                if (c.visualStyleName) visualStyleEl.value = c.visualStyleName;
-                if (c.setting) {
-                    settingEl.value = c.setting;
+                window.overwrittenVisualKeyphrasesText = cActive.overwrittenVisualKeyphrasesText || null;
+                window.overwrittenStylePrompt = cActive.overwrittenStylePrompt || null;
+                if (cActive.visualStyleName) visualStyleEl.value = cActive.visualStyleName;
+                if (cActive.setting) {
+                    settingEl.value = cActive.setting;
                 }
                 
                 // Restore selected tones
-                if (c.tone) {
+                if (cActive.tone) {
                     document.querySelectorAll(".toneCheckbox").forEach(box => box.checked = false);
                     let anyBox = document.getElementById("toneAnyCheckbox");
-                    if (c.tone.includes("Any") || c.tone.length === 0) {
+                    if (cActive.tone.includes("Any") || cActive.tone.length === 0) {
                         if (anyBox) anyBox.checked = true;
                     } else {
                         if (anyBox) anyBox.checked = false;
-                        c.tone.forEach(t => {
+                        cActive.tone.forEach(t => {
                             let box = document.querySelector(`.toneCheckbox[value="${t}"]`);
                             if (box) box.checked = true;
                         });
@@ -2644,9 +3067,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 if (typeof updateArchetypeLabel === "function") {
                     document.querySelectorAll(".archetypeCheckbox").forEach(box => box.checked = false);
                     let anyArchetypeBox = document.getElementById("archetypeAnyCheckbox");
-                    if (c.archetype && c.archetype.length > 0 && !c.archetype.includes("Any")) {
+                    if (cActive.archetype && cActive.archetype.length > 0 && !cActive.archetype.includes("Any")) {
                         if (anyArchetypeBox) anyArchetypeBox.checked = false;
-                        c.archetype.forEach(a => {
+                        cActive.archetype.forEach(a => {
                             let box = document.querySelector(`.archetypeCheckbox[value="${a}"]`);
                             if (box) box.checked = true;
                         });
@@ -2661,14 +3084,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 let worldEl = document.getElementById("worldLoreEl");
                 let worldNameEl2 = document.getElementById("worldNameEl");
                 let worldLoreNotesEl2 = document.getElementById("worldLoreNotesEl");
-                if (overviewEl && c.overviewNotes !== undefined) { overviewEl.value = c.overviewNotes; localStorage.overviewNotes = c.overviewNotes; }
-                if (worldEl && c.worldLore !== undefined) { worldEl.value = c.worldLore; localStorage.worldLore = c.worldLore; }
-                if (worldNameEl2) { worldNameEl2.value = c.worldName || ""; localStorage.worldName = c.worldName || ""; }
-                if (worldLoreNotesEl2 && c.worldLoreNotes !== undefined) { worldLoreNotesEl2.value = c.worldLoreNotes; localStorage.worldLoreNotes = c.worldLoreNotes; }
+                if (overviewEl && cActive.overviewNotes !== undefined) { overviewEl.value = cActive.overviewNotes; localStorage.overviewNotes = cActive.overviewNotes; }
+                if (worldEl && cActive.worldLore !== undefined) { worldEl.value = cActive.worldLore; localStorage.worldLore = cActive.worldLore; }
+                if (worldNameEl2) { worldNameEl2.value = cActive.worldName || ""; localStorage.worldName = cActive.worldName || ""; }
+                if (worldLoreNotesEl2 && cActive.worldLoreNotes !== undefined) { worldLoreNotesEl2.value = cActive.worldLoreNotes; localStorage.worldLoreNotes = cActive.worldLoreNotes; }
 
-                if (c.worldLoreImageUrl) {
-                    localStorage.worldLoreImageUrl = c.worldLoreImageUrl;
-                    updateWorldLoreVisuals(c.worldLoreImageUrl);
+                if (cActive.worldLoreImageUrl) {
+                    localStorage.worldLoreImageUrl = cActive.worldLoreImageUrl;
+                    await window.updateWorldLoreVisuals(cActive.worldLoreImageUrl);
                 } else {
                     localStorage.removeItem("worldLoreImageUrl");
                     let container = document.getElementById("worldLoreImgContainer");
@@ -2676,29 +3099,29 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = "none";
                 }
 
-                let imgUrls = c.activeImages || (c.imageDataUrl ? [c.imageDataUrl] : []);
+                let imgUrls = cActive.activeImages || (cActive.imageDataUrl ? [cActive.imageDataUrl] : []);
                 if (imagesAreaEl) imagesAreaEl.style.display = "block";
                 
-                window.overwrittenVisualKeyphrasesText = c.overwrittenVisualKeyphrasesText || "";
-                window.overwrittenStylePrompt = c.overwrittenStylePrompt || "";
+                window.overwrittenVisualKeyphrasesText = cActive.overwrittenVisualKeyphrasesText || "";
+                window.overwrittenStylePrompt = cActive.overwrittenStylePrompt || "";
                 if (window.lastCharacterData) {
-                    window.lastCharacterData.visualKeyphrasesText = c.visualKeyphrasesText || "";
-                    window.lastCharacterData.appearanceText = c.appearanceText || "";
-                    window.lastCharacterData.visualStyleName = c.visualStyleName || "";
+                    window.lastCharacterData.visualKeyphrasesText = cActive.visualKeyphrasesText || "";
+                    window.lastCharacterData.appearanceText = cActive.appearanceText || "";
+                    window.lastCharacterData.visualStyleName = cActive.visualStyleName || "";
                 } else {
                     window.lastCharacterData = {
-                        visualKeyphrasesText: c.visualKeyphrasesText || "",
-                        appearanceText: c.appearanceText || "",
-                        visualStyleName: c.visualStyleName || ""
+                        visualKeyphrasesText: cActive.visualKeyphrasesText || "",
+                        appearanceText: cActive.appearanceText || "",
+                        visualStyleName: cActive.visualStyleName || ""
                     };
                 }
                 
                 let promptEl = document.getElementById("appearancePromptTextarea");
-                if (promptEl) promptEl.value = c.overwrittenVisualKeyphrasesText || c.visualKeyphrasesText || "";
+                if (promptEl) promptEl.value = cActive.overwrittenVisualKeyphrasesText || cActive.visualKeyphrasesText || "";
                 
                 let styleOverrideEl = document.getElementById("styleOverrideEl");
                 if (styleOverrideEl) {
-                    styleOverrideEl.value = c.overwrittenStylePrompt || "";
+                    styleOverrideEl.value = cActive.overwrittenStylePrompt || "";
                 }
                 updateStyleOverridePlaceholder();
 
@@ -2707,13 +3130,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     imgUrls.forEach(url => {
                         let isSelected = (url === avatarUrl) ? " selected-avatar" : "";
                         let wrapper = '<div class="image-card-wrapper' + isSelected + '">';
-                        wrapper += '<img src="' + url + '">';
+                        wrapper += '<img data-src="' + url + '" src="">';
                         wrapper += '<div class="image-card-actions">';
                         wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
                         wrapper += '</div></div>';
                         imageHtml += wrapper;
                     });
-                    if (imagesEl) imagesEl.innerHTML = imageHtml;
+                    if (imagesEl) {
+                        imagesEl.innerHTML = imageHtml;
+                        await window.resolveLazyCacheImages(imagesEl);
+                    }
                 } else {
                     if (imagesEl) {
                         imagesEl.innerHTML = `
@@ -2726,8 +3152,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 }
 
                 // Restore intro images and prompts
-                window.overwrittenIntroBgPrompt = c.overwrittenIntroBgPrompt || "";
-                window.overwrittenIntroCharPrompt = c.overwrittenIntroCharPrompt || "";
+                window.overwrittenIntroBgPrompt = cActive.overwrittenIntroBgPrompt || "";
+                window.overwrittenIntroCharPrompt = cActive.overwrittenIntroCharPrompt || "";
                 localStorage.overwrittenIntroBgPrompt = window.overwrittenIntroBgPrompt;
                 localStorage.overwrittenIntroCharPrompt = window.overwrittenIntroCharPrompt;
                 
@@ -2736,21 +3162,25 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 if (introBgPromptEl) introBgPromptEl.value = window.overwrittenIntroBgPrompt;
                 if (introCharPromptEl) introCharPromptEl.value = window.overwrittenIntroCharPrompt;
                 
-                localStorage.introBgImageUrl = c.introBgImageUrl || "";
-                localStorage.introCharImageUrl = c.introCharImageUrl || "";
+                localStorage.introBgImageUrl = cActive.introBgImageUrl || "";
+                localStorage.introCharImageUrl = cActive.introCharImageUrl || "";
                 
                 let introBg = document.getElementById("introImageBg");
                 let introCanvas = document.getElementById("introImageCharCanvas");
                 let hasPreview = false;
                 
                 if (localStorage.introBgImageUrl) {
-                    if (introBg) introBg.style.backgroundImage = `url(${localStorage.introBgImageUrl})`;
+                    if (introBg) {
+                        let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
+                        introBg.style.backgroundImage = `url(${resolved})`;
+                    }
                     hasPreview = true;
                 } else {
                     if (introBg) introBg.style.backgroundImage = "";
                 }
                 
                 if (localStorage.introCharImageUrl) {
+                    let resolved = await window.resolveCacheUrl(localStorage.introCharImageUrl);
                     let img = new Image();
                     img.onload = function() {
                         if (introCanvas) {
@@ -2763,7 +3193,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                             }
                         }
                     };
-                    img.src = localStorage.introCharImageUrl;
+                    img.src = resolved;
                     hasPreview = true;
                 } else {
                     if (introCanvas) {
@@ -2777,9 +3207,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     placeholder.style.display = hasPreview ? "none" : "flex";
                 }
                 
-                window.sheetsState = c.sheetData || null;
-                if (c.sheetData) {
-                    localStorage.activeSheetData = JSON.stringify(c.sheetData);
+                window.sheetsState = cActive.sheetData || null;
+                if (cActive.sheetData) {
+                    localStorage.activeSheetData = JSON.stringify(cActive.sheetData);
                 } else {
                     localStorage.removeItem("activeSheetData");
                 }
@@ -2798,7 +3228,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         );
     };
 
-    window.renderSidebar = function (searchQuery = "") {
+    window.renderSidebar = async function (searchQuery = "") {
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         let q = searchQuery.toLowerCase().trim();
         
@@ -2824,7 +3254,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             for (let c of saved) {
                 let card = '<div style="display:flex; flex-direction:column; gap:0.4rem; padding:0.6rem; border:1px solid var(--panel-border); border-radius:8px; background:var(--panel-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
                 let cardImgUrl = c.selectedAvatarUrl || c.imageDataUrl || "";
-                if (cardImgUrl) { card += '<img src="' + cardImgUrl + '" style="width:100%; border-radius:6px; object-fit:cover; max-height:180px;">'; } else { card += '<div style="width:100%; height:80px; border-radius:6px; background:var(--input-bg); display:flex; align-items:center; justify-content:center; font-size:200%; opacity:0.3; color:var(--text-main);"><i class="bi bi-person-fill"></i></div>'; }
+                if (cardImgUrl) { card += '<img data-src="' + cardImgUrl + '" src="" style="width:100%; border-radius:6px; object-fit:cover; max-height:180px;">'; } else { card += '<div style="width:100%; height:80px; border-radius:6px; background:var(--input-bg); display:flex; align-items:center; justify-content:center; font-size:200%; opacity:0.3; color:var(--text-main);"><i class="bi bi-person-fill"></i></div>'; }
                 card += '<div style="display:flex; align-items:center; gap:0.45rem;">';
                 card += '<input type="checkbox" id="ref-' + c.id + '" style="cursor:pointer; accent-color:var(--accent-color);">';
                 card += '<label for="ref-' + c.id + '" ondblclick="renameSavedCharacter(\'' + c.id + '\', this)" style="font-weight:bold; font-size:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; flex:1; color:var(--text-main);" title="Double-click to rename">' + c.name + '</label>';
@@ -2839,9 +3269,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             }
         }
         sidebarListEl.innerHTML = listHtml;
+        await window.resolveLazyCacheImages(sidebarListEl);
         updateSavedCountBadge();
         updateReferencesBanner();
-        checkStorageUsage();
+        await window.checkStorageUsage();
     };
 
     window.filterSavedCharacters = function (query) {
@@ -2862,27 +3293,31 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (input) input.focus();
     };
 
-    window.deleteCharacter = function (id) {
+    window.deleteCharacter = async function (id) {
         id = isNaN(Number(id)) ? id : Number(id);
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         localStorage.savedCharacters = JSON.stringify(saved.filter(x => x.id !== id));
+        await window.deleteCharacterCache(id);
         if (window.activeCharacterId === id) {
             window.activeCharacterId = null;
             if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
             if (window.updateTopBarSaveButtons) window.updateTopBarSaveButtons();
         }
-        renderSidebar();
+        await renderSidebar();
     };
 
-    window.duplicateCharacter = function (id) {
+    window.duplicateCharacter = async function (id) {
         id = isNaN(Number(id)) ? id : Number(id);
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         let original = saved.find(x => x.id === id);
         if (!original) return;
-        let dupe = Object.assign({}, original, { id: Date.now(), name: original.name + " (copy)" });
+        let newId = Date.now();
+        await window.duplicateCharacterCache(id, newId);
+        let dupeMeta = window.translateCharacterCacheKeys(original, id, newId);
+        let dupe = Object.assign({}, dupeMeta, { id: newId, name: original.name + " (copy)" });
         saved.push(dupe);
         localStorage.savedCharacters = JSON.stringify(saved);
-        renderSidebar();
+        await renderSidebar();
     };
 
     window.renameSavedCharacter = function (id, labelEl) {
@@ -2910,10 +3345,62 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         });
     };
 
-    window.exportSavedCharacters = function () {
+    window.resolveObjectCacheKeysToBase64 = async function(val) {
+        if (typeof val === "string" && val.startsWith("https://scdg-local-cache/")) {
+            const base64 = await window.getCachedImageAsBase64(val);
+            return base64 || val;
+        }
+        if (Array.isArray(val)) {
+            let res = [];
+            for (let item of val) {
+                res.push(await window.resolveObjectCacheKeysToBase64(item));
+            }
+            return res;
+        }
+        if (val && typeof val === "object") {
+            let copy = {};
+            for (let k in val) {
+                copy[k] = await window.resolveObjectCacheKeysToBase64(val[k]);
+            }
+            return copy;
+        }
+        return val;
+    };
+
+    window.extractBase64ToCache = async function(val, charId, pathKey = "img") {
+        if (typeof val === "string" && val.startsWith("data:")) {
+            const virtualUrl = `https://scdg-local-cache/characters/${charId}/${pathKey}`;
+            await window.writeImageToCache(virtualUrl, val);
+            return virtualUrl;
+        }
+        if (Array.isArray(val)) {
+            let res = [];
+            for (let i = 0; i < val.length; i++) {
+                res.push(await window.extractBase64ToCache(val[i], charId, `${pathKey}-${i}`));
+            }
+            return res;
+        }
+        if (val && typeof val === "object") {
+            let copy = {};
+            for (let k in val) {
+                copy[k] = await window.extractBase64ToCache(val[k], charId, k);
+            }
+            return copy;
+        }
+        return val;
+    };
+
+    window.exportSavedCharacters = async function () {
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         if (saved.length === 0) { alert("No saved characters to export."); return; }
-        let json = JSON.stringify(saved, null, 2);
+        
+        let resolvedSaved = [];
+        for (let char of saved) {
+            let resolvedChar = await window.resolveObjectCacheKeysToBase64(char);
+            resolvedSaved.push(resolvedChar);
+        }
+        
+        let json = JSON.stringify(resolvedSaved, null, 2);
         let blob = new Blob([json], { type: "application/json" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -2929,15 +3416,26 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             let file = e.target.files[0];
             if (!file) return;
             let reader = new FileReader();
-            reader.onload = ev => {
+            reader.onload = async ev => {
                 try {
                     let imported = JSON.parse(ev.target.result);
                     if (!Array.isArray(imported)) throw new Error("Invalid format");
+                    
+                    let processedImported = [];
+                    for (let char of imported) {
+                        if (!char.id) char.id = Date.now() + Math.floor(Math.random() * 1000);
+                        let processedChar = await extractBase64ToCache(char, char.id);
+                        processedImported.push(processedChar);
+                    }
+                    
                     let existing = JSON.parse(localStorage.savedCharacters || "[]");
-                    localStorage.savedCharacters = JSON.stringify([...existing, ...imported]);
-                    renderSidebar();
-                    alert("✅ Imported " + imported.length + " character(s).");
-                } catch (err) { alert("❌ Failed to import: invalid file."); }
+                    localStorage.savedCharacters = JSON.stringify([...existing, ...processedImported]);
+                    await renderSidebar();
+                    alert("✅ Imported " + processedImported.length + " character(s).");
+                } catch (err) {
+                    console.error(err);
+                    alert("❌ Failed to import: invalid file.");
+                }
             };
             reader.readAsText(file);
         };
@@ -3393,18 +3891,22 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         );
     };
 
-    window.clearAllSavedCharacters = function () {
+    window.clearAllSavedCharacters = async function () {
         if (confirm("Are you sure you want to delete ALL saved characters? This cannot be undone.")) {
             localStorage.removeItem("savedCharacters");
+            await window.clearAllCharacterCache();
             window.activeCharacterId = null;
             if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
             if (window.updateTopBarSaveButtons) window.updateTopBarSaveButtons();
-            renderSidebar();
+            await renderSidebar();
         }
     };
 
-    window.updateCharacter = function (id) {
+    window.updateCharacter = async function (id) {
         id = isNaN(Number(id)) ? id : Number(id);
+        
+        await window.syncActiveImagesToCache();
+        
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         let idx = saved.findIndex(x => x.id === id);
         if (idx === -1) return;
@@ -3414,12 +3916,15 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         window.showConfirmDialog(
             `Are you sure you want to update <b>${charName}</b> with the current active description edits on the screen? This will permanently overwrite the saved character file.`,
             'warnOnUpdate',
-            () => {
+            async () => {
                 let d = getDetailsContext();
                 let name = d.name || charName || "Unknown";
+                
+                await window.copyActiveCacheToCharacter(id);
+                
                 let imageDataUrl = window.selectedAvatarUrl || window.lastCharacterData?.imageDataUrl || saved[idx].imageDataUrl || "";
                 
-                saved[idx] = Object.assign(saved[idx], {
+                let updatedData = {
                     name,
                     details: d,
                     sheetData: window.sheetsState || JSON.parse(localStorage.activeSheetData || "null") || null,
@@ -3462,11 +3967,15 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     activeImages: (function() {
                         let imgUrls = [];
                         document.querySelectorAll("#imagesEl img").forEach(img => {
-                            if (img.src) imgUrls.push(img.src);
+                            let src = img.getAttribute("data-src") || img.src;
+                            if (src) imgUrls.push(src);
                         });
                         return imgUrls;
                     })(),
-                });
+                };
+                
+                updatedData = window.translateActiveToCharKeys(updatedData, id);
+                saved[idx] = Object.assign(saved[idx], updatedData);
                 
                 localStorage.savedCharacters = JSON.stringify(saved);
                 window.activeCharacterId = id;
@@ -3895,77 +4404,87 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     if (introBgPromptEl) introBgPromptEl.value = window.overwrittenIntroBgPrompt;
     if (introCharPromptEl) introCharPromptEl.value = window.overwrittenIntroCharPrompt;
 
-    let introBg = document.getElementById("introImageBg");
-    let introCanvas = document.getElementById("introImageCharCanvas");
-    let hasPreview = false;
-    
-    if (localStorage.introBgImageUrl) {
-        if (introBg) introBg.style.backgroundImage = `url(${localStorage.introBgImageUrl})`;
-        hasPreview = true;
-    }
-    if (localStorage.introCharImageUrl) {
-        let img = new Image();
-        img.onload = function() {
-            if (introCanvas) {
-                introCanvas.width = img.width;
-                introCanvas.height = img.height;
-                let ctx = introCanvas.getContext("2d");
-                if (ctx) {
-                    ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
-                    ctx.drawImage(img, 0, 0);
+    // Restore active character prompts & images
+    (async () => {
+        let introBg = document.getElementById("introImageBg");
+        let introCanvas = document.getElementById("introImageCharCanvas");
+        let hasPreview = false;
+        
+        if (localStorage.introBgImageUrl) {
+            if (introBg) {
+                let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
+                introBg.style.backgroundImage = `url(${resolved})`;
+            }
+            hasPreview = true;
+        }
+        if (localStorage.introCharImageUrl) {
+            let resolved = await window.resolveCacheUrl(localStorage.introCharImageUrl);
+            let img = new Image();
+            img.onload = function() {
+                if (introCanvas) {
+                    introCanvas.width = img.width;
+                    introCanvas.height = img.height;
+                    let ctx = introCanvas.getContext("2d");
+                    if (ctx) {
+                        ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                        ctx.drawImage(img, 0, 0);
+                    }
+                }
+            };
+            img.src = resolved;
+            hasPreview = true;
+        }
+        let placeholder = document.getElementById("introImagePlaceholder");
+        if (placeholder) {
+            placeholder.style.display = hasPreview ? "none" : "flex";
+        }
+
+        // Restore generated images
+        try {
+            let imgUrls = JSON.parse(localStorage.activeImages || "[]");
+            let promptEl = document.getElementById("appearancePromptTextarea");
+            let styleOverrideEl = document.getElementById("styleOverrideEl");
+            
+            window.overwrittenVisualKeyphrasesText = localStorage.overwrittenVisualKeyphrasesText || "";
+            window.overwrittenStylePrompt = localStorage.overwrittenStylePrompt || "";
+            
+            if (promptEl) promptEl.value = window.overwrittenVisualKeyphrasesText || (window.lastCharacterData && window.lastCharacterData.visualKeyphrasesText) || "";
+            if (styleOverrideEl) styleOverrideEl.value = window.overwrittenStylePrompt || "";
+            updateStyleOverridePlaceholder();
+            
+            if (typeof imagesAreaEl !== 'undefined' && imagesAreaEl) {
+                imagesAreaEl.style.display = "block";
+            }
+            
+            if (imgUrls && imgUrls.length > 0) {
+                let imageHtml = "";
+                imgUrls.forEach(url => {
+                    let isSelected = (url === window.selectedAvatarUrl) ? " selected-avatar" : "";
+                    let wrapper = '<div class="image-card-wrapper' + isSelected + '">';
+                    wrapper += '<img data-src="' + url + '" src="">';
+                    wrapper += '<div class="image-card-actions">';
+                    wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
+                    wrapper += '</div></div>';
+                    imageHtml += wrapper;
+                });
+                if (imagesEl) {
+                    imagesEl.innerHTML = imageHtml;
+                    await window.resolveLazyCacheImages(imagesEl);
+                }
+            } else {
+                if (imagesEl) {
+                    imagesEl.innerHTML = `
+                        <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
+                            <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
+                            <span>No character images generated yet. Use the controls above to generate portrait images.</span>
+                        </div>
+                    `;
                 }
             }
-        };
-        img.src = localStorage.introCharImageUrl;
-        hasPreview = true;
-    }
-    let placeholder = document.getElementById("introImagePlaceholder");
-    if (placeholder) {
-        placeholder.style.display = hasPreview ? "none" : "flex";
-    }
-
-    // Restore generated images
-    try {
-        let imgUrls = JSON.parse(localStorage.activeImages || "[]");
-        let promptEl = document.getElementById("appearancePromptTextarea");
-        let styleOverrideEl = document.getElementById("styleOverrideEl");
-        
-        window.overwrittenVisualKeyphrasesText = localStorage.overwrittenVisualKeyphrasesText || "";
-        window.overwrittenStylePrompt = localStorage.overwrittenStylePrompt || "";
-        
-        if (promptEl) promptEl.value = window.overwrittenVisualKeyphrasesText || (window.lastCharacterData && window.lastCharacterData.visualKeyphrasesText) || "";
-        if (styleOverrideEl) styleOverrideEl.value = window.overwrittenStylePrompt || "";
-        updateStyleOverridePlaceholder();
-        
-        if (typeof imagesAreaEl !== 'undefined' && imagesAreaEl) {
-            imagesAreaEl.style.display = "block";
+        } catch(e) {
+            console.warn("Failed to restore active character portraits:", e);
         }
-        
-        if (imgUrls && imgUrls.length > 0) {
-            let imageHtml = "";
-            imgUrls.forEach(url => {
-                let isSelected = (url === window.selectedAvatarUrl) ? " selected-avatar" : "";
-                let wrapper = '<div class="image-card-wrapper' + isSelected + '">';
-                wrapper += '<img src="' + url + '">';
-                wrapper += '<div class="image-card-actions">';
-                wrapper += '<button class="image-card-btn primary-btn chooseAvatarBtn" onclick="chooseAsProfileImage(this)"><i class="bi bi-person-bounding-box"></i> Use as Profile</button>';
-                wrapper += '</div></div>';
-                imageHtml += wrapper;
-            });
-            if (imagesEl) imagesEl.innerHTML = imageHtml;
-        } else {
-            if (imagesEl) {
-                imagesEl.innerHTML = `
-                    <div class="image-empty-placeholder" style="padding:2rem; text-align:center; opacity:0.5; font-size:85%; width:100%; box-sizing:border-box; border:1px dashed var(--panel-border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;">
-                        <i class="bi bi-images" style="font-size:2rem; color:var(--accent-color);"></i>
-                        <span>No character images generated yet. Use the controls above to generate portrait images.</span>
-                    </div>
-                `;
-            }
-        }
-    } catch(e) {
-        console.warn("Failed to restore active images:", e);
-    }
+    })();
 
     if (window.updateTopBarSaveButtons) window.updateTopBarSaveButtons();
 
