@@ -1595,7 +1595,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
             // 2. Generate overview notes if they are empty
             if (!overviewEl.value.trim()) {
-                setGenerationStatus("Conceptualizing masterpiece archetype...");
+                setGenerationStatus("Generating character overview...");
                 let success = await generateOverviewNotes('textarea');
                 if (!success) return;
             }
@@ -2038,14 +2038,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         root.toneStr = toneStr;
         root.worldLoreVal = worldLoreVal;
         root.detailsStr = detailsStr;
-        let instruction = root.prompts.characterPage.conceptArchetype.instruction.evaluateItem;
+        let instruction = root.prompts.characterPage.overview.instruction.evaluateItem;
 
         if (statusEl) {
             statusEl.textContent = (target === 'textarea') 
-                ? "⏳ Conceptualizing masterpiece archetype..." 
-                : "⏳ Conceptualizing archetype...";
+                ? "⏳ Generating character overview notes..." 
+                : "⏳ Generating character overview...";
         }
-        setGenerationStatus("Conceptualizing masterpiece archetype...");
+        setGenerationStatus("Generating character overview...");
 
         window[streamName] = ai({
             instruction,
@@ -3843,7 +3843,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             if (!success || !window.coreIdentityGenRunning) return;
 
             // 2. Generate overview notes
-            setGenerationStatus("Conceptualizing masterpiece archetype...");
+            setGenerationStatus("Generating character overview...");
             await generateOverviewNotes('textarea');
         } catch (e) {
             console.error("Error during generateCoreIdentity:", e);
