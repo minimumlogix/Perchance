@@ -281,6 +281,29 @@
                                 </div>
                             </div>
 
+                            <!-- DYNAMIC DROPDOWN -->
+                            <div class="custom-dropdown" id="dynamicDropdown" title="Add relationship chemistry dynamics to streamline character generation">
+                                <button class="dropdown-trigger" id="dynamicDropdownBtn"
+                                    onclick="toggleCustomDropdown('dynamicDropdownMenu', event)">
+                                    <i class="bi bi-heart-half dropdown-icon"></i>
+                                    <span class="dropdown-label">Dynamics:</span>
+                                    <span class="dropdown-value" id="dynamicDropdownLabel">Any</span>
+                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
+                                </button>
+                                <div class="dropdown-menu-custom" id="dynamicDropdownMenu"
+                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:240px;"
+                                    onclick="event.stopPropagation()">
+                                    <div class="dropdown-search-wrapper">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="dropdown-search-input" placeholder="Search dynamic..."
+                                            oninput="filterDynamics(this.value)" onclick="event.stopPropagation()">
+                                    </div>
+                                    <div class="dropdown-options" id="dynamicOptionsList">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- GLOBAL LENGTH DROPDOWN -->
                             <div class="custom-dropdown" id="globalLengthDropdown"
                                 title="Override text length for all sections">

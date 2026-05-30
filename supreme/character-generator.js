@@ -940,10 +940,16 @@
             .filter(a => a !== "Any" && root.archetypePrompts && root.archetypePrompts[a])
             .map(a => root.archetypePrompts[a].evaluateItem);
 
+        let dynamics = typeof getSelectedDynamics === "function" ? getSelectedDynamics() : ["Any"];
+        let dynamicParts = dynamics
+            .filter(d => d !== "Any" && root.dynamicPrompts && root.dynamicPrompts[d])
+            .map(d => root.dynamicPrompts[d].evaluateItem);
+
         let parts = [];
         if (setting.trim()) parts.push("Setting: " + setting);
         if (toneParts.length > 0) parts.push("Tone: " + toneParts.join(" Additionally: "));
         if (archetypeParts.length > 0) parts.push("Character Archetype/Traits: " + archetypeParts.join(" Also: "));
+        if (dynamicParts.length > 0) parts.push("Relationship Dynamics: " + dynamicParts.join(" Also: "));
         
         if (parts.length === 0) return "";
         return "IMPORTANT SETTING, TONE, AND ARCHETYPE PARAMETERS  -  follow these closely:\n" + parts.join("\n");
@@ -2850,6 +2856,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             setting: settingEl.value,
             tone: getSelectedTones(),
             archetype: typeof getSelectedArchetypes === "function" ? getSelectedArchetypes() : ["Any"],
+            dynamic: typeof getSelectedDynamics === "function" ? getSelectedDynamics() : ["Any"],
             overviewNotes: (document.getElementById("overviewNotesEl") || {}).value || "",
             worldLore: (document.getElementById("worldLoreEl") || {}).value || "",
             worldName: (document.getElementById("worldNameEl") || {}).value || localStorage.worldName || "",
@@ -3078,6 +3085,23 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     }
                     updateArchetypeLabel();
                     saveArchetypes();
+                }
+
+                // Restore selected dynamics
+                if (typeof updateDynamicLabel === "function") {
+                    document.querySelectorAll(".dynamicCheckbox").forEach(box => box.checked = false);
+                    let anyDynamicBox = document.getElementById("dynamicAnyCheckbox");
+                    if (cActive.dynamic && cActive.dynamic.length > 0 && !cActive.dynamic.includes("Any")) {
+                        if (anyDynamicBox) anyDynamicBox.checked = false;
+                        cActive.dynamic.forEach(d => {
+                            let box = document.querySelector(`.dynamicCheckbox[value="${d}"]`);
+                            if (box) box.checked = true;
+                        });
+                    } else {
+                        if (anyDynamicBox) anyDynamicBox.checked = true;
+                    }
+                    updateDynamicLabel();
+                    saveDynamics();
                 }
 
                 let overviewEl = document.getElementById("overviewNotesEl");

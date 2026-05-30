@@ -41,6 +41,16 @@
                 Bestie: { evaluateItem: "The character is a best friend." },
                 FWB: { evaluateItem: "The character is friends with benefits." }
             },
+            dynamicPrompts: {
+                Any: { evaluateItem: "" },
+                Enemies_To_Lovers: { evaluateItem: "The relationship dynamic is enemies-to-lovers." },
+                Forbidden_Love: { evaluateItem: "The relationship dynamic is forbidden love." },
+                Mentor_Student: { evaluateItem: "The relationship dynamic is mentor and student." },
+                Hunter_And_Prey: { evaluateItem: "The relationship dynamic is hunter and prey." },
+                Mutual_Obsession: { evaluateItem: "The relationship dynamic is mutual obsession." },
+                Forced_Cohabitation: { evaluateItem: "The relationship dynamic is forced cohabitation." },
+                Fake_Relationship: { evaluateItem: "The relationship dynamic is a fake relationship." }
+            },
             prompts: new Proxy({
                 role: { instruction: { evaluateItem: "You are writing the ROLE and RULES section." }, format: { evaluateItem: "Format: Role: ... Rules: ..." } },
                 appearance: { instruction: { evaluateItem: "You are writing the APPEARANCE, ATTIRE, and ITEMS section." }, format: { evaluateItem: "Format: Appearance: ... Attire: ..." }, notes: { evaluateItem: "Be specific and visual." } },
@@ -305,6 +315,7 @@
                     else if (menuId === "wToneDropdownMenu" && typeof filterWorldTones === "function") filterWorldTones("");
                     else if (menuId === "rpToneDropdownMenu" && typeof filterRoleplayTones === "function") filterRoleplayTones("");
                     else if (menuId === "archetypeDropdownMenu" && typeof filterArchetypes === "function") filterArchetypes("");
+                    else if (menuId === "dynamicDropdownMenu" && typeof filterDynamics === "function") filterDynamics("");
                     
                     setTimeout(() => search.focus(), 50);
                 }
@@ -354,20 +365,60 @@
             "Anti_Hero": "Anti-Hero",
             "Monster_Girl": "Monster Girl/Guy",
             "childhood_friend": "Childhood Friend",
-            "FWB": "FWB"
+            "FWB": "FWB",
+            // Settings
+            "Sci_Fi": "Sci-Fi",
+            "Sci-Fi": "Sci-Fi",
+            "Hard_Sci_Fi": "Hard Sci-Fi",
+            "Zombie_apocalypse": "Zombie Apocalypse",
+            "Alien_apocalypse": "Alien Apocalypse",
+            "Post_Apocalyptic": "Post-Apocalyptic",
+            "Frozen_Apocalypse": "Frozen Apocalypse",
+            "Kaiju_Apocalypse": "Kaiju Apocalypse",
+            "Heaven_Hell_War": "Heaven-Hell War",
+            "Neo_Noir": "Neo-Noir",
+            // Tones
+            "Satirical_Biting": "Satirical (Biting)",
+            // Dynamics
+            "Enemies_To_Lovers": "Enemies to Lovers",
+            "Forbidden_Love": "Forbidden Love",
+            "Mentor_Student": "Mentor / Student",
+            "Hunter_And_Prey": "Hunter and Prey",
+            "Mutual_Obsession": "Mutual Obsession",
+            "Forced_Cohabitation": "Forced Cohabitation",
+            "Fake_Relationship": "Fake Relationship",
+            "Protector_And_Protected": "Protector & Protected",
+            "Rivals_With_Tension": "Rivals with Tension",
+            "Betrayal_Reconciliation": "Betrayal & Reconciliation",
+            "Toxic_Codependency": "Toxic Codependency",
+            "Worship_And_Disgust": "Worship & Disgust",
+            "Captor_And_Captive": "Captor & Captive",
+            "Cat_And_Mouse": "Cat and Mouse",
+            "Sun_And_Moon": "Sun & Moon",
+            "Brain_And_Brawn": "Brain & Brawn",
+            "Beauty_And_Beast": "Beauty & Beast",
+            "Master_And_Servant": "Master & Servant",
+            "Creator_And_Creation": "Creator & Creation"
         };
         if (specialMap[key]) return specialMap[key];
         return key.replace(/_/g, " ");
     };
 
     var SETTING_KEYS = [
-        "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
+        "Any", "Fantasy", "Medieval_Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
         "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
         "Zombie_apocalypse", "Alien_apocalypse",
         "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
         "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
         "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",
-        "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
+        "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical",
+        "Academy_Fantasy", "Cultivation", "Pirate_Fantasy", "Magitech", "Cosmic_Horror",
+        "Prehistoric_Fantasy", "Divine_War", "Prison_World", "Megadungeon", "Floating_Islands",
+        "Vampire_Gothic", "Neo_Noir", "Retrofuturism", "Kaiju_Apocalypse", "Eldritch_Seafaring",
+        "Feudal_Japan_Fantasy", "Tribal_Fantasy", "Corporate_Dystopia", "Virtual_World",
+        "Heaven_Hell_War", "Broken_Moon", "Monster_Hunter", "Time_Collapse", "Biohorror",
+        "Desertpunk", "Lunar_Colony", "Deep_Jungle", "Arcology", "Celestial_Court",
+        "Dream_War", "Necropunk", "Infernal_Modern", "Ruined_Utopia"
     ];
 
     var TONE_KEYS = [
@@ -375,7 +426,12 @@
         "Mysterious", "Romantic", "Erotic", "Tragic", "Whimsical", "Epic",
         "Affectionate", "Flirtatious", "Sensual", "Explicit", "Romantic_Comedy",
         "Dark_Humour", "Gory", "Cute", "Dark_Romance", "Smut", "GenZ_Casual",
-        "Documentary", "Slow_Burn"
+        "Documentary", "Slow_Burn",
+        "Paranoid", "Claustrophobic", "Hopepunk", "Nihilistic", "Melancholic",
+        "Chaotic", "Cozy", "Brutal", "Operatic", "Cynical", "Surreal",
+        "Tense", "Intimate", "Campy", "Hallucinatory", "Reverent", "Decadent",
+        "Stoic", "Satirical_Biting", "Existential", "Lonely", "Euphoric",
+        "Clinical", "Unhinged"
     ];
 
     var ARCHETYPE_KEYS = [
@@ -383,8 +439,27 @@
         "Female", "Male", "Femboy", "Tomboy", "Futa", "childhood_friend", "Bestie", "FWB",
         "Don", "Boss", "Milf", "Furry", "Ghost", "Maid", "Butler", "Detective", "Knight", "Royalty",
         "Assassin", "Scholar", "Deity", "Cyborg", "Android", "Vampire", "Werewolf", "Neko",
-        "Succubus", "Villain", "Anti_Hero", "Monster_Girl", "Bully", "Enemy", "Cute", "Psychopath"
+        "Succubus", "Villain", "Anti_Hero", "Monster_Girl", "Bully", "Enemy", "Cute", "Psychopath",
+        "Gyaru", "Chuuni", "Onee_San", "Sadist", "Masochist", "Menhera", "Genki", "Jock",
+        "Delinquent", "Idol", "NEET", "Hikikomori", "Gamer", "Mentor", "Rival", "Ex_Lover",
+        "Bodyguard", "Handler", "Handler_And_Asset", "Arranged_Partner", "Devoted_Follower",
+        "Caretaker", "Worshipper", "Narcissist", "Sociopath", "Martyr", "Zealot", "Coward",
+        "Perfectionist", "Hedonist", "Paranoid", "Control_Freak", "Survivor", "Broken_Hero",
+        "Fanatic", "Mercenary", "Priest", "Smuggler", "Gladiator", "Revolutionary", "CEO",
+        "Influencer", "Streamer", "Hacker", "Scientist", "Cult_Leader", "Bounty_Hunter",
+        "Survivor_Leader", "Dragon", "Angel", "Demon", "Slime_Girl", "Eldritch",
+        "Artificial_Intelligence", "Parasite", "Hive_Mind", "Living_Weapon", "Chimera",
+        "Doll", "Mimic"
     ];
+
+    var DYNAMIC_KEYS = [
+        "Any", "Enemies_To_Lovers", "Forbidden_Love", "Mentor_Student", "Hunter_And_Prey",
+        "Mutual_Obsession", "Forced_Cohabitation", "Fake_Relationship", "Protector_And_Protected",
+        "Rivals_With_Tension", "Betrayal_Reconciliation", "Toxic_Codependency", "Worship_And_Disgust",
+        "Captor_And_Captive", "Cat_And_Mouse", "Sun_And_Moon", "Brain_And_Brawn", "Beauty_And_Beast",
+        "Master_And_Servant", "Creator_And_Creation"
+    ];
+
 
     window.initCustomSettingDropdown = function () {
         let listEl = document.getElementById("settingOptionsList");
@@ -697,6 +772,120 @@
         });
     };
 
+    // Dynamic Dropdown functions
+    window.getSelectedDynamics = function () {
+        let checked = [...document.querySelectorAll(".dynamicCheckbox:checked")].map(c => c.value);
+        return checked.length > 0 ? checked : ["Any"];
+    };
+
+    window.handleDynamicChange = function () {
+        let checked = [...document.querySelectorAll(".dynamicCheckbox:checked")];
+        let anyBox = document.getElementById("dynamicAnyCheckbox");
+        if (checked.length > 0 && anyBox) anyBox.checked = false;
+        updateDynamicLabel();
+        saveDynamics();
+    };
+
+    window.handleDynamicAnyToggle = function (checkbox) {
+        if (checkbox.checked) {
+            document.querySelectorAll(".dynamicCheckbox").forEach(c => c.checked = false);
+        }
+        updateDynamicLabel();
+        saveDynamics();
+    };
+
+    window.updateDynamicLabel = function () {
+        let dynamics = getSelectedDynamics();
+        let label = document.getElementById("dynamicDropdownLabel");
+        if (label) {
+            if (dynamics[0] === "Any") label.textContent = "Any";
+            else if (dynamics.length === 1) label.textContent = dynamics[0].replace(/_/g, " ");
+            else label.textContent = dynamics[0].replace(/_/g, " ") + " +" + (dynamics.length - 1);
+        }
+    };
+
+    window.saveDynamics = function () {
+        localStorage.dynamics = JSON.stringify(getSelectedDynamics());
+        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+    };
+
+    window.loadDynamics = function () {
+        try {
+            let saved = JSON.parse(localStorage.dynamics || '["Any"]');
+            let anyBox = document.getElementById("dynamicAnyCheckbox");
+            if (!saved || saved.length === 0 || saved[0] === "Any") {
+                if (anyBox) anyBox.checked = true;
+            } else {
+                if (anyBox) anyBox.checked = false;
+                saved.forEach(t => {
+                    let box = document.querySelector(`.dynamicCheckbox[value="${t}"]`);
+                    if (box) box.checked = true;
+                });
+            }
+            updateDynamicLabel();
+        } catch (e) {
+            let anyBox = document.getElementById("dynamicAnyCheckbox");
+            if (anyBox) anyBox.checked = true;
+            updateDynamicLabel();
+        }
+    };
+
+    window.initCustomDynamicDropdown = function () {
+        let listEl = document.getElementById("dynamicOptionsList");
+        if (!listEl) return;
+        
+        let keys = [];
+        const isPerchance = window.location.hostname.includes("perchance.org");
+        if (isPerchance && typeof window.root !== "undefined" && window.root.dynamicPrompts) {
+            keys = window.getPerchanceListKeys(window.root.dynamicPrompts);
+        }
+        if (!keys || keys.length === 0) {
+            keys = DYNAMIC_KEYS;
+        }
+        
+        keys = keys.filter(k => k !== "Any");
+        
+        let html = `
+            <label class="dropdown-option-item-checkbox">
+                <input type="checkbox" id="dynamicAnyCheckbox" value="Any"
+                    onchange="handleDynamicAnyToggle(this)"
+                    style="accent-color:var(--accent-color);">
+                <span>Any</span>
+            </label>
+            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
+        `;
+        
+        html += keys.map(k => {
+            let label = window.getDropdownDisplayLabel(k);
+            return `
+                <label class="dropdown-option-item-checkbox">
+                    <input type="checkbox" class="dynamicCheckbox" value="${k}"
+                        onchange="handleDynamicChange()" style="accent-color:var(--accent-color);">
+                    <span>${label}</span>
+                </label>
+            `;
+        }).join("");
+        
+        listEl.innerHTML = html;
+    };
+
+    window.filterDynamics = function (query) {
+        let q = query.toLowerCase().trim();
+        let items = document.querySelectorAll("#dynamicOptionsList .dropdown-option-item-checkbox");
+        items.forEach(item => {
+            let text = item.querySelector("span").textContent.toLowerCase();
+            if (item.querySelector("#dynamicAnyCheckbox")) {
+                item.style.display = "flex";
+                return;
+            }
+            if (text.includes(q)) {
+                item.style.display = "flex";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    };
+
     // Perspective Dropdown functions
     window.getSelectedPerspective = function () {
         return localStorage.perspective || "Third_Person";
@@ -861,8 +1050,10 @@
         initCustomSettingDropdown();
         initCustomToneDropdown();
         initCustomArchetypeDropdown();
+        initCustomDynamicDropdown();
         loadTones();
         loadArchetypes();
+        loadDynamics();
         loadPerspective();
         initCustomLengthDropdowns();
     }, 20);
