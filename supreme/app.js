@@ -734,6 +734,128 @@
         selectPerspective(val, false);
     };
 
+    window.initCustomLengthDropdowns = function () {
+        let selects = document.querySelectorAll("select.length-select");
+        selects.forEach(selectEl => {
+            if (selectEl.dataset.customDropdownInitialized) return;
+            selectEl.dataset.customDropdownInitialized = "true";
+
+            // Hide original select
+            selectEl.style.display = "none";
+            selectEl.classList.remove("length-select");
+            selectEl.classList.add("hidden-length-select");
+
+            // Create wrapper
+            let wrapper = document.createElement("div");
+            wrapper.className = "custom-dropdown";
+            wrapper.style.display = "inline-block";
+            wrapper.style.fontSize = "85%";
+
+            let menuId = selectEl.id + "Menu";
+
+            // Create trigger button
+            let trigger = document.createElement("button");
+            trigger.className = "dropdown-trigger length-select";
+            trigger.style.minWidth = "120px";
+            trigger.style.padding = "0.35rem 0.6rem";
+            trigger.style.height = "31px";
+            trigger.style.fontSize = "85%";
+            trigger.style.display = "flex";
+            trigger.style.alignItems = "center";
+            trigger.style.justifyContent = "space-between";
+            trigger.style.gap = "0.4rem";
+            trigger.style.backgroundImage = "none"; // Avoid inheriting double chevron arrows from CSS .length-select
+
+            let valSpan = document.createElement("span");
+            valSpan.className = "dropdown-value";
+            valSpan.style.marginRight = "0.25rem";
+            
+            let activeOption = selectEl.options[selectEl.selectedIndex];
+            valSpan.textContent = activeOption ? activeOption.text : selectEl.value;
+            trigger.appendChild(valSpan);
+
+            let arrow = document.createElement("i");
+            arrow.className = "bi bi-chevron-down dropdown-arrow";
+            arrow.style.fontSize = "70%";
+            arrow.style.marginLeft = "auto";
+            trigger.appendChild(arrow);
+
+            trigger.onclick = function (e) {
+                toggleCustomDropdown(menuId, e);
+            };
+
+            wrapper.appendChild(trigger);
+
+            // Create menu
+            let menu = document.createElement("div");
+            menu.className = "dropdown-menu-custom";
+            menu.id = menuId;
+            menu.style.display = "none";
+            menu.style.width = "150px";
+            menu.onclick = function(e) { e.stopPropagation(); };
+
+            let optionsContainer = document.createElement("div");
+            optionsContainer.className = "dropdown-options";
+
+            Array.from(selectEl.options).forEach(opt => {
+                let optDiv = document.createElement("div");
+                optDiv.className = "dropdown-option-item";
+                optDiv.dataset.value = opt.value;
+                
+                let textSpan = document.createElement("span");
+                textSpan.textContent = opt.text;
+                optDiv.appendChild(textSpan);
+
+                let checkIcon = document.createElement("i");
+                checkIcon.className = "bi bi-check-lg";
+                checkIcon.style.color = "#fff"; // White checkmark on selected purple background
+                optDiv.appendChild(checkIcon);
+
+                optDiv.onclick = function() {
+                    selectEl.value = opt.value;
+                    selectEl.dispatchEvent(new Event('change'));
+                    menu.style.display = "none";
+                    wrapper.classList.remove("open");
+                };
+
+                optionsContainer.appendChild(optDiv);
+            });
+
+            menu.appendChild(optionsContainer);
+            wrapper.appendChild(menu);
+
+            // Insert wrapper after selectEl
+            selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+
+            function updateUI(val) {
+                let selectedOpt = Array.from(selectEl.options).find(o => o.value === val);
+                valSpan.textContent = selectedOpt ? selectedOpt.text : val;
+
+                let items = optionsContainer.querySelectorAll(".dropdown-option-item");
+                items.forEach(item => {
+                    if (item.dataset.value === val) {
+                        item.classList.add("selected");
+                    } else {
+                        item.classList.remove("selected");
+                    }
+                });
+            }
+
+            let descriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+            Object.defineProperty(selectEl, 'value', {
+                get: function() {
+                    return descriptor.get.call(selectEl);
+                },
+                set: function(val) {
+                    descriptor.set.call(selectEl, val);
+                    updateUI(val);
+                }
+            });
+
+            updateUI(selectEl.value);
+        });
+    };
+
     // Initialize custom dropdowns on load
     setTimeout(() => {
         initCustomSettingDropdown();
@@ -742,6 +864,7 @@
         loadTones();
         loadArchetypes();
         loadPerspective();
+        initCustomLengthDropdowns();
     }, 20);
 
     window.setAccentTheme = function (themeName) {
