@@ -478,7 +478,7 @@
         }
     };
 
-    function updateWorldBannerUI(url) {
+    window.updateWorldBannerUI = function (url) {
         let bannerEl = document.getElementById("wBannerEl");
         let removeBtn = document.getElementById("wClearBannerBtn");
         let cardBg = document.getElementById("wCardBannerBgEl");

@@ -92,6 +92,13 @@
                 "Fantasy Oil Painting": { prompt: { evaluateItem: "oil painting, highly detailed" }, negative: { evaluateItem: "modern, clean" } },
                 "Cinematic Realistic": { prompt: { evaluateItem: "cinematic photo, realistic" }, negative: { evaluateItem: "cgi, 3d render" } }
             },
+            lengthSpecifiers: {
+                "super-short": { evaluateItem: "1 line each" },
+                "short": { evaluateItem: "2-3 lines each" },
+                "medium": { evaluateItem: "4-5 lines each" },
+                "long": { evaluateItem: "6-7 lines each" },
+                "super-long": { evaluateItem: "8+ lines each" }
+            },
             image: function(promptData) {
                 return {
                     evaluateItem: `<div class="imageWrapper" style="border-radius:6px; overflow:hidden; background:#222; aspect-ratio:2/3; display:flex; justify-content:center; align-items:center; color:#555; border:1px dashed #444;">

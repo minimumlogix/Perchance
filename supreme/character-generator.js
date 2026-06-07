@@ -389,6 +389,12 @@
         root.needsName = needsName;
         let instruction = root.prompts.characterPage.worldLore.instruction.evaluateItem;
 
+        let lengthVal = (document.getElementById("worldLoreLengthEl") || {}).value || "medium";
+        let lengthInstruction = getLengthInstruction(lengthVal);
+        if (lengthInstruction) {
+            instruction += "\n\n" + lengthInstruction;
+        }
+
         worldLoreEl.value = "";
         worldLoreEl.placeholder = "Generating...";
 
@@ -625,6 +631,47 @@
                 if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = "none";
                 localStorage.removeItem("worldLoreImageUrl");
             }
+
+            // Sync with Worlds tab/editor activeWorldState
+            if (window.worldState) {
+                window.worldState.name = worldName;
+                window.worldState.sections.overview = text;
+                window.worldState.bannerUrl = url || "";
+                
+                let wNameEl = document.getElementById("wNameEl");
+                if (wNameEl) wNameEl.value = worldName;
+
+                let wOverviewOutputEl = document.getElementById("w-overviewOutputEl");
+                if (wOverviewOutputEl) {
+                    if (text) {
+                        wOverviewOutputEl.innerHTML = window.formatSectionText(text);
+                        wOverviewOutputEl.style.display = "block";
+                        let edit = document.getElementById("w-overviewEditBtnEl");
+                        let copy = document.getElementById("w-overviewCopyBtnEl");
+                        if (edit) edit.style.display = "inline-block";
+                        if (copy) copy.style.display = "inline-block";
+                    } else {
+                        wOverviewOutputEl.innerHTML = "";
+                        wOverviewOutputEl.style.display = "none";
+                        let edit = document.getElementById("w-overviewEditBtnEl");
+                        let copy = document.getElementById("w-overviewCopyBtnEl");
+                        if (edit) edit.style.display = "none";
+                        if (copy) copy.style.display = "none";
+                    }
+                }
+
+                if (typeof window.updateWorldBannerUI === 'function') {
+                    window.updateWorldBannerUI(url || "");
+                }
+
+                if (typeof window.saveWorldState === 'function') window.saveWorldState();
+                if (typeof window.saveActiveWorldState === 'function') window.saveActiveWorldState();
+                if (typeof updateWorldTopBarSaveButtons === 'function') updateWorldTopBarSaveButtons();
+                if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
+                if (typeof triggerWorldSelectorSync === 'function') triggerWorldSelectorSync();
+            }
+
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
 
             document.querySelectorAll(".prompt2-modal").forEach(el => el.remove());
             document.querySelectorAll(".prompt2-overlay").forEach(el => el.remove());
@@ -4538,6 +4585,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 if (bg) bg.style.backgroundImage = `url(${localStorage.worldLoreImageUrl})`;
             }
         }
+
+        let worldLoreLengthEl = document.getElementById("worldLoreLengthEl");
+        if (worldLoreLengthEl) worldLoreLengthEl.value = localStorage.worldLoreLength || worldLoreLengthEl.value || "medium";
 
         let appearanceLengthEl = document.getElementById("appearanceLengthEl");
         if (appearanceLengthEl) appearanceLengthEl.value = localStorage.appearanceLength || appearanceLengthEl.value || "medium";
