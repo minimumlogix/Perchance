@@ -394,7 +394,7 @@
                             </div>
                             <!-- Fields -->
                             <div
-                                style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 200px;">
+                                style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 200px; min-height: 270px;">
                                 <div class="detail-field">
                                     <label class="detail-label">Name</label>
                                     <input type="text" id="detailNameEl" class="detail-input"
@@ -480,6 +480,7 @@
                                 </select>
                                 <button class="btn btn-primary" id="worldLoreGenBtnEl" onclick="generateWorldLore(true)"><i
                                         class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-danger btn-sm" id="worldLoreClearBtnEl" onclick="clearWorldLore()"><i class="bi bi-trash"></i> Clear</button>
                             </div>
                             <span class="panel-chevron bi bi-chevron-right"></span>
                         </div>
@@ -506,7 +507,7 @@
                                             style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;"><i
                                                 class="bi bi-download"></i> Load World</label>
                                         <select id="charWorldImportSelector"
-                                            onchange="loadSavedWorldIntoCharGen(this.value)" class="select-input"
+                                            onchange="loadSavedWorldIntoCharGen(this.value)" class="select-input length-select"
                                             style="flex:1; height:28px; cursor: pointer;">
                                             <option value="">-- Load Saved World --</option>
                                         </select>
@@ -544,8 +545,7 @@
                                     style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                                     <button class="btn btn-secondary btn-sm" id="worldLoreEditBtnEl" onclick="toggleWorldLoreEdit()"><i
                                             class="bi bi-pencil-square"></i> edit</button>
-                                    <button class="btn btn-danger btn-sm" onclick="clearWorldLore()"><i
-                                            class="bi bi-trash"></i> clear</button>
+                                    <button class="btn btn-secondary btn-sm" id="worldLoreCopyBtnEl" onclick="copyWorldLoreText()"><i class="bi bi-clipboard"></i> copy</button>
                                     <button class="btn btn-secondary btn-sm" id="worldLoreStopBtnEl" onclick="stopSection('worldLore')"
                                         style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                                 </div>
@@ -588,13 +588,10 @@
                             oninput="localStorage.appearanceNotes=this.value"
                             placeholder="Notes for appearance/clothing  -  e.g. tall, scarred, wearing a lab coat..."></textarea>
                         <div id="appearanceStatusEl" class="section-status"></div>
-                        <div id="appearanceOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
+                        <div id="appearanceOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="appearanceEditBtnEl" onclick="toggleSectionEdit('appearance')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="appearanceCopyBtnEl" onclick="copySectionText('appearance')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="appearanceEditBtnEl" onclick="toggleSectionEdit('appearance')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="appearanceCopyBtnEl" onclick="copySectionText('appearance')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="appearanceStopBtnEl" onclick="stopSection('appearance')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -613,7 +610,7 @@
                                     <!-- Style selector card -->
                                     <div class="image-tool-card">
                                         <span class="image-tool-label"><i class="bi bi-palette"></i> Style</span>
-                                        <select id="visualStyleEl" class="image-tool-control"
+                                        <select id="visualStyleEl" class="image-tool-control length-select"
                                             onchange="localStorage.visualStyle=this.value; window.overwrittenStylePrompt=null; updateStyleOverridePlaceholder(); if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();">
                                         </select>
                                     </div>
@@ -621,7 +618,7 @@
                                     <!-- Count selector card -->
                                     <div class="image-tool-card">
                                         <span class="image-tool-label"><i class="bi bi-images"></i> Count</span>
-                                        <select id="imageCountEl" class="image-tool-control"
+                                        <select id="imageCountEl" class="image-tool-control length-select"
                                             onchange="localStorage.imageCount=this.value">
                                             <option value="1">1</option>
                                             <option value="2">2</option>
@@ -714,13 +711,10 @@
                         <textarea id="roleNotesEl" class="section-notes" oninput="localStorage.roleNotes=this.value"
                             placeholder="Notes for role/rules  -  e.g. villain, obsessed with me, cannot speak..."></textarea>
                         <div id="roleStatusEl" class="section-status"></div>
-                        <div id="roleOutputEl" class="section-output" contenteditable="false" style="display:none;">
-                        </div>
+                        <div id="roleOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="roleEditBtnEl" onclick="toggleSectionEdit('role')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="roleCopyBtnEl" onclick="copySectionText('role')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="roleEditBtnEl" onclick="toggleSectionEdit('role')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="roleCopyBtnEl" onclick="copySectionText('role')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="roleStopBtnEl" onclick="stopSection('role')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -759,14 +753,12 @@
                             oninput="localStorage.personalityNotes=this.value"
                             placeholder="Notes for personality  -  e.g. dry wit, paranoid, secretly kind..."></textarea>
                         <div id="personalityStatusEl" class="section-status"></div>
-                        <div id="personalityOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
+                        <div id="personalityOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                             <button class="btn btn-secondary btn-sm" id="personalityEditBtnEl"
-                                onclick="toggleSectionEdit('personality')" style="display:none;"><i
+                                onclick="toggleSectionEdit('personality')"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="personalityCopyBtnEl" onclick="copySectionText('personality')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="personalityCopyBtnEl" onclick="copySectionText('personality')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="personalityStopBtnEl" onclick="stopSection('personality')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -804,13 +796,10 @@
                             oninput="localStorage.beliefsNotes=this.value"
                             placeholder="Notes for beliefs & morals  -  e.g. strictly pacifist, believes end justifies means..."></textarea>
                         <div id="beliefsStatusEl" class="section-status"></div>
-                        <div id="beliefsOutputEl" class="section-output" contenteditable="false" style="display:none;">
-                        </div>
+                        <div id="beliefsOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="beliefsEditBtnEl" onclick="toggleSectionEdit('beliefs')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="beliefsCopyBtnEl" onclick="copySectionText('beliefs')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="beliefsEditBtnEl" onclick="toggleSectionEdit('beliefs')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="beliefsCopyBtnEl" onclick="copySectionText('beliefs')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="beliefsStopBtnEl" onclick="stopSection('beliefs')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -849,14 +838,12 @@
                             oninput="localStorage.preferencesNotes=this.value"
                             placeholder="Notes for preferences  -  e.g. loves sweet food, dislikes loud noises..."></textarea>
                         <div id="preferencesStatusEl" class="section-status"></div>
-                        <div id="preferencesOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
+                        <div id="preferencesOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                             <button class="btn btn-secondary btn-sm" id="preferencesEditBtnEl"
-                                onclick="toggleSectionEdit('preferences')" style="display:none;"><i
+                                onclick="toggleSectionEdit('preferences')"><i
                                     class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="preferencesCopyBtnEl" onclick="copySectionText('preferences')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="preferencesCopyBtnEl" onclick="copySectionText('preferences')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="preferencesStopBtnEl" onclick="stopSection('preferences')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -895,13 +882,10 @@
                             oninput="localStorage.backgroundNotes=this.value"
                             placeholder="Notes for backstory  -  e.g. exiled noble, grew up in the slums..."></textarea>
                         <div id="backgroundStatusEl" class="section-status"></div>
-                        <div id="backgroundOutputEl" class="section-output" contenteditable="false"
-                            style="display:none;"></div>
+                        <div id="backgroundOutputEl" class="section-output" contenteditable="false"></div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="backgroundCopyBtnEl" onclick="copySectionText('background')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="backgroundCopyBtnEl" onclick="copySectionText('background')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="backgroundStopBtnEl" onclick="stopSection('background')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -1032,14 +1016,13 @@
 
                         <!-- Hidden Raw Output for streaming -->
                         <div id="loreOutputEl" class="section-output" contenteditable="false"
-                            style="display:none; max-height:120px; overflow-y:auto; margin-top:0.5rem; font-family:monospace; font-size:85%;">
+                            style="max-height:120px; overflow-y:auto; margin-top:0.5rem; font-family:monospace; font-size:85%;">
                         </div>
 
                         <div style="margin-top:0.75rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                             <button class="btn btn-secondary btn-sm" id="loreExportJsonBtnEl" onclick="exportLoreAsJson()"><i
                                     class="bi bi-file-earmark-arrow-down"></i> Export as JSON</button>
-                            <button class="btn btn-secondary btn-sm" id="loreCopyBtnEl" onclick="copySectionText('lore')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> Copy JSON</button>
+                            <button class="btn btn-secondary btn-sm" id="loreCopyBtnEl" onclick="copySectionText('lore')"><i class="bi bi-clipboard"></i> Copy JSON</button>
                             <button class="btn btn-secondary btn-sm" id="loreStopBtnEl" onclick="stopSection('lore')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -1077,13 +1060,11 @@
                             oninput="localStorage.roleplayNotes=this.value"
                             placeholder="Notes for examples  -  e.g. focus on their sarcasm, show them in a fight..."></textarea>
                         <div id="roleplayStatusEl" class="section-status"></div>
-                        <div id="roleplayOutputEl" class="section-output" contenteditable="false" style="display:none;">
+                        <div id="roleplayOutputEl" class="section-output" contenteditable="false">
                         </div>
                         <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                            <button class="btn btn-secondary btn-sm" id="roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"
-                                style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                            <button class="btn btn-secondary btn-sm" id="roleplayCopyBtnEl" onclick="copySectionText('roleplay')"
-                                style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="roleplayCopyBtnEl" onclick="copySectionText('roleplay')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="roleplayStopBtnEl" onclick="stopSection('roleplay')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
@@ -1146,12 +1127,10 @@
                                 </div>
                             </div>
                             <div id="introScenarioStatusEl" class="section-status"></div>
-                            <div id="introScenarioOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                            <div id="introScenarioOutputEl" class="section-output" contenteditable="false"></div>
                             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                                <button class="btn btn-secondary btn-sm" id="introScenarioEditBtnEl" onclick="toggleSectionEdit('introScenario')"
-                                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                                <button class="btn btn-secondary btn-sm" id="introScenarioCopyBtnEl" onclick="copySectionText('introScenario')"
-                                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                                <button class="btn btn-secondary btn-sm" id="introScenarioEditBtnEl" onclick="toggleSectionEdit('introScenario')"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="introScenarioCopyBtnEl" onclick="copySectionText('introScenario')"><i class="bi bi-clipboard"></i> copy</button>
                             </div>
                         </div>
 
@@ -1175,12 +1154,10 @@
                                 </div>
                             </div>
                             <div id="introStartStatusEl" class="section-status"></div>
-                            <div id="introStartOutputEl" class="section-output" contenteditable="false" style="display:none;"></div>
+                            <div id="introStartOutputEl" class="section-output" contenteditable="false"></div>
                             <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
-                                <button class="btn btn-secondary btn-sm" id="introStartEditBtnEl" onclick="toggleSectionEdit('introStart')"
-                                    style="display:none;"><i class="bi bi-pencil-square"></i> edit</button>
-                                <button class="btn btn-secondary btn-sm" id="introStartCopyBtnEl" onclick="copySectionText('introStart')"
-                                    style="display:none;"><i class="bi bi-clipboard"></i> copy</button>
+                                <button class="btn btn-secondary btn-sm" id="introStartEditBtnEl" onclick="toggleSectionEdit('introStart')"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="introStartCopyBtnEl" onclick="copySectionText('introStart')"><i class="bi bi-clipboard"></i> copy</button>
                             </div>
                         </div>
 
@@ -1833,7 +1810,7 @@
                             <!-- SAVED WORLDS SELECTOR DROPDOWN & SYNC -->
                             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
                                 <select id="rpWorldImportSelector" onchange="loadSavedWorldIntoRoleplay(this.value)"
-                                    class="select-input"
+                                    class="select-input length-select"
                                     style="font-size: 75%; height: 28px; cursor: pointer;">
                                     <option value="">-- Load Saved World --</option>
                                 </select>

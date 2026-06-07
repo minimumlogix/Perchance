@@ -1284,14 +1284,12 @@
 
         if (outputEl) {
             outputEl.innerHTML = "";
-            outputEl.style.display = "none";
+            outputEl.style.display = "block";
         }
         if (notesEl) {
             notesEl.value = "";
             localStorage.removeItem(section + "Notes");
         }
-        if (editBtn) editBtn.style.display = "none";
-        if (copyBtn) copyBtn.style.display = "none";
         if (statusEl) statusEl.textContent = "";
 
         if (section === "lore") {

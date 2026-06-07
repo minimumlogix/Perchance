@@ -914,6 +914,7 @@
         line-height: 1.6;
         font-size: 90%;
         padding: 0.5rem 0;
+        min-height: 5rem;
         color: var(--text-main);
         text-align: left;
     }

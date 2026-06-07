@@ -549,6 +549,21 @@
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
+    window.copyWorldLoreText = function () {
+        let textarea = document.getElementById("worldLoreEl");
+        if (!textarea || !textarea.value.trim()) return;
+        navigator.clipboard.writeText(textarea.value.trim()).then(() => {
+            let btn = document.getElementById("worldLoreCopyBtnEl");
+            if (btn) {
+                let origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
+                setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
+            }
+        }).catch(err => {
+            console.warn("Clipboard write failed:", err);
+        });
+    };
+
     window.pushWorldLoreHistory = function (text, imageUrl, worldName) {
         if (!text || text.trim().length < 10) return;
         let history = JSON.parse(localStorage.worldLoreHistory || "[]");
