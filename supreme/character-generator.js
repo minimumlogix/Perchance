@@ -3798,29 +3798,58 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             if (json.race) detailRaceEl.value = json.race;
             if (json.ethnicity) detailEthnicityEl.value = json.ethnicity;
             saveDetails();
-            
-            if (json.role) setSectionOutput("role", formatSectionText(sanitizeOutput(json.role)));
-            if (json.personality) setSectionOutput("personality", formatSectionText(sanitizeOutput(json.personality)));
-            if (json.beliefs) setSectionOutput("beliefs", formatSectionText(sanitizeOutput(json.beliefs)));
-            if (json.preferences) setSectionOutput("preferences", formatSectionText(sanitizeOutput(json.preferences)));
-            if (json.appearance) setSectionOutput("appearance", formatSectionText(sanitizeOutput(json.appearance)));
-            if (json.background) setSectionOutput("background", formatSectionText(sanitizeOutput(json.background)));
-            if (json.lore) setSectionOutput("lore", formatSectionText(sanitizeOutput(json.lore)));
-            if (json.roleplay) setSectionOutput("roleplay", formatSectionText(sanitizeOutput(json.roleplay)));
 
-            if (!window.characterSections) window.characterSections = {};
-            if (json.role) window.characterSections.role = json.role;
-            if (json.personality) window.characterSections.personality = json.personality;
-            if (json.beliefs) window.characterSections.beliefs = json.beliefs;
-            if (json.preferences) window.characterSections.preferences = json.preferences;
-            if (json.appearance) window.characterSections.appearance = json.appearance;
-            if (json.background) window.characterSections.background = json.background;
-            if (json.lore) window.characterSections.lore = json.lore;
-            if (json.roleplay) window.characterSections.roleplay = json.roleplay;
-            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
-            
-            if (json.appearance) { await triggerImageGeneration(json.appearance); }
-            setGenerationStatus("✨ Character imported!");
+            let overviewEl = document.getElementById("overviewNotesEl");
+            let overviewText = "";
+            if (json.overview) {
+                overviewText = sanitizeOutput(json.overview);
+            } else {
+                let overviewInstruction = "TASK: Using the extracted character information below, write a concise overview notes paragraph suitable for the character generator's Overview Notes field. Do not output headings, labels, or JSON. Focus on the character's core concept, appearance, personality, role, and backstory in a single useful seed paragraph.\n\n" +
+                    "Extracted character data:\n" +
+                    (json.name ? "Name: " + json.name + "\n" : "") +
+                    (json.age ? "Age: " + json.age + "\n" : "") +
+                    (json.gender ? "Gender: " + json.gender + "\n" : "") +
+                    (json.orientation ? "Orientation: " + json.orientation + "\n" : "") +
+                    (json.race ? "Species/Race: " + json.race + "\n" : "") +
+                    (json.ethnicity ? "Ethnicity: " + json.ethnicity + "\n" : "") +
+                    (json.role ? "Role: " + json.role + "\n" : "") +
+                    (json.appearance ? "Appearance: " + json.appearance + "\n" : "") +
+                    (json.background ? "Background: " + json.background + "\n" : "") +
+                    (json.personality ? "Personality: " + json.personality + "\n" : "") +
+                    (json.beliefs ? "Beliefs: " + json.beliefs + "\n" : "") +
+                    (json.preferences ? "Preferences: " + json.preferences + "\n" : "") +
+                    (json.lore ? "Lore: " + json.lore + "\n" : "") +
+                    (json.roleplay ? "Roleplay: " + json.roleplay + "\n" : "");
+
+                setGenerationStatus("🧠 Generating overview notes...");
+                try {
+                    let overviewRes = await ai({ instruction: overviewInstruction });
+                    overviewText = sanitizeOutput(overviewRes.text || "");
+                } catch (e) {
+                    console.warn("Overview generation from wiki import failed:", e);
+                    overviewText = "";
+                }
+            }
+
+            if (!overviewText) {
+                let parts = [];
+                if (json.role) parts.push(`Role: ${sanitizeOutput(json.role)}`);
+                if (json.appearance) parts.push(`Appearance: ${sanitizeOutput(json.appearance)}`);
+                if (json.personality) parts.push(`Personality: ${sanitizeOutput(json.personality)}`);
+                if (json.background) parts.push(`Background: ${sanitizeOutput(json.background)}`);
+                if (json.lore) parts.push(`Lore: ${sanitizeOutput(json.lore)}`);
+                if (json.beliefs) parts.push(`Beliefs: ${sanitizeOutput(json.beliefs)}`);
+                if (json.preferences) parts.push(`Preferences: ${sanitizeOutput(json.preferences)}`);
+                if (json.roleplay) parts.push(`Roleplay: ${sanitizeOutput(json.roleplay)}`);
+                overviewText = parts.join("\n\n");
+            }
+
+            if (overviewEl) {
+                overviewEl.value = overviewText;
+                localStorage.overviewNotes = overviewText;
+            }
+
+            setGenerationStatus("✨ Overview notes imported!");
             setTimeout(() => setGenerationStatus(""), 3000);
         } catch (e) {
             console.error(e);
@@ -3886,12 +3915,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
         try {
             // 1. Generate identity details
-            let success = await generateIdentityDetails();
-            if (!success || !window.coreIdentityGenRunning) return;
-
-            // 2. Generate overview notes
-            setGenerationStatus("Generating character overview...");
-            await generateOverviewNotes('textarea');
+            await generateIdentityDetails();
         } catch (e) {
             console.error("Error during generateCoreIdentity:", e);
         } finally {
@@ -3905,7 +3929,6 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.stopCoreIdentityGeneration = function () {
         window.coreIdentityGenRunning = false;
         stopDetailsGeneration();
-        stopOverviewGeneration();
         let btn = document.getElementById("coreGenBtnEl");
         let stopBtn = document.getElementById("coreStopBtnEl");
         if (btn) btn.disabled = false;
@@ -3914,7 +3937,6 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
     window.clearCoreIdentity = function () {
         clearDetails();
-        clearOverviewNotes();
     };
 
     window.clearAllSections = function () {
