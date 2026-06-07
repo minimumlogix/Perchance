@@ -1180,6 +1180,10 @@
         initCustomWorldSettingDropdown();
         initCustomWorldToneDropdown();
         loadWorldTones();
+        if (typeof window.sortDropdownList === "function") {
+            window.sortDropdownList("wSettingOptionsList");
+            window.sortDropdownList("wToneOptionsList");
+        }
         updateWorldBannerUI(window.worldState.bannerUrl);
 
         // Populate dynamic section text outputs

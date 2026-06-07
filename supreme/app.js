@@ -281,6 +281,62 @@
     };
 
     // ─── CUSTOM DROPDOWNS (SETTING & TONE) ──────────────────────────────
+    window.sortDropdownList = function (listElId) {
+        const listEl = document.getElementById(listElId);
+        if (!listEl) return;
+
+        const children = Array.from(listEl.children);
+        
+        // Find if there is a separator <hr>
+        const hrIndex = children.findIndex(child => child.tagName === 'HR');
+        
+        let prefixItems = [];
+        let hrItem = null;
+        let itemsToSort = [];
+
+        if (hrIndex !== -1) {
+            prefixItems = children.slice(0, hrIndex);
+            hrItem = children[hrIndex];
+            itemsToSort = children.slice(hrIndex + 1);
+        } else {
+            itemsToSort = children;
+        }
+
+        // Helper to check if an item is checked/active
+        const isChecked = (item) => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) return checkbox.checked;
+            if (item.classList.contains('active')) return true;
+            const checkIcon = item.querySelector('.bi-check-lg');
+            if (checkIcon && checkIcon.style.display !== 'none') return true;
+            return false;
+        };
+
+        // Helper to get sorting text (display label)
+        const getLabelText = (item) => {
+            const span = item.querySelector('span');
+            return span ? span.textContent.trim().toLowerCase() : item.textContent.trim().toLowerCase();
+        };
+
+        // Sort itemsToSort: checked first (alphabetical), then unchecked (alphabetical)
+        itemsToSort.sort((a, b) => {
+            const aChecked = isChecked(a);
+            const bChecked = isChecked(b);
+            if (aChecked && !bChecked) return -1;
+            if (!aChecked && bChecked) return 1;
+            
+            // Sort alphabetically by label
+            return getLabelText(a).localeCompare(getLabelText(b));
+        });
+
+        // Re-append items in the new order (without clearing innerHTML to preserve event listeners)
+        prefixItems.forEach(item => listEl.appendChild(item));
+        if (hrItem) {
+            listEl.appendChild(hrItem);
+        }
+        itemsToSort.forEach(item => listEl.appendChild(item));
+    };
+
     window.toggleCustomDropdown = function (menuId, event) {
         if (event) event.stopPropagation();
         
@@ -299,6 +355,16 @@
             if (menu.style.display === "none") {
                 menu.style.display = "block";
                 if (dropdown) dropdown.classList.add("open");
+                
+                // Sort when opened
+                if (menuId === "settingDropdownMenu") sortDropdownList("settingOptionsList");
+                else if (menuId === "wSettingDropdownMenu") sortDropdownList("wSettingOptionsList");
+                else if (menuId === "rpSettingDropdownMenu") sortDropdownList("rpSettingOptionsList");
+                else if (menuId === "toneDropdownMenu") sortDropdownList("toneOptionsList");
+                else if (menuId === "wToneDropdownMenu") sortDropdownList("wToneOptionsList");
+                else if (menuId === "rpToneDropdownMenu") sortDropdownList("rpToneOptionsList");
+                else if (menuId === "archetypeDropdownMenu") sortDropdownList("archetypeOptionsList");
+                else if (menuId === "dynamicDropdownMenu") sortDropdownList("dynamicOptionsList");
             } else {
                 menu.style.display = "none";
                 if (dropdown) dropdown.classList.remove("open");
@@ -1056,6 +1122,14 @@
         loadDynamics();
         loadPerspective();
         initCustomLengthDropdowns();
+        
+        // Sort custom dropdowns under Core identity & Parameters
+        if (typeof sortDropdownList === "function") {
+            sortDropdownList("settingOptionsList");
+            sortDropdownList("toneOptionsList");
+            sortDropdownList("archetypeOptionsList");
+            sortDropdownList("dynamicOptionsList");
+        }
     }, 20);
 
     window.setAccentTheme = function (themeName) {

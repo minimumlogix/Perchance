@@ -1099,6 +1099,10 @@
         initCustomRoleplaySettingDropdown();
         initCustomRoleplayToneDropdown();
         loadRoleplayTones();
+        if (typeof window.sortDropdownList === "function") {
+            window.sortDropdownList("rpSettingOptionsList");
+            window.sortDropdownList("rpToneOptionsList");
+        }
 
         // Restore dynamic NPC list
         window.renderNPCGrid();
