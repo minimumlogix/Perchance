@@ -86,6 +86,81 @@
 
     /* ── MOBILE LAYOUT (320px - 768px) ── */
     @media (max-width: 768px) {
+        /* 1. Container: Transform the vertical sidebar into a single premium top row */
+        .sidebar, 
+        .sidebar-nav,
+        .tab-container { /* Replace with your actual sidebar container class */
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center;
+            justify-content: space-between;
+            width: 100% !important;
+            height: 60px !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background-color: #1a1a1a; /* Match your app's theme background */
+            padding: 0 16px;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 2. Items Base State: Universal sizing for all tabs in the row */
+        .sidebar-item,
+        .tab-item { /* Replace with your actual tab item class */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            color: #888888;
+            margin: 0 4px;
+            flex: 1; /* Distribute space evenly */
+            max-width: 60px; /* Default constraint for icon-only mode */
+        }
+
+        /* Hide textual names by default for all tabs on mobile */
+        .sidebar-item .tab-text,
+        .tab-item span { /* Adjust selector to match your HTML text node structure */
+            display: none;
+            opacity: 0;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 8px;
+            transition: opacity 0.2s ease;
+        }
+
+        /* 3. Icons: Maintain sharp, centralized alignment */
+        .sidebar-item i,
+        .tab-item .icon {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 4. Active State: Expand the single selected item to reveal text */
+        .sidebar-item.active,
+        .tab-item.active { /* Replace '.active' with your system's active class */
+            flex: 2; /* Allow active element to take more space to fit text */
+            max-width: 160px; /* Let it grow safely */
+            background-color: rgba(255, 255, 255, 0.12); /* Premium pill background highlight */
+            color: #ffffff; /* Brighten text/icon */
+            padding: 0 16px;
+        }
+
+        /* Display the text ONLY for the active item */
+        .sidebar-item.active .tab-text,
+        .tab-item.active span {
+            display: inline-block;
+            opacity: 1;
+        }
         /* ── CORE IDENTITY PANEL MOBILE OPTIMIZATION ── */
         #coreIdentityPanelEl .panel-body {
             padding: 1rem;
