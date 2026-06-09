@@ -3334,22 +3334,22 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
         let listHtml = "";
         if (saved.length === 0) {
-            listHtml = q ? '<p style="opacity:0.5; font-size:82%; text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">No matching characters found.</p>'
-                        : '<p style="opacity:0.5; font-size:85%; text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">No saved characters yet.</p>';
+            listHtml = q ? '<div class="sidebar-empty-state"><i class="bi bi-people"></i>No matching characters found.</div>'
+                        : '<div class="sidebar-empty-state"><i class="bi bi-people"></i>No saved characters yet.</div>';
         } else {
             for (let c of saved) {
-                let card = '<div style="display:flex; flex-direction:column; gap:0.4rem; padding:0.6rem; border:1px solid var(--panel-border); border-radius:8px; background:var(--panel-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">';
+                let card = '<div class="sidebar-char-card">';
                 let cardImgUrl = c.selectedAvatarUrl || c.imageDataUrl || "";
-                if (cardImgUrl) { card += '<img data-src="' + cardImgUrl + '" src="" style="width:100%; border-radius:6px; object-fit:cover; max-height:180px;">'; } else { card += '<div style="width:100%; height:80px; border-radius:6px; background:var(--input-bg); display:flex; align-items:center; justify-content:center; font-size:200%; opacity:0.3; color:var(--text-main);"><i class="bi bi-person-fill"></i></div>'; }
-                card += '<div style="display:flex; align-items:center; gap:0.45rem;">';
-                card += '<input type="checkbox" id="ref-' + c.id + '" style="cursor:pointer; accent-color:var(--accent-color);">';
-                card += '<label for="ref-' + c.id + '" ondblclick="renameSavedCharacter(\'' + c.id + '\', this)" style="font-weight:bold; font-size:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer; flex:1; color:var(--text-main);" title="Double-click to rename">' + c.name + '</label>';
+                if (cardImgUrl) { card += '<img data-src="' + cardImgUrl + '" src="" class="sidebar-char-img">'; } else { card += '<div class="sidebar-char-img-placeholder"><i class="bi bi-person-fill"></i></div>'; }
+                card += '<div class="sidebar-char-header">';
+                card += '<input type="checkbox" id="ref-' + c.id + '" class="sidebar-char-checkbox">';
+                card += '<label for="ref-' + c.id + '" ondblclick="renameSavedCharacter(\'' + c.id + '\', this)" class="sidebar-char-name" title="Double-click to rename">' + c.name + '</label>';
                 card += '</div>';
-                card += '<div style="display:flex; gap:0.25rem;">';
-                card += '<button onclick="loadCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Load character"><i class="bi bi-folder-open"></i> load</button>';
-                card += '<button onclick="updateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:1.1; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Update slot with screen edits"><i class="bi bi-floppy"></i> update</button>';
-                card += '<button onclick="duplicateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm" style="flex:0.8; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center; gap:0.15rem;" title="Duplicate"><i class="bi bi-copy"></i> dupe</button>';
-                card += '<button onclick="deleteCharacter(\'' + c.id + '\')" class="btn btn-danger btn-sm" style="flex:0.5; font-size:72%; padding:0.25rem 0.35rem; display:inline-flex; align-items:center; justify-content:center;" title="Delete"><i class="bi bi-trash"></i></button>';
+                card += '<div class="sidebar-char-actions">';
+                card += '<button onclick="loadCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm sidebar-char-btn-load" title="Load character"><i class="bi bi-folder-open"></i> load</button>';
+                card += '<button onclick="updateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm sidebar-char-btn-update" title="Update slot with screen edits"><i class="bi bi-floppy"></i> update</button>';
+                card += '<button onclick="duplicateCharacter(\'' + c.id + '\')" class="btn btn-secondary btn-sm sidebar-char-btn-dupe" title="Duplicate"><i class="bi bi-copy"></i> dupe</button>';
+                card += '<button onclick="deleteCharacter(\'' + c.id + '\')" class="btn btn-danger btn-sm sidebar-char-btn-delete" title="Delete"><i class="bi bi-trash"></i></button>';
                 card += '</div></div>';
                 listHtml += card;
             }

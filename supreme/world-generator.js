@@ -851,7 +851,7 @@
         let filtered = saved.filter(w => w.name.toLowerCase().includes(query));
 
         if (filtered.length === 0) {
-            listEl.innerHTML = `<div style="padding:1.5rem; text-align:center; opacity:0.5; font-size:80%;"><i class="bi bi-globe" style="font-size:1.5rem; display:block; margin-bottom:0.25rem;"></i>No saved worlds found.</div>`;
+            listEl.innerHTML = `<div class="sidebar-empty-state"><i class="bi bi-globe"></i>No saved worlds found.</div>`;
             return;
         }
 
@@ -861,18 +861,18 @@
             let settingLabel = w.setting ? w.setting.replace(/_/g, " ") : "Any Setting";
 
             return `
-                <div class="sidebar-save-item${isActive}" onclick="loadWorld(${w.id})" style="display:flex; flex-direction:column; padding:0.5rem; border-radius:8px; border:1px solid var(--panel-border); background:rgba(0,0,0,0.15); cursor:pointer; position:relative; overflow:hidden; gap:0.2rem; transition:border-color 0.2s;">
-                    <div style="height:45px; width:100%; border-radius:4px; position:relative; ${cardBg} margin-bottom:0.2rem;">
-                        <div style="position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);"></div>
+                <div class="sidebar-save-item${isActive}" onclick="loadWorld(${w.id})">
+                    <div class="sidebar-save-banner" style="${cardBg}">
+                        <div class="sidebar-save-banner-overlay"></div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; z-index:1; gap:0.3rem;">
-                        <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" style="font-size:82%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; flex:1;" title="Double-click to rename">${w.name}</b>
-                        <div style="display:flex; gap:0.25rem;" onclick="event.stopPropagation()">
-                            <button class="btn btn-ghost btn-sm" onclick="duplicateWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%;" title="Duplicate"><i class="bi bi-copy"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteWorld(${w.id})" style="padding:0.1rem 0.25rem; font-size:70%;" title="Delete"><i class="bi bi-trash"></i></button>
+                    <div class="sidebar-save-header">
+                        <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" title="Double-click to rename">${w.name}</b>
+                        <div class="sidebar-save-actions" onclick="event.stopPropagation()">
+                            <button class="btn btn-ghost btn-sm sidebar-save-action-btn" onclick="duplicateWorld(${w.id})" title="Duplicate"><i class="bi bi-copy"></i></button>
+                            <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorld(${w.id})" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
-                    <span style="font-size:70%; color:var(--text-muted); z-index:1;">Setting: ${settingLabel}</span>
+                    <span class="sidebar-save-meta">Setting: ${settingLabel}</span>
                 </div>
             `;
         }).join("");
