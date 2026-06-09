@@ -395,18 +395,17 @@
                                 <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                                     <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:180px;">
                                         <label
-                                            style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;">🌍
+                                            style="font-size:95%; font-weight:700; color:var(--accent-color); white-space:nowrap; flex-shrink:0;">🌍
                                             World Name</label>
-                                        <input type="text" id="worldNameEl" class="detail-input" style="flex:1;"
+                                        <input type="text" id="worldNameEl" class="detail-input" style="flex:1; font-size:1rem; font-weight:500;"
                                             placeholder="leave blank to auto-generate"
                                             oninput="localStorage.worldName=this.value">
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:180px;">
-                                        <label
-                                            style="font-size:82%; font-weight:600; color:var(--accent-color); white-space:nowrap; flex-shrink:0;"><i
-                                                class="bi bi-download"></i> Load World</label>
                                         <select id="charWorldImportSelector"
                                             onchange="loadSavedWorldIntoCharGen(this.value)" class="select-input length-select"
+                                            aria-label="Load World"
+                                            data-dropdown-icon="bi bi-download"
                                             style="flex:1; height:28px; cursor: pointer;">
                                             <option value="">-- Load Saved World --</option>
                                         </select>
@@ -2367,7 +2366,7 @@
   box-shadow:-4px 0 16px rgba(0,0,0,0.15);
 ">
     <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="btn btn-secondary"
-        style="position:absolute; top:0.5rem; left:0; transform:translateX(-100%); border-radius:8px 0 0 8px; border-right:none; padding:0.4rem 0.7rem; font-size:85%; white-space:nowrap; z-index:1001; display:flex; align-items:center; gap:0.3rem; background:var(--sidebar-bg); color:var(--text-main); box-shadow:-4px 0 12px rgba(0,0,0,0.15);">
+        style="position:fixed; top:0.75rem; right:0.5rem; left:auto; border-radius:8px; border-right:none; padding:0.4rem 0.7rem; font-size:85%; white-space:nowrap; z-index:1101; display:flex; align-items:center; gap:0.3rem; background:var(--sidebar-bg); color:var(--text-main); box-shadow:-4px 0 12px rgba(0,0,0,0.15);">
         <i class="bi bi-floppy"></i> saved <span id="savedCountBadgeEl"
             style="display:none; background:var(--accent-color); color:white; border-radius:10px; padding:0 5px; font-size:90%; margin-left:2px;"></span>
     </button>

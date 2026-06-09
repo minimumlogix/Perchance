@@ -1032,6 +1032,15 @@
             valSpan.className = "dropdown-value";
             valSpan.style.marginRight = "0.25rem";
             
+            let iconClass = selectEl.dataset.dropdownIcon;
+            if (iconClass) {
+                let iconEl = document.createElement("i");
+                iconEl.className = iconClass;
+                iconEl.style.marginRight = "0.4rem";
+                iconEl.style.flexShrink = "0";
+                trigger.appendChild(iconEl);
+            }
+
             let activeOption = selectEl.options[selectEl.selectedIndex];
             valSpan.textContent = activeOption ? activeOption.text : selectEl.value;
             trigger.appendChild(valSpan);
