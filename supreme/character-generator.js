@@ -1052,12 +1052,25 @@
         if (d.ethnicity) detailParts.push("Ethnicity: " + d.ethnicity);
         if (detailParts.length > 0) lines.push(detailParts.join("\n"));
 
-        let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "introScenario", "introStart"];
+        let sections = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"];
         for (let s of sections) {
             if (s === excludeSection) continue;
             let text = getSectionText(s);
             if (text) {
-                let label = s === "appearance" ? "Physical Appearance" : s === "background" ? "Background" : s === "personality" ? "Personality" : s === "beliefs" ? "Beliefs & Morals" : s === "preferences" ? "Preferences" : s === "role" ? "Role" : s === "lore" ? "Lore" : s === "roleplay" ? "Roleplay Examples" : s === "introScenario" ? "Roleplay Intro - Scenario Context" : "Roleplay Intro - Dialogue & Narration";
+                let label = s === "shortDescription" ? "Short Description" 
+                    : s === "abilities" ? "Abilities" 
+                    : s === "relations" ? "Relations" 
+                    : s === "timeline" ? "Timeline" 
+                    : s === "appearance" ? "Physical Appearance" 
+                    : s === "background" ? "Background" 
+                    : s === "personality" ? "Personality" 
+                    : s === "beliefs" ? "Beliefs & Morals" 
+                    : s === "preferences" ? "Preferences" 
+                    : s === "role" ? "Role" 
+                    : s === "lore" ? "Lore" 
+                    : s === "roleplay" ? "Roleplay Examples" 
+                    : s === "introScenario" ? "Roleplay Intro - Scenario Context" 
+                    : "Roleplay Intro - Dialogue & Narration";
                 lines.push("### " + label + ":\n" + text);
             }
         }
@@ -1166,6 +1179,78 @@
     };
 
     window.maybeGenerateDetails = window.generateIdentityDetails;
+
+    window.buildShortDescriptionPrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let settingAndTone = getSettingAndToneContext();
+        let referencedCtx = getReferencedCharactersContext();
+        let p = root.prompts.shortDescription;
+        let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
+        parts.push(p.format.evaluateItem);
+        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+        if (overview) parts.push("\nGeneral character overview: " + overview);
+        if (notes) parts.push("\nSection-specific notes: " + notes);
+        if (referencedCtx) parts.push("\n" + referencedCtx);
+        if (settingAndTone) parts.push("\n" + settingAndTone);
+        parts.push(getBannedFormattingRule());
+        return parts.join("\n\n");
+    };
+
+    window.buildAbilitiesPrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let settingAndTone = getSettingAndToneContext();
+        let referencedCtx = getReferencedCharactersContext();
+        let p = root.prompts.abilities;
+        let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
+        parts.push(p.format.evaluateItem);
+        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+        if (overview) parts.push("\nGeneral character overview: " + overview);
+        if (notes) parts.push("\nSection-specific notes: " + notes);
+        if (referencedCtx) parts.push("\n" + referencedCtx);
+        if (settingAndTone) parts.push("\n" + settingAndTone);
+        parts.push(getBannedFormattingRule());
+        return parts.join("\n\n");
+    };
+
+    window.buildRelationsPrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let settingAndTone = getSettingAndToneContext();
+        let referencedCtx = getReferencedCharactersContext();
+        let p = root.prompts.relations;
+        let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
+        parts.push(p.format.evaluateItem);
+        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+        if (overview) parts.push("\nGeneral character overview: " + overview);
+        if (notes) parts.push("\nSection-specific notes: " + notes);
+        if (referencedCtx) parts.push("\n" + referencedCtx);
+        if (settingAndTone) parts.push("\n" + settingAndTone);
+        parts.push(getBannedFormattingRule());
+        return parts.join("\n\n");
+    };
+
+    window.buildTimelinePrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let settingAndTone = getSettingAndToneContext();
+        let referencedCtx = getReferencedCharactersContext();
+        let p = root.prompts.timeline;
+        let parts = [p.instruction.evaluateItem];
+        let lenInstr = getLengthInstruction(lengthVal);
+        if (lenInstr) parts.push(lenInstr);
+        parts.push(p.format.evaluateItem);
+        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+        if (overview) parts.push("\nGeneral character overview: " + overview);
+        if (notes) parts.push("\nSection-specific notes: " + notes);
+        if (referencedCtx) parts.push("\n" + referencedCtx);
+        if (settingAndTone) parts.push("\n" + settingAndTone);
+        parts.push(getBannedFormattingRule());
+        return parts.join("\n\n");
+    };
 
     window.buildRolePrompt = function (context, notes, lengthVal, overview, worldLore) {
         let settingAndTone = getSettingAndToneContext();
@@ -1340,10 +1425,10 @@
         let robustFormatRule = `FORMATTING RULES:
 You MUST strictly follow this structured format for the roleplay examples:
 START_OF_DIALOG
-user: [user's dialogue here]
-<character-name>: [character's dialogue here] *[actions, imperfections, context, etc. You can add imperfections between dialogues in italic or asterisks]*
-user: [user's dialogue here]
-<character-name>: [character's dialogue here] *[actions, imperfections, context, etc.]*
+{{user}}: [user's dialogue here]
+{{char}}: [character's dialogue here] *[actions, imperfections, context, etc. You can add imperfections between dialogues in italic or asterisks]*
+{{user}}: [user's dialogue here]
+{{char}}: [character's dialogue here] *[actions, imperfections, context, etc.]*
 ... up to 10 back to back interactions
 END_OF_DIALOG
 Note: Only add multiple characters if there are any. Write their dialogue in the same way.`;
@@ -1453,7 +1538,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let lengthVal = getEffectiveLengthForSection(section);
         let overview = (document.getElementById("overviewNotesEl") || {}).value || "";
         let worldLore = (document.getElementById("worldLoreEl") || {}).value || "";
-        let allSectionNotes = ["role", "personality", "beliefs", "preferences", "appearance", "background"]
+        let allSectionNotes = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline"]
             .map(s => (document.getElementById(s + "NotesEl") || {}).value || "")
             .filter(Boolean)
             .join("\n");
@@ -1468,24 +1553,32 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
         let context = buildCharacterContext(section);
         let instruction;
+        if (section === "shortDescription") instruction = buildShortDescriptionPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "role") instruction = buildRolePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "personality") instruction = buildPersonalityPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "beliefs") instruction = buildBeliefsPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "preferences") instruction = buildPreferencesPrompt(context, notes, lengthVal, overview, worldLore);
+        if (section === "abilities") instruction = buildAbilitiesPrompt(context, notes, lengthVal, overview, worldLore);
+        if (section === "relations") instruction = buildRelationsPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "appearance") instruction = buildAppearancePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "background") instruction = buildBackgroundPrompt(context, notes, lengthVal, overview, worldLore);
+        if (section === "timeline") instruction = buildTimelinePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "lore") instruction = buildLorePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "roleplay") instruction = buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "introScenario") instruction = buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
         if (section === "introStart") instruction = buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
 
         let premiumLabel = {
+            shortDescription: "Composing short description",
             appearance: "Designing physical appearance",
             role: "Weaving narrative role",
             personality: "Developing personality traits",
             beliefs: "Structuring beliefs & morals",
             preferences: "Defining character preferences",
+            abilities: "Listing character abilities",
+            relations: "Defining character relations",
             background: "Forging backstory & origins",
+            timeline: "Establishing timeline milestones",
             lore: "Crafting world lore entries",
             roleplay: "Simulating roleplay examples",
             introScenario: "Structuring scenario context",
@@ -1671,7 +1764,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             }
 
             // 4. Generate other sections sequentially
-            for (let section of ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "introScenario", "introStart"]) {
+            for (let section of ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"]) {
                 if (!window.generateAllRunning) break;
                 let success = await generateSection(section);
                 if (!success) break;
@@ -1703,7 +1796,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         setSectionStatus("worldLore", "⛔ Stopped.");
 
         // Stop sections
-        ["appearance", "role", "personality", "beliefs", "preferences", "background", "lore", "roleplay", "introScenario", "introStart"].forEach(s => stopSection(s));
+        ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"].forEach(s => stopSection(s));
         
         let btn = document.getElementById("generateAllBtn");
         let stopBtn = document.getElementById("stopAllBtn");
@@ -2675,12 +2768,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let entry = {
             name: d.name || "Unknown",
             details: d,
+            shortDescriptionText: getSectionText("shortDescription"),
             roleText: getSectionText("role"),
             personalityText: getSectionText("personality"),
             beliefsText: getSectionText("beliefs"),
             preferencesText: getSectionText("preferences"),
+            abilitiesText: getSectionText("abilities"),
+            relationsText: getSectionText("relations"),
             appearanceText: getSectionText("appearance"),
             backgroundText: getSectionText("background"),
+            timelineText: getSectionText("timeline"),
             loreText: getSectionText("lore"),
             roleplayText: getSectionText("roleplay"),
             introScenarioText: getSectionText("introScenario"),
@@ -2739,12 +2836,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             detailEthnicityEl.value = h.details.ethnicity || "";
             saveDetails();
         }
+        if (h.shortDescriptionText) setSectionOutput("shortDescription", formatSectionText(h.shortDescriptionText));
         if (h.roleText) setSectionOutput("role", formatSectionText(h.roleText));
         if (h.personalityText) setSectionOutput("personality", formatSectionText(h.personalityText));
         if (h.beliefsText) setSectionOutput("beliefs", formatSectionText(h.beliefsText));
         if (h.preferencesText) setSectionOutput("preferences", formatSectionText(h.preferencesText));
+        if (h.abilitiesText) setSectionOutput("abilities", formatSectionText(h.abilitiesText));
+        if (h.relationsText) setSectionOutput("relations", formatSectionText(h.relationsText));
         if (h.appearanceText) setSectionOutput("appearance", formatSectionText(h.appearanceText));
         if (h.backgroundText) setSectionOutput("background", formatSectionText(h.backgroundText));
+        if (h.timelineText) setSectionOutput("timeline", formatSectionText(h.timelineText));
         if (h.loreText) {
             window.loadLoreToUI(h.loreText);
         } else {
@@ -2809,23 +2910,31 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (d.species) lines.push("Species: " + d.species);
         if (d.ethnicity) lines.push("Ethnicity: " + d.ethnicity);
 
+        let shortDescription = getSectionText("shortDescription");
         let appearance = getSectionText("appearance");
         let role = getSectionText("role");
         let personality = getSectionText("personality");
         let beliefs = getSectionText("beliefs");
         let preferences = getSectionText("preferences");
+        let abilities = getSectionText("abilities");
+        let relations = getSectionText("relations");
         let background = getSectionText("background");
+        let timeline = getSectionText("timeline");
         let lore = getSectionText("lore");
         let roleplay = getSectionText("roleplay");
         let introScenario = getSectionText("introScenario");
         let introStart = getSectionText("introStart");
 
+        if (shortDescription) lines.push("\nShort Description:\n" + shortDescription);
         if (appearance) lines.push("\nAppearance & Attire:\n" + appearance);
         if (role) lines.push("\nRole & Rules:\n" + role);
         if (personality) lines.push("\nPersonality & Behavior:\n" + personality);
         if (beliefs) lines.push("\nBeliefs & Morals:\n" + beliefs);
         if (preferences) lines.push("\nPreferences & Romance:\n" + preferences);
+        if (abilities) lines.push("\nAbilities:\n" + abilities);
+        if (relations) lines.push("\nRelations:\n" + relations);
         if (background) lines.push("\nBackground & Goals:\n" + background);
+        if (timeline) lines.push("\nTimeline:\n" + timeline);
         if (lore) lines.push("\nLore / World Facts:\n" + lore);
         if (roleplay) lines.push("\nRoleplay Examples:\n" + roleplay);
         if (introScenario || introStart) {
@@ -2890,6 +2999,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             name,
             details: d,
             sheetData: window.sheetsState || JSON.parse(localStorage.activeSheetData || "null") || null,
+            shortDescriptionText: getSectionText("shortDescription"),
+            shortDescriptionNotes: (document.getElementById("shortDescriptionNotesEl") || {}).value || "",
             roleText: getSectionText("role"),
             roleNotes: (document.getElementById("roleNotesEl") || {}).value || "",
             personalityText: getSectionText("personality"),
@@ -2898,10 +3009,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             beliefsNotes: (document.getElementById("beliefsNotesEl") || {}).value || "",
             preferencesText: getSectionText("preferences"),
             preferencesNotes: (document.getElementById("preferencesNotesEl") || {}).value || "",
+            abilitiesText: getSectionText("abilities"),
+            abilitiesNotes: (document.getElementById("abilitiesNotesEl") || {}).value || "",
+            relationsText: getSectionText("relations"),
+            relationsNotes: (document.getElementById("relationsNotesEl") || {}).value || "",
             appearanceText: getSectionText("appearance"),
             appearanceNotes: (document.getElementById("appearanceNotesEl") || {}).value || "",
             backgroundText: getSectionText("background"),
             backgroundNotes: (document.getElementById("backgroundNotesEl") || {}).value || "",
+            timelineText: getSectionText("timeline"),
+            timelineNotes: (document.getElementById("timelineNotesEl") || {}).value || "",
             loreText: getSectionText("lore"),
             loreNotes: (document.getElementById("loreNotesEl") || {}).value || "",
             roleplayText: getSectionText("roleplay"),
@@ -3022,7 +3139,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 saveDetails();
                 // Restore outputs and notes for all sections
                 window.characterSections = {};
-                let sections = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay"];
+                let sections = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay"];
                 sections.forEach(s => {
                     let textKey = s + "Text";
                     let notesKey = s + "Notes";
@@ -3959,7 +4076,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             "Are you sure you want to clear all sections and details from the screen? This cannot be undone.",
             'warnOnClear',
             () => {
-                ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay", "introScenario", "introStart"].forEach(s => clearSection(s));
+                ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"].forEach(s => clearSection(s));
                 let introNotesEl = document.getElementById("introNotesEl");
                 if (introNotesEl) {
                     introNotesEl.value = "";
@@ -4036,6 +4153,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     name,
                     details: d,
                     sheetData: window.sheetsState || JSON.parse(localStorage.activeSheetData || "null") || null,
+                    shortDescriptionText: getSectionText("shortDescription"),
+                    shortDescriptionNotes: (document.getElementById("shortDescriptionNotesEl") || {}).value || "",
                     roleText: getSectionText("role"),
                     roleNotes: (document.getElementById("roleNotesEl") || {}).value || "",
                     personalityText: getSectionText("personality"),
@@ -4044,10 +4163,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                     beliefsNotes: (document.getElementById("beliefsNotesEl") || {}).value || "",
                     preferencesText: getSectionText("preferences"),
                     preferencesNotes: (document.getElementById("preferencesNotesEl") || {}).value || "",
+                    abilitiesText: getSectionText("abilities"),
+                    abilitiesNotes: (document.getElementById("abilitiesNotesEl") || {}).value || "",
+                    relationsText: getSectionText("relations"),
+                    relationsNotes: (document.getElementById("relationsNotesEl") || {}).value || "",
                     appearanceText: getSectionText("appearance"),
                     appearanceNotes: (document.getElementById("appearanceNotesEl") || {}).value || "",
                     backgroundText: getSectionText("background"),
                     backgroundNotes: (document.getElementById("backgroundNotesEl") || {}).value || "",
+                    timelineText: getSectionText("timeline"),
+                    timelineNotes: (document.getElementById("timelineNotesEl") || {}).value || "",
                     loreText: getSectionText("lore"),
                     loreNotes: (document.getElementById("loreNotesEl") || {}).value || "",
                     roleplayText: getSectionText("roleplay"),
@@ -4136,20 +4261,24 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         md.push("");
         
         md.push("## 👤 Identity Details");
-        md.push(`- **Age:** ${d.age || "Unknown"}`);
-        md.push(`- **Gender:** ${d.gender || "Unknown"}`);
-        md.push(`- **Orientation:** ${d.orientation || "Unknown"}`);
-        md.push(`- **Species/Race:** ${d.species || d.race || "Unknown"}`);
-        md.push(`- **Ethnicity:** ${d.ethnicity || "Unknown"}`);
+        md.push(`- Age: ${d.age || "Unknown"}`);
+        md.push(`- Gender: ${d.gender || "Unknown"}`);
+        md.push(`- Orientation: ${d.orientation || "Unknown"}`);
+        md.push(`- Species/Race: ${d.species || d.race || "Unknown"}`);
+        md.push(`- Ethnicity: ${d.ethnicity || "Unknown"}`);
         md.push("");
         
         let sections = [
+            { id: "shortDescription", label: "Short Description" },
             { id: "appearance", label: "Appearance" },
             { id: "role", label: "Role" },
             { id: "personality", label: "Personality" },
             { id: "beliefs", label: "Beliefs & Morals" },
             { id: "preferences", label: "Preferences" },
+            { id: "abilities", label: "Abilities" },
+            { id: "relations", label: "Relations" },
             { id: "background", label: "Background" },
+            { id: "timeline", label: "Timeline" },
             { id: "lore", label: "Lore Entries" },
             { id: "roleplay", label: "Roleplay Examples" },
             { id: "introScenario", label: "Roleplay Intro - Scenario Context" },
@@ -4173,7 +4302,6 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         md.push("");
         
         md.push("---");
-        md.push(`*Generated via Supreme Character Description on ${new Date().toLocaleDateString()}*`);
         
         let fullText = md.join("\n");
         let blob = new Blob([fullText], { type: "text/markdown;charset=utf-8;" });
@@ -4196,12 +4324,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         md.push(`# ${name}`);
         md.push("");
         md.push("## Identity Details");
-        md.push(`- **Name:** ${d.name || "Unknown"}`);
-        md.push(`- **Age:** ${d.age || "Unknown"}`);
-        md.push(`- **Gender:** ${d.gender || "Unknown"}`);
-        md.push(`- **Orientation:** ${d.orientation || "Unknown"}`);
-        md.push(`- **Species/Race:** ${d.species || d.race || "Unknown"}`);
-        md.push(`- **Ethnicity:** ${d.ethnicity || "Unknown"}`);
+        md.push(`- Name: ${d.name || "Unknown"}`);
+        md.push(`- Age: ${d.age || "Unknown"}`);
+        md.push(`- Gender: ${d.gender || "Unknown"}`);
+        md.push(`- Orientation: ${d.orientation || "Unknown"}`);
+        md.push(`- Species/Race: ${d.species || d.race || "Unknown"}`);
+        md.push(`- Ethnicity: ${d.ethnicity || "Unknown"}`);
         md.push("");
         let overviewText = (document.getElementById("overviewNotesEl") || {}).value || "";
         if (overviewText.trim()) {
@@ -4210,12 +4338,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             md.push("");
         }
         let sections = [
+            { id: "shortDescription", label: "Short Description" },
             { id: "appearance", label: "Appearance" },
             { id: "role", label: "Role" },
             { id: "personality", label: "Personality" },
             { id: "beliefs", label: "Beliefs & Morals" },
             { id: "preferences", label: "Preferences" },
+            { id: "abilities", label: "Abilities" },
+            { id: "relations", label: "Relations" },
             { id: "background", label: "Background" },
+            { id: "timeline", label: "Timeline" },
             { id: "roleplay", label: "Roleplay Examples" },
             { id: "introScenario", label: "Roleplay Intro - Scenario Context" },
             { id: "introStart", label: "Roleplay Intro - Dialogue & Narration" }
@@ -4227,11 +4359,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let settingValue = typeof settingEl !== 'undefined' ? settingEl.value : "Any";
         let toneValues = getSelectedTones();
         md.push("## Generation Parameters");
-        md.push(`- **Setting:** ${settingValue}`);
-        md.push(`- **Tone:** ${toneValues.length > 0 ? toneValues.join(", ") : "Any"}`);
+        md.push(`- Setting: ${settingValue}`);
+        md.push(`- Tone: ${toneValues.length > 0 ? toneValues.join(", ") : "Any"}`);
         md.push("");
         md.push("---");
-        md.push(`*Generated via Supreme Character Description on ${new Date().toLocaleDateString()}*`);
         let characterMdText = md.join("\n");
 
         // --- Build world.md ---
@@ -4626,6 +4757,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let worldLoreLengthEl = document.getElementById("worldLoreLengthEl");
         if (worldLoreLengthEl) worldLoreLengthEl.value = localStorage.worldLoreLength || worldLoreLengthEl.value || "medium";
 
+        let shortDescriptionLengthEl = document.getElementById("shortDescriptionLengthEl");
+        if (shortDescriptionLengthEl) shortDescriptionLengthEl.value = localStorage.shortDescriptionLength || shortDescriptionLengthEl.value || "medium";
+
+        let shortDescriptionNotesEl = document.getElementById("shortDescriptionNotesEl");
+        if (shortDescriptionNotesEl) shortDescriptionNotesEl.value = localStorage.shortDescriptionNotes || "";
+
         let appearanceLengthEl = document.getElementById("appearanceLengthEl");
         if (appearanceLengthEl) appearanceLengthEl.value = localStorage.appearanceLength || appearanceLengthEl.value || "medium";
 
@@ -4667,11 +4804,29 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let preferencesNotesEl = document.getElementById("preferencesNotesEl");
         if (preferencesNotesEl) preferencesNotesEl.value = localStorage.preferencesNotes || "";
 
+        let abilitiesLengthEl = document.getElementById("abilitiesLengthEl");
+        if (abilitiesLengthEl) abilitiesLengthEl.value = localStorage.abilitiesLength || abilitiesLengthEl.value || "medium";
+
+        let abilitiesNotesEl = document.getElementById("abilitiesNotesEl");
+        if (abilitiesNotesEl) abilitiesNotesEl.value = localStorage.abilitiesNotes || "";
+
+        let relationsLengthEl = document.getElementById("relationsLengthEl");
+        if (relationsLengthEl) relationsLengthEl.value = localStorage.relationsLength || relationsLengthEl.value || "medium";
+
+        let relationsNotesEl = document.getElementById("relationsNotesEl");
+        if (relationsNotesEl) relationsNotesEl.value = localStorage.relationsNotes || "";
+
         let backgroundLengthEl = document.getElementById("backgroundLengthEl");
         if (backgroundLengthEl) backgroundLengthEl.value = localStorage.backgroundLength || backgroundLengthEl.value || "medium";
 
         let backgroundNotesEl = document.getElementById("backgroundNotesEl");
         if (backgroundNotesEl) backgroundNotesEl.value = localStorage.backgroundNotes || "";
+
+        let timelineLengthEl = document.getElementById("timelineLengthEl");
+        if (timelineLengthEl) timelineLengthEl.value = localStorage.timelineLength || timelineLengthEl.value || "medium";
+
+        let timelineNotesEl = document.getElementById("timelineNotesEl");
+        if (timelineNotesEl) timelineNotesEl.value = localStorage.timelineNotes || "";
 
         let loreNotesEl = document.getElementById("loreNotesEl");
         if (loreNotesEl) loreNotesEl.value = localStorage.loreNotes || "";

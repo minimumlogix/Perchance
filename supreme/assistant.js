@@ -28,7 +28,7 @@ function getAssistantContext() {
     let context = "Context:\n";
     // Check if sections have content (from app.js / character-generator.js logic)
     if (typeof getSectionText === "function") {
-        const sections = ["role", "personality", "appearance", "background", "lore"];
+        const sections = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore"];
         sections.forEach(sec => {
             let text = getSectionText(sec);
             if (text && text.trim().length > 0) {

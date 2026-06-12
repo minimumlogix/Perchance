@@ -554,6 +554,47 @@
                     </div>
                 </div>
 
+                <!-- SHORT DESCRIPTION SECTION -->
+                <div class="panel" id="shortDescriptionPanelEl">
+                    <div class="panel-header" onclick="togglePanel('shortDescriptionPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-blockquote-left"></i></div>
+                            <span>Short Description</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="shortDescriptionLengthEl"
+                                    onchange="localStorage.shortDescriptionLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="shortDescriptionGenBtnEl"
+                                    onclick="generateSection('shortDescription')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-danger btn-sm" id="shortDescriptionClearBtnEl"
+                                    onclick="clearSection('shortDescription')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="shortDescriptionNotesEl" class="section-notes"
+                            oninput="localStorage.shortDescriptionNotes=this.value"
+                            placeholder="Notes for short description  -  e.g. former hero, lazy, drinks a lot..."></textarea>
+                        <div id="shortDescriptionStatusEl" class="section-status"></div>
+                        <div id="shortDescriptionOutputEl" class="section-output" contenteditable="false"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="shortDescriptionEditBtnEl" onclick="toggleSectionEdit('shortDescription')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="shortDescriptionCopyBtnEl" onclick="copySectionText('shortDescription')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="shortDescriptionStopBtnEl" onclick="stopSection('shortDescription')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- APPEARANCE SECTION -->
                 <div class="panel" id="appearancePanelEl">
@@ -848,6 +889,90 @@
                     </div>
                 </div>
 
+                <!-- ABILITIES SECTION -->
+                <div class="panel" id="abilitiesPanelEl">
+                    <div class="panel-header" onclick="togglePanel('abilitiesPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-lightning-charge"></i></div>
+                            <span>Abilities</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="abilitiesLengthEl"
+                                    onchange="localStorage.abilitiesLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="abilitiesGenBtnEl"
+                                    onclick="generateSection('abilities')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-danger btn-sm" id="abilitiesClearBtnEl"
+                                    onclick="clearSection('abilities')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="abilitiesNotesEl" class="section-notes"
+                            oninput="localStorage.abilitiesNotes=this.value"
+                            placeholder="Notes for abilities  -  e.g. enhanced strength, impact hammer, sarcasm..."></textarea>
+                        <div id="abilitiesStatusEl" class="section-status"></div>
+                        <div id="abilitiesOutputEl" class="section-output" contenteditable="false"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="abilitiesEditBtnEl" onclick="toggleSectionEdit('abilities')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="abilitiesCopyBtnEl" onclick="copySectionText('abilities')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="abilitiesStopBtnEl" onclick="stopSection('abilities')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RELATIONS SECTION -->
+                <div class="panel" id="relationsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('relationsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-people"></i></div>
+                            <span>Relations</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="relationsLengthEl"
+                                    onchange="localStorage.relationsLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="relationsGenBtnEl"
+                                    onclick="generateSection('relations')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-danger btn-sm" id="relationsClearBtnEl"
+                                    onclick="clearSection('relations')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="relationsNotesEl" class="section-notes"
+                            oninput="localStorage.relationsNotes=this.value"
+                            placeholder="Notes for relations  -  e.g. {{user}} is subject of interest..."></textarea>
+                        <div id="relationsStatusEl" class="section-status"></div>
+                        <div id="relationsOutputEl" class="section-output" contenteditable="false"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="relationsEditBtnEl" onclick="toggleSectionEdit('relations')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="relationsCopyBtnEl" onclick="copySectionText('relations')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="relationsStopBtnEl" onclick="stopSection('relations')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- BACKGROUND SECTION -->
                 <div class="panel" id="backgroundPanelEl">
                     <div class="panel-header" onclick="togglePanel('backgroundPanelEl')">
@@ -885,6 +1010,48 @@
                             <button class="btn btn-secondary btn-sm" id="backgroundEditBtnEl" onclick="toggleSectionEdit('background')"><i class="bi bi-pencil-square"></i> edit</button>
                             <button class="btn btn-secondary btn-sm" id="backgroundCopyBtnEl" onclick="copySectionText('background')"><i class="bi bi-clipboard"></i> copy</button>
                             <button class="btn btn-secondary btn-sm" id="backgroundStopBtnEl" onclick="stopSection('background')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE SECTION -->
+                <div class="panel" id="timelinePanelEl">
+                    <div class="panel-header" onclick="togglePanel('timelinePanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-hourglass-split"></i></div>
+                            <span>Timeline</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="timelineLengthEl"
+                                    onchange="localStorage.timelineLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="timelineGenBtnEl"
+                                    onclick="generateSection('timeline')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-danger btn-sm" id="timelineClearBtnEl"
+                                    onclick="clearSection('timeline')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="timelineNotesEl" class="section-notes"
+                            oninput="localStorage.timelineNotes=this.value"
+                            placeholder="Notes for timeline  -  e.g. joined syndicate at 24, became rogue at 30..."></textarea>
+                        <div id="timelineStatusEl" class="section-status"></div>
+                        <div id="timelineOutputEl" class="section-output" contenteditable="false"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="timelineEditBtnEl" onclick="toggleSectionEdit('timeline')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="timelineCopyBtnEl" onclick="copySectionText('timeline')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="timelineStopBtnEl" onclick="stopSection('timeline')"
                                 style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
                         </div>
                     </div>
