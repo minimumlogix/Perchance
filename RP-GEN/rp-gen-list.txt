@@ -1,0 +1,356 @@
+ai = {import:ai-text-plugin}
+comments = {import:comments-plugin}
+literal = {import:literal-plugin} // <-- we use this to ignore perchance syntax in the user's instruction
+
+$meta
+  title = Roleplay Idea Generator
+  description = Generate genuinely creative and interesting plot/story ideas for roleplays, horror story plots, fantasy romance, plot twist ideas, flash fiction ideas, mystery plots, childrens' book ideas, zombie plot ideas, sci-fi fantasy, and so on. It's creative and smart, and there are no limits/restrictions on daily usage. You don't even need to login! Just give the AI some keywords and/or characters and/or instructions, and it'll will generate a plot/story idea for you. Completely free, fast, smart, no filter, and creative.
+
+settings
+  instruction() =>
+    this.lastModeUsed = currentMode;
+    return modes[currentMode].instruction.toString();
+  startWith() =>
+    if(responseEl.value.trim() === "") {
+      return modes[currentMode].startWith || "";
+    } else {
+      return responseEl.value;
+    }
+  hideStartWith = [ responseEl.value.trim() === "" && modes[currentMode].hideStartWith === true ? true : false ]
+  outputTo = [responseEl]  // this is the 'id' of an element in the HTML editor (bottom-right panel) - notice that there's a <textarea> with id="responseEl"
+  onChunk(data) =>
+    if(responseEl.scrollTop+responseEl.offsetHeight > responseEl.scrollHeight-60) { // if they're already scrolled near the bottom
+      responseEl.scrollTop = responseEl.scrollHeight;
+    }
+    if(modes[this.lastModeUsed].onChunk) modes[this.lastModeUsed].onChunk(data);
+  onStart(data) =>
+    responseDeleteBtn.style.display = '';
+    responseDeleteBtn.dataset.mode = 'delete';
+    generateBtn.disabled = true;
+    continueBtn.disabled = true;
+    bottomContinueBtn.disabled = true;
+    retryBtn.disabled = true;
+    responseCopyBtn.style.display = "";
+    if(modes[this.lastModeUsed].onStart) modes[this.lastModeUsed].onStart(data);
+  onFinish(data) =>
+    generateBtn.disabled = false;
+    generateBtn.textContent = "🔁 regenerate";
+    continueBtn.disabled = false;
+    bottomContinueBtn.disabled = false;
+    retryBtn.disabled = false;
+    loaderEl.innerHTML = "";
+    localStorage.response = responseEl.value;
+    if(modes[this.lastModeUsed].onFinish) modes[this.lastModeUsed].onFinish(data);
+  render = [ modes[currentMode].render || null ]
+  
+
+async generate() =>
+  window.responseContentBeforeLastGenerate = responseEl.value;
+  let pendingObj = ai(settings);
+  stopBtn.style.display = "";
+  bottomStopBtn.style.display = "";
+  function stopClickHandler() {
+    pendingObj.stop();
+    stopBtn.style.display = "none";
+    bottomStopBtn.style.display = "none";
+  };
+  stopBtn.onclick = stopClickHandler;
+  bottomStopBtn.onclick = stopClickHandler;
+  loaderEl.innerHTML = pendingObj.loadingIndicatorHtml;
+  continueBtn.disabled = false;
+  bottomContinueBtn.disabled = false;
+  retryBtn.disabled = false;
+  this.textContent = 'regenerate';
+  let data = await pendingObj.onFinishPromise;
+  stopBtn.style.display = "none";
+  bottomStopBtn.style.display = "none";
+  
+
+
+currentMode = [localStorage.currentMode || modes.selectAll[0].getName]
+multiple = [localStorage.multiple || ""]
+currentSetting = [localStorage.currentSetting || "none"]
+currentTone = [localStorage.currentTone || "none"]
+currentArchetype = [localStorage.currentArchetype || "none"]
+currentDynamics = [localStorage.currentDynamics || "none"]
+currentCharacterCount = [localStorage.currentCharacterCount || "none"]
+currentGender = [localStorage.currentGender || "none"]
+
+defaultInstruction = (None specified. Freeform. Just be creative! Avoid tropes.)
+
+getConstraints() =>
+  let list = [];
+  if (currentSetting !== "none") list.push(`Genre/Setting: ${worldSettings[currentSetting].description}`);
+  if (currentTone !== "none") list.push(`Tone: ${tones[currentTone].description}`);
+  if (currentArchetype !== "none") list.push(`Character Archetype: ${archetypes[currentArchetype].description}`);
+  if (currentDynamics !== "none") list.push(`Dynamics: ${dynamics[currentDynamics].description}`);
+  if (currentCharacterCount !== "none") list.push(`Characters: ${characterCounts[currentCharacterCount].description}`);
+  if (currentGender !== "none") list.push(`Main Character Gender: ${genders[currentGender].description}`);
+  let name = userNameEl.value.trim();
+  if (name !== "") {
+    list.push(`Include a character named "${literal(name)}" as the protagonist/main character.`);
+  }
+  if (list.length > 0) {
+    return "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
+  }
+  return "";
+
+modes
+  creative
+    label = 📜 Creative
+    instruction
+      Your task is to write [multiple?"several":"one"] plot/story idea[multiple?"s":""] for the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Your response should be engaging, authentic, descriptive and creative.[multiple?" Provide several different ideas.":" Write an engaging and interesting plot / story outline."]
+      $output = [this.joinItems("\n")]
+  childrens_book
+    label = 🎈 Children's Book
+    instruction
+      Your task is to write [multiple?"several":"one"] children's story book outline[multiple?"s":""]/idea[multiple?"s":""] based on the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Since it's a children's story book, you can suggest potential visual elements that could accompany the story.
+      $output = [this.joinItems("\n")]
+  world_building
+    label = 🗺️ World Building
+    instruction
+      Write [multiple?"some":"a"] world building idea[multiple?"s":""]/concept[multiple?"s":""] based on the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Follow the above instruction to generate the world building idea[multiple?"s":""] for a story, tying in your idea[multiple?"s":""] with possible story plot points if relevant.
+      $output = [this.joinItems("\n")]
+  roleplay_ideas
+    label = 🎭 Roleplay Ideas
+    instruction
+      Write [multiple?"some":"a"] roleplay/story idea[multiple?"s":""] (including main plot points) based on the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Follow the above instruction to generate [multiple?"the":"an"] interesting/fun/engaging roleplay idea[multiple?"s":""] for a story. You can specify plot points, opening/starter scenes, character, and any other aspects that would be useful for someone who is trying to come up with fun/engaging ideas for a roleplay.
+      $output = [this.joinItems("\n")]
+  conflict_ideas
+    label = 💥 Conflict Ideas
+    instruction
+      Write [multiple?"":"an "]idea[multiple?"s":""] for the conflict of a story, based on the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Follow the above instruction/idea to generate interesting/creative [multiple?"":"an "]idea[multiple?"s":""] for a story's conflict. Focus on aspects that would be useful for someone who is trying to come up with interesting ideas for the conflict in the story that they're writing.
+      $output = [this.joinItems("\n")]
+  rpg
+    label = 🎮 RPG / Quest
+    instruction
+      Your task is to write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      \n
+      Write a detailed and engaging RPG quest/adventure setup. Include:
+      - Quest Title & Premise
+      - Core Objectives
+      - Key NPCs and their motivations
+      - Notable Encounters/Challenges
+      - Possible rewards or outcomes
+      $output = [this.joinItems("\n")]
+  freeform
+    label = ✍️ Freeform
+    instruction
+      Your task is to help with story/plot writing based on this instruction:
+      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      [getConstraints()]
+      $output = [this.joinItems("\n")]
+
+worldSettings
+  none
+    label = 🌍 Any / Default Setting
+    description = Any setting / genre
+  fantasy
+    label = 🏰 Fantasy
+    description = fantasy
+  scifi
+    label = 🛸 Sci-Fi
+    description = sci-fi
+  horror
+    label = 😱 Horror
+    description = horror
+  romance
+    label = 🌹 Romance
+    description = romance
+  adventure
+    label = 🏞️ Adventure
+    description = adventure
+  slice_of_life
+    label = 🍰 Slice of Life
+    description = slice of life
+  isekai
+    label = 🧙‍♂️ Isekai
+    description = isekai
+  cyberpunk
+    label = 🦾 Cyberpunk
+    description = cyberpunk
+  post_apocalyptic
+    label = ☢️ Post-Apocalyptic
+    description = post-apocalyptic
+  steampunk
+    label = ⚙️ Steampunk
+    description = steampunk
+  historical
+    label = 📜 Historical
+    description = historical
+  modern
+    label = 🏙️ Modern
+    description = modern
+  grimdark
+    label = 💀 Grimdark
+    description = grimdark
+
+tones
+  none
+    label = 🎭 Any / Default Tone
+    description = Any tone
+  serious
+    label = 😐 Serious
+    description = serious
+  humorous
+    label = 😂 Humorous / Funny
+    description = humorous and funny
+  dark
+    label = 💀 Dark / Gritty
+    description = dark and gritty
+  lighthearted
+    label = ☀️ Lighthearted / Whimsical
+    description = lighthearted and whimsical
+  mysterious
+    label = 🕵️‍♂️ Mysterious / Suspenseful
+    description = mysterious and suspenseful
+  romantic
+    label = 💖 Romantic
+    description = romantic
+  dramatic
+    label = 🎭 Dramatic / Angsty
+    description = dramatic and angsty
+  action_packed
+    label = 💥 Action-Packed
+    description = action-packed
+  melancholic
+    label = 😢 Melancholic / Sad
+    description = melancholic and sad
+
+archetypes
+  none
+    label = 👤 Any / Default Archetype
+    description = Any archetype
+  hero
+    label = 🛡️ Hero / Chosen One
+    description = The Hero / Chosen One
+  antihero
+    label = 🧥 Anti-Hero
+    description = The Anti-Hero
+  villain
+    label = 😈 Villain / Antagonist
+    description = The Villain / Antagonist
+  mentor
+    label = 🧙‍♂️ Mentor
+    description = The Mentor
+  sidekick
+    label = 🤝 Sidekick / Companion
+    description = The Sidekick / Companion
+  rogue
+    label = 🗡️ Rogue / Thief
+    description = The Rogue / Thief
+  scholar
+    label = 📖 Scholar / Mage
+    description = The Scholar / Mage
+  underdog
+    label = 🐕 Underdog
+    description = The Underdog
+  trickster
+    label = 🃏 Trickster
+    description = The Trickster
+  reluctant_hero
+    label = 🚪 Reluctant Hero
+    description = The Reluctant Hero
+
+dynamics
+  none
+    label = 🔗 Any / Default Dynamics
+    description = Any dynamics
+  enemies_to_lovers
+    label = ⚔️❤️ Enemies to Lovers
+    description = Enemies to Lovers
+  friends_to_lovers
+    label = 🤝❤️ Friends to Lovers
+    description = Friends to Lovers
+  rivals
+    label = ⚡ Rivals
+    description = Rivals / Competitors
+  mentor_mentee
+    label = 🎓 Mentor & Mentee
+    description = Mentor & Mentee
+  found_family
+    label = 🏠 Found Family
+    description = Found Family
+  betrayal
+    label = 🗡️💔 Betrayal
+    description = Betrayal / Backstabbing
+  star_crossed_lovers
+    label = 🌌 Star-crossed Lovers
+    description = Star-crossed Lovers
+  forced_partnership
+    label = 🔒 Forced Partnership
+    description = Forced Partnership
+  siblings_conflict
+    label = 👥 Sibling/Family Conflict
+    description = Sibling or Family Conflict
+  protector_ward
+    label = 🛡️👶 Protector & Ward
+    description = Protector & Ward
+
+characterCounts
+  none
+    label = 👥 Any / Default Characters
+    description = Any character count
+  single
+    label = 👤 Single Character
+    description = a single character
+  multiple
+    label = 👥 Multiple Characters
+    description = multiple characters
+
+genders
+  none
+    label = ⚥ Any / Default Gender
+    description = Any gender
+  male
+    label = ♂️ Male
+    description = male
+  female
+    label = ♀️ Female
+    description = female
+  nonbinary
+    label = ⚧️ Non-Binary
+    description = non-binary
+
+generateModesHtml() =>
+  return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");
+
+generateSettingsHtml() =>
+  return worldSettings.selectAll.map(s => `<option ${localStorage.currentSetting === s.getName ? "selected" : ""} value="${s.getName}">${s.label}</option>`).join("");
+
+generateTonesHtml() =>
+  return tones.selectAll.map(t => `<option ${localStorage.currentTone === t.getName ? "selected" : ""} value="${t.getName}">${t.label}</option>`).join("");
+
+generateArchetypesHtml() =>
+  return archetypes.selectAll.map(a => `<option ${localStorage.currentArchetype === a.getName ? "selected" : ""} value="${a.getName}">${a.label}</option>`).join("");
+
+generateDynamicsHtml() =>
+  return dynamics.selectAll.map(d => `<option ${localStorage.currentDynamics === d.getName ? "selected" : ""} value="${d.getName}">${d.label}</option>`).join("");
+
+generateCharacterCountsHtml() =>
+  return characterCounts.selectAll.map(c => `<option ${localStorage.currentCharacterCount === c.getName ? "selected" : ""} value="${c.getName}">${c.label}</option>`).join("");
+
+generateGendersHtml() =>
+  return genders.selectAll.map(g => `<option ${localStorage.currentGender === g.getName ? "selected" : ""} value="${g.getName}">${g.label}</option>`).join("");
