@@ -1,6 +1,6 @@
-<h1 style="margin-bottom:0.5rem;">AI Plot Generator</h1> 
+﻿<h1 style="margin-bottom:0.5rem;">AI Plot Generator</h1> 
 <div style="width:98%; width:calc(100% - 0.5rem); max-width:700px; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center; gap: 0.5rem;">
-  <div>— Settings —</div> 
+  <div>â€” Settings â€”</div> 
   <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.5rem 1rem; width:100%;">
     <div style="display:flex; flex-direction:column; align-items:center;">
       <span style="font-size:75%; opacity:0.8;">Mode</span>
@@ -11,8 +11,8 @@
     <div style="display:flex; flex-direction:column; align-items:center;">
       <span style="font-size:75%; opacity:0.8;">Ideas</span>
       <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;" style="text-align:left;">
-        <option value="">1️⃣ one idea</option>
-        <option value=".">🔢 multiple ideas</option>
+        <option value="">1ï¸âƒ£ one idea</option>
+        <option value=".">ðŸ”¢ multiple ideas</option>
       </select>
       <script>multipleEl.value=localStorage.multiple||"";</script>
     </div>
@@ -61,22 +61,31 @@
 
   <!-- Shared Dropdown Drawer -->
   <div class="custom-dropdown-drawer" id="customDropdownDrawer">
+    <div class="custom-dropdown-search-wrapper" id="customDropdownSearchWrapper">
+      <span class="search-icon">ðŸ”</span>
+      <input type="text" id="customDropdownSearchInput" placeholder="Search options..." oninput="filterDrawerCards(this.value)">
+      <button id="customDropdownSearchClear" onclick="clearDrawerSearch()">âœ•</button>
+    </div>
     <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
+    <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
+      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearMultiSelect()">âœ• Clear</button>
+      <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()">âœ“ Done</button>
+    </div>
   </div>
 
   <div id="modeDescriptionEl" style="font-size:75%; opacity:0.6; max-width:500px; margin:0 auto; padding-top:0.25rem; text-align:center;"></div>
   <script>modeDescriptionEl.textContent = modes[currentMode].description || '';</script>
 
-  <div style="margin-top:1rem;">— Instruction —</div>
+  <div style="margin-top:1rem;">â€” Instruction â€”</div>
   <div style="width:100%; position:relative; min-width:max-content;"> 
-    <textarea id="instructionEl" data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc." placeholder="" style="width:100%; height:120px; max-width:97vw; padding-top:0.25rem; ;" oninput="if(this.value.trim()=='') { instructionDeleteBtn.style.display='none'; } else { instructionDeleteBtn.style.display=''; }; localStorage.instruction=this.value; generateBtn.textContent='✨ generate'; window.deletedInstruction=''; instructionDeleteBtn.dataset.mode='delete'; "></textarea>
+    <textarea id="instructionEl" data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc." placeholder="" style="width:100%; height:120px; max-width:97vw; padding-top:0.25rem; ;" oninput="if(this.value.trim()=='') { instructionDeleteBtn.style.display='none'; } else { instructionDeleteBtn.style.display=''; }; localStorage.instruction=this.value; generateBtn.textContent='âœ¨ generate'; window.deletedInstruction=''; instructionDeleteBtn.dataset.mode='delete'; "></textarea>
     <script>if(localStorage.instruction) { instructionEl.value = localStorage.instruction; instructionDeleteBtn.style.display=''; }</script>
     <script>instructionEl.placeholder = modes[currentMode].instructionPlaceholder ?? instructionEl.dataset.defaultPlaceholder;</script>
     <button id="instructionDeleteBtn" data-mode="delete" onclick="if(this.dataset.mode==='delete') { window.deletedInstruction=instructionEl.value; instructionEl.value=''; this.dataset.mode='undo'; } else { instructionEl.value=window.deletedInstruction; this.dataset.mode='delete'; }; localStorage.instruction=instructionEl.value;" style="position:absolute; top:-0.75rem; right:0.5rem; font-size:60%; display:none;"></button>
     <script>if(instructionEl.value.trim()) { instructionDeleteBtn.style.display=''; }</script>
     <style>
-      #instructionDeleteBtn[data-mode='delete']:before { content:'🗑️ delete'; }
-      #instructionDeleteBtn[data-mode='undo']:before { content:'↩️ undo'; }
+      #instructionDeleteBtn[data-mode='delete']:before { content:'ðŸ—‘ï¸ delete'; }
+      #instructionDeleteBtn[data-mode='undo']:before { content:'â†©ï¸ undo'; }
     </style>
   </div>
 </div>
@@ -85,30 +94,30 @@
 <div style="width:98%; width:calc(100% - 0.5rem); max-width:700px; min-width:max-content; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center;">  
   <div style="margin-top:0.5rem;"> 
     <div style="display:inline-block; position:relative;"> 
-      <button id="generateBtn" onclick="responseEl.value = ''; generate();">✨ generate</button>
+      <button id="generateBtn" onclick="responseEl.value = ''; generate();">âœ¨ generate</button>
       <span id="loaderEl" style="position:absolute; right:0; transform:translateX(120%); height:100%; display:inline-flex; align-items:center;"></span>
-      <span style="position:absolute; left:0; bottom:0; transform:translateX(-120%); height:100%; display:inline-flex; align-items:center;"><button id="stopBtn" style="font-size:80%; display:none;">🛑 stop</button></span>
+      <span style="position:absolute; left:0; bottom:0; transform:translateX(-120%); height:100%; display:inline-flex; align-items:center;"><button id="stopBtn" style="font-size:80%; display:none;">ðŸ›‘ stop</button></span>
     </div>
   </div>
   
-  <div id="outputTitleEl" style="margin-top:0.5rem;">— Output —</div>
+  <div id="outputTitleEl" style="margin-top:0.5rem;">â€” Output â€”</div>
   <style>@media only screen and (max-width: 670px) { #outputTitleEl { margin-bottom:1rem; } }</style>
   <div style="width:100%; position:relative;">
-    <textarea id="responseEl" oninput="if(this.value.trim()=='') { continueBtn.disabled=true; bottomContinueBtn.disabled=true; generateBtn.textContent='✨ generate'; responseDeleteBtn.style.display='none'; } else { continueBtn.disabled=false; bottomContinueBtn.disabled=false; generateBtn.textContent='🔁 regenerate'; responseDeleteBtn.style.display=''; }; responseDeleteBtn.dataset.mode='delete'; localStorage.response=this.value; window.deletedResponse=''; retryBtn.disabled=true; " placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above." style="width:100%; max-width:97vw; height:600px; max-height:80vh; padding:0.5rem; padding-bottom:0.75rem;"></textarea>
+    <textarea id="responseEl" oninput="if(this.value.trim()=='') { continueBtn.disabled=true; bottomContinueBtn.disabled=true; generateBtn.textContent='âœ¨ generate'; responseDeleteBtn.style.display='none'; } else { continueBtn.disabled=false; bottomContinueBtn.disabled=false; generateBtn.textContent='ðŸ” regenerate'; responseDeleteBtn.style.display=''; }; responseDeleteBtn.dataset.mode='delete'; localStorage.response=this.value; window.deletedResponse=''; retryBtn.disabled=true; " placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above." style="width:100%; max-width:97vw; height:600px; max-height:80vh; padding:0.5rem; padding-bottom:0.75rem;"></textarea>
     <script>if(localStorage.response) { responseEl.value = localStorage.response; responseDeleteBtn.style.display=''; continueBtn.disabled=false; bottomContinueBtn.disabled=false; }</script>
-    <button id="responseCopyBtn" onclick="navigator.clipboard.writeText(responseEl.value); this.innerText = '✅ copied!'; setTimeout(() => { this.innerText = '📋 copy'; }, 2000);" style="position:absolute; top:-0.75rem; right:0.5rem; font-size:60%; display:none;">📋 copy</button>
+    <button id="responseCopyBtn" onclick="navigator.clipboard.writeText(responseEl.value); this.innerText = 'âœ… copied!'; setTimeout(() => { this.innerText = 'ðŸ“‹ copy'; }, 2000);" style="position:absolute; top:-0.75rem; right:0.5rem; font-size:60%; display:none;">ðŸ“‹ copy</button>
     <div style="position:absolute; top:-0.75rem; left:0.5rem; font-size:60%; min-width:max-content;">
-      <button disabled id="continueBtn" onclick="generate()" style="">▶️ continue</button>
-      <button disabled id="retryBtn" onclick="responseEl.value=window.responseContentBeforeLastGenerate||responseEl.value; generate()" style="">🔁 retry</button>
+      <button disabled id="continueBtn" onclick="generate()" style="">â–¶ï¸ continue</button>
+      <button disabled id="retryBtn" onclick="responseEl.value=window.responseContentBeforeLastGenerate||responseEl.value; generate()" style="">ðŸ” retry</button>
       <button id="responseDeleteBtn" data-mode="delete" onclick="if(this.dataset.mode==='delete') { if(stopBtn.offsetTop) { stopBtn.click(); }; window.deletedResponse=responseEl.value; responseEl.value=''; this.dataset.mode='undo'; } else { responseEl.value=window.deletedResponse; this.dataset.mode='delete'; }; localStorage.response=responseEl.value;" style="margin-left: 1.5rem; display:none;"></button>
       <style>
-        #responseDeleteBtn[data-mode='delete']:before { content:'🗑️ delete'; }
-        #responseDeleteBtn[data-mode='undo']:before { content:'↩️ undo'; }
+        #responseDeleteBtn[data-mode='delete']:before { content:'ðŸ—‘ï¸ delete'; }
+        #responseDeleteBtn[data-mode='undo']:before { content:'â†©ï¸ undo'; }
       </style>
     </div>
     <div style="position:absolute; bottom:-0.5rem; left:0.5rem; font-size:60%; min-width:max-content;">
-      <button disabled id="bottomContinueBtn" onclick="generate()" style="">▶️ continue</button>
-      <button id="bottomStopBtn" style="display:none;">🛑 stop</button>
+      <button disabled id="bottomContinueBtn" onclick="generate()" style="">â–¶ï¸ continue</button>
+      <button id="bottomStopBtn" style="display:none;">ðŸ›‘ stop</button>
     </div>
   </div>
 </div>
@@ -129,7 +138,7 @@
     commentsCtn.innerHTML = ""; // must delete existing comments section first because comments plugin has code which cause it to not output any HTML if that comments section already exists on the page
     let commentsPluginHtml = comments({width:"min(750px, 100%)", height:"min(70vh, 600px)", forceColorScheme:localStorage.forceColorScheme || null});
     commentsCtn.innerHTML = `
-      <p><button onclick="if(commentsEl.style.display == 'none') { commentsEl.style.display=''; this.textContent='hide comments'; } else { commentsEl.style.display='none'; this.textContent='💬 show comments'; }">${startVisible ? "hide comments" : "💬 show comments"}</button></p>
+      <p><button onclick="if(commentsEl.style.display == 'none') { commentsEl.style.display=''; this.textContent='hide comments'; } else { commentsEl.style.display='none'; this.textContent='ðŸ’¬ show comments'; }">${startVisible ? "hide comments" : "ðŸ’¬ show comments"}</button></p>
       <p id="commentsEl" style="${startVisible ? "" : "display:none;"}">
         ${commentsPluginHtml}
       </p>
@@ -140,7 +149,7 @@
 
 <!-- DARK MODE STUFF -->
 <div style="position:fixed; bottom:0.5rem; left:0.5rem; z-index:10;">
-  <button id="darkModeBtn" style="cursor:pointer;" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();">🌃</button>
+  <button id="darkModeBtn" style="cursor:pointer;" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();">ðŸŒƒ</button>
 </div>
 <script>
   function toggleManualDarkMode() {
@@ -162,7 +171,7 @@
   }
   function setColorScheme(scheme) {
     if(scheme !== "dark" && scheme !== "light") throw new Error("scheme should be 'light' or 'dark'");
-    document.querySelector("#darkModeBtn").textContent = (scheme === "dark" ? "🌄" : "🌃");
+    document.querySelector("#darkModeBtn").textContent = (scheme === "dark" ? "ðŸŒ„" : "ðŸŒƒ");
     if(scheme === "dark") {
       document.documentElement.style.colorScheme = "dark";
       document.body.style.color = "#d8d4cf";
@@ -188,7 +197,7 @@
 <!-- FEEDBACK STUFF -->
 <div style="position:fixed; bottom:0.5rem; right:0.5rem; text-align:right; z-index:100;">
   <div id="feedbackCommentsCtn"></div>
-  <button id="feedbackBtn893745ykfuhd" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='✖ close'; } else {  feedbackCommentsCtn.innerHTML='';  this.innerHTML='🗨️ feedback'; }">🗨️ feedback</button>
+  <button id="feedbackBtn893745ykfuhd" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='âœ– close'; } else {  feedbackCommentsCtn.innerHTML='';  this.innerHTML='ðŸ—¨ï¸ feedback'; }">ðŸ—¨ï¸ feedback</button>
 </div>
 <script>
   function generateFeedbackCommentsHtml() {
@@ -273,9 +282,9 @@
     height: 0;
     overflow: hidden;
     position: relative;
-    background: rgba(0, 0, 0, 0.08); /* recessed behind-the-site color */
-    box-shadow: inset 0 5px 12px rgba(0, 0, 0, 0.06), inset 0 -5px 12px rgba(0, 0, 0, 0.06);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.04); /* Recessed background */
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.04), inset 0 -4px 8px rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
     margin: 0;
     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), border 0.3s ease;
     perspective: 1000px;
@@ -283,18 +292,32 @@
   }
 
   html[style*="dark"] .custom-dropdown-drawer {
-    background: rgba(0, 0, 0, 0.35);
-    box-shadow: inset 0 5px 12px rgba(0, 0, 0, 0.5), inset 0 -5px 12px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.25);
+    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 -4px 8px rgba(0, 0, 0, 0.3);
   }
 
   .custom-dropdown-drawer.open {
-    height: 98px; /* Fits card height + padding + borders */
-    margin: 0.5rem 0;
+    height: 126px;
+    margin: 0.75rem 0;
     border: 1px solid rgba(128, 128, 128, 0.15);
   }
 
+  /* Multi-select: footer adds ~40px */
+  .custom-dropdown-drawer.open.is-multi {
+    height: 172px;
+  }
+
+  .custom-dropdown-drawer.open.has-search {
+    height: 168px;
+  }
+
+  /* Both search + multi-select footer */
+  .custom-dropdown-drawer.open.has-search.is-multi {
+    height: 214px;
+  }
+
   html[style*="dark"] .custom-dropdown-drawer.open {
-    border-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   /* 3D swing door tray */
@@ -316,6 +339,7 @@
     transform-origin: top center;
     opacity: 0;
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    scroll-snap-type: x mandatory;
   }
 
   .custom-dropdown-drawer.open .custom-dropdown-drawer-content {
@@ -325,161 +349,682 @@
 
   /* Hide scrollbars but keep functionality */
   .custom-dropdown-drawer-content::-webkit-scrollbar {
-    height: 5px;
+    height: 6px;
   }
   .custom-dropdown-drawer-content::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-dropdown-drawer-content::-webkit-scrollbar-thumb {
-    background-color: rgba(128, 128, 128, 0.35);
+    background-color: rgba(128, 128, 128, 0.25);
     border-radius: 10px;
+    transition: background-color 0.2s;
+  }
+  .custom-dropdown-drawer-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(128, 128, 128, 0.45);
   }
 
   /* Horizontal Option Card layout */
   .custom-select-card {
     flex: 0 0 auto; /* Crucial: prevent card shrinking */
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.65);
-    border: 1px solid rgba(128, 128, 128, 0.2);
-    border-radius: 8px;
-    font-size: 82%;
+    width: 240px;
+    height: 86px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(128, 128, 128, 0.18);
+    border-radius: 10px;
     cursor: pointer;
-    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     display: flex;
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 12px;
     color: inherit;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    scroll-snap-align: center;
+    user-select: none;
   }
 
   html[style*="dark"] .custom-select-card {
-    background: rgba(20, 20, 20, 0.6);
-    border-color: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    background: rgba(30, 30, 30, 0.75);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   }
 
   .custom-select-card:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.35);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(59, 130, 246, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
   }
 
   html[style*="dark"] .custom-select-card:hover {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.45);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background: rgba(40, 40, 40, 0.9);
+    border-color: rgba(96, 165, 250, 0.4);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
   }
 
   .custom-select-card:active {
-    transform: translateY(-0.5px);
+    transform: translateY(-0.5px) scale(0.98);
   }
 
   .custom-select-card.selected {
-    background: rgba(59, 130, 246, 0.12);
+    background: rgba(59, 130, 246, 0.06);
     border-color: #3b82f6;
-    font-weight: bold;
-    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2);
+    border-width: 2px;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1);
   }
 
   html[style*="dark"] .custom-select-card.selected {
-    background: rgba(59, 130, 246, 0.25);
+    background: rgba(59, 130, 246, 0.12);
     border-color: #60a5fa;
+    box-shadow: 0 4px 10px rgba(96, 165, 250, 0.2);
+  }
+
+  /* Checkmark for multi-select cards */
+  .card-check {
+    display: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    background: #3b82f6;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  .custom-select-card { position: relative; } /* needed for absolute check */
+
+  .custom-dropdown-drawer.is-multi .custom-select-card.selected .card-check {
+    display: flex;
+  }
+
+  html[style*="dark"] .card-check {
+    background: #60a5fa;
+  }
+
+  /* Badge on trigger showing count */
+  .custom-select-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #3b82f6;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 70%;
+    font-weight: 700;
+    padding: 1px 6px;
+    margin-left: 4px;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+
+  html[style*="dark"] .custom-select-badge {
+    background: #60a5fa;
+    color: #000;
+  }
+
+  /* Thumbnail wrapper */
+  .card-image-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    background: rgba(128, 128, 128, 0.05);
+    border: 1px solid rgba(128, 128, 128, 0.1);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none; /* Shown dynamically on load */
+  }
+
+  .card-image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Card content wrapper */
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    overflow: hidden;
+    text-align: left;
+  }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-description {
+    font-size: 0.72rem;
+    line-height: 1.25;
+    opacity: 0.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  /* Search bar styles inside drawer */
+  .custom-dropdown-search-wrapper {
+    display: none;
+    align-items: center;
+    position: relative;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  html[style*="dark"] .custom-dropdown-search-wrapper {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-dropdown-drawer.open.has-search .custom-dropdown-search-wrapper {
+    display: flex;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 28px;
+    font-size: 85%;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  #customDropdownSearchInput {
+    width: 100%;
+    padding: 6px 12px 6px 32px;
+    background: var(--box-color, #ebebeb);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: 20px;
+    font-size: 85%;
+    font-family: inherit;
+    color: inherit;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #customDropdownSearchInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+
+  html[style*="dark"] #customDropdownSearchInput:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+
+  #customDropdownSearchClear {
+    position: absolute;
+    right: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 85%;
+    opacity: 0.5;
+    padding: 4px;
+    display: none;
+    color: inherit;
+    line-height: 1;
+  }
+
+  #customDropdownSearchClear:hover {
+    opacity: 0.8;
+  }
+
+  /* Drawer footer (Done / Clear) */
+  .custom-dropdown-drawer-footer {
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 6px 14px;
+    border-top: 1px solid rgba(128, 128, 128, 0.1);
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  html[style*="dark"] .custom-dropdown-drawer-footer {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-dropdown-drawer.open.is-multi .custom-dropdown-drawer-footer {
+    display: flex;
+  }
+
+  .drawer-footer-clear {
+    background: none;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 80%;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.75;
+    transition: opacity 0.15s, border-color 0.15s;
+  }
+
+  .drawer-footer-clear:hover {
+    opacity: 1;
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #ef4444;
+  }
+
+  .drawer-footer-done {
+    background: #3b82f6;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 80%;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .drawer-footer-done:hover {
+    background: #2563eb;
+  }
+
+  .drawer-footer-done:active {
+    transform: scale(0.97);
+  }
+
+  html[style*="dark"] .drawer-footer-done {
+    background: #2563eb;
+  }
+
+  html[style*="dark"] .drawer-footer-done:hover {
+    background: #3b82f6;
   }
 </style>
 
 <script>
   let currentActiveSelectEl = null;
+  let currentActiveWrapper = null;
+
+  // Which selects support multi-select
+  const multiSelectIds = new Set(['currentToneEl', 'currentArchetypeEl', 'currentDynamicsEl']);
+
+  // Maps select id -> global variable name for Perchance lists
+  const selectToListNameMap = {
+    'currentModeEl': 'modes',
+    'currentSettingEl': 'worldSettings',
+    'currentToneEl': 'tones',
+    'currentArchetypeEl': 'archetypes',
+    'currentDynamicsEl': 'dynamics',
+    'currentCharacterCountEl': 'characterCounts',
+    'currentGenderEl': 'genders'
+  };
+
+  // Maps select id -> global variable name for multi-select state (in Perchance lists)
+  const multiSelectGlobalMap = {
+    'currentToneEl': 'currentTones',
+    'currentArchetypeEl': 'currentArchetypes',
+    'currentDynamicsEl': 'currentDynamicsList'
+  };
+
+  // Maps select id -> localStorage key for multi-select
+  const multiSelectStorageMap = {
+    'currentToneEl': 'currentTones',
+    'currentArchetypeEl': 'currentArchetypes',
+    'currentDynamicsEl': 'currentDynamicsList'
+  };
+
+  // In-memory multi-select state: { selectId -> Set<value> }
+  const multiSelectState = {};
+
+  // Initialize multi-select state from localStorage
+  function initMultiSelectState() {
+    for (const [id, storageKey] of Object.entries(multiSelectStorageMap)) {
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        multiSelectState[id] = new Set(stored);
+      } catch {
+        multiSelectState[id] = new Set();
+      }
+    }
+  }
+
+  // Persist multi-select state and update global Perchance variable
+  function saveMultiSelectState(selectId) {
+    const storageKey = multiSelectStorageMap[selectId];
+    const globalVar = multiSelectGlobalMap[selectId];
+    if (!storageKey || !globalVar) return;
+    const arr = Array.from(multiSelectState[selectId] || []);
+    localStorage.setItem(storageKey, JSON.stringify(arr));
+    // Update Perchance global variable
+    if (typeof window !== 'undefined') {
+      window[globalVar] = arr;
+    }
+  }
+
+  // Update trigger label + badge for a multi-select
+  function updateMultiSelectLabel(selectEl, wrapper) {
+    const labelSpan = wrapper.querySelector('.custom-select-label');
+    if (!labelSpan) return;
+    const sel = multiSelectState[selectEl.id];
+    if (!sel || sel.size === 0) {
+      // Fallback to the first option text (the "Any" default)
+      labelSpan.textContent = selectEl.options[0] ? selectEl.options[0].textContent : '';
+      // Remove badge if it exists
+      const existingBadge = wrapper.querySelector('.custom-select-badge');
+      if (existingBadge) existingBadge.remove();
+      return;
+    }
+    // Show first selected item text + badge if more
+    const values = Array.from(sel);
+    const firstOpt = Array.from(selectEl.options).find(o => o.value === values[0]);
+    labelSpan.textContent = firstOpt ? firstOpt.textContent : values[0];
+    // Badge
+    let badge = wrapper.querySelector('.custom-select-badge');
+    if (sel.size > 1) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'custom-select-badge';
+        labelSpan.after(badge);
+      }
+      badge.textContent = `+${sel.size - 1}`;
+    } else {
+      if (badge) badge.remove();
+    }
+  }
+
+  const gradients = [
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+    'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+    'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+    'linear-gradient(135deg, #a6c0fe 0%, #f1a7f1 100%)',
+    'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+    'linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%)',
+    'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+    'linear-gradient(135deg, #f857a6 0%, #ff5858 100%)'
+  ];
+
+  function getGradientForString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return gradients[Math.abs(hash) % gradients.length];
+  }
+
+  function extractEmoji(text) {
+    if (!text) return 'âœ¨';
+    try {
+      const match = text.match(/(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u);
+      return match ? match[0] : text.charAt(0);
+    } catch { return text.charAt(0); }
+  }
+
+  window.filterDrawerCards = function(query) {
+    const clearBtn = document.getElementById('customDropdownSearchClear');
+    const scrollBox = document.getElementById('customDropdownDrawerContent');
+    if (!scrollBox) return;
+    query = query.toLowerCase().trim();
+    if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+    scrollBox.querySelectorAll('.custom-select-card').forEach(card => {
+      const title = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
+      const desc  = (card.querySelector('.card-description')?.textContent || '').toLowerCase();
+      card.style.display = (title.includes(query) || desc.includes(query)) ? 'flex' : 'none';
+    });
+  };
+
+  window.clearDrawerSearch = function() {
+    const inp = document.getElementById('customDropdownSearchInput');
+    if (inp) { inp.value = ''; filterDrawerCards(''); inp.focus(); }
+  };
+
+  // Close drawer (Done button)
+  window.closeDrawer = function() {
+    const drawer = document.getElementById('customDropdownDrawer');
+    drawer.classList.remove('open');
+    if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
+    currentActiveSelectEl = null;
+    currentActiveWrapper = null;
+  };
+
+  // Clear multi-select (Clear button)
+  window.clearMultiSelect = function() {
+    if (!currentActiveSelectEl) return;
+    const id = currentActiveSelectEl.id;
+    if (!multiSelectIds.has(id)) return;
+    multiSelectState[id] = new Set();
+    saveMultiSelectState(id);
+    // Reset all card selected states in drawer
+    const scrollBox = document.getElementById('customDropdownDrawerContent');
+    if (scrollBox) {
+      scrollBox.querySelectorAll('.custom-select-card').forEach(c => c.classList.remove('selected'));
+    }
+    updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
+  };
+
+  function buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox) {
+    const card = document.createElement('div');
+    card.dataset.value = opt.value;
+    card.dataset.index = idx;
+
+    // Determine selected state
+    let isSelected = false;
+    if (isMulti) {
+      isSelected = (multiSelectState[selectEl.id] || new Set()).has(opt.value);
+    } else {
+      isSelected = idx === selectEl.selectedIndex;
+    }
+    card.className = 'custom-select-card' + (isSelected ? ' selected' : '');
+
+    // Retrieve image/description from Perchance list object
+    let imageUrl = null, description = '';
+    const listName = selectToListNameMap[selectEl.id];
+    if (listName) {
+      try {
+        const listObj = window[listName];
+        const itemObj = listObj && listObj[opt.value];
+        if (itemObj) {
+          const rawImg = String(itemObj.image ?? '').trim();
+          if (rawImg && rawImg !== 'undefined') imageUrl = rawImg;
+          const rawDesc = String(itemObj.description ?? '').trim();
+          if (rawDesc && rawDesc !== 'undefined') description = rawDesc;
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    // Thumbnail
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'card-image-wrapper';
+    const fallback = document.createElement('div');
+    fallback.className = 'card-image-fallback';
+    fallback.style.background = getGradientForString(opt.textContent);
+    fallback.textContent = extractEmoji(opt.textContent);
+
+    if (imageUrl) {
+      const img = document.createElement('img');
+      img.className = 'card-image';
+      img.alt = opt.textContent;
+      img.src = imageUrl;
+      img.onload  = () => { img.style.display = 'block'; fallback.style.display = 'none'; };
+      img.onerror = () => { img.style.display = 'none';  fallback.style.display = 'flex'; };
+      imgWrapper.appendChild(img);
+      imgWrapper.appendChild(fallback);
+    } else {
+      fallback.style.display = 'flex';
+      imgWrapper.appendChild(fallback);
+    }
+
+    // Content
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'card-content';
+    const title = document.createElement('div');
+    title.className = 'card-title';
+    title.textContent = opt.textContent;
+    contentWrapper.appendChild(title);
+    if (description) {
+      const desc = document.createElement('div');
+      desc.className = 'card-description';
+      desc.textContent = description;
+      contentWrapper.appendChild(desc);
+    }
+
+    // Checkmark (multi-select only)
+    if (isMulti) {
+      const check = document.createElement('div');
+      check.className = 'card-check';
+      check.textContent = 'âœ“';
+      card.appendChild(check);
+    }
+
+    card.appendChild(imgWrapper);
+    card.appendChild(contentWrapper);
+
+    // Click handler
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      if (isMulti) {
+        // Toggle selection
+        const sel = multiSelectState[selectEl.id] || new Set();
+        if (sel.has(opt.value)) {
+          sel.delete(opt.value);
+          card.classList.remove('selected');
+        } else {
+          sel.add(opt.value);
+          card.classList.add('selected');
+        }
+        multiSelectState[selectEl.id] = sel;
+        saveMultiSelectState(selectEl.id);
+        updateMultiSelectLabel(selectEl, wrapper);
+      } else {
+        // Single-select: update select element, fire change, close drawer
+        selectEl.selectedIndex = idx;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof selectEl.onchange === 'function') selectEl.onchange();
+        const labelSpan = wrapper.querySelector('.custom-select-label');
+        if (labelSpan) labelSpan.textContent = opt.textContent;
+        scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+          c.classList.toggle('selected', parseInt(c.dataset.index) === idx);
+        });
+        window.closeDrawer();
+      }
+    });
+
+    return card;
+  }
 
   function toggleSelectDrawer(selectEl, wrapper) {
     const drawer = document.getElementById('customDropdownDrawer');
     const scrollBox = document.getElementById('customDropdownDrawerContent');
-    
+
+    // Toggle off if same select clicked again
     if (currentActiveSelectEl === selectEl && drawer.classList.contains('open')) {
-      drawer.classList.remove('open');
-      wrapper.classList.remove('open');
-      currentActiveSelectEl = null;
+      window.closeDrawer();
       return;
     }
 
-    if (currentActiveSelectEl) {
-      const prevWrapper = document.getElementById('custom-select-' + currentActiveSelectEl.id);
-      if (prevWrapper) prevWrapper.classList.remove('open');
-    }
+    // Close previous
+    if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
 
     currentActiveSelectEl = selectEl;
+    currentActiveWrapper = wrapper;
     wrapper.classList.add('open');
 
+    const isMulti = multiSelectIds.has(selectEl.id);
     const originalOptions = Array.from(selectEl.options);
     const itemsCount = originalOptions.length;
     scrollBox.innerHTML = '';
-    
-    if (itemsCount === 0) {
-      drawer.classList.remove('open');
-      return;
+
+    if (itemsCount === 0) { drawer.classList.remove('open'); return; }
+
+    // Reset search
+    const searchInput = document.getElementById('customDropdownSearchInput');
+    if (searchInput) {
+      searchInput.value = '';
+      const clearBtn = document.getElementById('customDropdownSearchClear');
+      if (clearBtn) clearBtn.style.display = 'none';
     }
 
-    // Clone list 3 times for looping infinite scroll (horizontal)
-    for (let copy = 0; copy < 3; copy++) {
-      originalOptions.forEach((opt, idx) => {
-        const card = document.createElement('div');
-        card.className = 'custom-select-card';
-        card.textContent = opt.textContent;
-        card.dataset.value = opt.value;
-        card.dataset.index = idx;
-        
-        if (idx === selectEl.selectedIndex) {
-          card.classList.add('selected');
-        }
-
-        card.addEventListener('click', (e) => {
-          e.stopPropagation();
-          selectEl.selectedIndex = idx;
-          
-          selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-          if (typeof selectEl.onchange === 'function') {
-            selectEl.onchange();
-          }
-          
-          const labelSpan = wrapper.querySelector('.custom-select-label');
-          if (labelSpan) labelSpan.textContent = opt.textContent;
-          
-          scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
-            if (parseInt(c.dataset.index) === idx) {
-              c.classList.add('selected');
-            } else {
-              c.classList.remove('selected');
-            }
-          });
-
-          drawer.classList.remove('open');
-          wrapper.classList.remove('open');
-          currentActiveSelectEl = null;
-        });
-
-        scrollBox.appendChild(card);
-      });
+    // Apply mode classes
+    const showSearch = itemsCount > 4;
+    const searchWrapper = document.getElementById('customDropdownSearchWrapper');
+    if (showSearch) {
+      drawer.classList.add('has-search');
+      if (searchWrapper) searchWrapper.style.display = 'flex';
+    } else {
+      drawer.classList.remove('has-search');
+      if (searchWrapper) searchWrapper.style.display = 'none';
     }
+
+    if (isMulti) {
+      drawer.classList.add('is-multi');
+    } else {
+      drawer.classList.remove('is-multi');
+    }
+
+    // Build cards
+    originalOptions.forEach((opt, idx) => {
+      scrollBox.appendChild(buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox));
+    });
 
     drawer.classList.add('open');
 
-    function scrollToActive() {
-      const middleStartIndex = itemsCount;
-      const selectedIdx = selectEl.selectedIndex;
-      const targetCard = scrollBox.children[middleStartIndex + selectedIdx];
-      if (targetCard) {
-        scrollBox.scrollLeft = targetCard.offsetLeft - (scrollBox.clientWidth / 2) + (targetCard.clientWidth / 2);
+    // Scroll to active card
+    setTimeout(() => {
+      let targetIdx;
+      if (isMulti) {
+        const sel = multiSelectState[selectEl.id];
+        if (sel && sel.size > 0) {
+          const firstVal = Array.from(sel)[0];
+          targetIdx = originalOptions.findIndex(o => o.value === firstVal);
+        }
+      } else {
+        targetIdx = selectEl.selectedIndex;
       }
-    }
-
-    // Wait for drawer to render to get accurate positioning dimensions
-    setTimeout(scrollToActive, 20);
+      if (targetIdx != null && targetIdx >= 0) {
+        const targetCard = scrollBox.children[targetIdx];
+        if (targetCard) {
+          scrollBox.scrollLeft = targetCard.offsetLeft - (scrollBox.clientWidth / 2) + (targetCard.clientWidth / 2);
+        }
+      }
+    }, 20);
   }
 
   function initializeCustomSelect(selectEl) {
-    if (!selectEl) return;
-    if (selectEl.classList.contains('custom-select-hidden')) return;
+    if (!selectEl || selectEl.classList.contains('custom-select-hidden')) return;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select-wrapper';
@@ -488,14 +1033,12 @@
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = 'custom-select-trigger';
-    
+
     const labelSpan = document.createElement('span');
     labelSpan.className = 'custom-select-label';
-    
     const arrowSpan = document.createElement('span');
     arrowSpan.className = 'custom-select-arrow';
-    arrowSpan.textContent = '▼';
-    
+    arrowSpan.textContent = 'â–¼';
     trigger.appendChild(labelSpan);
     trigger.appendChild(arrowSpan);
 
@@ -504,16 +1047,19 @@
     selectEl.classList.add('custom-select-hidden');
 
     function updateTriggerText() {
-      const selectedOption = selectEl.options[selectEl.selectedIndex];
-      labelSpan.textContent = selectedOption ? selectedOption.textContent : '';
+      if (multiSelectIds.has(selectEl.id)) {
+        updateMultiSelectLabel(selectEl, wrapper);
+      } else {
+        const sel = selectEl.options[selectEl.selectedIndex];
+        labelSpan.textContent = sel ? sel.textContent : '';
+      }
     }
 
     updateTriggerText();
 
-    const observer = new MutationObserver(() => {
-      updateTriggerText();
-    });
-    observer.observe(selectEl, { childList: true, attributes: true, subtree: true });
+    // Keep trigger text in sync if select changes externally
+    new MutationObserver(updateTriggerText)
+      .observe(selectEl, { childList: true, attributes: true, subtree: true });
 
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -521,45 +1067,31 @@
     });
   }
 
-  // Close dropdowns on document click
+  // Close drawer when clicking outside
   document.addEventListener('click', (e) => {
-    const isTrigger = e.target.closest('.custom-select-trigger');
-    const isDrawer = e.target.closest('#customDropdownDrawer');
-    
-    if (!isTrigger && !isDrawer && currentActiveSelectEl) {
-      const drawer = document.getElementById('customDropdownDrawer');
-      drawer.classList.remove('open');
-      
-      const wrapper = document.getElementById('custom-select-' + currentActiveSelectEl.id);
-      if (wrapper) wrapper.classList.remove('open');
-      
-      currentActiveSelectEl = null;
-    }
+    if (!currentActiveSelectEl) return;
+    if (e.target.closest('.custom-select-trigger') || e.target.closest('#customDropdownDrawer')) return;
+    window.closeDrawer();
   });
 
-  // Convert all selects in settings panel once DOM content is loaded
   function initAll() {
-    const settingsSelects = document.querySelectorAll('div[style*="flex-wrap:wrap"] select');
-    settingsSelects.forEach(select => {
+    initMultiSelectState();
+
+    document.querySelectorAll('div[style*="flex-wrap:wrap"] select').forEach(select => {
       initializeCustomSelect(select);
     });
 
     const scrollBox = document.getElementById('customDropdownDrawerContent');
     if (scrollBox) {
-      scrollBox.addEventListener('scroll', () => {
-        if (!currentActiveSelectEl) return;
-        const itemsCount = currentActiveSelectEl.options.length;
-        if (itemsCount === 0) return;
-
-        const totalWidth = scrollBox.scrollWidth;
-        const singleSetWidth = totalWidth / 3;
-
-        if (scrollBox.scrollLeft < singleSetWidth - (scrollBox.clientWidth / 2)) {
-          scrollBox.scrollLeft += singleSetWidth;
-        } else if (scrollBox.scrollLeft >= (singleSetWidth * 2) - (scrollBox.clientWidth / 2)) {
-          scrollBox.scrollLeft -= singleSetWidth;
-        }
-      });
+      let isScrolling = false;
+      scrollBox.addEventListener('wheel', (e) => {
+        if (e.deltaY === 0) return;
+        e.preventDefault();
+        if (isScrolling) return;
+        isScrolling = true;
+        scrollBox.scrollBy({ left: (e.deltaY > 0 ? 1 : -1) * 252, behavior: 'smooth' });
+        setTimeout(() => { isScrolling = false; }, 220);
+      }, { passive: false });
     }
   }
 
@@ -569,4 +1101,3 @@
     initAll();
   }
 </script>
-

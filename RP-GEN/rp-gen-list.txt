@@ -71,8 +71,11 @@ currentMode = [localStorage.currentMode || modes.selectAll[0].getName]
 multiple = [localStorage.multiple || ""]
 currentSetting = [localStorage.currentSetting || "none"]
 currentTone = [localStorage.currentTone || "none"]
+currentTones = [JSON.parse(localStorage.currentTones || "[]")]
 currentArchetype = [localStorage.currentArchetype || "none"]
+currentArchetypes = [JSON.parse(localStorage.currentArchetypes || "[]")]
 currentDynamics = [localStorage.currentDynamics || "none"]
+currentDynamicsList = [JSON.parse(localStorage.currentDynamicsList || "[]")]
 currentCharacterCount = [localStorage.currentCharacterCount || "none"]
 currentGender = [localStorage.currentGender || "none"]
 
@@ -81,9 +84,27 @@ defaultInstruction = (None specified. Freeform. Just be creative! Avoid tropes.)
 getConstraints() =>
   let list = [];
   if (currentSetting !== "none") list.push(`Genre/Setting: ${worldSettings[currentSetting].description}`);
-  if (currentTone !== "none") list.push(`Tone: ${tones[currentTone].description}`);
-  if (currentArchetype !== "none") list.push(`Character Archetype: ${archetypes[currentArchetype].description}`);
-  if (currentDynamics !== "none") list.push(`Dynamics: ${dynamics[currentDynamics].description}`);
+  // Tone — multi-select
+  if (currentTones && currentTones.length > 0) {
+    let toneDescs = currentTones.map(t => tones[t] ? tones[t].description : t).join(" + ");
+    list.push(`Tone: ${toneDescs}`);
+  } else if (currentTone !== "none") {
+    list.push(`Tone: ${tones[currentTone].description}`);
+  }
+  // Archetype — multi-select
+  if (currentArchetypes && currentArchetypes.length > 0) {
+    let archDescs = currentArchetypes.map(a => archetypes[a] ? archetypes[a].description : a).join(" + ");
+    list.push(`Character Archetype: ${archDescs}`);
+  } else if (currentArchetype !== "none") {
+    list.push(`Character Archetype: ${archetypes[currentArchetype].description}`);
+  }
+  // Dynamics — multi-select
+  if (currentDynamicsList && currentDynamicsList.length > 0) {
+    let dynDescs = currentDynamicsList.map(d => dynamics[d] ? dynamics[d].description : d).join(" + ");
+    list.push(`Dynamics: ${dynDescs}`);
+  } else if (currentDynamics !== "none") {
+    list.push(`Dynamics: ${dynamics[currentDynamics].description}`);
+  }
   if (currentCharacterCount !== "none") list.push(`Characters: ${characterCounts[currentCharacterCount].description}`);
   if (currentGender !== "none") list.push(`Main Character Gender: ${genders[currentGender].description}`);
   let name = userNameEl.value.trim();
@@ -98,6 +119,8 @@ getConstraints() =>
 modes
   creative
     label = 📜 Creative
+    description = Write standard creative story/plot outlines.
+    image = https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=150&auto=format&fit=crop&q=60
     instruction
       Your task is to write [multiple?"several":"one"] plot/story idea[multiple?"s":""] for the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -107,6 +130,8 @@ modes
       $output = [this.joinItems("\n")]
   childrens_book
     label = 🎈 Children's Book
+    description = Perfect for children's stories with illustrations.
+    image = https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=150&auto=format&fit=crop&q=60
     instruction
       Your task is to write [multiple?"several":"one"] children's story book outline[multiple?"s":""]/idea[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -116,6 +141,8 @@ modes
       $output = [this.joinItems("\n")]
   world_building
     label = 🗺️ World Building
+    description = Build settings, concepts, lore, and geography.
+    image = https://images.unsplash.com/photo-1524661135-423995f22d0b?w=150&auto=format&fit=crop&q=60
     instruction
       Write [multiple?"some":"a"] world building idea[multiple?"s":""]/concept[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -125,6 +152,8 @@ modes
       $output = [this.joinItems("\n")]
   roleplay_ideas
     label = 🎭 Roleplay Ideas
+    description = Get detailed prompts, hooks, and starter scenes.
+    image = https://images.unsplash.com/photo-1513258496099-48168024aec0?w=150&auto=format&fit=crop&q=60
     instruction
       Write [multiple?"some":"a"] roleplay/story idea[multiple?"s":""] (including main plot points) based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -134,6 +163,8 @@ modes
       $output = [this.joinItems("\n")]
   conflict_ideas
     label = 💥 Conflict Ideas
+    description = Find interesting challenges, dilemmas, and clashes.
+    image = https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=150&auto=format&fit=crop&q=60
     instruction
       Write [multiple?"":"an "]idea[multiple?"s":""] for the conflict of a story, based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -143,6 +174,8 @@ modes
       $output = [this.joinItems("\n")]
   rpg
     label = 🎮 RPG / Quest
+    description = Generate quests, NPCs, challenges, and rewards.
+    image = https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=150&auto=format&fit=crop&q=60
     instruction
       Your task is to write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -157,6 +190,8 @@ modes
       $output = [this.joinItems("\n")]
   freeform
     label = ✍️ Freeform
+    description = Write freely with customized, prompt-based assistance.
+    image = https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?w=150&auto=format&fit=crop&q=60
     instruction
       Your task is to help with story/plot writing based on this instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -166,173 +201,226 @@ modes
 worldSettings
   none
     label = 🌍 Any / Default Setting
-    description = Any setting / genre
+    description = Any setting or genre
+    image = https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=60
   fantasy
     label = 🏰 Fantasy
-    description = fantasy
+    description = Magic, mythical creatures, and ancient kingdoms
+    image = https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=150&auto=format&fit=crop&q=60
   scifi
     label = 🛸 Sci-Fi
-    description = sci-fi
+    description = Advanced technology, space travel, and future societies
+    image = https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=60
   horror
     label = 😱 Horror
-    description = horror
+    description = Spooky, terrifying, supernatural, or psychological fear
+    image = https://images.unsplash.com/photo-1505635339340-3614edd48a58?w=150&auto=format&fit=crop&q=60
   romance
     label = 🌹 Romance
-    description = romance
+    description = Passionate, emotional, and relationship-driven
+    image = https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=150&auto=format&fit=crop&q=60
   adventure
     label = 🏞️ Adventure
-    description = adventure
+    description = Quests, exploration, and thrilling journeys
+    image = https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=150&auto=format&fit=crop&q=60
   slice_of_life
     label = 🍰 Slice of Life
-    description = slice of life
+    description = Everyday experiences, calm vibes, and small moments
+    image = https://images.unsplash.com/photo-1498804103079-a6351b050096?w=150&auto=format&fit=crop&q=60
   isekai
     label = 🧙‍♂️ Isekai
-    description = isekai
+    description = Reborn or transported to a completely different world
+    image = https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=60
   cyberpunk
     label = 🦾 Cyberpunk
-    description = cyberpunk
+    description = High tech, low life, neon lights, and megacorps
+    image = https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?w=150&auto=format&fit=crop&q=60
   post_apocalyptic
     label = ☢️ Post-Apocalyptic
-    description = post-apocalyptic
+    description = Survival in a ruined, desolate world
+    image = https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=150&auto=format&fit=crop&q=60
   steampunk
     label = ⚙️ Steampunk
-    description = steampunk
+    description = Steam-powered machines in a Victorian aesthetic
+    image = https://images.unsplash.com/photo-1508962914676-134849a727f0?w=150&auto=format&fit=crop&q=60
   historical
     label = 📜 Historical
-    description = historical
+    description = Set in a specific real-world historical era
+    image = https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=150&auto=format&fit=crop&q=60
   modern
     label = 🏙️ Modern
-    description = modern
+    description = Present-day world and contemporary life
+    image = https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=150&auto=format&fit=crop&q=60
   grimdark
     label = 💀 Grimdark
-    description = grimdark
+    description = Dark, gritty, and amoral fantasy/sci-fi settings
+    image = https://images.unsplash.com/photo-1601662528567-526cd06f6582?w=150&auto=format&fit=crop&q=60
 
 tones
   none
     label = 🎭 Any / Default Tone
-    description = Any tone
+    description = Any tone or vibe
+    image = https://images.unsplash.com/photo-1513151233558-d860c5398176?w=150&auto=format&fit=crop&q=60
   serious
     label = 😐 Serious
-    description = serious
+    description = Realistic, grave, and meaningful
+    image = https://images.unsplash.com/photo-1455390582262-044cdead277a?w=150&auto=format&fit=crop&q=60
   humorous
     label = 😂 Humorous / Funny
-    description = humorous and funny
+    description = Funny, witty, and lighthearted comedy
+    image = https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&auto=format&fit=crop&q=60
   dark
     label = 💀 Dark / Gritty
-    description = dark and gritty
+    description = Grim, gritty, scary, and high stakes
+    image = https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=150&auto=format&fit=crop&q=60
   lighthearted
     label = ☀️ Lighthearted / Whimsical
-    description = lighthearted and whimsical
+    description = Bright, positive, and whimsical
+    image = https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=150&auto=format&fit=crop&q=60
   mysterious
     label = 🕵️‍♂️ Mysterious / Suspenseful
-    description = mysterious and suspenseful
+    description = Suspenseful, puzzling, and tense
+    image = https://images.unsplash.com/photo-1501430654243-c934ccd2e1c0?w=150&auto=format&fit=crop&q=60
   romantic
     label = 💖 Romantic
-    description = romantic
+    description = Focus on relationship and love
+    image = https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60
   dramatic
     label = 🎭 Dramatic / Angsty
-    description = dramatic and angsty
+    description = Emotional conflict and tension
+    image = https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=150&auto=format&fit=crop&q=60
   action_packed
     label = 💥 Action-Packed
-    description = action-packed
+    description = High energy, fights, and chases
+    image = https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=150&auto=format&fit=crop&q=60
   melancholic
     label = 😢 Melancholic / Sad
-    description = melancholic and sad
+    description = Sad, reflective, and touching
+    image = https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=150&auto=format&fit=crop&q=60
 
 archetypes
   none
     label = 👤 Any / Default Archetype
-    description = Any archetype
+    description = Any character role
+    image = https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&auto=format&fit=crop&q=60
   hero
     label = 🛡️ Hero / Chosen One
-    description = The Hero / Chosen One
+    description = The Hero / Chosen One on a journey
+    image = https://images.unsplash.com/photo-1559893088-c0787ebfc084?w=150&auto=format&fit=crop&q=60
   antihero
     label = 🧥 Anti-Hero
-    description = The Anti-Hero
+    description = Flawed protagonist with gray morality
+    image = https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=150&auto=format&fit=crop&q=60
   villain
     label = 😈 Villain / Antagonist
-    description = The Villain / Antagonist
+    description = The Villain / Antagonist main focus
+    image = https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=60
   mentor
     label = 🧙‍♂️ Mentor
-    description = The Mentor
+    description = The wise teacher, guide, or trainer
+    image = https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=60
   sidekick
     label = 🤝 Sidekick / Companion
-    description = The Sidekick / Companion
+    description = The loyal companion or second-in-command
+    image = https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=60
   rogue
     label = 🗡️ Rogue / Thief
-    description = The Rogue / Thief
+    description = Sneaky, clever thief or assassin
+    image = https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=60
   scholar
     label = 📖 Scholar / Mage
-    description = The Scholar / Mage
+    description = Studious mage, scientist, or investigator
+    image = https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=150&auto=format&fit=crop&q=60
   underdog
     label = 🐕 Underdog
-    description = The Underdog
+    description = Unlikely hero rising against all odds
+    image = https://images.unsplash.com/photo-1503249023995-51b0f3778ccf?w=150&auto=format&fit=crop&q=60
   trickster
     label = 🃏 Trickster
-    description = The Trickster
+    description = Playful, deceptive, or chaotic character
+    image = https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=60
   reluctant_hero
     label = 🚪 Reluctant Hero
-    description = The Reluctant Hero
+    description = Pushed into action against their will
+    image = https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=60
 
 dynamics
   none
     label = 🔗 Any / Default Dynamics
-    description = Any dynamics
+    description = Any relationship dynamic
+    image = https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=150&auto=format&fit=crop&q=60
   enemies_to_lovers
     label = ⚔️❤️ Enemies to Lovers
-    description = Enemies to Lovers
+    description = Tension turns to romance
+    image = https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=150&auto=format&fit=crop&q=60
   friends_to_lovers
     label = 🤝❤️ Friends to Lovers
-    description = Friends to Lovers
+    description = Deep friendship evolves into love
+    image = https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=150&auto=format&fit=crop&q=60
   rivals
     label = ⚡ Rivals
-    description = Rivals / Competitors
+    description = Competing, pushing each other to excel
+    image = https://images.unsplash.com/photo-1543807535-eceef0bc6599?w=150&auto=format&fit=crop&q=60
   mentor_mentee
     label = 🎓 Mentor & Mentee
-    description = Mentor & Mentee
+    description = Teacher guiding a student
+    image = https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=150&auto=format&fit=crop&q=60
   found_family
     label = 🏠 Found Family
-    description = Found Family
+    description = Unlikely group forming a close family bond
+    image = https://images.unsplash.com/photo-1536640712247-3a97c647752a?w=150&auto=format&fit=crop&q=60
   betrayal
     label = 🗡️💔 Betrayal
-    description = Betrayal / Backstabbing
+    description = Trust broken by a devastating betrayal
+    image = https://images.unsplash.com/photo-1453733190148-c44698c265f8?w=150&auto=format&fit=crop&q=60
   star_crossed_lovers
     label = 🌌 Star-crossed Lovers
-    description = Star-crossed Lovers
+    description = Fated romance facing tragic obstacles
+    image = https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=150&auto=format&fit=crop&q=60
   forced_partnership
     label = 🔒 Forced Partnership
-    description = Forced Partnership
+    description = Bound together by external circumstances
+    image = https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=150&auto=format&fit=crop&q=60
   siblings_conflict
     label = 👥 Sibling/Family Conflict
-    description = Sibling or Family Conflict
+    description = Sibling rivalry or deep family drama
+    image = https://images.unsplash.com/photo-1473679478168-986500097624?w=150&auto=format&fit=crop&q=60
   protector_ward
     label = 🛡️👶 Protector & Ward
-    description = Protector & Ward
+    description = Guarding someone vulnerable or special
+    image = https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=150&auto=format&fit=crop&q=60
 
 characterCounts
   none
     label = 👥 Any / Default Characters
     description = Any character count
+    image = https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=150&auto=format&fit=crop&q=60
   single
     label = 👤 Single Character
-    description = a single character
+    description = Focus on a single protagonist
+    image = https://images.unsplash.com/photo-1484186139897-d5fc6b908812?w=150&auto=format&fit=crop&q=60
   multiple
     label = 👥 Multiple Characters
-    description = multiple characters
+    description = Focus on a group or ensemble cast
+    image = https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=150&auto=format&fit=crop&q=60
 
 genders
   none
     label = ⚥ Any / Default Gender
-    description = Any gender
+    description = Any gender selection
+    image = https://images.unsplash.com/photo-1464746133101-a2c3f88e0dd9?w=150&auto=format&fit=crop&q=60
   male
     label = ♂️ Male
-    description = male
+    description = Male protagonist
+    image = https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=60
   female
     label = ♀️ Female
-    description = female
+    description = Female protagonist
+    image = https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60
   nonbinary
     label = ⚧️ Non-Binary
-    description = non-binary
+    description = Non-binary protagonist
+    image = https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=60
 
 generateModesHtml() =>
   return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");
