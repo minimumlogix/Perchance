@@ -26,7 +26,10 @@ settings
   onStart(data) =>
     responseDeleteBtn.style.display = '';
     responseDeleteBtn.dataset.mode = 'delete';
+    responseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    responseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
     generateBtn.disabled = true;
+    generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
     continueBtn.disabled = true;
     bottomContinueBtn.disabled = true;
     retryBtn.disabled = true;
@@ -34,12 +37,16 @@ settings
     if(modes[this.lastModeUsed].onStart) modes[this.lastModeUsed].onStart(data);
   onFinish(data) =>
     generateBtn.disabled = false;
-    generateBtn.textContent = "🔁 regenerate";
+    generateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
     continueBtn.disabled = false;
     bottomContinueBtn.disabled = false;
     retryBtn.disabled = false;
     loaderEl.innerHTML = "";
     localStorage.response = responseEl.value;
+    if(responseDeleteBtn.dataset.mode !== 'undo') {
+      responseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+      responseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+    }
     if(modes[this.lastModeUsed].onFinish) modes[this.lastModeUsed].onFinish(data);
   render = [ modes[currentMode].render || null ]
   
@@ -202,225 +209,225 @@ worldSettings
   none
     label = 🌍 Any / Default Setting
     description = Any setting or genre
-    image = https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   fantasy
     label = 🏰 Fantasy
     description = Magic, mythical creatures, and ancient kingdoms
-    image = https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/fantasy
   scifi
     label = 🛸 Sci-Fi
     description = Advanced technology, space travel, and future societies
-    image = https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/scifi
   horror
     label = 😱 Horror
     description = Spooky, terrifying, supernatural, or psychological fear
-    image = https://images.unsplash.com/photo-1505635339340-3614edd48a58?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/horror
   romance
     label = 🌹 Romance
     description = Passionate, emotional, and relationship-driven
-    image = https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/romance
   adventure
     label = 🏞️ Adventure
     description = Quests, exploration, and thrilling journeys
-    image = https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/adventure
   slice_of_life
     label = 🍰 Slice of Life
     description = Everyday experiences, calm vibes, and small moments
-    image = https://images.unsplash.com/photo-1498804103079-a6351b050096?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/slice of life
   isekai
     label = 🧙‍♂️ Isekai
     description = Reborn or transported to a completely different world
-    image = https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/isekai
   cyberpunk
     label = 🦾 Cyberpunk
     description = High tech, low life, neon lights, and megacorps
-    image = https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/cyberpunk
   post_apocalyptic
     label = ☢️ Post-Apocalyptic
     description = Survival in a ruined, desolate world
-    image = https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/post-apocalyptic
   steampunk
     label = ⚙️ Steampunk
     description = Steam-powered machines in a Victorian aesthetic
-    image = https://images.unsplash.com/photo-1508962914676-134849a727f0?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/steampunk
   historical
     label = 📜 Historical
     description = Set in a specific real-world historical era
-    image = https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/historical
   modern
     label = 🏙️ Modern
     description = Present-day world and contemporary life
-    image = https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/modern
   grimdark
     label = 💀 Grimdark
     description = Dark, gritty, and amoral fantasy/sci-fi settings
-    image = https://images.unsplash.com/photo-1601662528567-526cd06f6582?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/grimdark
 
 tones
   none
     label = 🎭 Any / Default Tone
     description = Any tone or vibe
-    image = https://images.unsplash.com/photo-1513151233558-d860c5398176?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   serious
     label = 😐 Serious
     description = Realistic, grave, and meaningful
-    image = https://images.unsplash.com/photo-1455390582262-044cdead277a?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/serious
   humorous
     label = 😂 Humorous / Funny
     description = Funny, witty, and lighthearted comedy
-    image = https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/humorous
   dark
     label = 💀 Dark / Gritty
     description = Grim, gritty, scary, and high stakes
-    image = https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/dark
   lighthearted
     label = ☀️ Lighthearted / Whimsical
     description = Bright, positive, and whimsical
-    image = https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/lighthearted
   mysterious
     label = 🕵️‍♂️ Mysterious / Suspenseful
     description = Suspenseful, puzzling, and tense
-    image = https://images.unsplash.com/photo-1501430654243-c934ccd2e1c0?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/mystery
   romantic
     label = 💖 Romantic
     description = Focus on relationship and love
-    image = https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/romance
   dramatic
     label = 🎭 Dramatic / Angsty
     description = Emotional conflict and tension
-    image = https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/dramatic
   action_packed
     label = 💥 Action-Packed
     description = High energy, fights, and chases
-    image = https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/action
   melancholic
     label = 😢 Melancholic / Sad
     description = Sad, reflective, and touching
-    image = https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/melancholic
 
 archetypes
   none
     label = 👤 Any / Default Archetype
     description = Any character role
-    image = https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   hero
     label = 🛡️ Hero / Chosen One
     description = The Hero / Chosen One on a journey
-    image = https://images.unsplash.com/photo-1559893088-c0787ebfc084?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/hero
   antihero
     label = 🧥 Anti-Hero
     description = Flawed protagonist with gray morality
-    image = https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/anti-hero
   villain
     label = 😈 Villain / Antagonist
     description = The Villain / Antagonist main focus
-    image = https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/villain
   mentor
     label = 🧙‍♂️ Mentor
     description = The wise teacher, guide, or trainer
-    image = https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/mentor
   sidekick
     label = 🤝 Sidekick / Companion
     description = The loyal companion or second-in-command
-    image = https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/sidekick
   rogue
     label = 🗡️ Rogue / Thief
     description = Sneaky, clever thief or assassin
-    image = https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/rogue
   scholar
     label = 📖 Scholar / Mage
     description = Studious mage, scientist, or investigator
-    image = https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/scholar
   underdog
     label = 🐕 Underdog
     description = Unlikely hero rising against all odds
-    image = https://images.unsplash.com/photo-1503249023995-51b0f3778ccf?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/underdog
   trickster
     label = 🃏 Trickster
     description = Playful, deceptive, or chaotic character
-    image = https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/trickster
   reluctant_hero
     label = 🚪 Reluctant Hero
     description = Pushed into action against their will
-    image = https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/reluctant-hero
 
 dynamics
   none
     label = 🔗 Any / Default Dynamics
     description = Any relationship dynamic
-    image = https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   enemies_to_lovers
     label = ⚔️❤️ Enemies to Lovers
     description = Tension turns to romance
-    image = https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/enemies-to-lovers
   friends_to_lovers
     label = 🤝❤️ Friends to Lovers
     description = Deep friendship evolves into love
-    image = https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/friends-to-lovers
   rivals
     label = ⚡ Rivals
     description = Competing, pushing each other to excel
-    image = https://images.unsplash.com/photo-1543807535-eceef0bc6599?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/rivals
   mentor_mentee
     label = 🎓 Mentor & Mentee
     description = Teacher guiding a student
-    image = https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/mentor-mentee
   found_family
     label = 🏠 Found Family
     description = Unlikely group forming a close family bond
-    image = https://images.unsplash.com/photo-1536640712247-3a97c647752a?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/found-family
   betrayal
     label = 🗡️💔 Betrayal
     description = Trust broken by a devastating betrayal
-    image = https://images.unsplash.com/photo-1453733190148-c44698c265f8?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/betrayal
   star_crossed_lovers
     label = 🌌 Star-crossed Lovers
     description = Fated romance facing tragic obstacles
-    image = https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/star-crossed-lovers
   forced_partnership
     label = 🔒 Forced Partnership
     description = Bound together by external circumstances
-    image = https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/forced-partnership
   siblings_conflict
     label = 👥 Sibling/Family Conflict
     description = Sibling rivalry or deep family drama
-    image = https://images.unsplash.com/photo-1473679478168-986500097624?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/sibling-conflict
   protector_ward
     label = 🛡️👶 Protector & Ward
     description = Guarding someone vulnerable or special
-    image = https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/protector-ward
 
 characterCounts
   none
     label = 👥 Any / Default Characters
     description = Any character count
-    image = https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   single
     label = 👤 Single Character
     description = Focus on a single protagonist
-    image = https://images.unsplash.com/photo-1484186139897-d5fc6b908812?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/single
   multiple
     label = 👥 Multiple Characters
     description = Focus on a group or ensemble cast
-    image = https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/multiple
 
 genders
   none
     label = ⚥ Any / Default Gender
     description = Any gender selection
-    image = https://images.unsplash.com/photo-1464746133101-a2c3f88e0dd9?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/abstract
   male
     label = ♂️ Male
     description = Male protagonist
-    image = https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/male
   female
     label = ♀️ Female
     description = Female protagonist
-    image = https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/female
   nonbinary
     label = ⚧️ Non-Binary
     description = Non-binary protagonist
-    image = https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=60
+    image = https://loremflickr.com/800/600/nonbinary
 
 generateModesHtml() =>
   return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");

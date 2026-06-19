@@ -1,155 +1,558 @@
-﻿<h1 style="margin-bottom:0.5rem;">AI Plot Generator</h1> 
-<div style="width:98%; width:calc(100% - 0.5rem); max-width:700px; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center; gap: 0.5rem;">
-  <div>â€” Settings â€”</div> 
-  <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:0.5rem 1rem; width:100%;">
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Mode</span>
-      <select id="currentModeEl" onchange="currentMode=this.value; localStorage.currentMode=this.value; modeDescriptionEl.textContent=(modes[currentMode].description||''); instructionEl.placeholder=(modes[currentMode].instructionPlaceholder||instructionEl.dataset.defaultPlaceholder);" style="text-align:left;">
-        [generateModesHtml()]
-      </select>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container py-4 px-2" style="max-width: 800px;">
+  <h1 class="display-6 fw-bold text-center mb-1">AI Generator</h1>
+  <div class="text-center text-muted small mb-4">Generate quests, NPCs, challenges, and rewards.</div>
+
+  <div class="card shadow-sm mb-4 border-secondary-subtle">
+    <div class="card-header py-2 text-center text-uppercase fw-semibold tracking-wider bg-body-tertiary text-muted small" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+      — Settings —
     </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Ideas</span>
-      <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;" style="text-align:left;">
-        <option value="">1ï¸âƒ£ one idea</option>
-        <option value=".">ðŸ”¢ multiple ideas</option>
-      </select>
-      <script>multipleEl.value=localStorage.multiple||"";</script>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Setting / Genre</span>
-      <select id="currentSettingEl" onchange="currentSetting=this.value; localStorage.currentSetting=this.value;" style="text-align:left;">
-        [generateSettingsHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Tone</span>
-      <select id="currentToneEl" onchange="currentTone=this.value; localStorage.currentTone=this.value;" style="text-align:left;">
-        [generateTonesHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Archetype</span>
-      <select id="currentArchetypeEl" onchange="currentArchetype=this.value; localStorage.currentArchetype=this.value;" style="text-align:left;">
-        [generateArchetypesHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Dynamics</span>
-      <select id="currentDynamicsEl" onchange="currentDynamics=this.value; localStorage.currentDynamics=this.value;" style="text-align:left;">
-        [generateDynamicsHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Characters</span>
-      <select id="currentCharacterCountEl" onchange="currentCharacterCount=this.value; localStorage.currentCharacterCount=this.value;" style="text-align:left;">
-        [generateCharacterCountsHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Gender</span>
-      <select id="currentGenderEl" onchange="currentGender=this.value; localStorage.currentGender=this.value;" style="text-align:left;">
-        [generateGendersHtml()]
-      </select>
-    </div>
-    <div style="display:flex; flex-direction:column; align-items:center;">
-      <span style="font-size:75%; opacity:0.8;">Protagonist Name</span>
-      <input type="text" id="userNameEl" oninput="localStorage.userName=this.value;" placeholder="(Optional) e.g. Alex" style="width:130px; font-size:85%; border:1px solid var(--box-color); border-radius:3px; padding:2px 4px; box-sizing:border-box; background:transparent; color:inherit;">
-      <script>userNameEl.value = localStorage.userName || "";</script>
+    <div class="card-body p-3">
+      <div class="row g-3">
+        <!-- Mode -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Mode</span>
+            <select id="currentModeEl"
+              onchange="currentMode=this.value; localStorage.currentMode=this.value; modeDescriptionEl.textContent=(modes[currentMode].description||''); instructionEl.placeholder=(modes[currentMode].instructionPlaceholder||instructionEl.dataset.defaultPlaceholder);"
+              class="form-select select-field">
+              [generateModesHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Ideas -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas</span>
+            <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;"
+              class="form-select select-field">
+              <option value="">1️⃣ one idea</option>
+              <option value=".">🔢 multiple ideas</option>
+            </select>
+            <script>multipleEl.value = localStorage.multiple || "";</script>
+          </div>
+        </div>
+        <!-- Setting / Genre -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Setting / Genre</span>
+            <select id="currentSettingEl" onchange="currentSetting=this.value; localStorage.currentSetting=this.value;"
+              class="form-select select-field">
+              [generateSettingsHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Tone -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Tone</span>
+            <select id="currentToneEl" onchange="currentTone=this.value; localStorage.currentTone=this.value;"
+              class="form-select select-field">
+              [generateTonesHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Archetype -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Archetype</span>
+            <select id="currentArchetypeEl" onchange="currentArchetype=this.value; localStorage.currentArchetype=this.value;"
+              class="form-select select-field">
+              [generateArchetypesHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Dynamics -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Dynamics</span>
+            <select id="currentDynamicsEl" onchange="currentDynamics=this.value; localStorage.currentDynamics=this.value;"
+              class="form-select select-field">
+              [generateDynamicsHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Characters -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Characters</span>
+            <select id="currentCharacterCountEl"
+              onchange="currentCharacterCount=this.value; localStorage.currentCharacterCount=this.value;"
+              class="form-select select-field">
+              [generateCharacterCountsHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Gender -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Gender</span>
+            <select id="currentGenderEl" onchange="currentGender=this.value; localStorage.currentGender=this.value;"
+              class="form-select select-field">
+              [generateGendersHtml()]
+            </select>
+          </div>
+        </div>
+        <!-- Protagonist Name -->
+        <div class="col-12 col-md-6 offset-md-3 col-lg-4 offset-lg-4 mt-2">
+          <div class="d-flex flex-column align-items-center">
+            <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Protagonist Name</span>
+            <input type="text" id="userNameEl" oninput="localStorage.userName=this.value;" placeholder="(Optional) e.g. Alex"
+              class="form-control text-center"
+              style="font-size:85%; background:transparent; color:inherit; border-color: rgba(128,128,128,0.25); height: 38px;">
+            <script>userNameEl.value = localStorage.userName || "";</script>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Shared Dropdown Drawer -->
   <div class="custom-dropdown-drawer" id="customDropdownDrawer">
+    <div class="custom-dropdown-drawer-header">
+      <span class="drawer-header-title" id="drawerHeaderTitle">02 WORLD SETTING</span>
+      <span class="drawer-header-action" id="drawerHeaderAction" onclick="toggleDrawerExpand()"><span id="drawerHeaderActionText">VIEW ALL</span> <i class="bi bi-chevron-right" id="drawerHeaderActionIcon"></i></span>
+    </div>
     <div class="custom-dropdown-search-wrapper" id="customDropdownSearchWrapper">
-      <span class="search-icon">ðŸ”</span>
-      <input type="text" id="customDropdownSearchInput" placeholder="Search options..." oninput="filterDrawerCards(this.value)">
-      <button id="customDropdownSearchClear" onclick="clearDrawerSearch()">âœ•</button>
+      <span class="search-icon"><i class="bi bi-search"></i></span>
+      <input type="text" id="customDropdownSearchInput" placeholder="Search options..."
+        oninput="filterDrawerCards(this.value)">
+      <button id="customDropdownSearchClear" onclick="clearDrawerSearch()"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
     <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
-      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearMultiSelect()">âœ• Clear</button>
-      <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()">âœ“ Done</button>
+      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearMultiSelect()"><i class="bi bi-trash"></i> Clear</button>
+      <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()"><i class="bi bi-check-circle"></i> Done</button>
     </div>
   </div>
 
-  <div id="modeDescriptionEl" style="font-size:75%; opacity:0.6; max-width:500px; margin:0 auto; padding-top:0.25rem; text-align:center;"></div>
+  <div id="modeDescriptionEl"
+    style="font-size:75%; opacity:0.6; max-width:500px; margin:0 auto; padding-top:0.25rem; text-align:center;"></div>
   <script>modeDescriptionEl.textContent = modes[currentMode].description || '';</script>
 
-  <div style="margin-top:1rem;">â€” Instruction â€”</div>
-  <div style="width:100%; position:relative; min-width:max-content;"> 
-    <textarea id="instructionEl" data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc." placeholder="" style="width:100%; height:120px; max-width:97vw; padding-top:0.25rem; ;" oninput="if(this.value.trim()=='') { instructionDeleteBtn.style.display='none'; } else { instructionDeleteBtn.style.display=''; }; localStorage.instruction=this.value; generateBtn.textContent='âœ¨ generate'; window.deletedInstruction=''; instructionDeleteBtn.dataset.mode='delete'; "></textarea>
-    <script>if(localStorage.instruction) { instructionEl.value = localStorage.instruction; instructionDeleteBtn.style.display=''; }</script>
-    <script>instructionEl.placeholder = modes[currentMode].instructionPlaceholder ?? instructionEl.dataset.defaultPlaceholder;</script>
-    <button id="instructionDeleteBtn" data-mode="delete" onclick="if(this.dataset.mode==='delete') { window.deletedInstruction=instructionEl.value; instructionEl.value=''; this.dataset.mode='undo'; } else { instructionEl.value=window.deletedInstruction; this.dataset.mode='delete'; }; localStorage.instruction=instructionEl.value;" style="position:absolute; top:-0.75rem; right:0.5rem; font-size:60%; display:none;"></button>
-    <script>if(instructionEl.value.trim()) { instructionDeleteBtn.style.display=''; }</script>
-    <style>
-      #instructionDeleteBtn[data-mode='delete']:before { content:'ðŸ—‘ï¸ delete'; }
-      #instructionDeleteBtn[data-mode='undo']:before { content:'â†©ï¸ undo'; }
-    </style>
-  </div>
-</div>
+  <!-- Tab Switcher -->
+  <div id="tabSwitcher" class="w-100 mt-4">
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" id="tabBtn-plot" role="tab" aria-selected="true" onclick="switchTab('plot')">
+        <i class="bi bi-file-earmark-text"></i> Plot
+      </button>
+      <button class="tab-btn" id="tabBtn-world" role="tab" aria-selected="false" onclick="switchTab('world')">
+        <i class="bi bi-globe"></i> World
+      </button>
+      <button class="tab-btn" id="tabBtn-roleplay" role="tab" aria-selected="false" onclick="switchTab('roleplay')">
+        <i class="bi bi-masks"></i> Roleplay
+      </button>
+      <button class="tab-btn" id="tabBtn-character" role="tab" aria-selected="false" onclick="switchTab('character')">
+        <i class="bi bi-person"></i> Character
+      </button>
+    </div>
 
+    <!-- Tab Panels Container (Card style) -->
+    <div class="card shadow-sm mb-4 border-secondary-subtle">
+      <!-- Plot Tab -->
+      <div class="tab-panel active" id="tabPanel-plot">
+        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="d-flex align-items-center gap-2">
+            <!-- Space holder for alignment -->
+          </div>
+          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Instruction —</span>
+          <div class="d-flex align-items-center gap-2">
+            <button id="instructionDeleteBtn" data-mode="delete" onclick="toggleInstructionDelete(this)"
+              class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <textarea id="instructionEl"
+            data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc."
+            placeholder="" class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
+            oninput="handleInstructionInput()"></textarea>
+        </div>
+      </div>
 
-<div style="width:98%; width:calc(100% - 0.5rem); max-width:700px; min-width:max-content; margin:0 auto; display:flex; flex-direction:column; justify-content:center; align-items:center;">  
-  <div style="margin-top:0.5rem;"> 
-    <div style="display:inline-block; position:relative;"> 
-      <button id="generateBtn" onclick="responseEl.value = ''; generate();">âœ¨ generate</button>
-      <span id="loaderEl" style="position:absolute; right:0; transform:translateX(120%); height:100%; display:inline-flex; align-items:center;"></span>
-      <span style="position:absolute; left:0; bottom:0; transform:translateX(-120%); height:100%; display:inline-flex; align-items:center;"><button id="stopBtn" style="font-size:80%; display:none;">ðŸ›‘ stop</button></span>
+      <!-- World Tab -->
+      <div class="tab-panel" id="tabPanel-world">
+        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="d-flex align-items-center gap-1">
+            <button id="worldGenerateBtn" onclick="generateForTab('world')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
+              <i class="bi bi-magic"></i> generate world
+            </button>
+          </div>
+          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— World Notes —</span>
+          <div class="d-flex align-items-center gap-1">
+            <button id="worldCopyBtn" onclick="copyText('worldInstructionEl', this)"
+              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <textarea id="worldInstructionEl"
+            placeholder="Describe the world, its lore, geography, factions, rules of magic, technology level, etc."
+            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+            oninput="localStorage.worldInstruction=this.value;"></textarea>
+          <script>if (localStorage.worldInstruction) { worldInstructionEl.value = localStorage.worldInstruction; }</script>
+        </div>
+      </div>
+
+      <!-- Roleplay Tab -->
+      <div class="tab-panel" id="tabPanel-roleplay">
+        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="d-flex align-items-center gap-1">
+            <button id="roleplayGenerateBtn" onclick="generateForTab('roleplay')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
+              <i class="bi bi-magic"></i> generate roleplay
+            </button>
+          </div>
+          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Roleplay Prompt —</span>
+          <div class="d-flex align-items-center gap-1">
+            <button id="roleplayCopyBtn" onclick="copyText('roleplayInstructionEl', this)"
+              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <textarea id="roleplayInstructionEl"
+            placeholder="Describe the roleplay scenario: setting, characters, tone, starting scene, etc."
+            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+            oninput="localStorage.roleplayInstruction=this.value;"></textarea>
+          <script>if (localStorage.roleplayInstruction) { roleplayInstructionEl.value = localStorage.roleplayInstruction; }</script>
+        </div>
+      </div>
+
+      <!-- Character Tab -->
+      <div class="tab-panel" id="tabPanel-character">
+        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="d-flex align-items-center gap-1">
+            <button id="characterGenerateBtn" onclick="generateForTab('character')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
+              <i class="bi bi-magic"></i> generate character
+            </button>
+          </div>
+          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Character Notes —</span>
+          <div class="d-flex align-items-center gap-1">
+            <button id="characterCopyBtn" onclick="copyText('characterInstructionEl', this)"
+              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <textarea id="characterInstructionEl"
+            placeholder="Describe the character: name, role, personality traits, backstory hints, goals, etc."
+            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+            oninput="localStorage.characterInstruction=this.value;"></textarea>
+          <script>if (localStorage.characterInstruction) { characterInstructionEl.value = localStorage.characterInstruction; }</script>
+        </div>
+      </div>
     </div>
   </div>
-  
-  <div id="outputTitleEl" style="margin-top:0.5rem;">â€” Output â€”</div>
-  <style>@media only screen and (max-width: 670px) { #outputTitleEl { margin-bottom:1rem; } }</style>
-  <div style="width:100%; position:relative;">
-    <textarea id="responseEl" oninput="if(this.value.trim()=='') { continueBtn.disabled=true; bottomContinueBtn.disabled=true; generateBtn.textContent='âœ¨ generate'; responseDeleteBtn.style.display='none'; } else { continueBtn.disabled=false; bottomContinueBtn.disabled=false; generateBtn.textContent='ðŸ” regenerate'; responseDeleteBtn.style.display=''; }; responseDeleteBtn.dataset.mode='delete'; localStorage.response=this.value; window.deletedResponse=''; retryBtn.disabled=true; " placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above." style="width:100%; max-width:97vw; height:600px; max-height:80vh; padding:0.5rem; padding-bottom:0.75rem;"></textarea>
-    <script>if(localStorage.response) { responseEl.value = localStorage.response; responseDeleteBtn.style.display=''; continueBtn.disabled=false; bottomContinueBtn.disabled=false; }</script>
-    <button id="responseCopyBtn" onclick="navigator.clipboard.writeText(responseEl.value); this.innerText = 'âœ… copied!'; setTimeout(() => { this.innerText = 'ðŸ“‹ copy'; }, 2000);" style="position:absolute; top:-0.75rem; right:0.5rem; font-size:60%; display:none;">ðŸ“‹ copy</button>
-    <div style="position:absolute; top:-0.75rem; left:0.5rem; font-size:60%; min-width:max-content;">
-      <button disabled id="continueBtn" onclick="generate()" style="">â–¶ï¸ continue</button>
-      <button disabled id="retryBtn" onclick="responseEl.value=window.responseContentBeforeLastGenerate||responseEl.value; generate()" style="">ðŸ” retry</button>
-      <button id="responseDeleteBtn" data-mode="delete" onclick="if(this.dataset.mode==='delete') { if(stopBtn.offsetTop) { stopBtn.click(); }; window.deletedResponse=responseEl.value; responseEl.value=''; this.dataset.mode='undo'; } else { responseEl.value=window.deletedResponse; this.dataset.mode='delete'; }; localStorage.response=responseEl.value;" style="margin-left: 1.5rem; display:none;"></button>
-      <style>
-        #responseDeleteBtn[data-mode='delete']:before { content:'ðŸ—‘ï¸ delete'; }
-        #responseDeleteBtn[data-mode='undo']:before { content:'â†©ï¸ undo'; }
-      </style>
-    </div>
-    <div style="position:absolute; bottom:-0.5rem; left:0.5rem; font-size:60%; min-width:max-content;">
-      <button disabled id="bottomContinueBtn" onclick="generate()" style="">â–¶ï¸ continue</button>
-      <button id="bottomStopBtn" style="display:none;">ðŸ›‘ stop</button>
+
+  <style>
+    /* === Tab Switcher === */
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      background: rgba(128, 128, 128, 0.08);
+      padding: 6px;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(128, 128, 128, 0.15);
+    }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      background: transparent;
+      border: none;
+      padding: 8px 12px;
+      font-size: 85%;
+      font-weight: 500;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.65;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab-btn:hover {
+      opacity: 0.9;
+      background: rgba(128, 128, 128, 0.05);
+    }
+    .tab-btn.active {
+      opacity: 1;
+      background: #3b82f6;
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+    }
+    [data-bs-theme="dark"] .tab-btn.active,
+    html[style*="dark"] .tab-btn.active {
+      background: #2563eb;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.35);
+    }
+    .tab-panel {
+      display: none;
+      animation: tabFadeIn 0.18s ease;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <script>
+    // Helper function to copy text and show visual feedback
+    window.copyText = function(elId, btn) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      navigator.clipboard.writeText(el.value);
+      const oldHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check2"></i> copied!';
+      btn.classList.replace('btn-outline-secondary', 'btn-success');
+      btn.classList.add('text-white');
+      setTimeout(() => {
+        btn.innerHTML = oldHtml;
+        btn.classList.replace('btn-success', 'btn-outline-secondary');
+        btn.classList.remove('text-white');
+      }, 2000);
+    };
+
+    // Toggle response delete button state (Delete / Undo)
+    window.toggleResponseDelete = function(btn) {
+      if (btn.dataset.mode === 'delete') {
+        if (typeof stopBtn !== 'undefined' && stopBtn.style.display !== 'none') {
+          stopBtn.click();
+        }
+        window.deletedResponse = responseEl.value;
+        responseEl.value = '';
+        btn.dataset.mode = 'undo';
+        btn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Undo';
+        btn.classList.replace('btn-outline-danger', 'btn-outline-warning');
+      } else {
+        responseEl.value = window.deletedResponse;
+        btn.dataset.mode = 'delete';
+        btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+        btn.classList.replace('btn-outline-warning', 'btn-outline-danger');
+      }
+      localStorage.response = responseEl.value;
+      responseEl.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    // Toggle instruction delete button state (Delete / Undo)
+    window.toggleInstructionDelete = function(btn) {
+      if (btn.dataset.mode === 'delete') {
+        window.deletedInstruction = instructionEl.value;
+        instructionEl.value = '';
+        btn.dataset.mode = 'undo';
+        btn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Undo';
+        btn.classList.replace('btn-outline-danger', 'btn-outline-warning');
+      } else {
+        instructionEl.value = window.deletedInstruction;
+        btn.dataset.mode = 'delete';
+        btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+        btn.classList.replace('btn-outline-warning', 'btn-outline-danger');
+      }
+      localStorage.instruction = instructionEl.value;
+      instructionEl.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    window.updateInstructionBtnState = function() {
+      const btn = document.getElementById('instructionDeleteBtn');
+      if (!btn) return;
+      const val = instructionEl.value.trim();
+      if (val === '') {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+        if (btn.dataset.mode !== 'undo') {
+          btn.dataset.mode = 'delete';
+          btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+          btn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+        }
+      }
+    };
+
+    window.handleInstructionInput = function() {
+      localStorage.instruction = instructionEl.value;
+      window.updateInstructionBtnState();
+      if (generateBtn.innerHTML.includes('regenerate')) {
+        generateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
+      }
+    };
+
+    window.updateResponseBtnState = function() {
+      const btn = document.getElementById('responseDeleteBtn');
+      if (!btn) return;
+      const val = responseEl.value.trim();
+      if (val === '') {
+        continueBtn.disabled = true;
+        bottomContinueBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
+        btn.style.display = 'none';
+      } else {
+        continueBtn.disabled = false;
+        bottomContinueBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate';
+        btn.style.display = '';
+        if (btn.dataset.mode !== 'undo') {
+          btn.dataset.mode = 'delete';
+          btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+          btn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+        }
+      }
+    };
+
+    window.handleResponseInput = function() {
+      localStorage.response = responseEl.value;
+      window.updateResponseBtnState();
+    };
+
+    window.switchTab = function(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const btn = document.getElementById('tabBtn-' + name);
+      const panel = document.getElementById('tabPanel-' + name);
+      if (btn) btn.classList.add('active');
+      if (panel) panel.classList.add('active');
+      localStorage.activeTab = name;
+    };
+    // Restore last active tab
+    (function() {
+      const saved = localStorage.activeTab;
+      if (saved && saved !== 'plot') window.switchTab(saved);
+    })();
+
+    // Generate for auxiliary tabs (world / roleplay / character)
+    window.generateForTab = async function(tabName) {
+      const instructionMap = {
+        world: { el: 'worldInstructionEl', storageKey: 'worldInstruction',
+          prompt: 'You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.' },
+        roleplay: { el: 'roleplayInstructionEl', storageKey: 'roleplayInstruction',
+          prompt: 'You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.' },
+        character: { el: 'characterInstructionEl', storageKey: 'characterInstruction',
+          prompt: 'You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.' }
+      };
+      const cfg = instructionMap[tabName];
+      if (!cfg) return;
+      const instrEl = document.getElementById(cfg.el);
+      const genBtn = document.getElementById(tabName + 'GenerateBtn');
+      if (!instrEl) return;
+      
+      let userInstr = instrEl.value.trim();
+      const generatedDivider = "\n\n=== Generated ===\n";
+      const dividerIdx = userInstr.indexOf(generatedDivider);
+      if (dividerIdx !== -1) {
+        userInstr = userInstr.substring(0, dividerIdx).trim();
+      }
+      const activePrompt = userInstr || 'Be creative and freeform.';
+      const fullInstruction = cfg.prompt + '\n\nUser Notes: ' + activePrompt;
+      
+      if (genBtn) {
+        genBtn.disabled = true;
+        genBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>generating...';
+      }
+      try {
+        let result = await ai({
+          instruction: fullInstruction,
+          onChunk: function(data) {
+            instrEl.value = userInstr + generatedDivider + data.fullTextSoFar;
+            if (instrEl.scrollTop + instrEl.offsetHeight > instrEl.scrollHeight - 60) {
+              instrEl.scrollTop = instrEl.scrollHeight;
+            }
+          }
+        });
+        localStorage[cfg.storageKey] = instrEl.value;
+      } catch(e) {
+        instrEl.value = userInstr + generatedDivider + 'Error: ' + e.message;
+      }
+      if (genBtn) {
+        genBtn.disabled = false;
+        genBtn.innerHTML = '<i class="bi bi-magic"></i> generate ' + tabName;
+      }
+    };
+  </script>
+
+  <div class="d-flex justify-content-center align-items-center my-4">
+    <div class="position-relative d-inline-block">
+      <button id="generateBtn" onclick="responseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+        <i class="bi bi-magic"></i> generate
+      </button>
+      <span id="loaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+      <button id="stopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+        <i class="bi bi-stop-circle"></i> stop
+      </button>
     </div>
   </div>
-</div>
 
-<br>
-<p style="font-size:80%;">Also check out the <a href="https://perchance.org/ai-story-generator" target="_blank">AI Story Writer</a>, the <a href="https://perchance.org/ai-text-rewriter" target="_blank">AI Text Rewriter</a>, and the <a href="https://perchance.org/ai-text-to-image-generator" target="_blank">AI Image Generator</a>.</p>
+  <!-- Output Card -->
+  <div class="card shadow-sm border-secondary-subtle w-100 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+      <div class="card-actions-left d-flex gap-1 align-items-center">
+        <button disabled id="continueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+          <i class="bi bi-play-fill"></i> continue
+        </button>
+        <button disabled id="retryBtn"
+          onclick="responseEl.value=window.responseContentBeforeLastGenerate||responseEl.value; generate()"
+          class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+          <i class="bi bi-arrow-clockwise"></i> retry
+        </button>
+        <button id="responseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+          class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+      </div>
+      <span id="outputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
+      <div class="card-actions-right d-flex gap-1 align-items-center">
+        <button id="responseCopyBtn" onclick="copyText('responseEl', this)"
+          class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <textarea id="responseEl" oninput="handleResponseInput()"
+        placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
+        class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+      <div class="d-flex gap-1">
+        <button disabled id="bottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+          <i class="bi bi-play-fill"></i> continue
+        </button>
+        <button id="bottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+          <i class="bi bi-stop-circle"></i> stop
+        </button>
+      </div>
+    </div>
+  </div>
 
-<br>
+
 
 <div id="commentsCtn"></div>
+</div>
 <br><br>
 
 <!-- COMMENTS STUFF -->
 <script>
   function createCommentsSectionHtml() {
     let startVisible = false;
-    if(window.commentsEl && window.commentsEl.style.display !== 'none') startVisible = true;
+    if (window.commentsEl && window.commentsEl.style.display !== 'none') startVisible = true;
     commentsCtn.innerHTML = ""; // must delete existing comments section first because comments plugin has code which cause it to not output any HTML if that comments section already exists on the page
-    let commentsPluginHtml = comments({width:"min(750px, 100%)", height:"min(70vh, 600px)", forceColorScheme:localStorage.forceColorScheme || null});
+    let commentsPluginHtml = comments({ width: "min(750px, 100%)", height: "min(70vh, 600px)", forceColorScheme: localStorage.forceColorScheme || null });
     commentsCtn.innerHTML = `
-      <p><button onclick="if(commentsEl.style.display == 'none') { commentsEl.style.display=''; this.textContent='hide comments'; } else { commentsEl.style.display='none'; this.textContent='ðŸ’¬ show comments'; }">${startVisible ? "hide comments" : "ðŸ’¬ show comments"}</button></p>
-      <p id="commentsEl" style="${startVisible ? "" : "display:none;"}">
+      <p class="text-center"><button class="btn btn-sm btn-outline-secondary" onclick="if(commentsEl.style.display == 'none') { commentsEl.style.display=''; this.textContent='hide comments'; } else { commentsEl.style.display='none'; this.textContent='💬 show comments'; }">${startVisible ? "hide comments" : "💬 show comments"}</button></p>
+      <div id="commentsEl" style="${startVisible ? "" : "display:none;"}" class="w-100 d-flex justify-content-center">
         ${commentsPluginHtml}
-      </p>
+      </div>
     `;
   }
   createCommentsSectionHtml();
 </script>
 
 <!-- DARK MODE STUFF -->
-<div style="position:fixed; bottom:0.5rem; left:0.5rem; z-index:10;">
-  <button id="darkModeBtn" style="cursor:pointer;" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();">ðŸŒƒ</button>
+<div style="position:fixed; bottom:0.75rem; left:0.75rem; z-index:100;">
+  <button id="darkModeBtn" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 42px; height: 42px; cursor:pointer;"
+    onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();"><i class="bi bi-brightness-high-fill"></i></button>
 </div>
 <script>
   function toggleManualDarkMode() {
@@ -158,34 +561,38 @@
     setColorScheme(newColorScheme);
     // if chosen mode matches current OS default, we remove manual "forced" mode:
     let systemColorScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
-    if(systemColorScheme === newColorScheme) {
+    if (systemColorScheme === newColorScheme) {
       localStorage.removeItem("forceColorScheme");
     }
   }
   function getCurrentColorScheme() {
-    if(localStorage.forceColorScheme !== undefined) {
+    if (localStorage.forceColorScheme !== undefined) {
       return localStorage.forceColorScheme;
     } else {
       return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
     }
   }
   function setColorScheme(scheme) {
-    if(scheme !== "dark" && scheme !== "light") throw new Error("scheme should be 'light' or 'dark'");
-    document.querySelector("#darkModeBtn").textContent = (scheme === "dark" ? "ðŸŒ„" : "ðŸŒƒ");
-    if(scheme === "dark") {
+    if (scheme !== "dark" && scheme !== "light") throw new Error("scheme should be 'light' or 'dark'");
+    document.querySelector("#darkModeBtn").innerHTML = (scheme === "dark" ? '<i class="bi bi-moon-stars-fill"></i>' : '<i class="bi bi-brightness-high-fill"></i>');
+    
+    // Set Bootstrap 5 color mode
+    document.documentElement.setAttribute('data-bs-theme', scheme);
+    
+    if (scheme === "dark") {
       document.documentElement.style.colorScheme = "dark";
-      document.body.style.color = "#d8d4cf";
-      document.body.style.backgroundColor = "#131516";
-      document.documentElement.style.setProperty('--box-color', '#2a2a2a');
+      document.body.style.color = "#e2e8f0";
+      document.body.style.backgroundColor = "#0f172a"; // dark background
+      document.documentElement.style.setProperty('--box-color', '#1e293b'); // dark card/box color
     } else {
       document.documentElement.style.colorScheme = "light";
-      document.body.style.color = "black";
-      document.body.style.backgroundColor = "white";
-      document.documentElement.style.setProperty('--box-color', '#ebebeb');
+      document.body.style.color = "#1e293b";
+      document.body.style.backgroundColor = "#f8fafc"; // light background
+      document.documentElement.style.setProperty('--box-color', '#e2e8f0'); // light card/box color
     }
   }
   // during page load, set the chosen mode based on localStorage value if it exists:
-  if(localStorage.forceColorScheme !== undefined) {
+  if (localStorage.forceColorScheme !== undefined) {
     setColorScheme(localStorage.forceColorScheme);
   } else {
     // user has not manually overwritten, so we use OS default:
@@ -193,33 +600,39 @@
     setColorScheme(systemIsInDarkMode ? "dark" : "light");
   }
 </script>
- 
+
 <!-- FEEDBACK STUFF -->
-<div style="position:fixed; bottom:0.5rem; right:0.5rem; text-align:right; z-index:100;">
-  <div id="feedbackCommentsCtn"></div>
-  <button id="feedbackBtn893745ykfuhd" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='âœ– close'; } else {  feedbackCommentsCtn.innerHTML='';  this.innerHTML='ðŸ—¨ï¸ feedback'; }">ðŸ—¨ï¸ feedback</button>
+<div style="position:fixed; bottom:0.75rem; right:0.75rem; text-align:right; z-index:100; max-width: 320px;">
+  <div id="feedbackCommentsCtn" class="shadow rounded mb-2 bg-body-tertiary"></div>
+  <button id="feedbackBtn893745ykfuhd" class="btn btn-secondary rounded-pill d-flex align-items-center gap-1 shadow px-3 py-2 ms-auto"
+    onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='<i class=&quot;bi bi-x-lg&quot;></i> close'; } else {  feedbackCommentsCtn.innerHTML='';  this.innerHTML='<i class=&quot;bi bi-chat-left-text&quot;></i> feedback'; }"><i class="bi bi-chat-left-text"></i> feedback</button>
 </div>
 <script>
   function generateFeedbackCommentsHtml() {
-    let options = {channel:"feedback", hideComments:location.hash.includes("#showfeedback") ? false : true, height:location.hash.includes("#showfeedback") ? 500 : 120, commentPlaceholderText: "Share some feedback. Do not share personal info, data is public.", submitButtonText: "submit feedback"};
-    if(localStorage.forceColorScheme) options.forceColorScheme = localStorage.forceColorScheme;
+    let options = { channel: "feedback", hideComments: location.hash.includes("#showfeedback") ? false : true, height: location.hash.includes("#showfeedback") ? 500 : 120, commentPlaceholderText: "Share some feedback. Do not share personal info, data is public.", submitButtonText: "submit feedback" };
+    if (localStorage.forceColorScheme) options.forceColorScheme = localStorage.forceColorScheme;
     return comments(options);
   }
 </script>
 
 <style>
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
   button:disabled {
-    filter: grayscale(1); /* since firefox doesn't seem to change emoji colors to indicate disabledness - only affects text */
+    filter: grayscale(1);
+    /* since firefox doesn't seem to change emoji colors to indicate disabledness - only affects text */
   }
 
   /* Custom Select Wrapper */
   .custom-select-wrapper {
     position: relative;
-    display: inline-block;
+    display: block;
     user-select: none;
     font-family: inherit;
-    margin: 4px 0;
-    width: 150px;
+    margin: 0;
+    width: 100%;
     text-align: left;
   }
 
@@ -230,34 +643,50 @@
   /* Trigger Button */
   .custom-select-trigger {
     width: 100%;
+    height: 38px;
     padding: 6px 12px;
     background: var(--box-color, #ebebeb);
     color: inherit;
-    border: 1px solid rgba(128, 128, 128, 0.25);
-    border-radius: 6px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: 8px;
     font-size: 85%;
     font-weight: 500;
     text-align: left;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.1s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s ease;
     box-sizing: border-box;
   }
 
   .custom-select-trigger:hover {
-    filter: brightness(0.95);
-    border-color: rgba(128, 128, 128, 0.4);
+    background: var(--box-color, #ebebeb);
+    filter: brightness(0.97);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
   }
 
+  [data-bs-theme="dark"] .custom-select-trigger:hover,
   html[style*="dark"] .custom-select-trigger:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.08);
+    border-color: rgba(96, 165, 250, 0.5);
+    box-shadow: 0 2px 10px rgba(96, 165, 250, 0.15);
   }
 
   .custom-select-trigger:active {
     transform: scale(0.98);
+  }
+
+  .custom-select-wrapper.open .custom-select-trigger {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  [data-bs-theme="dark"] .custom-select-wrapper.open .custom-select-trigger,
+  html[style*="dark"] .custom-select-wrapper.open .custom-select-trigger {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
   }
 
   .custom-select-trigger:focus-visible {
@@ -282,45 +711,133 @@
     height: 0;
     overflow: hidden;
     position: relative;
-    background: rgba(0, 0, 0, 0.04); /* Recessed background */
-    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.04), inset 0 -4px 8px rgba(0, 0, 0, 0.04);
+    background: rgba(248, 250, 252, 0.75); /* Glassmorphism light background */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02), 0 10px 30px rgba(0, 0, 0, 0.04);
     border-radius: 12px;
     margin: 0;
-    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), border 0.3s ease;
-    perspective: 1000px;
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0, 0, 0, 0.08);
   }
 
+  [data-bs-theme="dark"] .custom-dropdown-drawer,
   html[style*="dark"] .custom-dropdown-drawer {
-    background: rgba(0, 0, 0, 0.25);
-    box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+    background: rgba(15, 23, 42, 0.75); /* Glassmorphism dark background */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.06);
   }
 
   .custom-dropdown-drawer.open {
-    height: 126px;
     margin: 0.75rem 0;
-    border: 1px solid rgba(128, 128, 128, 0.15);
+    height: 190px;
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(59, 130, 246, 0.15);
   }
 
-  /* Multi-select: footer adds ~40px */
+  [data-bs-theme="dark"] .custom-dropdown-drawer.open,
+  html[style*="dark"] .custom-dropdown-drawer.open {
+    border-color: rgba(96, 165, 250, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(96, 165, 250, 0.2);
+  }
+
+  /* Height adjustments for search and multi-select footer */
   .custom-dropdown-drawer.open.is-multi {
-    height: 172px;
+    height: 232px;
   }
 
   .custom-dropdown-drawer.open.has-search {
-    height: 168px;
+    height: 232px;
   }
 
-  /* Both search + multi-select footer */
   .custom-dropdown-drawer.open.has-search.is-multi {
-    height: 214px;
+    height: 274px;
   }
 
-  html[style*="dark"] .custom-dropdown-drawer.open {
-    border-color: rgba(255, 255, 255, 0.08);
+  /* Expanded Drawer Height States */
+  .custom-dropdown-drawer.open.expanded {
+    height: 400px;
   }
 
-  /* 3D swing door tray */
+  .custom-dropdown-drawer.open.expanded.is-multi {
+    height: 440px;
+  }
+
+  .custom-dropdown-drawer.open.expanded.has-search {
+    height: 440px;
+  }
+
+  .custom-dropdown-drawer.open.expanded.has-search.is-multi {
+    height: 480px;
+  }
+
+  /* Wrapped Cards Content Layout when Expanded */
+  .custom-dropdown-drawer.expanded .custom-dropdown-drawer-content {
+    flex-wrap: wrap;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: none;
+    align-content: flex-start;
+  }
+
+  /* Drawer Header */
+  .custom-dropdown-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #57606a;
+    font-weight: 700;
+    user-select: none;
+  }
+
+  [data-bs-theme="dark"] .custom-dropdown-drawer-header,
+  html[style*="dark"] .custom-dropdown-drawer-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    color: #8b949e;
+  }
+
+  .drawer-header-title {
+    color: #24292f;
+    text-transform: uppercase;
+  }
+
+  [data-bs-theme="dark"] .drawer-header-title,
+  html[style*="dark"] .drawer-header-title {
+    color: #c9d1d9;
+  }
+
+  .drawer-header-action {
+    color: #0969da;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.15s;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .drawer-header-action:hover {
+    color: #0969da;
+    text-decoration: underline;
+  }
+
+  [data-bs-theme="dark"] .drawer-header-action,
+  html[style*="dark"] .drawer-header-action {
+    color: #58a6ff;
+  }
+
+  [data-bs-theme="dark"] .drawer-header-action:hover,
+  html[style*="dark"] .drawer-header-action:hover {
+    color: #79c0ff;
+  }
+
+  /* 3D swing door tray / Content */
   .custom-dropdown-drawer-content {
     display: flex;
     flex-direction: row;
@@ -330,15 +847,15 @@
     padding: 12px 16px;
     overflow-x: auto;
     width: 100%;
-    height: 100%;
+    flex-grow: 1;
     box-sizing: border-box;
-    scroll-behavior: auto; /* Required for programmatic loop snapping */
+    scroll-behavior: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     transform: rotateX(-90deg);
     transform-origin: top center;
     opacity: 0;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
     scroll-snap-type: x mandatory;
   }
 
@@ -347,88 +864,183 @@
     opacity: 1;
   }
 
+  .custom-dropdown-drawer-content.fade-out {
+    opacity: 0 !important;
+    transform: scale(0.96) rotateX(0deg) !important;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
+  }
+
+  /* Wrapped Cards Content Layout when Expanded */
+  .custom-dropdown-drawer.expanded .custom-dropdown-drawer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: none;
+    align-content: start;
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+
+  .custom-dropdown-drawer.expanded .custom-select-card {
+    width: 100% !important;
+    flex: 1 1 auto;
+    scroll-snap-align: unset;
+  }
+
+  #drawerHeaderActionIcon {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .custom-dropdown-drawer.expanded #drawerHeaderActionIcon {
+    transform: rotate(90deg);
+  }
+
   /* Hide scrollbars but keep functionality */
   .custom-dropdown-drawer-content::-webkit-scrollbar {
+    width: 6px;
     height: 6px;
   }
+
   .custom-dropdown-drawer-content::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .custom-dropdown-drawer-content::-webkit-scrollbar-thumb {
-    background-color: rgba(128, 128, 128, 0.25);
+    background-color: rgba(128, 128, 128, 0.2);
     border-radius: 10px;
-    transition: background-color 0.2s;
   }
+
   .custom-dropdown-drawer-content::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(128, 128, 128, 0.45);
+    background-color: rgba(128, 128, 128, 0.4);
   }
 
   /* Horizontal Option Card layout */
   .custom-select-card {
-    flex: 0 0 auto; /* Crucial: prevent card shrinking */
-    width: 240px;
-    height: 86px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(128, 128, 128, 0.18);
+    flex: 0 0 auto;
+    position: relative;
+    width: 180px;
+    height: 110px;
     border-radius: 10px;
+    overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    color: inherit;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
     box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     scroll-snap-align: center;
     user-select: none;
   }
 
+  [data-bs-theme="dark"] .custom-select-card,
   html[style*="dark"] .custom-select-card {
-    background: rgba(30, 30, 30, 0.75);
     border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    background: #1e293b;
   }
 
   .custom-select-card:hover {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    border-color: #3b82f6;
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
   }
 
+  [data-bs-theme="dark"] .custom-select-card:hover,
   html[style*="dark"] .custom-select-card:hover {
-    background: rgba(40, 40, 40, 0.9);
-    border-color: rgba(96, 165, 250, 0.4);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    border-color: #60a5fa;
+    box-shadow: 0 8px 25px rgba(96, 165, 250, 0.22);
   }
 
   .custom-select-card:active {
-    transform: translateY(-0.5px) scale(0.98);
+    transform: translateY(-1px) scale(0.98);
   }
 
   .custom-select-card.selected {
-    background: rgba(59, 130, 246, 0.06);
     border-color: #3b82f6;
     border-width: 2px;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
   }
 
+  [data-bs-theme="dark"] .custom-select-card.selected,
   html[style*="dark"] .custom-select-card.selected {
-    background: rgba(59, 130, 246, 0.12);
     border-color: #60a5fa;
-    box-shadow: 0 4px 10px rgba(96, 165, 250, 0.2);
+    box-shadow: 0 4px 18px rgba(96, 165, 250, 0.3);
   }
 
-  /* Checkmark for multi-select cards */
-  .card-check {
-    display: none;
+  /* Thumbnail wrapper */
+  .card-image-wrapper {
+    width: 100%;
+    height: 100%;
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 18px;
-    height: 18px;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .custom-select-card:hover .card-image {
+    transform: scale(1.08);
+  }
+
+  .card-image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    line-height: 1;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .custom-select-card:hover .card-image-fallback {
+    transform: scale(1.12);
+  }
+
+  /* Card Gradient Overlay */
+  .custom-select-card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    z-index: 2;
+    pointer-events: none;
+    transition: height 0.2s ease;
+  }
+
+  [data-bs-theme="dark"] .custom-select-card::after,
+  html[style*="dark"] .custom-select-card::after {
+    background: linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.4) 60%, rgba(13, 17, 23, 0) 100%);
+  }
+
+  .custom-select-card:hover::after {
+    height: 70%;
+  }
+
+  /* Checkmark circle */
+  .card-check {
+    display: flex;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
     background: #3b82f6;
     border-radius: 50%;
     color: #fff;
@@ -436,19 +1048,23 @@
     font-weight: 700;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    flex-shrink: 0;
-    z-index: 2;
+    border: 2px solid #ffffff;
+    z-index: 4;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
   }
 
-  .custom-select-card { position: relative; } /* needed for absolute check */
-
-  .custom-dropdown-drawer.is-multi .custom-select-card.selected .card-check {
-    display: flex;
-  }
-
+  [data-bs-theme="dark"] .card-check,
   html[style*="dark"] .card-check {
     background: #60a5fa;
+    border-color: #0f172a;
+  }
+
+  .custom-select-card.selected .card-check {
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* Badge on trigger showing count */
@@ -456,7 +1072,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #3b82f6;
+    background: #0969da;
     color: #fff;
     border-radius: 10px;
     font-size: 70%;
@@ -467,69 +1083,34 @@
     flex-shrink: 0;
   }
 
+  [data-bs-theme="dark"] .custom-select-badge,
   html[style*="dark"] .custom-select-badge {
-    background: #60a5fa;
-    color: #000;
-  }
-
-  /* Thumbnail wrapper */
-  .card-image-wrapper {
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-    position: relative;
-    background: rgba(128, 128, 128, 0.05);
-    border: 1px solid rgba(128, 128, 128, 0.1);
-  }
-
-  .card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: none; /* Shown dynamically on load */
-  }
-
-  .card-image-fallback {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    background: #58a6ff;
+    color: #0d1117;
   }
 
   /* Card content wrapper */
   .card-content {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    right: 10px;
+    z-index: 3;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    flex-grow: 1;
-    overflow: hidden;
     text-align: left;
+    pointer-events: none;
   }
 
   .card-title {
     font-weight: 600;
-    font-size: 0.88rem;
-    margin-bottom: 3px;
+    font-size: 0.8rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .card-description {
-    font-size: 0.72rem;
-    line-height: 1.25;
-    opacity: 0.7;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-break: break-word;
+    margin: 0;
   }
 
   /* Search bar styles inside drawer */
@@ -541,11 +1122,12 @@
     border-bottom: 1px solid rgba(128, 128, 128, 0.1);
     box-sizing: border-box;
     width: 100%;
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(0, 0, 0, 0.015);
   }
 
+  [data-bs-theme="dark"] .custom-dropdown-search-wrapper,
   html[style*="dark"] .custom-dropdown-search-wrapper {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.015);
     border-color: rgba(255, 255, 255, 0.05);
   }
 
@@ -559,30 +1141,43 @@
     font-size: 85%;
     opacity: 0.5;
     pointer-events: none;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
   }
 
   #customDropdownSearchInput {
     width: 100%;
-    padding: 6px 12px 6px 32px;
-    background: var(--box-color, #ebebeb);
-    border: 1px solid rgba(128, 128, 128, 0.2);
+    padding: 7px 12px 7px 32px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(128, 128, 128, 0.15);
     border-radius: 20px;
     font-size: 85%;
     font-family: inherit;
     color: inherit;
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.25s, box-shadow 0.25s, background-color 0.25s;
+  }
+
+  [data-bs-theme="dark"] #customDropdownSearchInput,
+  html[style*="dark"] #customDropdownSearchInput {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   #customDropdownSearchInput:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background-color: rgba(0, 0, 0, 0.01);
   }
 
+  [data-bs-theme="dark"] #customDropdownSearchInput:focus,
   html[style*="dark"] #customDropdownSearchInput:focus {
     border-color: #60a5fa;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    background-color: rgba(255, 255, 255, 0.01);
   }
 
   #customDropdownSearchClear {
@@ -597,10 +1192,12 @@
     display: none;
     color: inherit;
     line-height: 1;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   #customDropdownSearchClear:hover {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
   /* Drawer footer (Done / Clear) */
@@ -609,15 +1206,16 @@
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    padding: 6px 14px;
+    padding: 8px 16px;
     border-top: 1px solid rgba(128, 128, 128, 0.1);
     box-sizing: border-box;
     width: 100%;
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(0, 0, 0, 0.01);
   }
 
+  [data-bs-theme="dark"] .custom-dropdown-drawer-footer,
   html[style*="dark"] .custom-dropdown-drawer-footer {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.01);
     border-color: rgba(255, 255, 255, 0.05);
   }
 
@@ -626,49 +1224,64 @@
   }
 
   .drawer-footer-clear {
-    background: none;
-    border: 1px solid rgba(128, 128, 128, 0.3);
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.25);
     border-radius: 6px;
-    padding: 4px 12px;
+    padding: 6px 14px;
     font-size: 80%;
+    font-weight: 500;
     cursor: pointer;
     color: inherit;
-    opacity: 0.75;
-    transition: opacity 0.15s, border-color 0.15s;
+    opacity: 0.8;
+    transition: all 0.2s ease;
   }
 
   .drawer-footer-clear:hover {
     opacity: 1;
-    border-color: rgba(239, 68, 68, 0.6);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.08);
     color: #ef4444;
+  }
+
+  [data-bs-theme="dark"] .drawer-footer-clear:hover,
+  html[style*="dark"] .drawer-footer-clear:hover {
+    border-color: rgba(248, 113, 113, 0.4);
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
   }
 
   .drawer-footer-done {
     background: #3b82f6;
     border: none;
     border-radius: 6px;
-    padding: 4px 14px;
+    padding: 6px 16px;
     font-size: 80%;
     font-weight: 600;
     cursor: pointer;
     color: #fff;
-    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease, transform 0.1s ease;
   }
 
   .drawer-footer-done:hover {
     background: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
   }
 
   .drawer-footer-done:active {
     transform: scale(0.97);
   }
 
+  [data-bs-theme="dark"] .drawer-footer-done,
   html[style*="dark"] .drawer-footer-done {
     background: #2563eb;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
   }
 
+  [data-bs-theme="dark"] .drawer-footer-done:hover,
   html[style*="dark"] .drawer-footer-done:hover {
     background: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   }
 </style>
 
@@ -678,6 +1291,18 @@
 
   // Which selects support multi-select
   const multiSelectIds = new Set(['currentToneEl', 'currentArchetypeEl', 'currentDynamicsEl']);
+
+  // Dynamic drawer headers based on select ID
+  const drawerHeaders = {
+    'currentModeEl': '01 MODE',
+    'currentSettingEl': '02 WORLD SETTING',
+    'currentToneEl': '03 TONE / VIBE',
+    'currentArchetypeEl': '04 CHARACTER ARCHETYPE',
+    'currentDynamicsEl': '05 RELATIONSHIP DYNAMICS',
+    'currentCharacterCountEl': '06 CHARACTERS COUNT',
+    'currentGenderEl': '07 PROTAGONIST GENDER',
+    'multipleEl': '08 IDEAS COUNT'
+  };
 
   // Maps select id -> global variable name for Perchance lists
   const selectToListNameMap = {
@@ -786,14 +1411,14 @@
   }
 
   function extractEmoji(text) {
-    if (!text) return 'âœ¨';
+    if (!text) return '✨';
     try {
       const match = text.match(/(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u);
       return match ? match[0] : text.charAt(0);
     } catch { return text.charAt(0); }
   }
 
-  window.filterDrawerCards = function(query) {
+  window.filterDrawerCards = function (query) {
     const clearBtn = document.getElementById('customDropdownSearchClear');
     const scrollBox = document.getElementById('customDropdownDrawerContent');
     if (!scrollBox) return;
@@ -801,27 +1426,88 @@
     if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
     scrollBox.querySelectorAll('.custom-select-card').forEach(card => {
       const title = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
-      const desc  = (card.querySelector('.card-description')?.textContent || '').toLowerCase();
-      card.style.display = (title.includes(query) || desc.includes(query)) ? 'flex' : 'none';
+      card.style.display = title.includes(query) ? 'flex' : 'none';
     });
   };
 
-  window.clearDrawerSearch = function() {
+  window.clearDrawerSearch = function () {
     const inp = document.getElementById('customDropdownSearchInput');
     if (inp) { inp.value = ''; filterDrawerCards(''); inp.focus(); }
   };
 
   // Close drawer (Done button)
-  window.closeDrawer = function() {
+  window.closeDrawer = function () {
     const drawer = document.getElementById('customDropdownDrawer');
+    if (!drawer) return;
     drawer.classList.remove('open');
+    drawer.classList.remove('expanded');
+    const actionText = document.getElementById('drawerHeaderActionText');
+    if (actionText) {
+      actionText.textContent = 'VIEW ALL';
+    }
     if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
     currentActiveSelectEl = null;
     currentActiveWrapper = null;
   };
 
+  // Toggle drawer expand state (VIEW ALL / COLLAPSE)
+  window.toggleDrawerExpand = function () {
+    const drawer = document.getElementById('customDropdownDrawer');
+    const actionText = document.getElementById('drawerHeaderActionText');
+    const content = document.getElementById('customDropdownDrawerContent');
+    if (!drawer || !content) return;
+
+    // Fade content out first to prevent visual layout jumps
+    content.classList.add('fade-out');
+
+    setTimeout(() => {
+      const isExpanded = drawer.classList.toggle('expanded');
+      if (actionText) {
+        actionText.textContent = isExpanded ? 'COLLAPSE' : 'VIEW ALL';
+      }
+      
+      // Let the drawer resize and adjust card layout (grid/flex)
+      if (isExpanded) {
+        content.scrollTop = 0;
+      } else {
+        content.scrollLeft = 0;
+      }
+
+      // Scroll to active card in the new layout
+      if (currentActiveSelectEl) {
+        const isMulti = multiSelectIds.has(currentActiveSelectEl.id);
+        const originalOptions = Array.from(currentActiveSelectEl.options);
+        let targetIdx;
+        if (isMulti) {
+          const sel = multiSelectState[currentActiveSelectEl.id];
+          if (sel && sel.size > 0) {
+            const firstVal = Array.from(sel)[0];
+            targetIdx = originalOptions.findIndex(o => o.value === firstVal);
+          }
+        } else {
+          targetIdx = currentActiveSelectEl.selectedIndex;
+        }
+        if (targetIdx != null && targetIdx >= 0) {
+          const targetCard = content.children[targetIdx];
+          if (targetCard) {
+            if (isExpanded) {
+              content.scrollTop = targetCard.offsetTop - (content.clientHeight / 2) + (targetCard.clientHeight / 2);
+            } else {
+              content.scrollLeft = targetCard.offsetLeft - (content.clientWidth / 2) + (targetCard.clientWidth / 2);
+            }
+          }
+        }
+      }
+
+      // Fade content back in
+      setTimeout(() => {
+        content.classList.remove('fade-out');
+      }, 50);
+    }, 150);
+  };
+
   // Clear multi-select (Clear button)
-  window.clearMultiSelect = function() {
+  window.clearMultiSelect = function () {
     if (!currentActiveSelectEl) return;
     const id = currentActiveSelectEl.id;
     if (!multiSelectIds.has(id)) return;
@@ -850,7 +1536,7 @@
     card.className = 'custom-select-card' + (isSelected ? ' selected' : '');
 
     // Retrieve image/description from Perchance list object
-    let imageUrl = null, description = '';
+    let imageUrl = null;
     const listName = selectToListNameMap[selectEl.id];
     if (listName) {
       try {
@@ -859,8 +1545,6 @@
         if (itemObj) {
           const rawImg = String(itemObj.image ?? '').trim();
           if (rawImg && rawImg !== 'undefined') imageUrl = rawImg;
-          const rawDesc = String(itemObj.description ?? '').trim();
-          if (rawDesc && rawDesc !== 'undefined') description = rawDesc;
         }
       } catch (e) { /* silent */ }
     }
@@ -873,19 +1557,45 @@
     fallback.style.background = getGradientForString(opt.textContent);
     fallback.textContent = extractEmoji(opt.textContent);
 
+    const img = document.createElement('img');
+    img.className = 'card-image';
+    img.alt = opt.textContent;
+
+    let hasTriedListUrl = false;
+    let hasTriedPollinationUrl = false;
+
+    img.onload = () => {
+      img.style.display = 'block';
+      fallback.style.display = 'none';
+    };
+
+    img.onerror = () => {
+      if (imageUrl && !hasTriedListUrl) {
+        hasTriedListUrl = true;
+      }
+      if (!hasTriedPollinationUrl) {
+        hasTriedPollinationUrl = true;
+        // Clean name (remove leading emojis and spaces)
+        let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
+        if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
+        img.src = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(cleanPromptName);
+      } else {
+        img.style.display = 'none';
+        fallback.style.display = 'flex';
+      }
+    };
+
     if (imageUrl) {
-      const img = document.createElement('img');
-      img.className = 'card-image';
-      img.alt = opt.textContent;
       img.src = imageUrl;
-      img.onload  = () => { img.style.display = 'block'; fallback.style.display = 'none'; };
-      img.onerror = () => { img.style.display = 'none';  fallback.style.display = 'flex'; };
-      imgWrapper.appendChild(img);
-      imgWrapper.appendChild(fallback);
     } else {
-      fallback.style.display = 'flex';
-      imgWrapper.appendChild(fallback);
+      hasTriedPollinationUrl = true;
+      let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
+      if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
+      img.src = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(cleanPromptName);
     }
+
+    imgWrapper.appendChild(img);
+    imgWrapper.appendChild(fallback);
 
     // Content
     const contentWrapper = document.createElement('div');
@@ -894,20 +1604,12 @@
     title.className = 'card-title';
     title.textContent = opt.textContent;
     contentWrapper.appendChild(title);
-    if (description) {
-      const desc = document.createElement('div');
-      desc.className = 'card-description';
-      desc.textContent = description;
-      contentWrapper.appendChild(desc);
-    }
 
-    // Checkmark (multi-select only)
-    if (isMulti) {
-      const check = document.createElement('div');
-      check.className = 'card-check';
-      check.textContent = 'âœ“';
-      card.appendChild(check);
-    }
+    // Checkmark circle (built for both single/multi select, visible on selected via CSS)
+    const check = document.createElement('div');
+    check.className = 'card-check';
+    check.innerHTML = '<i class="bi bi-check-lg"></i>';
+    card.appendChild(check);
 
     card.appendChild(imgWrapper);
     card.appendChild(contentWrapper);
@@ -946,22 +1648,16 @@
     return card;
   }
 
-  function toggleSelectDrawer(selectEl, wrapper) {
-    const drawer = document.getElementById('customDropdownDrawer');
-    const scrollBox = document.getElementById('customDropdownDrawerContent');
-
-    // Toggle off if same select clicked again
-    if (currentActiveSelectEl === selectEl && drawer.classList.contains('open')) {
-      window.closeDrawer();
-      return;
-    }
-
-    // Close previous
-    if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
-
+  function setupDrawerContent(selectEl, wrapper, scrollBox, drawer) {
     currentActiveSelectEl = selectEl;
     currentActiveWrapper = wrapper;
     wrapper.classList.add('open');
+
+    // Update dynamic drawer header title
+    const headerTitleEl = document.getElementById('drawerHeaderTitle');
+    if (headerTitleEl) {
+      headerTitleEl.textContent = drawerHeaders[selectEl.id] || selectEl.id.toUpperCase();
+    }
 
     const isMulti = multiSelectIds.has(selectEl.id);
     const originalOptions = Array.from(selectEl.options);
@@ -1017,10 +1713,46 @@
       if (targetIdx != null && targetIdx >= 0) {
         const targetCard = scrollBox.children[targetIdx];
         if (targetCard) {
-          scrollBox.scrollLeft = targetCard.offsetLeft - (scrollBox.clientWidth / 2) + (targetCard.clientWidth / 2);
+          if (drawer.classList.contains('expanded')) {
+            scrollBox.scrollTop = targetCard.offsetTop - (scrollBox.clientHeight / 2) + (targetCard.clientHeight / 2);
+          } else {
+            scrollBox.scrollLeft = targetCard.offsetLeft - (scrollBox.clientWidth / 2) + (targetCard.clientWidth / 2);
+          }
         }
       }
     }, 20);
+  }
+
+  function toggleSelectDrawer(selectEl, wrapper) {
+    const drawer = document.getElementById('customDropdownDrawer');
+    const scrollBox = document.getElementById('customDropdownDrawerContent');
+    if (!drawer || !scrollBox) return;
+
+    // Toggle off if same select clicked again
+    if (currentActiveSelectEl === selectEl && drawer.classList.contains('open')) {
+      window.closeDrawer();
+      return;
+    }
+
+    // Close previous wrapper active styling
+    if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
+
+    const isAlreadyOpen = drawer.classList.contains('open');
+
+    if (isAlreadyOpen) {
+      // Fade out
+      scrollBox.classList.add('fade-out');
+      
+      setTimeout(() => {
+        setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+        // Fade in
+        setTimeout(() => {
+          scrollBox.classList.remove('fade-out');
+        }, 50);
+      }, 150);
+    } else {
+      setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+    }
   }
 
   function initializeCustomSelect(selectEl) {
@@ -1038,7 +1770,7 @@
     labelSpan.className = 'custom-select-label';
     const arrowSpan = document.createElement('span');
     arrowSpan.className = 'custom-select-arrow';
-    arrowSpan.textContent = 'â–¼';
+    arrowSpan.innerHTML = '<i class="bi bi-chevron-down"></i>';
     trigger.appendChild(labelSpan);
     trigger.appendChild(arrowSpan);
 
@@ -1077,7 +1809,21 @@
   function initAll() {
     initMultiSelectState();
 
-    document.querySelectorAll('div[style*="flex-wrap:wrap"] select').forEach(select => {
+    // Restore textareas from localStorage
+    if (localStorage.instruction) {
+      instructionEl.value = localStorage.instruction;
+    }
+    window.updateInstructionBtnState();
+    
+    // Set initial placeholder
+    instructionEl.placeholder = modes[currentMode].instructionPlaceholder || instructionEl.dataset.defaultPlaceholder;
+
+    if (localStorage.response) {
+      responseEl.value = localStorage.response;
+    }
+    window.updateResponseBtnState();
+
+    document.querySelectorAll('.card-body select').forEach(select => {
       initializeCustomSelect(select);
     });
 
@@ -1085,6 +1831,10 @@
     if (scrollBox) {
       let isScrolling = false;
       scrollBox.addEventListener('wheel', (e) => {
+        const drawer = document.getElementById('customDropdownDrawer');
+        if (drawer && drawer.classList.contains('expanded')) {
+          return; // Let vertical scrolling happen naturally when expanded
+        }
         if (e.deltaY === 0) return;
         e.preventDefault();
         if (isScrolling) return;
