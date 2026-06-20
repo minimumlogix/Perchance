@@ -26,18 +26,6 @@
             </select>
           </div>
         </div>
-        <!-- Ideas -->
-        <div class="col-6 col-md-3">
-          <div class="d-flex flex-column h-100">
-            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas</span>
-            <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;"
-              class="form-select select-field">
-              <option value="">1️⃣ one idea</option>
-              <option value=".">🔢 multiple ideas</option>
-            </select>
-            <script>multipleEl.value = localStorage.multiple || "";</script>
-          </div>
-        </div>
         <!-- Setting / Genre -->
         <div class="col-6 col-md-3">
           <div class="d-flex flex-column h-100">
@@ -99,6 +87,18 @@
             </select>
           </div>
         </div>
+        <!-- Ideas -->
+        <div class="col-6 col-md-3">
+          <div class="d-flex flex-column h-100">
+            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas</span>
+            <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;"
+              class="form-select select-field">
+              <option value="">1️⃣ one idea</option>
+              <option value=".">🔢 multiple ideas</option>
+            </select>
+            <script>multipleEl.value = localStorage.multiple || "";</script>
+          </div>
+        </div>
         <!-- Protagonist Name -->
         <div class="col-12 col-md-6 offset-md-3 col-lg-4 offset-lg-4 mt-2">
           <div class="d-flex flex-column align-items-center">
@@ -153,94 +153,301 @@
       </button>
     </div>
 
-    <!-- Tab Panels Container (Card style) -->
-    <div class="card shadow-sm mb-4 border-secondary-subtle">
+    <!-- Tab Panels Container (No outer card style) -->
+    <div class="tab-panels-ctn">
       <!-- Plot Tab -->
       <div class="tab-panel active" id="tabPanel-plot">
-        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-          <div class="d-flex align-items-center gap-2">
-            <!-- Space holder for alignment -->
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Instruction —</span>
+            <div class="d-flex align-items-center gap-2">
+              <button id="plotInstructionDeleteBtn" data-mode="delete" onclick="toggleInstructionDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
           </div>
-          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Instruction —</span>
-          <div class="d-flex align-items-center gap-2">
-            <button id="instructionDeleteBtn" data-mode="delete" onclick="toggleInstructionDelete(this)"
-              class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+          <div class="card-body p-0">
+            <textarea id="instructionEl"
+              data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc."
+              placeholder="" class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
+              oninput="handleInstructionInput()"></textarea>
           </div>
         </div>
-        <div class="card-body p-0">
-          <textarea id="instructionEl"
-            data-default-placeholder="(Optional) Add keywords/ideas here, and any other instructions for the AI - e.g. characters, events, etc."
-            placeholder="" class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
-            oninput="handleInstructionInput()"></textarea>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="plotGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="plotLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="plotStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center">
+              <button disabled id="plotContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="plotRetryBtn"
+                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="plotResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="plotOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center">
+              <button id="plotResponseCopyBtn" onclick="copyText('plotResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="plotResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="plotBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="plotBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- World Tab -->
       <div class="tab-panel" id="tabPanel-world">
-        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-          <div class="d-flex align-items-center gap-1">
-            <button id="worldGenerateBtn" onclick="generateForTab('world')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
-              <i class="bi bi-magic"></i> generate world
-            </button>
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— World Notes —</span>
+            <div class="d-flex align-items-center gap-1">
+              <button id="worldCopyBtn" onclick="copyText('worldInstructionEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
           </div>
-          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— World Notes —</span>
-          <div class="d-flex align-items-center gap-1">
-            <button id="worldCopyBtn" onclick="copyText('worldInstructionEl', this)"
-              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          <div class="card-body p-0">
+            <textarea id="worldInstructionEl"
+              placeholder="Describe the world, its lore, geography, factions, rules of magic, technology level, etc."
+              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              oninput="localStorage.worldInstruction=this.value;"></textarea>
           </div>
         </div>
-        <div class="card-body p-0">
-          <textarea id="worldInstructionEl"
-            placeholder="Describe the world, its lore, geography, factions, rules of magic, technology level, etc."
-            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
-            oninput="localStorage.worldInstruction=this.value;"></textarea>
-          <script>if (localStorage.worldInstruction) { worldInstructionEl.value = localStorage.worldInstruction; }</script>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="worldGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="worldLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="worldStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center">
+              <button disabled id="worldContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="worldRetryBtn"
+                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="worldResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="worldOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center">
+              <button id="worldResponseCopyBtn" onclick="copyText('worldResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="worldResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="worldBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="worldBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Roleplay Tab -->
       <div class="tab-panel" id="tabPanel-roleplay">
-        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-          <div class="d-flex align-items-center gap-1">
-            <button id="roleplayGenerateBtn" onclick="generateForTab('roleplay')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
-              <i class="bi bi-magic"></i> generate roleplay
-            </button>
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Roleplay Prompt —</span>
+            <div class="d-flex align-items-center gap-1">
+              <button id="roleplayCopyBtn" onclick="copyText('roleplayInstructionEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
           </div>
-          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Roleplay Prompt —</span>
-          <div class="d-flex align-items-center gap-1">
-            <button id="roleplayCopyBtn" onclick="copyText('roleplayInstructionEl', this)"
-              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          <div class="card-body p-0">
+            <textarea id="roleplayInstructionEl"
+              placeholder="Describe the roleplay scenario: setting, characters, tone, starting scene, etc."
+              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              oninput="localStorage.roleplayInstruction=this.value;"></textarea>
           </div>
         </div>
-        <div class="card-body p-0">
-          <textarea id="roleplayInstructionEl"
-            placeholder="Describe the roleplay scenario: setting, characters, tone, starting scene, etc."
-            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
-            oninput="localStorage.roleplayInstruction=this.value;"></textarea>
-          <script>if (localStorage.roleplayInstruction) { roleplayInstructionEl.value = localStorage.roleplayInstruction; }</script>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="roleplayGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="roleplayLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="roleplayStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center">
+              <button disabled id="roleplayContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="roleplayRetryBtn"
+                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="roleplayResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="roleplayOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center">
+              <button id="roleplayResponseCopyBtn" onclick="copyText('roleplayResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="roleplayResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="roleplayBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="roleplayBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Character Tab -->
       <div class="tab-panel" id="tabPanel-character">
-        <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-          <div class="d-flex align-items-center gap-1">
-            <button id="characterGenerateBtn" onclick="generateForTab('character')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 75%;">
-              <i class="bi bi-magic"></i> generate character
-            </button>
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Character Notes —</span>
+            <div class="d-flex align-items-center gap-1">
+              <button id="characterCopyBtn" onclick="copyText('characterInstructionEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
           </div>
-          <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Character Notes —</span>
-          <div class="d-flex align-items-center gap-1">
-            <button id="characterCopyBtn" onclick="copyText('characterInstructionEl', this)"
-              class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+          <div class="card-body p-0">
+            <textarea id="characterInstructionEl"
+              placeholder="Describe the character: name, role, personality traits, backstory hints, goals, etc."
+              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              oninput="localStorage.characterInstruction=this.value;"></textarea>
           </div>
         </div>
-        <div class="card-body p-0">
-          <textarea id="characterInstructionEl"
-            placeholder="Describe the character: name, role, personality traits, backstory hints, goals, etc."
-            class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
-            oninput="localStorage.characterInstruction=this.value;"></textarea>
-          <script>if (localStorage.characterInstruction) { characterInstructionEl.value = localStorage.characterInstruction; }</script>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="characterGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="characterLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="characterStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center">
+              <button disabled id="characterContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="characterRetryBtn"
+                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="characterResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="characterOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center">
+              <button id="characterResponseCopyBtn" onclick="copyText('characterResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="characterResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="characterBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="characterBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -323,23 +530,24 @@
 
     // Toggle response delete button state (Delete / Undo)
     window.toggleResponseDelete = function(btn) {
+      const tab = localStorage.activeTab || 'plot';
       if (btn.dataset.mode === 'delete') {
-        if (typeof stopBtn !== 'undefined' && stopBtn.style.display !== 'none') {
-          stopBtn.click();
+        if (typeof activeStopBtn !== 'undefined' && activeStopBtn.style.display !== 'none') {
+          activeStopBtn.click();
         }
-        window.deletedResponse = responseEl.value;
-        responseEl.value = '';
+        window['deletedResponse_' + tab] = activeResponseEl.value;
+        activeResponseEl.value = '';
         btn.dataset.mode = 'undo';
         btn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Undo';
         btn.classList.replace('btn-outline-danger', 'btn-outline-warning');
       } else {
-        responseEl.value = window.deletedResponse;
+        activeResponseEl.value = window['deletedResponse_' + tab] || '';
         btn.dataset.mode = 'delete';
         btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
         btn.classList.replace('btn-outline-warning', 'btn-outline-danger');
       }
-      localStorage.response = responseEl.value;
-      responseEl.dispatchEvent(new Event('input', { bubbles: true }));
+      localStorage[tab + 'Response'] = activeResponseEl.value;
+      activeResponseEl.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
     // Toggle instruction delete button state (Delete / Undo)
@@ -361,7 +569,7 @@
     };
 
     window.updateInstructionBtnState = function() {
-      const btn = document.getElementById('instructionDeleteBtn');
+      const btn = document.getElementById('plotInstructionDeleteBtn');
       if (!btn) return;
       const val = instructionEl.value.trim();
       if (val === '') {
@@ -379,25 +587,28 @@
     window.handleInstructionInput = function() {
       localStorage.instruction = instructionEl.value;
       window.updateInstructionBtnState();
-      if (generateBtn.innerHTML.includes('regenerate')) {
-        generateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
+      if (activeGenerateBtn && activeGenerateBtn.innerHTML.includes('regenerate')) {
+        activeGenerateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
       }
     };
 
     window.updateResponseBtnState = function() {
-      const btn = document.getElementById('responseDeleteBtn');
+      if (!activeResponseEl) return;
+      const btn = activeResponseDeleteBtn;
       if (!btn) return;
-      const val = responseEl.value.trim();
+      const val = activeResponseEl.value.trim();
       if (val === '') {
-        continueBtn.disabled = true;
-        bottomContinueBtn.disabled = true;
-        generateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
+        activeContinueBtn.disabled = true;
+        activeBottomContinueBtn.disabled = true;
+        activeGenerateBtn.innerHTML = '<i class="bi bi-magic"></i> generate';
         btn.style.display = 'none';
+        activeResponseCopyBtn.style.display = 'none';
       } else {
-        continueBtn.disabled = false;
-        bottomContinueBtn.disabled = false;
-        generateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate';
+        activeContinueBtn.disabled = false;
+        activeBottomContinueBtn.disabled = false;
+        activeGenerateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate';
         btn.style.display = '';
+        activeResponseCopyBtn.style.display = '';
         if (btn.dataset.mode !== 'undo') {
           btn.dataset.mode = 'delete';
           btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
@@ -407,7 +618,8 @@
     };
 
     window.handleResponseInput = function() {
-      localStorage.response = responseEl.value;
+      const tab = localStorage.activeTab || 'plot';
+      localStorage[tab + 'Response'] = activeResponseEl.value;
       window.updateResponseBtnState();
     };
 
@@ -419,112 +631,29 @@
       if (btn) btn.classList.add('active');
       if (panel) panel.classList.add('active');
       localStorage.activeTab = name;
-    };
-    // Restore last active tab
-    (function() {
-      const saved = localStorage.activeTab;
-      if (saved && saved !== 'plot') window.switchTab(saved);
-    })();
 
-    // Generate for auxiliary tabs (world / roleplay / character)
-    window.generateForTab = async function(tabName) {
-      const instructionMap = {
-        world: { el: 'worldInstructionEl', storageKey: 'worldInstruction',
-          prompt: 'You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.' },
-        roleplay: { el: 'roleplayInstructionEl', storageKey: 'roleplayInstruction',
-          prompt: 'You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.' },
-        character: { el: 'characterInstructionEl', storageKey: 'characterInstruction',
-          prompt: 'You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.' }
-      };
-      const cfg = instructionMap[tabName];
-      if (!cfg) return;
-      const instrEl = document.getElementById(cfg.el);
-      const genBtn = document.getElementById(tabName + 'GenerateBtn');
-      if (!instrEl) return;
+      // Update global references to active elements
+      window.activeResponseEl = document.getElementById(name + 'ResponseEl');
+      window.activeResponseDeleteBtn = document.getElementById(name + 'ResponseDeleteBtn');
+      window.activeResponseCopyBtn = document.getElementById(name + 'ResponseCopyBtn');
+      window.activeContinueBtn = document.getElementById(name + 'ContinueBtn');
+      window.activeBottomContinueBtn = document.getElementById(name + 'BottomContinueBtn');
+      window.activeRetryBtn = document.getElementById(name + 'RetryBtn');
+      window.activeGenerateBtn = document.getElementById(name + 'GenerateBtn');
+      window.activeLoaderEl = document.getElementById(name + 'LoaderEl');
+      window.activeStopBtn = document.getElementById(name + 'StopBtn');
+      window.activeBottomStopBtn = document.getElementById(name + 'BottomStopBtn');
       
-      let userInstr = instrEl.value.trim();
-      const generatedDivider = "\n\n=== Generated ===\n";
-      const dividerIdx = userInstr.indexOf(generatedDivider);
-      if (dividerIdx !== -1) {
-        userInstr = userInstr.substring(0, dividerIdx).trim();
-      }
-      const activePrompt = userInstr || 'Be creative and freeform.';
-      const fullInstruction = cfg.prompt + '\n\nUser Notes: ' + activePrompt;
+      // Update active response buttons visual state
+      window.updateResponseBtnState();
       
-      if (genBtn) {
-        genBtn.disabled = true;
-        genBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>generating...';
-      }
-      try {
-        let result = await ai({
-          instruction: fullInstruction,
-          onChunk: function(data) {
-            instrEl.value = userInstr + generatedDivider + data.fullTextSoFar;
-            if (instrEl.scrollTop + instrEl.offsetHeight > instrEl.scrollHeight - 60) {
-              instrEl.scrollTop = instrEl.scrollHeight;
-            }
-          }
-        });
-        localStorage[cfg.storageKey] = instrEl.value;
-      } catch(e) {
-        instrEl.value = userInstr + generatedDivider + 'Error: ' + e.message;
-      }
-      if (genBtn) {
-        genBtn.disabled = false;
-        genBtn.innerHTML = '<i class="bi bi-magic"></i> generate ' + tabName;
+      if (typeof window.closeDrawer === 'function') {
+        window.closeDrawer();
       }
     };
   </script>
 
-  <div class="d-flex justify-content-center align-items-center my-4">
-    <div class="position-relative d-inline-block">
-      <button id="generateBtn" onclick="responseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
-        <i class="bi bi-magic"></i> generate
-      </button>
-      <span id="loaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
-      <button id="stopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
-        <i class="bi bi-stop-circle"></i> stop
-      </button>
-    </div>
-  </div>
 
-  <!-- Output Card -->
-  <div class="card shadow-sm border-secondary-subtle w-100 mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-      <div class="card-actions-left d-flex gap-1 align-items-center">
-        <button disabled id="continueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
-          <i class="bi bi-play-fill"></i> continue
-        </button>
-        <button disabled id="retryBtn"
-          onclick="responseEl.value=window.responseContentBeforeLastGenerate||responseEl.value; generate()"
-          class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
-          <i class="bi bi-arrow-clockwise"></i> retry
-        </button>
-        <button id="responseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
-          class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
-      </div>
-      <span id="outputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
-      <div class="card-actions-right d-flex gap-1 align-items-center">
-        <button id="responseCopyBtn" onclick="copyText('responseEl', this)"
-          class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
-      </div>
-    </div>
-    <div class="card-body p-0">
-      <textarea id="responseEl" oninput="handleResponseInput()"
-        placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
-        class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
-    </div>
-    <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
-      <div class="d-flex gap-1">
-        <button disabled id="bottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
-          <i class="bi bi-play-fill"></i> continue
-        </button>
-        <button id="bottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
-          <i class="bi bi-stop-circle"></i> stop
-        </button>
-      </div>
-    </div>
-  </div>
 
 
 
@@ -1818,10 +1947,28 @@
     // Set initial placeholder
     instructionEl.placeholder = modes[currentMode].instructionPlaceholder || instructionEl.dataset.defaultPlaceholder;
 
-    if (localStorage.response) {
-      responseEl.value = localStorage.response;
+    if (localStorage.worldInstruction) {
+      worldInstructionEl.value = localStorage.worldInstruction;
     }
-    window.updateResponseBtnState();
+    if (localStorage.roleplayInstruction) {
+      roleplayInstructionEl.value = localStorage.roleplayInstruction;
+    }
+    if (localStorage.characterInstruction) {
+      characterInstructionEl.value = localStorage.characterInstruction;
+    }
+
+    // Restore output textareas from localStorage
+    const tabs = ['plot', 'world', 'roleplay', 'character'];
+    tabs.forEach(tab => {
+      const resEl = document.getElementById(tab + 'ResponseEl');
+      if (resEl && localStorage[tab + 'Response']) {
+        resEl.value = localStorage[tab + 'Response'];
+      }
+    });
+
+    // Initialize active tab
+    const savedTab = localStorage.activeTab || 'plot';
+    window.switchTab(savedTab);
 
     document.querySelectorAll('.card-body select').forEach(select => {
       initializeCustomSelect(select);

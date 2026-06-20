@@ -9,68 +9,87 @@ $meta
 settings
   instruction() =>
     this.lastModeUsed = currentMode;
-    return modes[currentMode].instruction.toString();
-  startWith() =>
-    if(responseEl.value.trim() === "") {
-      return modes[currentMode].startWith || "";
+    if(localStorage.activeTab === "plot" || !localStorage.activeTab) {
+      return modes[currentMode].instruction.toString();
     } else {
-      return responseEl.value;
+      let tab = localStorage.activeTab;
+      let notesEl = document.getElementById(tab + "InstructionEl");
+      let userNotes = notesEl ? notesEl.value.trim() : "";
+      let activePrompt = userNotes || "Be creative and freeform.";
+      let constraints = getConstraints();
+      if (tab === "world") {
+        return "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+      } else if (tab === "roleplay") {
+        return "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+      } else if (tab === "character") {
+        return "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+      }
+      return "";
     }
-  hideStartWith = [ responseEl.value.trim() === "" && modes[currentMode].hideStartWith === true ? true : false ]
-  outputTo = [responseEl]  // this is the 'id' of an element in the HTML editor (bottom-right panel) - notice that there's a <textarea> with id="responseEl"
+  startWith() =>
+    if(activeResponseEl.value.trim() === "") {
+      if(localStorage.activeTab === "plot" || !localStorage.activeTab) {
+        return modes[currentMode].startWith || "";
+      } else {
+        return "";
+      }
+    } else {
+      return activeResponseEl.value;
+    }
+  hideStartWith = [ activeResponseEl.value.trim() === "" && (localStorage.activeTab === "plot" || !localStorage.activeTab) && modes[currentMode].hideStartWith === true ? true : false ]
+  outputTo = [activeResponseEl]  // this targets the active response element textarea
   onChunk(data) =>
-    if(responseEl.scrollTop+responseEl.offsetHeight > responseEl.scrollHeight-60) { // if they're already scrolled near the bottom
-      responseEl.scrollTop = responseEl.scrollHeight;
+    if(activeResponseEl.scrollTop+activeResponseEl.offsetHeight > activeResponseEl.scrollHeight-60) {
+      activeResponseEl.scrollTop = activeResponseEl.scrollHeight;
     }
-    if(modes[this.lastModeUsed].onChunk) modes[this.lastModeUsed].onChunk(data);
+    if(localStorage.activeTab === "plot" && modes[this.lastModeUsed].onChunk) modes[this.lastModeUsed].onChunk(data);
   onStart(data) =>
-    responseDeleteBtn.style.display = '';
-    responseDeleteBtn.dataset.mode = 'delete';
-    responseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
-    responseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
-    continueBtn.disabled = true;
-    bottomContinueBtn.disabled = true;
-    retryBtn.disabled = true;
-    responseCopyBtn.style.display = "";
-    if(modes[this.lastModeUsed].onStart) modes[this.lastModeUsed].onStart(data);
+    activeResponseDeleteBtn.style.display = '';
+    activeResponseDeleteBtn.dataset.mode = 'delete';
+    activeResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    activeResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+    activeGenerateBtn.disabled = true;
+    activeGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+    activeContinueBtn.disabled = true;
+    activeBottomContinueBtn.disabled = true;
+    activeRetryBtn.disabled = true;
+    activeResponseCopyBtn.style.display = "";
+    if(localStorage.activeTab === "plot" && modes[this.lastModeUsed].onStart) modes[this.lastModeUsed].onStart(data);
   onFinish(data) =>
-    generateBtn.disabled = false;
-    generateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
-    continueBtn.disabled = false;
-    bottomContinueBtn.disabled = false;
-    retryBtn.disabled = false;
-    loaderEl.innerHTML = "";
-    localStorage.response = responseEl.value;
-    if(responseDeleteBtn.dataset.mode !== 'undo') {
-      responseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
-      responseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+    activeGenerateBtn.disabled = false;
+    activeGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+    activeContinueBtn.disabled = false;
+    activeBottomContinueBtn.disabled = false;
+    activeRetryBtn.disabled = false;
+    activeLoaderEl.innerHTML = "";
+    localStorage[localStorage.activeTab + "Response"] = activeResponseEl.value;
+    if(activeResponseDeleteBtn.dataset.mode !== 'undo') {
+      activeResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+      activeResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
     }
-    if(modes[this.lastModeUsed].onFinish) modes[this.lastModeUsed].onFinish(data);
-  render = [ modes[currentMode].render || null ]
+    if(localStorage.activeTab === "plot" && modes[this.lastModeUsed].onFinish) modes[this.lastModeUsed].onFinish(data);
+  render = [ localStorage.activeTab === "plot" ? (modes[currentMode].render || null) : null ]
   
 
 async generate() =>
-  window.responseContentBeforeLastGenerate = responseEl.value;
+  window.responseContentBeforeLastGenerate = activeResponseEl.value;
   let pendingObj = ai(settings);
-  stopBtn.style.display = "";
-  bottomStopBtn.style.display = "";
+  activeStopBtn.style.display = "";
+  activeBottomStopBtn.style.display = "";
   function stopClickHandler() {
     pendingObj.stop();
-    stopBtn.style.display = "none";
-    bottomStopBtn.style.display = "none";
+    activeStopBtn.style.display = "none";
+    activeBottomStopBtn.style.display = "none";
   };
-  stopBtn.onclick = stopClickHandler;
-  bottomStopBtn.onclick = stopClickHandler;
-  loaderEl.innerHTML = pendingObj.loadingIndicatorHtml;
-  continueBtn.disabled = false;
-  bottomContinueBtn.disabled = false;
-  retryBtn.disabled = false;
-  this.textContent = 'regenerate';
+  activeStopBtn.onclick = stopClickHandler;
+  activeBottomStopBtn.onclick = stopClickHandler;
+  activeLoaderEl.innerHTML = pendingObj.loadingIndicatorHtml;
+  activeContinueBtn.disabled = false;
+  activeBottomContinueBtn.disabled = false;
+  activeRetryBtn.disabled = false;
   let data = await pendingObj.onFinishPromise;
-  stopBtn.style.display = "none";
-  bottomStopBtn.style.display = "none";
+  activeStopBtn.style.display = "none";
+  activeBottomStopBtn.style.display = "none";
   
 
 
@@ -207,7 +226,7 @@ modes
 
 worldSettings
   none
-    label = 🌍 Any / Default Setting
+    label = 🌍 Any Setting
     description = Any setting or genre
     image = https://loremflickr.com/800/600/abstract
   fantasy
@@ -265,7 +284,7 @@ worldSettings
 
 tones
   none
-    label = 🎭 Any / Default Tone
+    label = 🎭 Any Tone
     description = Any tone or vibe
     image = https://loremflickr.com/800/600/abstract
   serious
@@ -307,7 +326,7 @@ tones
 
 archetypes
   none
-    label = 👤 Any / Default Archetype
+    label = 👤 Any Archetype
     description = Any character role
     image = https://loremflickr.com/800/600/abstract
   hero
@@ -353,7 +372,7 @@ archetypes
 
 dynamics
   none
-    label = 🔗 Any / Default Dynamics
+    label = 🔗 Any Dynamics
     description = Any relationship dynamic
     image = https://loremflickr.com/800/600/abstract
   enemies_to_lovers
@@ -399,7 +418,7 @@ dynamics
 
 characterCounts
   none
-    label = 👥 Any / Default Characters
+    label = 👥 Any Character Count
     description = Any character count
     image = https://loremflickr.com/800/600/abstract
   single
@@ -413,7 +432,7 @@ characterCounts
 
 genders
   none
-    label = ⚥ Any / Default Gender
+    label = ⚥ Any Gender
     description = Any gender selection
     image = https://loremflickr.com/800/600/abstract
   male
