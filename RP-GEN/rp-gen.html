@@ -207,7 +207,7 @@
             </div>
             <span id="plotOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
             <div class="card-actions-right d-flex gap-1 align-items-center">
-              <button id="plotResponseCopyBtn" onclick="copyText('plotResponseEl', this)"
+              <button id="plotCopyBtn" onclick="copyText('plotResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
           </div>
@@ -239,8 +239,7 @@
             </div>
             <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— World Notes —</span>
             <div class="d-flex align-items-center gap-1">
-              <button id="worldCopyBtn" onclick="copyText('worldInstructionEl', this)"
-                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+              <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
@@ -281,7 +280,7 @@
             </div>
             <span id="worldOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
             <div class="card-actions-right d-flex gap-1 align-items-center">
-              <button id="worldResponseCopyBtn" onclick="copyText('worldResponseEl', this)"
+              <button id="worldCopyBtn" onclick="copyText('worldResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
           </div>
@@ -313,8 +312,7 @@
             </div>
             <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Roleplay Prompt —</span>
             <div class="d-flex align-items-center gap-1">
-              <button id="roleplayCopyBtn" onclick="copyText('roleplayInstructionEl', this)"
-                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+              <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
@@ -355,7 +353,7 @@
             </div>
             <span id="roleplayOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
             <div class="card-actions-right d-flex gap-1 align-items-center">
-              <button id="roleplayResponseCopyBtn" onclick="copyText('roleplayResponseEl', this)"
+              <button id="roleplayCopyBtn" onclick="copyText('roleplayResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
           </div>
@@ -387,8 +385,7 @@
             </div>
             <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Character Notes —</span>
             <div class="d-flex align-items-center gap-1">
-              <button id="characterCopyBtn" onclick="copyText('characterInstructionEl', this)"
-                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;"><i class="bi bi-clipboard"></i> copy</button>
+              <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
@@ -429,7 +426,7 @@
             </div>
             <span id="characterOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
             <div class="card-actions-right d-flex gap-1 align-items-center">
-              <button id="characterResponseCopyBtn" onclick="copyText('characterResponseEl', this)"
+              <button id="characterCopyBtn" onclick="copyText('characterResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
           </div>
@@ -635,7 +632,7 @@
       // Update global references to active elements
       window.activeResponseEl = document.getElementById(name + 'ResponseEl');
       window.activeResponseDeleteBtn = document.getElementById(name + 'ResponseDeleteBtn');
-      window.activeResponseCopyBtn = document.getElementById(name + 'ResponseCopyBtn');
+      window.activeResponseCopyBtn = document.getElementById(name + 'CopyBtn');
       window.activeContinueBtn = document.getElementById(name + 'ContinueBtn');
       window.activeBottomContinueBtn = document.getElementById(name + 'BottomContinueBtn');
       window.activeRetryBtn = document.getElementById(name + 'RetryBtn');
