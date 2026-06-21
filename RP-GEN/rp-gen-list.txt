@@ -361,7 +361,7 @@ archetypes
     description = The Villain / Antagonist main focus
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/villain-archetype.jpg
   mentor
-    label = 🧙♂️ Mentor
+    label = 🧙 Mentor
     description = The wise teacher, guide, or trainer
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-archetype.jpg
   sidekick
@@ -370,7 +370,7 @@ archetypes
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sidekick-archetype.jpg
   rogue
     label = 🗡️ Rogue
-    description = Sneaky, clever thief or assassin
+    description = Sneaky, clever thief, assassin or any rougue
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rogue-archetype.jpg
   scholar
     label = 📖 Scholar
