@@ -1,3 +1,4 @@
+<link rel="icon" type="image/svg+xml" href="https://minimumlogix.github.io/Perchance/RP-GEN/assets/favicon.svg">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1028,12 +1029,14 @@
     window.toggleSettingsDrawer = function() {
       const drawer = document.getElementById('sideDrawer');
       const brainDrawer = document.getElementById('brainDrawer');
+      const cleanupDrawer = document.getElementById('cleanupDrawer');
       const overlay = document.getElementById('drawerOverlay');
       if (!drawer || !overlay) return;
       
       const isOpen = drawer.classList.toggle('open');
       if (isOpen) {
         if (brainDrawer) brainDrawer.classList.remove('open');
+        if (cleanupDrawer) cleanupDrawer.classList.remove('open');
         overlay.classList.add('show');
         if (typeof window.closeDrawer === 'function') window.closeDrawer();
       } else {
@@ -1045,15 +1048,36 @@
     window.toggleBrainDrawer = function() {
       const drawer = document.getElementById('brainDrawer');
       const sideDrawer = document.getElementById('sideDrawer');
+      const cleanupDrawer = document.getElementById('cleanupDrawer');
       const overlay = document.getElementById('drawerOverlay');
       if (!drawer || !overlay) return;
       
       const isOpen = drawer.classList.toggle('open');
       if (isOpen) {
         if (sideDrawer) sideDrawer.classList.remove('open');
+        if (cleanupDrawer) cleanupDrawer.classList.remove('open');
         overlay.classList.add('show');
         if (typeof window.closeDrawer === 'function') window.closeDrawer();
         window.updateBrainContextView();
+      } else {
+        overlay.classList.remove('show');
+      }
+    };
+
+    // Toggle Cleanup Drawer
+    window.toggleCleanupDrawer = function() {
+      const drawer = document.getElementById('cleanupDrawer');
+      const sideDrawer = document.getElementById('sideDrawer');
+      const brainDrawer = document.getElementById('brainDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      if (!drawer || !overlay) return;
+      
+      const isOpen = drawer.classList.toggle('open');
+      if (isOpen) {
+        if (sideDrawer) sideDrawer.classList.remove('open');
+        if (brainDrawer) brainDrawer.classList.remove('open');
+        overlay.classList.add('show');
+        if (typeof window.closeDrawer === 'function') window.closeDrawer();
       } else {
         overlay.classList.remove('show');
       }
@@ -1063,10 +1087,12 @@
     window.closeAllDrawers = function() {
       const sideDrawer = document.getElementById('sideDrawer');
       const brainDrawer = document.getElementById('brainDrawer');
+      const cleanupDrawer = document.getElementById('cleanupDrawer');
       const overlay = document.getElementById('drawerOverlay');
       
       if (sideDrawer) sideDrawer.classList.remove('open');
       if (brainDrawer) brainDrawer.classList.remove('open');
+      if (cleanupDrawer) cleanupDrawer.classList.remove('open');
       if (overlay) overlay.classList.remove('show');
     };
 
@@ -1349,7 +1375,13 @@
 <!-- BRAIN DRAWER BUTTON -->
 <div style="position:fixed; top:3.75rem; right:0.75rem; z-index: var(--fixed-btn-layer);">
   <button id="brainDrawerBtn" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 42px; height: 42px; cursor:pointer;"
-    onclick="window.toggleBrainDrawer();" title="View AI Context"><i class="bi bi-brain-fill"></i></button>
+    onclick="window.toggleBrainDrawer();" title="View AI Context"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 0-3-4H9"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .556-6.588"/><path d="M20.523 10.896a4 4 0 0 0-.556-6.588"/></svg></button>
+</div>
+
+<!-- CLEANUP DRAWER BUTTON -->
+<div style="position:fixed; top:6.75rem; right:0.75rem; z-index: var(--fixed-btn-layer);">
+  <button id="cleanupDrawerBtn" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 42px; height: 42px; cursor:pointer;"
+    onclick="window.toggleCleanupDrawer();" title="Clear & Reset Data"><i class="bi bi-trash-fill"></i></button>
 </div>
 
 <!-- Side Settings Drawer -->
@@ -1451,7 +1483,7 @@
 <!-- Side Brain Context Drawer -->
 <div id="brainDrawer" class="side-drawer">
   <div class="side-drawer-header">
-    <h5 class="m-0 fw-bold"><i class="bi bi-brain-fill"></i> AI Context Viewer</h5>
+    <h5 class="m-0 fw-bold"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain me-1" style="vertical-align: text-bottom;"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 0-3-4H9"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .556-6.588"/><path d="M20.523 10.896a4 4 0 0 0-.556-6.588"/></svg> AI Context Viewer</h5>
     <button class="btn-close" onclick="window.toggleBrainDrawer()"></button>
   </div>
   <div class="side-drawer-body d-flex flex-column h-100 p-3" style="overflow: hidden;">
@@ -1470,6 +1502,47 @@
     
     <div class="text-center text-muted small mt-1" style="font-size: 70%;">
       Updates automatically as you toggle tabs, edit notes, or type.
+    </div>
+  </div>
+</div>
+
+<!-- Side Cleanup Drawer -->
+<div id="cleanupDrawer" class="side-drawer">
+  <div class="side-drawer-header">
+    <h5 class="m-0 fw-bold"><i class="bi bi-trash-fill"></i> Clear & Reset Data</h5>
+    <button class="btn-close" onclick="window.toggleCleanupDrawer()"></button>
+  </div>
+  <div class="side-drawer-body d-flex flex-column h-100 p-3" style="overflow: hidden;">
+    <p class="small text-muted mb-4" style="font-size: 11px; line-height: 1.4;">
+      Optimize your session by resetting settings or clearing accumulated chat/note history.
+    </p>
+
+    <!-- Reset Settings Card -->
+    <div class="card p-3 mb-4 border-secondary-subtle bg-body-tertiary">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-sliders text-primary fs-5"></i>
+        <h6 class="m-0 fw-bold">Reset Settings</h6>
+      </div>
+      <p class="small text-muted mb-3" style="font-size: 80%; line-height: 1.4;">
+        Restore all selectors in the Settings card (Mode, Setting, Tone, Archetype, Dynamics, Characters, Gender, Protagonist Name) to their default options. Your text inputs and outputs remain unchanged.
+      </p>
+      <button class="btn btn-sm btn-outline-primary w-100 fw-semibold" onclick="window.resetSettingsToDefault()">
+        <i class="bi bi-arrow-counterclockwise"></i> Reset Settings
+      </button>
+    </div>
+
+    <!-- Clear Data Card -->
+    <div class="card p-3 border-danger-subtle bg-body-tertiary">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-eraser-fill text-danger fs-5"></i>
+        <h6 class="m-0 fw-bold text-danger">Clear Data</h6>
+      </div>
+      <p class="small text-muted mb-3" style="font-size: 80%; line-height: 1.4;">
+        Completely erase all text instructions and generated outputs across all tabs (Plot, World, Roleplay, Character, Lore, Intro). This frees up maximum context space for the AI.
+      </p>
+      <button class="btn btn-sm btn-outline-danger w-100 fw-semibold" onclick="window.clearAllDataAndOutputs()">
+        <i class="bi bi-trash-fill"></i> Clear All Data
+      </button>
     </div>
   </div>
 </div>
@@ -2553,11 +2626,18 @@
     transform: rotate(45deg);
   }
 
-  #brainDrawerBtn i {
+  #brainDrawerBtn svg {
     transition: transform 0.3s ease;
   }
-  #brainDrawerBtn:hover i {
+  #brainDrawerBtn:hover svg {
     transform: scale(1.18);
+  }
+
+  #cleanupDrawerBtn i {
+    transition: transform 0.3s ease;
+  }
+  #cleanupDrawerBtn:hover i {
+    transform: rotate(15deg) scale(1.15);
   }
 
   #brainContextTextarea {
@@ -3360,6 +3440,130 @@
     if (e.target.closest('.custom-select-trigger') || e.target.closest('#customDropdownDrawer')) return;
     window.closeDrawer();
   });
+
+  // Reset all settings to default values
+  window.resetSettingsToDefault = function() {
+    if (!confirm("Are you sure you want to reset all settings to their default values? Your text inputs and outputs will be preserved.")) {
+      return;
+    }
+
+    // Reset single-select dropdowns to index 0
+    const singleSelectIds = ['currentModeEl', 'currentCharacterCountEl', 'currentGenderEl'];
+    singleSelectIds.forEach(id => {
+      const selectEl = document.getElementById(id);
+      if (selectEl) {
+        selectEl.selectedIndex = 0;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof selectEl.onchange === 'function') selectEl.onchange();
+        
+        // Update custom select trigger labels
+        const wrapper = document.getElementById('custom-select-' + id);
+        if (wrapper) {
+          const labelSpan = wrapper.querySelector('.custom-select-label');
+          if (labelSpan && selectEl.options[0]) {
+            labelSpan.textContent = selectEl.options[0].textContent;
+          }
+        }
+      }
+    });
+
+    // Reset multi-select dropdowns to empty or 'none' if option exists
+    for (const id of multiSelectIds) {
+      const selectEl = document.getElementById(id);
+      const sel = new Set();
+      if (selectEl) {
+        const hasNoneOption = Array.from(selectEl.options).some(o => o.value === 'none');
+        if (hasNoneOption) {
+          sel.add('none');
+        }
+      }
+      multiSelectState[id] = sel;
+      saveMultiSelectState(id);
+      
+      // Update custom select wrapper label & badge
+      const wrapper = document.getElementById('custom-select-' + id);
+      if (selectEl && wrapper) {
+        updateMultiSelectLabel(selectEl, wrapper);
+      }
+    }
+
+    // Reset Protagonist Name
+    const userNameEl = document.getElementById('userNameEl');
+    if (userNameEl) {
+      userNameEl.value = "";
+      localStorage.userName = "";
+    }
+
+    // Close all drawers
+    window.closeAllDrawers();
+    
+    alert("All setting options have been reset to default.");
+  };
+
+  // Clear all input and output fields across all tabs
+  window.clearAllDataAndOutputs = function() {
+    if (!confirm("Are you sure you want to clear all input fields and generated outputs across all tabs? This action cannot be undone.")) {
+      return;
+    }
+    
+    const tabs = ['plot', 'world', 'roleplay', 'character', 'lore', 'intro'];
+    
+    // Clear main instruction textarea
+    const mainInput = document.getElementById('instructionEl');
+    if (mainInput) {
+      mainInput.value = '';
+      localStorage.removeItem('instruction');
+    }
+    
+    // Clear tab instructions and responses
+    tabs.forEach(tab => {
+      if (tab !== 'plot') {
+        const inputEl = document.getElementById(tab + 'InstructionEl');
+        if (inputEl) {
+          inputEl.value = '';
+        }
+        localStorage.removeItem(tab + 'Instruction');
+      }
+      
+      const resEl = document.getElementById(tab + 'ResponseEl');
+      if (resEl) {
+        resEl.value = '';
+      }
+      localStorage.removeItem(tab + 'Response');
+    });
+    
+    // Reset delete state modes to default for the active buttons
+    document.querySelectorAll('[id$="ResponseDeleteBtn"]').forEach(btn => {
+      btn.dataset.mode = 'delete';
+      btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+      btn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+      btn.style.display = 'none';
+    });
+    document.querySelectorAll('[id$="InstructionDeleteBtn"]').forEach(btn => {
+      btn.dataset.mode = 'delete';
+      btn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+      btn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+      btn.style.display = 'none';
+    });
+    
+    // Update UI button visibility and labels
+    if (typeof window.updateResponseBtnState === 'function') {
+      window.updateResponseBtnState();
+    }
+    if (typeof window.updateInstructionBtnState === 'function') {
+      window.updateInstructionBtnState();
+    }
+    
+    // Refresh the active tab context in viewer
+    if (typeof window.updateBrainContextView === 'function') {
+      window.updateBrainContextView();
+    }
+    
+    // Close all drawers
+    window.closeAllDrawers();
+    
+    alert("All text inputs and outputs have been cleared.");
+  };
 
   function initAll() {
     initMultiSelectState();
