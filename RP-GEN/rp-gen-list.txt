@@ -165,7 +165,7 @@ modes
   creative
     label = 📜 Creative
     description = Write standard creative story/plot outlines.
-    image = assets/Images/cards/creative-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/creative-mode.jpg
     instruction
       Your task is to write [multiple?"several":"one"] plot/story idea[multiple?"s":""] for the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -176,7 +176,7 @@ modes
   childrens_book
     label = 🎈 Children's Book
     description = Perfect for children's stories with illustrations.
-    image = assets/Images/cards/childrens-book-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/childrens-book-mode.jpg
     instruction
       Your task is to write [multiple?"several":"one"] children's story book outline[multiple?"s":""]/idea[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -187,7 +187,7 @@ modes
   world_building
     label = 🗺️ World Building
     description = Build settings, concepts, lore, and geography.
-    image = assets/Images/cards/world-building-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/world-building-mode.jpg
     instruction
       Write [multiple?"some":"a"] world building idea[multiple?"s":""]/concept[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -198,7 +198,7 @@ modes
   roleplay_ideas
     label = 🎭 Roleplay Ideas
     description = Get detailed prompts, hooks, and starter scenes.
-    image = assets/Images/cards/roleplay-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/roleplay-mode.jpg
     instruction
       Write [multiple?"some":"a"] roleplay/story idea[multiple?"s":""] (including main plot points) based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -209,7 +209,7 @@ modes
   conflict_ideas
     label = 💥 Conflict Ideas
     description = Find interesting challenges, dilemmas, and clashes.
-    image = assets/Images/cards/conflict-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/conflict-mode.jpg
     instruction
       Write [multiple?"":"an "]idea[multiple?"s":""] for the conflict of a story, based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -220,7 +220,7 @@ modes
   rpg
     label = 🎮 RPG / Quest
     description = Generate quests, NPCs, challenges, and rewards.
-    image = assets/Images/cards/rpg-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rpg-mode.jpg
     instruction
       Your task is to write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -236,7 +236,7 @@ modes
   freeform
     label = ✍️ Freeform
     description = Write freely with customized, prompt-based assistance.
-    image = assets/Images/cards/freeform-mode.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/freeform-mode.jpg
     instruction
       Your task is to help with story/plot writing based on this instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -247,35 +247,35 @@ worldSettings
   none
     label = 🌍 Any Setting
     description = Any setting or genre
-    image = assets/Images/cards/any-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/any-setting.jpg
   fantasy
     label = 🏰 Fantasy
     description = Magic, mythical creatures, and ancient kingdoms
-    image = assets/Images/cards/fantasy-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fantasy-setting.jpg
   scifi
     label = 🛸 Sci-Fi
     description = Advanced technology, space travel, and future societies
-    image = assets/Images/cards/scifi-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scifi-setting.jpg
   horror
     label = 😱 Horror
     description = Spooky, terrifying, supernatural, or psychological fear
-    image = assets/Images/cards/horror-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/horror-setting.jpg
   romance
     label = 🌹 Romance
     description = Passionate, emotional, and relationship-driven
-    image = assets/Images/cards/romance-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-setting.jpg
   adventure
     label = 🏞️ Adventure
     description = Quests, exploration, and thrilling journeys
-    image = assets/Images/cards/adventure-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/adventure-setting.jpg
   slice_of_life
     label = 🍰 Slice of Life
     description = Everyday experiences, calm vibes, and small moments
-    image = assets/Images/cards/slice-of-life-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/slice-of-life-setting.jpg
   isekai
     label = 🧙‍♂️ Isekai
     description = Reborn or transported to a completely different world
-    image = assets/Images/cards/isekai-setting.jpg
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/isekai-setting.jpg
   cyberpunk
     label = 🦾 Cyberpunk
     description = High tech, low life, neon lights, and megacorps
