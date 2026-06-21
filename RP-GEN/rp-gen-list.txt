@@ -56,6 +56,9 @@ settings
     activeResponseCopyBtn.style.display = "";
     if(localStorage.activeTab === "plot" && modes[this.lastModeUsed].onStart) modes[this.lastModeUsed].onStart(data);
   onFinish(data) =>
+    if (window.cleanTextForBannedSettings) {
+      activeResponseEl.value = window.cleanTextForBannedSettings(activeResponseEl.value);
+    }
     activeGenerateBtn.disabled = false;
     activeGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
     activeContinueBtn.disabled = false;
@@ -69,7 +72,7 @@ settings
     }
     if(localStorage.activeTab === "plot" && modes[this.lastModeUsed].onFinish) modes[this.lastModeUsed].onFinish(data);
   render = [ localStorage.activeTab === "plot" ? (modes[currentMode].render || null) : null ]
-  
+
 
 async generate() =>
   window.responseContentBeforeLastGenerate = activeResponseEl.value;
@@ -90,7 +93,6 @@ async generate() =>
   let data = await pendingObj.onFinishPromise;
   activeStopBtn.style.display = "none";
   activeBottomStopBtn.style.display = "none";
-  
 
 
 currentMode = [localStorage.currentMode || modes.selectAll[0].getName]
@@ -137,6 +139,23 @@ getConstraints() =>
   if (name !== "") {
     list.push(`Include a character named "${literal(name)}" as the protagonist/main character.`);
   }
+  let negConstraints = [];
+  if (localStorage.banBolding === "true") {
+    negConstraints.push("Do not use bold text formatted with asterisks (i.e. do not use **text** style; keep text plain).");
+  }
+  if (localStorage.banEmdash === "true") {
+    negConstraints.push("Do not use em-dashes (—). Use normal hyphens, commas, or restructure your sentences instead.");
+  }
+  let bannedInput = localStorage.customBannedWords || "";
+  if (bannedInput.trim() !== "") {
+    let words = bannedInput.split(",").map(w => w.trim()).filter(w => w.length > 0);
+    if (words.length > 0) {
+      negConstraints.push("Do not use any of the following banned words or phrases under any circumstances (case-insensitive): " + words.map(w => `"${w}"`).join(", ") + ". Choose alternate synonyms or restructure sentences to avoid them completely.");
+    }
+  }
+  if (negConstraints.length > 0) {
+    list.push("NEGATIVE CONSTRAINTS (STRICTLY AVOID): \n    " + negConstraints.join("\n    "));
+  }
   if (list.length > 0) {
     return "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
   }
@@ -146,7 +165,7 @@ modes
   creative
     label = 📜 Creative
     description = Write standard creative story/plot outlines.
-    image = https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/creative-mode.jpg
     instruction
       Your task is to write [multiple?"several":"one"] plot/story idea[multiple?"s":""] for the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -157,7 +176,7 @@ modes
   childrens_book
     label = 🎈 Children's Book
     description = Perfect for children's stories with illustrations.
-    image = https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/childrens-book-mode.jpg
     instruction
       Your task is to write [multiple?"several":"one"] children's story book outline[multiple?"s":""]/idea[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -168,7 +187,7 @@ modes
   world_building
     label = 🗺️ World Building
     description = Build settings, concepts, lore, and geography.
-    image = https://images.unsplash.com/photo-1524661135-423995f22d0b?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/world-building-mode.jpg
     instruction
       Write [multiple?"some":"a"] world building idea[multiple?"s":""]/concept[multiple?"s":""] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -179,7 +198,7 @@ modes
   roleplay_ideas
     label = 🎭 Roleplay Ideas
     description = Get detailed prompts, hooks, and starter scenes.
-    image = https://images.unsplash.com/photo-1513258496099-48168024aec0?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/roleplay-mode.jpg
     instruction
       Write [multiple?"some":"a"] roleplay/story idea[multiple?"s":""] (including main plot points) based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -190,7 +209,7 @@ modes
   conflict_ideas
     label = 💥 Conflict Ideas
     description = Find interesting challenges, dilemmas, and clashes.
-    image = https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/conflict-mode.jpg
     instruction
       Write [multiple?"":"an "]idea[multiple?"s":""] for the conflict of a story, based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -201,7 +220,7 @@ modes
   rpg
     label = 🎮 RPG / Quest
     description = Generate quests, NPCs, challenges, and rewards.
-    image = https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/rpg-mode.jpg
     instruction
       Your task is to write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -217,7 +236,7 @@ modes
   freeform
     label = ✍️ Freeform
     description = Write freely with customized, prompt-based assistance.
-    image = https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?w=150&auto=format&fit=crop&q=60
+    image = assets/Images/cards/freeform-mode.jpg
     instruction
       Your task is to help with story/plot writing based on this instruction:
       INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
@@ -228,35 +247,35 @@ worldSettings
   none
     label = 🌍 Any Setting
     description = Any setting or genre
-    image = https://loremflickr.com/800/600/abstract
+    image = assets/Images/cards/any-setting.jpg
   fantasy
     label = 🏰 Fantasy
     description = Magic, mythical creatures, and ancient kingdoms
-    image = https://loremflickr.com/800/600/fantasy
+    image = assets/Images/cards/fantasy-setting.jpg
   scifi
     label = 🛸 Sci-Fi
     description = Advanced technology, space travel, and future societies
-    image = https://loremflickr.com/800/600/scifi
+    image = assets/Images/cards/scifi-setting.jpg
   horror
     label = 😱 Horror
     description = Spooky, terrifying, supernatural, or psychological fear
-    image = https://loremflickr.com/800/600/horror
+    image = assets/Images/cards/horror-setting.jpg
   romance
     label = 🌹 Romance
     description = Passionate, emotional, and relationship-driven
-    image = https://loremflickr.com/800/600/romance
+    image = assets/Images/cards/romance-setting.jpg
   adventure
     label = 🏞️ Adventure
     description = Quests, exploration, and thrilling journeys
-    image = https://loremflickr.com/800/600/adventure
+    image = assets/Images/cards/adventure-setting.jpg
   slice_of_life
     label = 🍰 Slice of Life
     description = Everyday experiences, calm vibes, and small moments
-    image = https://loremflickr.com/800/600/slice of life
+    image = assets/Images/cards/slice-of-life-setting.jpg
   isekai
     label = 🧙‍♂️ Isekai
     description = Reborn or transported to a completely different world
-    image = https://loremflickr.com/800/600/isekai
+    image = assets/Images/cards/isekai-setting.jpg
   cyberpunk
     label = 🦾 Cyberpunk
     description = High tech, low life, neon lights, and megacorps

@@ -651,6 +651,112 @@
         window.closeDrawer();
       }
     };
+
+    // Toggle Settings Side Drawer
+    window.toggleSettingsDrawer = function() {
+      const drawer = document.getElementById('sideDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      if (!drawer || !overlay) return;
+      
+      const isOpen = drawer.classList.toggle('open');
+      overlay.classList.toggle('show', isOpen);
+      
+      // Close the custom select drawer if it's open
+      if (isOpen && typeof window.closeDrawer === 'function') {
+        window.closeDrawer();
+      }
+    };
+
+    // Toggle Accordion Sections inside Settings Drawer
+    window.toggleDrawerSection = function(sectionId) {
+      const content = document.getElementById(sectionId);
+      if (!content) return;
+      const section = content.closest('.drawer-section');
+      const arrow = section ? section.querySelector('.section-arrow') : null;
+      
+      const isOpen = content.classList.toggle('open');
+      if (section) section.classList.toggle('open', isOpen);
+      
+      if (arrow) {
+        if (isOpen) {
+          arrow.classList.replace('bi-chevron-right', 'bi-chevron-down');
+        } else {
+          arrow.classList.replace('bi-chevron-down', 'bi-chevron-right');
+        }
+      }
+    };
+
+    // Save settings from Drawer to localStorage
+    window.saveDrawerSettings = function() {
+      const banBolding = document.getElementById('banBoldingToggle').checked;
+      const banEmdash = document.getElementById('banEmdashToggle').checked;
+      const customBanned = document.getElementById('customBannedWords').value;
+      
+      localStorage.banBolding = banBolding;
+      localStorage.banEmdash = banEmdash;
+      localStorage.customBannedWords = customBanned;
+    };
+
+    // Load settings from localStorage to Drawer UI
+    window.loadDrawerSettings = function() {
+      const banBolding = localStorage.banBolding === 'true';
+      const banEmdash = localStorage.banEmdash === 'true';
+      const customBanned = localStorage.customBannedWords || '';
+      
+      const boldEl = document.getElementById('banBoldingToggle');
+      const emdashEl = document.getElementById('banEmdashToggle');
+      const customEl = document.getElementById('customBannedWords');
+      
+      if (boldEl) boldEl.checked = banBolding;
+      if (emdashEl) emdashEl.checked = banEmdash;
+      if (customEl) customEl.value = customBanned;
+    };
+
+    // Real-time output post-processor to strictly clean text according to word-banning settings
+    window.cleanTextForBannedSettings = function(text) {
+      if (!text) return '';
+      
+      // 1. Remove bolding with double asterisks
+      if (localStorage.banBolding === 'true') {
+        // Replace **bolded text** with plain bolded text
+        text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+        // Remove any stray double asterisks
+        text = text.replace(/\*\*/g, '');
+      }
+      
+      // 2. Remove em-dashes (replace with hyphens)
+      if (localStorage.banEmdash === 'true') {
+        text = text.replace(/—/g, '-');
+      }
+      
+      // 3. Remove custom banned words/phrases (case-insensitive)
+      const customBanned = localStorage.customBannedWords || '';
+      if (customBanned.trim() !== '') {
+        const words = customBanned.split(',')
+          .map(w => w.trim())
+          .filter(w => w.length > 0);
+          
+        if (words.length > 0) {
+          words.forEach(word => {
+            // Escape special characters in user input for safe regex matching
+            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            // Case-insensitive replacement matching word boundaries where possible
+            // Use word boundary for alphanumeric words, and simple match for others
+            const isWordOnly = /^[a-zA-Z0-9_\s]+$/.test(word);
+            const regexStr = isWordOnly ? '\\b' + escapedWord + '\\b' : escapedWord;
+            const regex = new RegExp(regexStr, 'gi');
+            text = text.replace(regex, '');
+          });
+          
+          // Collapse multiple horizontal spaces/tabs created by word removal (preserving newlines)
+          text = text.replace(/[ \t]+/g, ' ');
+          // Clean up spacing before punctuation
+          text = text.replace(/ \./g, '.').replace(/ ,/g, ',').replace(/ !/g, '!').replace(/ \?/g, '?');
+        }
+      }
+      
+      return text;
+    };
   </script>
 
 
@@ -660,6 +766,81 @@
 <div id="commentsCtn"></div>
 </div>
 <br><br>
+
+<!-- SETTINGS DRAWER STUFF -->
+<div style="position:fixed; top:0.75rem; right:0.75rem; z-index:100;">
+  <button id="settingsDrawerBtn" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 42px; height: 42px; cursor:pointer;"
+    onclick="window.toggleSettingsDrawer();" title="Open Settings"><i class="bi bi-gear-fill"></i></button>
+</div>
+
+<!-- Side Settings Drawer -->
+<div id="sideDrawer" class="side-drawer">
+  <div class="side-drawer-header">
+    <h5 class="m-0 fw-bold"><i class="bi bi-sliders"></i> Control Panel</h5>
+    <button class="btn-close" onclick="window.toggleSettingsDrawer()"></button>
+  </div>
+  <div class="side-drawer-body">
+    <!-- Section 1: AI Settings (Always open by default) -->
+    <div class="drawer-section open">
+      <div class="drawer-section-header" onclick="window.toggleDrawerSection('aiSettingsSection')">
+        <span><i class="bi bi-robot"></i> AI Settings</span>
+        <i class="bi bi-chevron-down section-arrow"></i>
+      </div>
+      <div id="aiSettingsSection" class="drawer-section-content open">
+        <!-- Word Banning Sub-section -->
+        <div class="settings-group mb-3">
+          <div class="settings-group-title">Word & Formatting Banning</div>
+          
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="banBoldingToggle" onchange="window.saveDrawerSettings()">
+            <label class="form-check-label small" for="banBoldingToggle">Ban bolding with asterisk (<code>**text**</code>)</label>
+          </div>
+          
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="banEmdashToggle" onchange="window.saveDrawerSettings()">
+            <label class="form-check-label small" for="banEmdashToggle">Ban em-dash (<code>—</code>)</label>
+          </div>
+          
+          <div class="mb-2">
+            <label for="customBannedWords" class="form-label small fw-medium mb-1">Custom Banned Words / Phrases</label>
+            <textarea id="customBannedWords" class="form-control form-control-sm" rows="3" 
+              placeholder="e.g. the thing, darkness (comma-separated)" oninput="window.saveDrawerSettings()" style="font-size: 80%; background: transparent; color: inherit; border-color: rgba(128,128,128,0.25);"></textarea>
+            <div class="form-text small text-muted" style="font-size: 70%;">The AI will strictly avoid these words/phrases (case-insensitive).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Future expandable slot 1: Presets (Collapsed by default) -->
+    <div class="drawer-section">
+      <div class="drawer-section-header" onclick="window.toggleDrawerSection('presetsSection')">
+        <span><i class="bi bi-journal-bookmark"></i> Quick Presets (Soon)</span>
+        <i class="bi bi-chevron-right section-arrow"></i>
+      </div>
+      <div id="presetsSection" class="drawer-section-content">
+        <div class="p-2 text-muted small text-center" style="font-size: 75%;">
+          Save and load your custom generator configurations.
+        </div>
+      </div>
+    </div>
+
+    <!-- Future expandable slot 2: System Logs (Collapsed by default) -->
+    <div class="drawer-section">
+      <div class="drawer-section-header" onclick="window.toggleDrawerSection('logsSection')">
+        <span><i class="bi bi-activity"></i> Generation Logs (Soon)</span>
+        <i class="bi bi-chevron-right section-arrow"></i>
+      </div>
+      <div id="logsSection" class="drawer-section-content">
+        <div class="p-2 text-muted small text-center" style="font-size: 75%;">
+          View generation history and metadata details.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer Overlay -->
+<div id="drawerOverlay" class="drawer-overlay" onclick="window.toggleSettingsDrawer()"></div>
 
 <!-- COMMENTS STUFF -->
 <script>
@@ -1412,6 +1593,176 @@
     background: #3b82f6;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   }
+
+  /* === Premium Side Settings Drawer === */
+  .side-drawer {
+    position: fixed;
+    top: 0;
+    right: -360px; /* Hidden by default */
+    width: 360px;
+    max-width: 100vw;
+    height: 100vh;
+    z-index: 1050;
+    background: rgba(248, 250, 252, 0.85); /* Glassmorphism light */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
+    border-left: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #1e293b;
+  }
+
+  [data-bs-theme="dark"] .side-drawer,
+  html[style*="dark"] .side-drawer {
+    background: rgba(15, 23, 42, 0.85); /* Glassmorphism dark */
+    border-left-color: rgba(255, 255, 255, 0.08);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.35);
+    color: #e2e8f0;
+  }
+
+  .side-drawer.open {
+    right: 0;
+  }
+
+  .side-drawer-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  [data-bs-theme="dark"] .side-drawer-header,
+  html[style*="dark"] .side-drawer-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .side-drawer-header .btn-close {
+    filter: none;
+  }
+  [data-bs-theme="dark"] .side-drawer-header .btn-close,
+  html[style*="dark"] .side-drawer-header .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+  }
+
+  .side-drawer-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+
+  /* Drawer sections (accordion style) */
+  .drawer-section {
+    border: 1px solid rgba(128, 128, 128, 0.15);
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.3);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  [data-bs-theme="dark"] .drawer-section,
+  html[style*="dark"] .drawer-section {
+    background: rgba(30, 41, 59, 0.2);
+  }
+
+  .drawer-section:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  [data-bs-theme="dark"] .drawer-section:hover,
+  html[style*="dark"] .drawer-section:hover {
+    border-color: rgba(96, 165, 250, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  }
+
+  .drawer-section-header {
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    background: rgba(128, 128, 128, 0.03);
+    transition: background-color 0.2s ease;
+  }
+
+  .drawer-section-header:hover {
+    background: rgba(128, 128, 128, 0.06);
+  }
+
+  .drawer-section-header span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-arrow {
+    font-size: 80%;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drawer-section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 1.25rem;
+  }
+
+  .drawer-section-content.open {
+    max-height: 1000px; /* Large enough to fit content */
+    padding: 1.25rem;
+    transition: max-height 0.35s ease-in, padding 0.35s ease-in;
+  }
+
+  /* settings form controls */
+  .settings-group-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+    padding-bottom: 0.25rem;
+  }
+
+  [data-bs-theme="dark"] .settings-group-title,
+  html[style*="dark"] .settings-group-title {
+    color: #94a3b8;
+  }
+
+  .drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1040;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(1.5px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  .drawer-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #settingsDrawerBtn i {
+    transition: transform 0.4s ease;
+  }
+  #settingsDrawerBtn:hover i {
+    transform: rotate(45deg);
+  }
 </style>
 
 <script>
@@ -1672,8 +2023,14 @@
         const listObj = window[listName];
         const itemObj = listObj && listObj[opt.value];
         if (itemObj) {
-          const rawImg = String(itemObj.image ?? '').trim();
-          if (rawImg && rawImg !== 'undefined') imageUrl = rawImg;
+          let rawImg = String(itemObj.image ?? '').trim();
+          if (rawImg && rawImg !== 'undefined') {
+            imageUrl = rawImg;
+            // Normalize case for assets/images/ to assets/Images/ to match the actual filesystem folder
+            if (imageUrl.startsWith('assets/images/')) {
+              imageUrl = imageUrl.replace('assets/images/', 'assets/Images/');
+            }
+          }
         }
       } catch (e) { /* silent */ }
     }
@@ -1937,6 +2294,9 @@
 
   function initAll() {
     initMultiSelectState();
+    if (typeof window.loadDrawerSettings === 'function') {
+      window.loadDrawerSettings();
+    }
 
     // Restore textareas from localStorage
     if (localStorage.instruction) {
