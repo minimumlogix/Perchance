@@ -694,8 +694,14 @@
       localStorage.customBannedWords = customBanned;
     };
 
-    // Load settings from localStorage to Drawer UI
+     // Load settings from localStorage to Drawer UI
     window.loadDrawerSettings = function() {
+      if (localStorage.banBolding === undefined) {
+        localStorage.banBolding = 'true';
+      }
+      if (localStorage.banEmdash === undefined) {
+        localStorage.banEmdash = 'true';
+      }
       const banBolding = localStorage.banBolding === 'true';
       const banEmdash = localStorage.banEmdash === 'true';
       const customBanned = localStorage.customBannedWords || '';
@@ -2017,8 +2023,22 @@
     const listName = selectToListNameMap[selectEl.id];
     if (listName) {
       try {
-        const listObj = window[listName];
-        const itemObj = listObj && listObj[opt.value];
+        let listObj = null;
+        try {
+          listObj = eval(listName);
+        } catch (e) {
+          listObj = window[listName];
+        }
+
+        let itemObj = null;
+        if (listObj) {
+          if (listObj.selectAll) {
+            itemObj = listObj.selectAll.find(item => item.getName === opt.value);
+          } else {
+            itemObj = listObj[opt.value];
+          }
+        }
+
         if (itemObj) {
           let rawImg = String(itemObj.image ?? '').trim();
           if (rawImg && rawImg !== 'undefined') {
@@ -2045,7 +2065,7 @@
     img.alt = opt.textContent;
 
     let hasTriedListUrl = false;
-    let hasTriedPollinationUrl = false;
+    let hasTriedFallbackUrl = false;
 
     img.onload = () => {
       img.style.display = 'block';
@@ -2056,12 +2076,13 @@
       if (imageUrl && !hasTriedListUrl) {
         hasTriedListUrl = true;
       }
-      if (!hasTriedPollinationUrl) {
-        hasTriedPollinationUrl = true;
+      if (!hasTriedFallbackUrl) {
+        hasTriedFallbackUrl = true;
         // Clean name (remove leading emojis and spaces)
         let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
         if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
-        img.src = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(cleanPromptName);
+        let keyword = cleanPromptName.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-');
+        img.src = 'https://loremflickr.com/800/600/' + keyword;
       } else {
         img.style.display = 'none';
         fallback.style.display = 'flex';
@@ -2071,10 +2092,11 @@
     if (imageUrl) {
       img.src = imageUrl;
     } else {
-      hasTriedPollinationUrl = true;
+      hasTriedFallbackUrl = true;
       let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
       if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
-      img.src = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(cleanPromptName);
+      let keyword = cleanPromptName.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-');
+      img.src = 'https://loremflickr.com/800/600/' + keyword;
     }
 
     imgWrapper.appendChild(img);

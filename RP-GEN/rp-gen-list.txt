@@ -141,20 +141,20 @@ getConstraints() =>
   }
   let negConstraints = [];
   if (localStorage.banBolding === "true") {
-    negConstraints.push("Do not use bold text formatted with asterisks (i.e. do not use **text** style; keep text plain).");
+    negConstraints.push("Banned: bolding/asterisks (**). Output plain text only.");
   }
   if (localStorage.banEmdash === "true") {
-    negConstraints.push("Do not use em-dashes (—). Use normal hyphens, commas, or restructure your sentences instead.");
+    negConstraints.push("Banned: em-dashes (—). Use normal hyphens or commas.");
   }
   let bannedInput = localStorage.customBannedWords || "";
   if (bannedInput.trim() !== "") {
     let words = bannedInput.split(",").map(w => w.trim()).filter(w => w.length > 0);
     if (words.length > 0) {
-      negConstraints.push("Do not use any of the following banned words or phrases under any circumstances (case-insensitive): " + words.map(w => `"${w}"`).join(", ") + ". Choose alternate synonyms or restructure sentences to avoid them completely.");
+      negConstraints.push("Banned words/phrases: " + words.map(w => `"${w}"`).join(", "));
     }
   }
   if (negConstraints.length > 0) {
-    list.push("NEGATIVE CONSTRAINTS (STRICTLY AVOID): \n    " + negConstraints.join("\n    "));
+    list.push("CRITICAL: STRICTLY AVOID & DO NOT GENERATE:\n    - " + negConstraints.join("\n    - "));
   }
   if (list.length > 0) {
     return "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
@@ -279,193 +279,193 @@ worldSettings
   cyberpunk
     label = 🦾 Cyberpunk
     description = High tech, low life, neon lights, and megacorps
-    image = https://loremflickr.com/800/600/cyberpunk
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cyberpunk-setting.jpg
   post_apocalyptic
     label = ☢️ Post-Apocalyptic
     description = Survival in a ruined, desolate world
-    image = https://loremflickr.com/800/600/post-apocalyptic
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/post-apocalyptic-setting.jpg
   steampunk
     label = ⚙️ Steampunk
     description = Steam-powered machines in a Victorian aesthetic
-    image = https://loremflickr.com/800/600/steampunk
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/steampunk-setting.jpg
   historical
     label = 📜 Historical
     description = Set in a specific real-world historical era
-    image = https://loremflickr.com/800/600/historical
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/historical-setting.jpg
   modern
     label = 🏙️ Modern
     description = Present-day world and contemporary life
-    image = https://loremflickr.com/800/600/modern
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/modern-setting.jpg
   grimdark
     label = 💀 Grimdark
     description = Dark, gritty, and amoral fantasy/sci-fi settings
-    image = https://loremflickr.com/800/600/grimdark
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/grimdark-setting.jpg
 
 tones
   none
     label = 🎭 Any Tone
     description = Any tone or vibe
-    image = https://loremflickr.com/800/600/abstract
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-tone.jpg
   serious
     label = 😐 Serious
     description = Realistic, grave, and meaningful
-    image = https://loremflickr.com/800/600/serious
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/serious-tone.jpg
   humorous
-    label = 😂 Humorous / Funny
+    label = 😂 Humorous
     description = Funny, witty, and lighthearted comedy
-    image = https://loremflickr.com/800/600/humorous
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/humorous-tone.jpg
   dark
-    label = 💀 Dark / Gritty
+    label = 💀 Dark
     description = Grim, gritty, scary, and high stakes
-    image = https://loremflickr.com/800/600/dark
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-tone.jpg
   lighthearted
-    label = ☀️ Lighthearted / Whimsical
+    label = ☀️ Lighthearted
     description = Bright, positive, and whimsical
-    image = https://loremflickr.com/800/600/lighthearted
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lighthearted-tone.jpg
   mysterious
-    label = 🕵️‍♂️ Mysterious / Suspenseful
+    label = 🕵️ Mysterious
     description = Suspenseful, puzzling, and tense
-    image = https://loremflickr.com/800/600/mystery
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mystery-tone.jpg
   romantic
     label = 💖 Romantic
     description = Focus on relationship and love
-    image = https://loremflickr.com/800/600/romance
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-tone.jpg
   dramatic
-    label = 🎭 Dramatic / Angsty
+    label = 🎭 Dramatic
     description = Emotional conflict and tension
-    image = https://loremflickr.com/800/600/dramatic
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dramatic-tone.jpg
   action_packed
     label = 💥 Action-Packed
     description = High energy, fights, and chases
-    image = https://loremflickr.com/800/600/action
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/action-tone.jpg
   melancholic
-    label = 😢 Melancholic / Sad
+    label = 😢 Melancholic
     description = Sad, reflective, and touching
-    image = https://loremflickr.com/800/600/melancholic
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/melancholic-tone.jpg
 
 archetypes
   none
     label = 👤 Any Archetype
     description = Any character role
-    image = https://loremflickr.com/800/600/abstract
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-archetype.jpg
   hero
-    label = 🛡️ Hero / Chosen One
+    label = 🛡️ Hero
     description = The Hero / Chosen One on a journey
-    image = https://loremflickr.com/800/600/hero
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hero-archetype.jpg
   antihero
     label = 🧥 Anti-Hero
     description = Flawed protagonist with gray morality
-    image = https://loremflickr.com/800/600/anti-hero
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/anti-hero-archetype.jpg
   villain
-    label = 😈 Villain / Antagonist
+    label = 😈 Villain
     description = The Villain / Antagonist main focus
-    image = https://loremflickr.com/800/600/villain
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/villain-archetype.jpg
   mentor
-    label = 🧙‍♂️ Mentor
+    label = 🧙♂️ Mentor
     description = The wise teacher, guide, or trainer
-    image = https://loremflickr.com/800/600/mentor
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-archetype.jpg
   sidekick
-    label = 🤝 Sidekick / Companion
+    label = 🤝 Companion
     description = The loyal companion or second-in-command
-    image = https://loremflickr.com/800/600/sidekick
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sidekick-archetype.jpg
   rogue
-    label = 🗡️ Rogue / Thief
+    label = 🗡️ Rogue
     description = Sneaky, clever thief or assassin
-    image = https://loremflickr.com/800/600/rogue
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rogue-archetype.jpg
   scholar
-    label = 📖 Scholar / Mage
+    label = 📖 Scholar
     description = Studious mage, scientist, or investigator
-    image = https://loremflickr.com/800/600/scholar
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scholar-archetype.jpg
   underdog
     label = 🐕 Underdog
     description = Unlikely hero rising against all odds
-    image = https://loremflickr.com/800/600/underdog
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/underdog-archetype.jpg
   trickster
     label = 🃏 Trickster
     description = Playful, deceptive, or chaotic character
-    image = https://loremflickr.com/800/600/trickster
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/trickster-archetype.jpg
   reluctant_hero
     label = 🚪 Reluctant Hero
     description = Pushed into action against their will
-    image = https://loremflickr.com/800/600/reluctant-hero
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/reluctant-hero-archetype.jpg
 
 dynamics
   none
     label = 🔗 Any Dynamics
     description = Any relationship dynamic
-    image = https://loremflickr.com/800/600/abstract
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-dynamics.jpg
   enemies_to_lovers
     label = ⚔️❤️ Enemies to Lovers
     description = Tension turns to romance
-    image = https://loremflickr.com/800/600/enemies-to-lovers
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/enemies-to-lovers-dynamics.jpg
   friends_to_lovers
     label = 🤝❤️ Friends to Lovers
     description = Deep friendship evolves into love
-    image = https://loremflickr.com/800/600/friends-to-lovers
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/friends-to-lovers-dynamics.jpg
   rivals
     label = ⚡ Rivals
     description = Competing, pushing each other to excel
-    image = https://loremflickr.com/800/600/rivals
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rivals-dynamics.jpg
   mentor_mentee
     label = 🎓 Mentor & Mentee
     description = Teacher guiding a student
-    image = https://loremflickr.com/800/600/mentor-mentee
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-mentee-dynamics.jpg
   found_family
     label = 🏠 Found Family
     description = Unlikely group forming a close family bond
-    image = https://loremflickr.com/800/600/found-family
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/found-family-dynamics.jpg
   betrayal
     label = 🗡️💔 Betrayal
     description = Trust broken by a devastating betrayal
-    image = https://loremflickr.com/800/600/betrayal
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/betrayal-dynamics.jpg
   star_crossed_lovers
     label = 🌌 Star-crossed Lovers
     description = Fated romance facing tragic obstacles
-    image = https://loremflickr.com/800/600/star-crossed-lovers
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/star-crossed-lovers-dynamics.jpg
   forced_partnership
     label = 🔒 Forced Partnership
     description = Bound together by external circumstances
-    image = https://loremflickr.com/800/600/forced-partnership
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/forced-partnership-dynamics.jpg
   siblings_conflict
     label = 👥 Sibling/Family Conflict
     description = Sibling rivalry or deep family drama
-    image = https://loremflickr.com/800/600/sibling-conflict
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sibling-conflict-dynamics.jpg
   protector_ward
     label = 🛡️👶 Protector & Ward
     description = Guarding someone vulnerable or special
-    image = https://loremflickr.com/800/600/protector-ward
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/protector-ward-dynamics.jpg
 
 characterCounts
   none
     label = 👥 Any Character Count
     description = Any character count
-    image = https://loremflickr.com/800/600/abstract
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-charactercount.jpg
   single
     label = 👤 Single Character
     description = Focus on a single protagonist
-    image = https://loremflickr.com/800/600/single
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/single-charactercount.jpg
   multiple
     label = 👥 Multiple Characters
     description = Focus on a group or ensemble cast
-    image = https://loremflickr.com/800/600/multiple
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/multiple-charactercount.jpg
 
 genders
   none
     label = ⚥ Any Gender
     description = Any gender selection
-    image = https://loremflickr.com/800/600/abstract
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-gender.jpg
   male
     label = ♂️ Male
     description = Male protagonist
-    image = https://loremflickr.com/800/600/male
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/male-gender.jpg
   female
     label = ♀️ Female
     description = Female protagonist
-    image = https://loremflickr.com/800/600/female
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/female-gender.jpg
   nonbinary
     label = ⚧️ Non-Binary
     description = Non-binary protagonist
-    image = https://loremflickr.com/800/600/nonbinary
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/nonbinary-gender.jpg
 
 generateModesHtml() =>
   return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");
