@@ -87,18 +87,7 @@
             </select>
           </div>
         </div>
-        <!-- Ideas -->
-        <div class="col-6 col-md-3">
-          <div class="d-flex flex-column h-100">
-            <span class="text-center text-md-start mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas</span>
-            <select id="multipleEl" onchange="multiple=this.value; localStorage.multiple=this.value;"
-              class="form-select select-field">
-              <option value="">1️⃣ one idea</option>
-              <option value=".">🔢 multiple ideas</option>
-            </select>
-            <script>multipleEl.value = localStorage.multiple || "";</script>
-          </div>
-        </div>
+
         <!-- Protagonist Name -->
         <div class="col-12 col-md-6 offset-md-3 col-lg-4 offset-lg-4 mt-2">
           <div class="d-flex flex-column align-items-center">
@@ -131,7 +120,7 @@
     <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
     <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
       <button class="drawer-footer-all" id="drawerSelectAllBtn" onclick="selectAllMultiSelect()"><i class="bi bi-check-all"></i> Select All</button>
-      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearMultiSelect()"><i class="bi bi-trash"></i> Clear</button>
+      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearSelection()"><i class="bi bi-trash"></i> Clear</button>
       <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()"><i class="bi bi-check-circle"></i> Done</button>
     </div>
   </div>
@@ -150,7 +139,7 @@
         <i class="bi bi-globe"></i> World
       </button>
       <button class="tab-btn" id="tabBtn-roleplay" role="tab" aria-selected="false" onclick="switchTab('roleplay')">
-        <i class="bi bi-masks"></i> Roleplay
+        <i class="bi bi-mask"></i> Roleplay
       </button>
       <button class="tab-btn" id="tabBtn-character" role="tab" aria-selected="false" onclick="switchTab('character')">
         <i class="bi bi-person"></i> Character
@@ -161,6 +150,135 @@
       <button class="tab-btn" id="tabBtn-intro" role="tab" aria-selected="false" onclick="switchTab('intro')">
         <i class="bi bi-chat-quote"></i> Intro
       </button>
+    </div>
+
+    <!-- Tab Modifiers Card -->
+    <div class="card shadow-sm mb-4 border-secondary-subtle" id="tabModifiersCard">
+      <div class="card-header py-2 text-center text-uppercase fw-semibold tracking-wider bg-body-tertiary text-muted small" style="font-size: 0.75rem; letter-spacing: 0.05em;" id="tabModifiersHeader">
+        — Plot Settings —
+      </div>
+      <div class="card-body p-3">
+        <!-- Plot Modifiers -->
+        <div id="plotModifiers" class="tab-modifier-section">
+          <div class="row g-3">
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas Count</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-2 px-sm-3" id="btn-plotIdeas-one" onclick="window.setPlotIdeas('')">1️⃣ One</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-2 px-sm-3" id="btn-plotIdeas-multiple" onclick="window.setPlotIdeas('.')">🔢 Multiple</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Text Length</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-plotLength-short" onclick="window.setPlotLength('short')">Short</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-plotLength-medium" onclick="window.setPlotLength('medium')">Medium</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-plotLength-long" onclick="window.setPlotLength('long')">Long</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- World Modifiers -->
+        <div id="worldModifiers" class="tab-modifier-section" style="display: none;">
+          <div class="row g-3">
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">AI Focus</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldFocus-any" onclick="window.setWorldFocus('any')">Any</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldFocus-micro" onclick="window.setWorldFocus('micro')">Micro</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldFocus-macro" onclick="window.setWorldFocus('macro')">Macro</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Text Length</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldLength-short" onclick="window.setWorldLength('short')">Short</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldLength-medium" onclick="window.setWorldLength('medium')">Medium</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-worldLength-long" onclick="window.setWorldLength('long')">Long</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roleplay Modifiers -->
+        <div id="roleplayModifiers" class="tab-modifier-section" style="display: none;">
+          <div class="row g-3">
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Text Length</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-roleplayLength-short" onclick="window.setRoleplayLength('short')">Short</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-roleplayLength-medium" onclick="window.setRoleplayLength('medium')">Medium</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-roleplayLength-long" onclick="window.setRoleplayLength('long')">Long</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start">
+              <span class="text-muted small" style="font-size: 75%; font-style: italic;">
+                <i class="bi bi-info-circle"></i> More settings coming soon
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Character Modifiers -->
+        <div id="characterModifiers" class="tab-modifier-section" style="display: none;">
+          <div class="text-center text-muted small py-2">
+            <i class="bi bi-info-circle"></i> No settings modifiers available for this section yet.
+          </div>
+        </div>
+
+        <!-- Lore Modifiers -->
+        <div id="loreModifiers" class="tab-modifier-section" style="display: none;">
+          <div class="row g-3">
+            <div class="col-12 col-sm-8 offset-sm-2">
+              <div class="d-flex flex-column align-items-center">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Number of Lore Keys to Generate</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5" id="btn-loreKeys-1" onclick="window.setLoreKeys(1)">1</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5" id="btn-loreKeys-2" onclick="window.setLoreKeys(2)">2</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5" id="btn-loreKeys-3" onclick="window.setLoreKeys(3)">3</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5" id="btn-loreKeys-4" onclick="window.setLoreKeys(4)">4</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5" id="btn-loreKeys-5" onclick="window.setLoreKeys(5)">5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Intro Modifiers -->
+        <div id="introModifiers" class="tab-modifier-section" style="display: none;">
+          <div class="row g-3">
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Context Perspective</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-introContext-1st" onclick="window.setIntroContextPerspective('first')">1st Person</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-introContext-3rd" onclick="window.setIntroContextPerspective('third')">3rd Person</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-6">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Intro Start Perspective</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-introStart-1st" onclick="window.setIntroStartPerspective('first')">1st Person</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-introStart-3rd" onclick="window.setIntroStartPerspective('third')">3rd Person</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Tab Panels Container (No outer card style) -->
@@ -459,6 +577,7 @@
             </div>
           </div>
       </div>
+      </div>
 
       <!-- Lore Tab -->
       <div class="tab-panel" id="tabPanel-lore">
@@ -530,6 +649,7 @@
               </button>
             </div>
           </div>
+      </div>
       </div>
 
       <!-- Intro Tab -->
@@ -671,6 +791,39 @@
     @keyframes tabFadeIn {
       from { opacity: 0; transform: translateY(4px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Premium Tab Modifiers Card Styles */
+    .modifier-btn-group {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .modifier-btn-group .btn {
+      border: 1px solid rgba(128, 128, 128, 0.25);
+      background: transparent;
+      color: inherit;
+      font-size: 80%;
+      transition: all 0.2s ease;
+      box-shadow: none;
+    }
+    .modifier-btn-group .btn:hover {
+      background: rgba(128, 128, 128, 0.08);
+      border-color: rgba(128, 128, 128, 0.35);
+      color: inherit;
+    }
+    .modifier-btn-group .btn.active {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+      z-index: 2;
+    }
+    [data-bs-theme="dark"] .modifier-btn-group .btn.active,
+    html[style*="dark"] .modifier-btn-group .btn.active {
+      background: #2563eb !important;
+      border-color: #2563eb !important;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.35);
     }
   </style>
 
@@ -839,6 +992,15 @@
       if (panel) panel.classList.add('active');
       localStorage.activeTab = name;
 
+      // Toggle visible modifier container
+      const mHeader = document.getElementById('tabModifiersHeader');
+      if (mHeader) {
+        mHeader.textContent = `— ${name.charAt(0).toUpperCase() + name.slice(1)} Settings —`;
+      }
+      document.querySelectorAll('.tab-modifier-section').forEach(sec => sec.style.display = 'none');
+      const activeSec = document.getElementById(name + 'Modifiers');
+      if (activeSec) activeSec.style.display = 'block';
+
       // Update global references to active elements
       window.activeResponseEl = document.getElementById(name + 'ResponseEl');
       window.activeResponseDeleteBtn = document.getElementById(name + 'ResponseDeleteBtn');
@@ -929,17 +1091,22 @@
     window.cleanTextForBannedSettings = function(text) {
       if (!text) return '';
       
-      // 1. Remove bolding with double asterisks
+      // 1. Remove bolding with double asterisks or HTML tags
       if (localStorage.banBolding === 'true') {
         // Replace **bolded text** with plain bolded text
         text = text.replace(/\*\*(.*?)\*\*/g, '$1');
         // Remove any stray double asterisks
         text = text.replace(/\*\*/g, '');
+        // Remove HTML bolding tags
+        text = text.replace(/<\/?b>/gi, '');
+        text = text.replace(/<\/?strong>/gi, '');
       }
       
-      // 2. Remove em-dashes (replace with hyphens)
+      // 2. Remove em-dashes, en-dashes, and double hyphens (replace with hyphens)
       if (localStorage.banEmdash === 'true') {
-        text = text.replace(/—/g, '-');
+        text = text.replace(/—/g, '-'); // em-dash
+        text = text.replace(/–/g, '-'); // en-dash
+        text = text.replace(/--/g, '-'); // double hyphen
       }
       
       // 3. Remove custom banned words/phrases (case-insensitive)
@@ -1256,7 +1423,7 @@
 
   .custom-dropdown-drawer.open {
     margin: 0.75rem 0;
-    height: 190px;
+    height: 232px;
     border-color: rgba(59, 130, 246, 0.45);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(59, 130, 246, 0.15);
   }
@@ -1267,33 +1434,16 @@
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(96, 165, 250, 0.2);
   }
 
-  /* Height adjustments for search and multi-select footer */
-  .custom-dropdown-drawer.open.is-multi {
-    height: 232px;
-  }
-
   .custom-dropdown-drawer.open.has-search {
-    height: 232px;
-  }
-
-  .custom-dropdown-drawer.open.has-search.is-multi {
     height: 274px;
   }
 
   /* Expanded Drawer Height States */
   .custom-dropdown-drawer.open.expanded {
-    height: 400px;
-  }
-
-  .custom-dropdown-drawer.open.expanded.is-multi {
     height: 440px;
   }
 
   .custom-dropdown-drawer.open.expanded.has-search {
-    height: 440px;
-  }
-
-  .custom-dropdown-drawer.open.expanded.has-search.is-multi {
     height: 480px;
   }
 
@@ -1774,7 +1924,7 @@
     border-color: rgba(255, 255, 255, 0.05);
   }
 
-  .custom-dropdown-drawer.open.is-multi .custom-dropdown-drawer-footer {
+  .custom-dropdown-drawer.open .custom-dropdown-drawer-footer {
     display: flex;
   }
 
@@ -2053,8 +2203,7 @@
     'currentArchetypeEl': '04 CHARACTER ARCHETYPE',
     'currentDynamicsEl': '05 RELATIONSHIP DYNAMICS',
     'currentCharacterCountEl': '06 CHARACTERS COUNT',
-    'currentGenderEl': '07 PROTAGONIST GENDER',
-    'multipleEl': '08 IDEAS COUNT'
+    'currentGenderEl': '07 PROTAGONIST GENDER'
   };
 
   // Maps select id -> global variable name for Perchance lists
@@ -2215,6 +2364,98 @@
     if (inp) { inp.value = ''; filterDrawerCards(''); inp.focus(); }
   };
 
+  // Tab-specific settings modifier handlers
+  window.setPlotIdeas = function(val) {
+    multiple = val;
+    localStorage.multiple = val;
+    window.loadModifierSettings();
+  };
+  window.setPlotLength = function(val) {
+    localStorage.plotTextLength = val;
+    window.loadModifierSettings();
+  };
+  window.setWorldFocus = function(val) {
+    localStorage.worldFocus = val;
+    window.loadModifierSettings();
+  };
+  window.setWorldLength = function(val) {
+    localStorage.worldTextLength = val;
+    window.loadModifierSettings();
+  };
+  window.setRoleplayLength = function(val) {
+    localStorage.roleplayTextLength = val;
+    window.loadModifierSettings();
+  };
+  window.setLoreKeys = function(val) {
+    localStorage.loreCount = val;
+    window.loadModifierSettings();
+  };
+  window.setIntroContextPerspective = function(val) {
+    localStorage.introContextPerspective = val;
+    window.loadModifierSettings();
+  };
+  window.setIntroStartPerspective = function(val) {
+    localStorage.introStartPerspective = val;
+    window.loadModifierSettings();
+  };
+
+  window.loadModifierSettings = function() {
+    // Plot Ideas Count
+    const plotIdeas = localStorage.multiple || '';
+    document.querySelectorAll('[id^="btn-plotIdeas-"]').forEach(btn => btn.classList.remove('active'));
+    if (plotIdeas === '.') {
+      const btn = document.getElementById('btn-plotIdeas-multiple');
+      if (btn) btn.classList.add('active');
+    } else {
+      const btn = document.getElementById('btn-plotIdeas-one');
+      if (btn) btn.classList.add('active');
+    }
+    
+    // Plot Text Length
+    const plotLength = localStorage.plotTextLength || 'medium';
+    document.querySelectorAll('[id^="btn-plotLength-"]').forEach(btn => btn.classList.remove('active'));
+    const plotLengthBtn = document.getElementById('btn-plotLength-' + plotLength);
+    if (plotLengthBtn) plotLengthBtn.classList.add('active');
+
+    // World Focus
+    const worldFocus = localStorage.worldFocus || 'any';
+    document.querySelectorAll('[id^="btn-worldFocus-"]').forEach(btn => btn.classList.remove('active'));
+    const worldFocusBtn = document.getElementById('btn-worldFocus-' + worldFocus);
+    if (worldFocusBtn) worldFocusBtn.classList.add('active');
+
+    // World Text Length
+    const worldLength = localStorage.worldTextLength || 'medium';
+    document.querySelectorAll('[id^="btn-worldLength-"]').forEach(btn => btn.classList.remove('active'));
+    const worldLengthBtn = document.getElementById('btn-worldLength-' + worldLength);
+    if (worldLengthBtn) worldLengthBtn.classList.add('active');
+
+    // Roleplay Text Length
+    const roleplayLength = localStorage.roleplayTextLength || 'medium';
+    document.querySelectorAll('[id^="btn-roleplayLength-"]').forEach(btn => btn.classList.remove('active'));
+    const roleplayLengthBtn = document.getElementById('btn-roleplayLength-' + roleplayLength);
+    if (roleplayLengthBtn) roleplayLengthBtn.classList.add('active');
+
+    // Lore Keys count
+    const loreKeys = localStorage.loreCount || '3';
+    document.querySelectorAll('[id^="btn-loreKeys-"]').forEach(btn => btn.classList.remove('active'));
+    const loreKeysBtn = document.getElementById('btn-loreKeys-' + loreKeys);
+    if (loreKeysBtn) loreKeysBtn.classList.add('active');
+
+    // Intro Context Perspective
+    const introContext = localStorage.introContextPerspective || 'third';
+    document.querySelectorAll('[id^="btn-introContext-"]').forEach(btn => btn.classList.remove('active'));
+    const btnContextId = introContext === 'first' ? 'btn-introContext-1st' : 'btn-introContext-3rd';
+    const introContextBtn = document.getElementById(btnContextId);
+    if (introContextBtn) introContextBtn.classList.add('active');
+
+    // Intro Start Perspective
+    const introStart = localStorage.introStartPerspective || 'third';
+    document.querySelectorAll('[id^="btn-introStart-"]').forEach(btn => btn.classList.remove('active'));
+    const btnStartId = introStart === 'first' ? 'btn-introStart-1st' : 'btn-introStart-3rd';
+    const introStartBtn = document.getElementById(btnStartId);
+    if (introStartBtn) introStartBtn.classList.add('active');
+  };
+
   // Close drawer (Done button)
   window.closeDrawer = function () {
     const drawer = document.getElementById('customDropdownDrawer');
@@ -2286,19 +2527,44 @@
     }, 150);
   };
 
-  // Clear multi-select (Clear button)
-  window.clearMultiSelect = function () {
+  // Clear select values (Clear button)
+  window.clearSelection = function () {
     if (!currentActiveSelectEl) return;
     const id = currentActiveSelectEl.id;
-    if (!multiSelectIds.has(id)) return;
-    multiSelectState[id] = new Set();
-    saveMultiSelectState(id);
-    // Reset all card selected states in drawer
-    const scrollBox = document.getElementById('customDropdownDrawerContent');
-    if (scrollBox) {
-      scrollBox.querySelectorAll('.custom-select-card').forEach(c => c.classList.remove('selected'));
+    const isMulti = multiSelectIds.has(id);
+    if (isMulti) {
+      const sel = new Set();
+      const hasNoneOption = Array.from(currentActiveSelectEl.options).some(o => o.value === 'none');
+      if (hasNoneOption) {
+        sel.add('none');
+      }
+      multiSelectState[id] = sel;
+      saveMultiSelectState(id);
+      updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
+      
+      const scrollBox = document.getElementById('customDropdownDrawerContent');
+      if (scrollBox) {
+        scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+          c.classList.toggle('selected', c.dataset.value === 'none');
+        });
+      }
+    } else {
+      currentActiveSelectEl.selectedIndex = 0;
+      currentActiveSelectEl.dispatchEvent(new Event('change', { bubbles: true }));
+      if (typeof currentActiveSelectEl.onchange === 'function') currentActiveSelectEl.onchange();
+      
+      const labelSpan = currentActiveWrapper.querySelector('.custom-select-label');
+      if (labelSpan && currentActiveSelectEl.options[0]) {
+        labelSpan.textContent = currentActiveSelectEl.options[0].textContent;
+      }
+      
+      const scrollBox = document.getElementById('customDropdownDrawerContent');
+      if (scrollBox) {
+        scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+          c.classList.toggle('selected', parseInt(c.dataset.index) === 0);
+        });
+      }
     }
-    updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
   };
 
   // Select all multi-select items (Clear "none" and select all others)
@@ -2567,6 +2833,11 @@
     } else {
       drawer.classList.remove('is-multi');
     }
+    
+    const selectAllBtn = document.getElementById('drawerSelectAllBtn');
+    if (selectAllBtn) {
+      selectAllBtn.style.display = isMulti ? 'inline-block' : 'none';
+    }
 
     // Sort options: selected options first (stable sort)
     const sortedOptions = originalOptions.map((opt, idx) => ({ opt, idx }));
@@ -2710,6 +2981,9 @@
     initMultiSelectState();
     if (typeof window.loadDrawerSettings === 'function') {
       window.loadDrawerSettings();
+    }
+    if (typeof window.loadModifierSettings === 'function') {
+      window.loadModifierSettings();
     }
 
     // Restore textareas from localStorage

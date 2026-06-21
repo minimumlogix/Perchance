@@ -69,6 +69,9 @@ settings
   hideStartWith = [ activeResponseEl.value.trim() === "" && (localStorage.activeTab === "plot" || !localStorage.activeTab) && modes[currentMode].hideStartWith === true ? true : false ]
   outputTo = [activeResponseEl]  // this targets the active response element textarea
   onChunk(data) =>
+    if (window.cleanTextForBannedSettings) {
+      activeResponseEl.value = window.cleanTextForBannedSettings(activeResponseEl.value);
+    }
     if(activeResponseEl.scrollTop+activeResponseEl.offsetHeight > activeResponseEl.scrollHeight-60) {
       activeResponseEl.scrollTop = activeResponseEl.scrollHeight;
     }
@@ -230,23 +233,72 @@ async generate() =>
   let constraints = getConstraints();
   
   if (tabAtStart === "plot") {
-    localInstruction = modes[modeAtStart].instruction.toString() + otherTabsCtx;
+    let plotLength = localStorage.plotTextLength || 'medium';
+    let lengthPrompt = "";
+    if (plotLength === 'short') {
+      lengthPrompt = "\nConstraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
+    } else if (plotLength === 'long') {
+      lengthPrompt = "\nConstraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
+    } else {
+      lengthPrompt = "\nConstraint: The generated plot outline should be of standard medium length (around 200-250 words).";
+    }
+    localInstruction = modes[modeAtStart].instruction.toString() + lengthPrompt + otherTabsCtx;
   } else {
     let notesEl = document.getElementById(tabAtStart + "InstructionEl");
     let userNotes = notesEl ? notesEl.value.trim() : "";
     let activePrompt = userNotes || "Be creative and freeform.";
     if (tabAtStart === "world") {
-      localInstruction = "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+      let focus = localStorage.worldFocus || 'any';
+      let focusPrompt = "";
+      if (focus === 'micro') {
+        focusPrompt = "\nFocus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
+      } else if (focus === 'macro') {
+        focusPrompt = "\nFocus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
+      } else {
+        focusPrompt = "\nFocus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
+      }
+
+      let worldLength = localStorage.worldTextLength || 'medium';
+      let lengthPrompt = "";
+      if (worldLength === 'short') {
+        lengthPrompt = "\nConstraint: Keep the generated world-building details concise and short (under 120 words).";
+      } else if (worldLength === 'long') {
+        lengthPrompt = "\nConstraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
+      } else {
+        lengthPrompt = "\nConstraint: The generated world-building details should be of standard medium length (around 200-250 words).";
+      }
+
+      localInstruction = "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + focusPrompt + lengthPrompt + otherTabsCtx;
     } else if (tabAtStart === "roleplay") {
-      localInstruction = "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+      let rpLength = localStorage.roleplayTextLength || 'medium';
+      let lengthPrompt = "";
+      if (rpLength === 'short') {
+        lengthPrompt = "\nConstraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
+      } else if (rpLength === 'long') {
+        lengthPrompt = "\nConstraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
+      } else {
+        lengthPrompt = "\nConstraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
+      }
+
+      localInstruction = "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + lengthPrompt + otherTabsCtx;
     } else if (tabAtStart === "character") {
       localInstruction = "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
     } else if (tabAtStart === "intro") {
       localInstruction = "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
     } else if (tabAtStart === "lore") {
       let protagonist = userNameEl.value.trim() || "{{user}}";
-      let inst = "You are writing the LORE KEYWORDS and LORE CONTENT section. List exactly 3 lore entries.";
-      let fmt = "You MUST generate a strict JSON object containing exactly 3 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore). JSON format example: {\"1\":{\"content\":\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\"key\":[\"coffee\",\"barista\",\"spill\"]},\"2\":{\"content\":\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\"key\":[\"oat milk\",\"espresso\",\"favorite drink\"]}}";
+      let loreCount = parseInt(localStorage.loreCount || '3');
+      if (isNaN(loreCount) || loreCount < 1) loreCount = 3;
+      
+      let inst = "You are writing the LORE KEYWORDS and LORE CONTENT section. List exactly " + loreCount + " lore entries.";
+      
+      let keyStrings = [];
+      for (let k = 1; k <= loreCount; k++) {
+        keyStrings.push('"' + k + '"');
+      }
+      let keysDesc = keyStrings.join(", ");
+
+      let fmt = "You MUST generate a strict JSON object containing exactly " + loreCount + " lore entries. The keys of the JSON object must be strings " + keysDesc + ". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore). JSON format example for 2 entries: {\"1\":{\"content\":\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\"key\":[\"coffee\",\"barista\",\"spill\"]},\"2\":{\"content\":\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\"key\":[\"oat milk\",\"espresso\",\"favorite drink\"]}}";
       let notes = "LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate protagonist phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported.";
       let footer = "Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }.";
 
@@ -339,7 +391,11 @@ async generate() =>
         startWith: startWithVal,
         endButtons: "none",
         onChunk: function(data) {
-          localResponseEl.value = data.fullTextSoFar;
+          let text = data.fullTextSoFar;
+          if (window.cleanTextForBannedSettings) {
+            text = window.cleanTextForBannedSettings(text);
+          }
+          localResponseEl.value = text;
           if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
             localResponseEl.scrollTop = localResponseEl.scrollHeight;
           }
@@ -744,7 +800,11 @@ async generate() =>
           startWith: startWithVal,
           endButtons: "none",
           onChunk: function(data) {
-            localResponseEl.value = prefixOfTextarea + data.fullTextSoFar;
+            let text = data.fullTextSoFar;
+            if (window.cleanTextForBannedSettings) {
+              text = window.cleanTextForBannedSettings(text);
+            }
+            localResponseEl.value = prefixOfTextarea + text;
             if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
               localResponseEl.scrollTop = localResponseEl.scrollHeight;
             }
@@ -824,11 +884,10 @@ async generate() =>
     localStopBtn.onclick = stopClickHandler;
     localBottomStopBtn.onclick = stopClickHandler;
 
-    let keys = ["context", "introStart", "roleplayScenario"];
+    let keys = ["context", "introStart"];
     let sectionTitles = {
       context: "Scenario Context",
-      introStart: "Roleplay Start",
-      roleplayScenario: "Roleplay Scenario Sheet"
+      introStart: "Roleplay Start"
     };
 
     let protagonist = userNameEl.value.trim() || "{{user}}";
@@ -849,15 +908,11 @@ async generate() =>
     };
 
     if (textVal !== "") {
-      if (textVal.includes("=== SCENARIO SHEET ===") || textVal.includes("=== ROLEPLAY_STARTER_SEPARATOR ===")) {
+      let paragraphs = textVal.split(/\n\n+/);
+      if (paragraphs.length >= 2) {
         startIdx = 2;
       } else {
-        let paragraphs = textVal.split(/\n\n+/);
-        if (paragraphs.length >= 2) {
-          startIdx = 2;
-        } else {
-          startIdx = 1;
-        }
+        startIdx = 1;
       }
       
       if (startIdx > 0) {
@@ -894,9 +949,6 @@ async generate() =>
       let title = sectionTitles[key];
       
       let startWithText = "";
-      if (key === "roleplayScenario") {
-        startWithText = "=== SCENARIO SHEET ===\n";
-      }
 
       let startWithVal = "";
       let prefixOfTextarea = "";
@@ -915,16 +967,7 @@ async generate() =>
 
       let previousText = "";
       if (i === startIdx && isResumingTruncated) {
-        if (key === "roleplayScenario") {
-          let idx = lastSectionText.indexOf("=== SCENARIO SHEET ===");
-          if (idx === -1) idx = lastSectionText.indexOf("=== ROLEPLAY_STARTER_SEPARATOR ===");
-          if (idx !== -1) {
-            if (idx >= 2 && lastSectionText.substring(idx - 2, idx) === "\n\n") {
-              idx = idx - 2;
-            }
-            previousText = lastSectionText.substring(0, idx);
-          }
-        } else if (key === "introStart") {
+        if (key === "introStart") {
           let paragraphs = lastSectionText.split(/\n\n+/);
           previousText = paragraphs[0] || "";
         }
@@ -938,6 +981,20 @@ async generate() =>
 
       let inst = rawInstruction.replace(/\{\{user\}\}/g, protagonist);
       let fmt = rawFormat.replace(/\{\{user\}\}/g, protagonist);
+
+      // Append perspective constraint
+      let contextPerspective = localStorage.introContextPerspective || 'third';
+      let startPerspective = localStorage.introStartPerspective || 'third';
+      
+      if (key === "context") {
+        fmt += contextPerspective === 'first' 
+          ? "\nPerspective Constraint: Write the scenario context in FIRST-PERSON perspective (using 'I', 'my', 'we', 'our' from the perspective of the protagonist)."
+          : "\nPerspective Constraint: Write the scenario context in THIRD-PERSON perspective (using 'he', 'she', 'they', 'their', character names, etc.). Do not use first-person pronouns like 'I' or 'my' for narration.";
+      } else if (key === "introStart") {
+        fmt += startPerspective === 'first'
+          ? "\nPerspective Constraint: Write the opening actions/narration of the character or protagonist in FIRST-PERSON perspective (using 'I', 'me', 'my', 'we' where applicable narration)."
+          : "\nPerspective Constraint: Write the opening actions/narration in THIRD-PERSON perspective (using 'he', 'she', 'they', 'their', character names, etc.). Do not use first-person pronouns for narration.";
+      }
 
       let contextHistory = "";
       if (previousText.trim() !== "") {
@@ -982,7 +1039,11 @@ async generate() =>
           startWith: startWithVal,
           endButtons: "none",
           onChunk: function(data) {
-            localResponseEl.value = prefixOfTextarea + data.fullTextSoFar;
+            let text = data.fullTextSoFar;
+            if (window.cleanTextForBannedSettings) {
+              text = window.cleanTextForBannedSettings(text);
+            }
+            localResponseEl.value = prefixOfTextarea + text;
             if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
               localResponseEl.scrollTop = localResponseEl.scrollHeight;
             }
@@ -1031,6 +1092,9 @@ async generate() =>
       hideStartWith: localHideStartWith,
       outputTo: [localResponseEl],
       onChunk: function(data) {
+        if (window.cleanTextForBannedSettings) {
+          localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
+        }
         if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
           localResponseEl.scrollTop = localResponseEl.scrollHeight;
         }
@@ -1158,27 +1222,33 @@ getConstraints() =>
   if (name !== "") {
     list.push(`Include a character named "${literal(name)}" as the protagonist/main character.`);
   }
+
+  // Hardcoded safety rule: Absolutely no characters under 18
+  list.push("All characters must be 18 years of age or older. Absolutely do not generate or describe characters who are minors or under the age of 18.");
+
   let negConstraints = [];
   if (localStorage.banBolding === "true") {
-    negConstraints.push("Banned: bolding/asterisks (**). Output plain text only.");
+    negConstraints.push("Bolding with asterisks (e.g. **text**). You must output plain text only.");
   }
   if (localStorage.banEmdash === "true") {
-    negConstraints.push("Banned: em-dashes (—). Use normal hyphens or commas.");
+    negConstraints.push("Em-dashes (—) or en-dashes (–) or double hyphens (--). Use normal hyphens (-) or commas.");
   }
   let bannedInput = localStorage.customBannedWords || "";
   if (bannedInput.trim() !== "") {
     let words = bannedInput.split(",").map(w => w.trim()).filter(w => w.length > 0);
     if (words.length > 0) {
-      negConstraints.push("Banned words/phrases: " + words.map(w => `"${w}"`).join(", "));
+      negConstraints.push("The following words/phrases: " + words.map(w => `"${w}"`).join(", "));
     }
   }
-  if (negConstraints.length > 0) {
-    list.push("CRITICAL: STRICTLY AVOID & DO NOT GENERATE:\n    - " + negConstraints.join("\n    - "));
-  }
+
+  let result = "";
   if (list.length > 0) {
-    return "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
+    result += "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
   }
-  return "";
+  if (negConstraints.length > 0) {
+    result += "\n\nCRITICAL SAFETY AND STYLE RESTRICTIONS:\nDO NOT generate or include the following under any circumstances:\n" + negConstraints.map(item => "- " + item).join("\n") + "\nStrictly enforce these restrictions in your response.";
+  }
+  return result;
 
 modes
   creative
@@ -2653,10 +2723,6 @@ introGenerationPrompt() =>
     introStart: {
       instruction: "You are writing the ROLEPLAY START (Dialogue & Narration) for the character to start the roleplay.",
       format: "Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncencored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:'). \ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to {{user}}\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\""
-    },
-    roleplayScenario: {
-      instruction: "You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The {{user}} is the player of this roleplay.",
-      format: "TASK:\nGenerate a structured scenario document divided into exactly two blocks using the separator string \"=== ROLEPLAY_STARTER_SEPARATOR ===\".\n\nBefore the separator, output the SCENARIO SHEET containing:\n1. **World Expansion**: 2-3 sentences expanding on the setting specifics for this scene.\n2. **Character Sheet Details**: A concise summary of each NPC's hidden motivations, initial attitude towards the Player, and their relationships.\n3. **Plot Setup & Objective**: What is the immediate conflict, and what is the group's goal?\n\nAfter the separator, output the ROLEPLAY STARTER POST:\n- Set the scene at the very beginning of the action. Describe the immediate surroundings, sensory details (sounds, weather, light), and character actions.\n- End the starter post with an action, dialogue, or event from one of the NPCs that directly prompts the Player to speak or act, creating a natural hook.\n\nRespond using the separator \"=== ROLEPLAY_STARTER_SEPARATOR ===\" between the Scenario Sheet and the Starter Post. Output nothing else."
     }
   };
 
