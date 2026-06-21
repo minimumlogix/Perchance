@@ -116,7 +116,10 @@
   <!-- Shared Dropdown Drawer -->
   <div class="custom-dropdown-drawer" id="customDropdownDrawer">
     <div class="custom-dropdown-drawer-header">
-      <span class="drawer-header-title" id="drawerHeaderTitle">02 WORLD SETTING</span>
+      <div class="d-flex align-items-center">
+        <span class="drawer-header-title" id="drawerHeaderTitle">02 WORLD SETTING</span>
+        <span class="badge rounded-pill fw-semibold text-uppercase" id="drawerHeaderBadge" style="font-size: 8px; padding: 2.5px 6px; letter-spacing: 0.05em; margin-left: 8px; vertical-align: middle; display: inline-block;"></span>
+      </div>
       <span class="drawer-header-action" id="drawerHeaderAction" onclick="toggleDrawerExpand()"><span id="drawerHeaderActionText">VIEW ALL</span> <i class="bi bi-chevron-right" id="drawerHeaderActionIcon"></i></span>
     </div>
     <div class="custom-dropdown-search-wrapper" id="customDropdownSearchWrapper">
@@ -127,6 +130,7 @@
     </div>
     <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
     <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
+      <button class="drawer-footer-all" id="drawerSelectAllBtn" onclick="selectAllMultiSelect()"><i class="bi bi-check-all"></i> Select All</button>
       <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearMultiSelect()"><i class="bi bi-trash"></i> Clear</button>
       <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()"><i class="bi bi-check-circle"></i> Done</button>
     </div>
@@ -151,6 +155,12 @@
       <button class="tab-btn" id="tabBtn-character" role="tab" aria-selected="false" onclick="switchTab('character')">
         <i class="bi bi-person"></i> Character
       </button>
+      <button class="tab-btn" id="tabBtn-lore" role="tab" aria-selected="false" onclick="switchTab('lore')">
+        <i class="bi bi-journal-bookmark"></i> Lore
+      </button>
+      <button class="tab-btn" id="tabBtn-intro" role="tab" aria-selected="false" onclick="switchTab('intro')">
+        <i class="bi bi-chat-quote"></i> Intro
+      </button>
     </div>
 
     <!-- Tab Panels Container (No outer card style) -->
@@ -159,12 +169,12 @@
       <div class="tab-panel active" id="tabPanel-plot">
         <!-- Input Card -->
         <div class="card shadow-sm mb-4 border-secondary-subtle">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
             <div class="d-flex align-items-center gap-2">
               <!-- Space holder for alignment -->
             </div>
-            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Instruction —</span>
-            <div class="d-flex align-items-center gap-2">
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— Instruction —</span>
+            <div class="d-flex align-items-center gap-2" style="z-index: 2;">
               <button id="plotInstructionDeleteBtn" data-mode="delete" onclick="toggleInstructionDelete(this)"
                 class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
             </div>
@@ -192,21 +202,21 @@
 
         <!-- Response Card -->
         <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-            <div class="card-actions-left d-flex gap-1 align-items-center">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
               <button disabled id="plotContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-play-fill"></i> continue
               </button>
               <button disabled id="plotRetryBtn"
-                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['plot'])||activeResponseEl.value; generate()"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-arrow-clockwise"></i> retry
               </button>
               <button id="plotResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
                 class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
             </div>
-            <span id="plotOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
-            <div class="card-actions-right d-flex gap-1 align-items-center">
+            <span id="plotOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
               <button id="plotCopyBtn" onclick="copyText('plotResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
@@ -233,19 +243,19 @@
       <div class="tab-panel" id="tabPanel-world">
         <!-- Input Card -->
         <div class="card shadow-sm mb-4 border-secondary-subtle">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
             <div class="d-flex align-items-center gap-2">
               <!-- Space holder for alignment -->
             </div>
-            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— World Notes —</span>
-            <div class="d-flex align-items-center gap-1">
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— World Notes —</span>
+            <div class="d-flex align-items-center gap-1" style="z-index: 2;">
               <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
             <textarea id="worldInstructionEl"
               placeholder="Describe the world, its lore, geography, factions, rules of magic, technology level, etc."
-              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
               oninput="localStorage.worldInstruction=this.value;"></textarea>
           </div>
         </div>
@@ -265,21 +275,21 @@
 
         <!-- Response Card -->
         <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-            <div class="card-actions-left d-flex gap-1 align-items-center">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
               <button disabled id="worldContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-play-fill"></i> continue
               </button>
               <button disabled id="worldRetryBtn"
-                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['world'])||activeResponseEl.value; generate()"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-arrow-clockwise"></i> retry
               </button>
               <button id="worldResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
                 class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
             </div>
-            <span id="worldOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
-            <div class="card-actions-right d-flex gap-1 align-items-center">
+            <span id="worldOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
               <button id="worldCopyBtn" onclick="copyText('worldResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
@@ -306,19 +316,19 @@
       <div class="tab-panel" id="tabPanel-roleplay">
         <!-- Input Card -->
         <div class="card shadow-sm mb-4 border-secondary-subtle">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
             <div class="d-flex align-items-center gap-2">
               <!-- Space holder for alignment -->
             </div>
-            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Roleplay Prompt —</span>
-            <div class="d-flex align-items-center gap-1">
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— Roleplay Prompt —</span>
+            <div class="d-flex align-items-center gap-1" style="z-index: 2;">
               <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
             <textarea id="roleplayInstructionEl"
               placeholder="Describe the roleplay scenario: setting, characters, tone, starting scene, etc."
-              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
               oninput="localStorage.roleplayInstruction=this.value;"></textarea>
           </div>
         </div>
@@ -338,21 +348,21 @@
 
         <!-- Response Card -->
         <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-            <div class="card-actions-left d-flex gap-1 align-items-center">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
               <button disabled id="roleplayContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-play-fill"></i> continue
               </button>
               <button disabled id="roleplayRetryBtn"
-                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['roleplay'])||activeResponseEl.value; generate()"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-arrow-clockwise"></i> retry
               </button>
               <button id="roleplayResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
                 class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
             </div>
-            <span id="roleplayOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
-            <div class="card-actions-right d-flex gap-1 align-items-center">
+            <span id="roleplayOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
               <button id="roleplayCopyBtn" onclick="copyText('roleplayResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
@@ -379,19 +389,19 @@
       <div class="tab-panel" id="tabPanel-character">
         <!-- Input Card -->
         <div class="card shadow-sm mb-4 border-secondary-subtle">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
             <div class="d-flex align-items-center gap-2">
               <!-- Space holder for alignment -->
             </div>
-            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Character Notes —</span>
-            <div class="d-flex align-items-center gap-1">
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— Character Notes —</span>
+            <div class="d-flex align-items-center gap-1" style="z-index: 2;">
               <!-- Space holder for alignment -->
             </div>
           </div>
           <div class="card-body p-0">
             <textarea id="characterInstructionEl"
               placeholder="Describe the character: name, role, personality traits, backstory hints, goals, etc."
-              class="form-control border-0 p-3" style="height:320px; resize: vertical; background: transparent; color: inherit;"
+              class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
               oninput="localStorage.characterInstruction=this.value;"></textarea>
           </div>
         </div>
@@ -411,26 +421,29 @@
 
         <!-- Response Card -->
         <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
-            <div class="card-actions-left d-flex gap-1 align-items-center">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
               <button disabled id="characterContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-play-fill"></i> continue
               </button>
               <button disabled id="characterRetryBtn"
-                onclick="activeResponseEl.value=window.responseContentBeforeLastGenerate||activeResponseEl.value; generate()"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['character'])||activeResponseEl.value; generate()"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
                 <i class="bi bi-arrow-clockwise"></i> retry
               </button>
               <button id="characterResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
                 class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
             </div>
-            <span id="characterOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted">— Output —</span>
-            <div class="card-actions-right d-flex gap-1 align-items-center">
+            <span id="characterOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
               <button id="characterCopyBtn" onclick="copyText('characterResponseEl', this)"
                 class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
             </div>
           </div>
           <div class="card-body p-0">
+            <div class="progress" style="height: 4px; border-radius: 0; display: none;" id="characterProgressBar">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" id="characterProgressBarInner"></div>
+            </div>
             <textarea id="characterResponseEl" oninput="handleResponseInput()"
               placeholder="The AI's output will show up here, and you can edit it. You can also manually type text here and then click the 'continue' button, above."
               class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
@@ -445,13 +458,159 @@
               </button>
             </div>
           </div>
+      </div>
+
+      <!-- Lore Tab -->
+      <div class="tab-panel" id="tabPanel-lore">
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— Lore Notes —</span>
+            <div class="d-flex align-items-center gap-1" style="z-index: 2;">
+              <!-- Space holder for alignment -->
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="loreInstructionEl"
+              placeholder="Describe specific lore aspects: historical events, ancient magic details, faction secrets, etc. (Generates a JSON block format)"
+              class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
+              oninput="localStorage.loreInstruction=this.value;"></textarea>
+          </div>
+        </div>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="loreGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="loreLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="loreStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
+              <button disabled id="loreContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="loreRetryBtn"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['lore'])||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="loreResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="loreOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output (JSON) —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
+              <button id="loreCopyBtn" onclick="copyText('loreResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="loreResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's generated Lore JSON object will show up here, and you can edit it."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit; font-family: var(--bs-font-monospace); font-size: 90%;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="loreBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="loreBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
+      </div>
+
+      <!-- Intro Tab -->
+      <div class="tab-panel" id="tabPanel-intro">
+        <!-- Input Card -->
+        <div class="card shadow-sm mb-4 border-secondary-subtle">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Space holder for alignment -->
+            </div>
+            <span class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle">— Intro Notes —</span>
+            <div class="d-flex align-items-center gap-1" style="z-index: 2;">
+              <!-- Space holder for alignment -->
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <textarea id="introInstructionEl"
+              placeholder="Describe the starter scenario details or any specific instructions for the Intro generation..."
+              class="form-control border-0 p-3" style="height:150px; resize: vertical; background: transparent; color: inherit;"
+              oninput="localStorage.introInstruction=this.value;"></textarea>
+          </div>
+        </div>
+
+        <!-- Generate Button Block -->
+        <div class="d-flex justify-content-center align-items-center my-4">
+          <div class="position-relative d-inline-block">
+            <button id="introGenerateBtn" onclick="activeResponseEl.value = ''; generate();" class="btn btn-lg btn-primary px-4 py-2 shadow rounded-pill">
+              <i class="bi bi-magic"></i> generate
+            </button>
+            <span id="introLoaderEl" class="position-absolute start-100 top-50 translate-middle-y ms-3" style="white-space: nowrap;"></span>
+            <button id="introStopBtn" class="btn btn-sm btn-outline-danger rounded-pill position-absolute end-100 top-50 translate-middle-y me-3" style="display:none; font-size:80%;">
+              <i class="bi bi-stop-circle"></i> stop
+            </button>
+          </div>
+        </div>
+
+        <!-- Response Card -->
+        <div class="response-block card shadow-sm border-secondary-subtle w-100 mb-4">
+          <div class="card-header position-relative d-flex justify-content-between align-items-center bg-body-tertiary border-bottom-0 py-2">
+            <div class="card-actions-left d-flex gap-1 align-items-center" style="z-index: 2;">
+              <button disabled id="introContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button disabled id="introRetryBtn"
+                onclick="activeResponseEl.value=(window.responseContentBeforeLastGenerate && window.responseContentBeforeLastGenerate['intro'])||activeResponseEl.value; generate()"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-arrow-clockwise"></i> retry
+              </button>
+              <button id="introResponseDeleteBtn" data-mode="delete" onclick="toggleResponseDelete(this)"
+                class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 75%; display:none;"></button>
+            </div>
+            <span id="introOutputTitleEl" class="card-title-text fw-bold text-uppercase tracking-wider small text-muted position-absolute start-50 top-50 translate-middle" style="z-index: 1;">— Output —</span>
+            <div class="card-actions-right d-flex gap-1 align-items-center" style="z-index: 2;">
+              <button id="introCopyBtn" onclick="copyText('introResponseEl', this)"
+                class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 75%; display:none;"><i class="bi bi-clipboard"></i> copy</button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="progress" style="height: 4px; border-radius: 0; display: none;" id="introProgressBar">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" id="introProgressBarInner"></div>
+            </div>
+            <textarea id="introResponseEl" oninput="handleResponseInput()"
+              placeholder="The AI's generated Roleplay Intro will show up here, and you can edit it."
+              class="form-control border-0 p-3" style="height:450px; resize: vertical; background: transparent; color: inherit;"></textarea>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top-0">
+            <div class="d-flex gap-1">
+              <button disabled id="introBottomContinueBtn" onclick="generate()" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 75%;">
+                <i class="bi bi-play-fill"></i> continue
+              </button>
+              <button id="introBottomStopBtn" class="btn btn-sm btn-outline-danger py-1 px-2" style="display:none; font-size: 75%;">
+                <i class="bi bi-stop-circle"></i> stop
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <style>
-    /* === Tab Switcher === */
     .tab-bar {
       display: flex;
       gap: 6px;
@@ -460,9 +619,15 @@
       border-radius: 12px;
       margin-bottom: 1rem;
       border: 1px solid rgba(128, 128, 128, 0.15);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+    .tab-bar::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
     }
     .tab-btn {
-      flex: 1;
+      flex: 1 0 auto;
       text-align: center;
       background: transparent;
       border: none;
@@ -478,6 +643,7 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      white-space: nowrap;
     }
     .tab-btn:hover {
       opacity: 0.9;
@@ -509,6 +675,50 @@
   </style>
 
   <script>
+    window.getOtherTabsContext = function(currentTab) {
+      let ctx = [];
+      if (currentTab !== "plot") {
+        let el = document.getElementById("plotResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### PLOT CONTEXT:\n" + el.value.trim());
+        }
+      }
+      if (currentTab !== "world") {
+        let el = document.getElementById("worldResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### WORLD CONTEXT:\n" + el.value.trim());
+        }
+      }
+      if (currentTab !== "character") {
+        let el = document.getElementById("characterResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### CHARACTER CONTEXT:\n" + el.value.trim());
+        }
+      }
+      if (currentTab !== "roleplay") {
+        let el = document.getElementById("roleplayResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### ROLEPLAY SCENE CONTEXT:\n" + el.value.trim());
+        }
+      }
+      if (currentTab !== "lore") {
+        let el = document.getElementById("loreResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### LORE CONTEXT (JSON):\n" + el.value.trim());
+        }
+      }
+      if (currentTab !== "intro") {
+        let el = document.getElementById("introResponseEl");
+        if (el && el.value.trim() !== "") {
+          ctx.push("### ROLEPLAY INTRO/SCENARIO CONTEXT:\n" + el.value.trim());
+        }
+      }
+      if (ctx.length > 0) {
+        return "\n\nUse the following existing story context from other tabs for alignment and coherence:\n---\n" + ctx.join("\n\n---\n") + "\n---\n";
+      }
+      return "";
+    };
+
     // Helper function to copy text and show visual feedback
     window.copyText = function(elId, btn) {
       const el = document.getElementById(elId);
@@ -1236,7 +1446,7 @@
     flex: 0 0 auto;
     position: relative;
     width: 180px;
-    height: 110px;
+    height: 115px;
     border-radius: 10px;
     overflow: hidden;
     cursor: pointer;
@@ -1246,6 +1456,7 @@
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     scroll-snap-align: center;
     user-select: none;
+    animation: cardEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   [data-bs-theme="dark"] .custom-select-card,
@@ -1330,20 +1541,25 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 60%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0) 100%);
+    top: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.75) 100%);
     z-index: 2;
     pointer-events: none;
-    transition: height 0.2s ease;
+    transition: background 0.3s ease;
   }
 
   [data-bs-theme="dark"] .custom-select-card::after,
   html[style*="dark"] .custom-select-card::after {
-    background: linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.4) 60%, rgba(13, 17, 23, 0) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(13, 17, 23, 0.85) 100%);
   }
 
   .custom-select-card:hover::after {
-    height: 70%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.85) 100%);
+  }
+
+  [data-bs-theme="dark"] .custom-select-card:hover::after,
+  html[style*="dark"] .custom-select-card:hover::after {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(13, 17, 23, 0.95) 100%);
   }
 
   /* Checkmark circle */
@@ -1416,14 +1632,40 @@
   }
 
   .card-title {
-    font-weight: 600;
-    font-size: 0.8rem;
+    font-weight: 700;
+    font-size: 0.82rem;
     color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0;
+  }
+
+  .card-description {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    margin-top: 1px;
+    line-height: 1.25;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @keyframes cardEntrance {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   /* Search bar styles inside drawer */
@@ -1561,6 +1803,34 @@
     border-color: rgba(248, 113, 113, 0.4);
     background: rgba(248, 113, 113, 0.12);
     color: #f87171;
+  }
+
+  .drawer-footer-all {
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 80%;
+    font-weight: 500;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    margin-right: auto;
+  }
+
+  .drawer-footer-all:hover {
+    opacity: 1;
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.08);
+    color: #3b82f6;
+  }
+
+  [data-bs-theme="dark"] .drawer-footer-all:hover,
+  html[style*="dark"] .drawer-footer-all:hover {
+    border-color: rgba(96, 165, 250, 0.4);
+    background: rgba(96, 165, 250, 0.12);
+    color: #60a5fa;
   }
 
   .drawer-footer-done {
@@ -1773,7 +2043,7 @@
   let currentActiveWrapper = null;
 
   // Which selects support multi-select
-  const multiSelectIds = new Set(['currentToneEl', 'currentArchetypeEl', 'currentDynamicsEl']);
+  const multiSelectIds = new Set(['currentSettingEl', 'currentToneEl', 'currentArchetypeEl', 'currentDynamicsEl']);
 
   // Dynamic drawer headers based on select ID
   const drawerHeaders = {
@@ -1800,6 +2070,7 @@
 
   // Maps select id -> global variable name for multi-select state (in Perchance lists)
   const multiSelectGlobalMap = {
+    'currentSettingEl': 'currentSettings',
     'currentToneEl': 'currentTones',
     'currentArchetypeEl': 'currentArchetypes',
     'currentDynamicsEl': 'currentDynamicsList'
@@ -1807,6 +2078,7 @@
 
   // Maps select id -> localStorage key for multi-select
   const multiSelectStorageMap = {
+    'currentSettingEl': 'currentSettings',
     'currentToneEl': 'currentTones',
     'currentArchetypeEl': 'currentArchetypes',
     'currentDynamicsEl': 'currentDynamicsList'
@@ -1907,10 +2179,35 @@
     if (!scrollBox) return;
     query = query.toLowerCase().trim();
     if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+    
+    let visibleCount = 0;
     scrollBox.querySelectorAll('.custom-select-card').forEach(card => {
       const title = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
-      card.style.display = title.includes(query) ? 'flex' : 'none';
+      const desc = (card.querySelector('.card-description')?.textContent || '').toLowerCase();
+      const matches = title.includes(query) || desc.includes(query);
+      card.style.display = matches ? 'flex' : 'none';
+      if (matches) visibleCount++;
     });
+
+    // Handle no matches view
+    let noResultsEl = document.getElementById('customDropdownNoResults');
+    if (visibleCount === 0) {
+      if (!noResultsEl) {
+        noResultsEl = document.createElement('div');
+        noResultsEl.id = 'customDropdownNoResults';
+        noResultsEl.className = 'w-100 py-4 text-center text-muted d-flex flex-column align-items-center justify-content-center';
+        noResultsEl.innerHTML = `
+          <i class="bi bi-search-heart display-6 mb-2 opacity-50"></i>
+          <span class="small fw-medium">No matching options found</span>
+          <button class="btn btn-sm btn-link text-decoration-none p-0 mt-1" style="font-size: 80%;" onclick="clearDrawerSearch()">Reset search</button>
+        `;
+        scrollBox.appendChild(noResultsEl);
+      } else {
+        noResultsEl.style.display = 'flex';
+      }
+    } else {
+      if (noResultsEl) noResultsEl.style.display = 'none';
+    }
   };
 
   window.clearDrawerSearch = function () {
@@ -1971,7 +2268,7 @@
           targetIdx = currentActiveSelectEl.selectedIndex;
         }
         if (targetIdx != null && targetIdx >= 0) {
-          const targetCard = content.children[targetIdx];
+          const targetCard = content.querySelector(`.custom-select-card[data-index="${targetIdx}"]`);
           if (targetCard) {
             if (isExpanded) {
               content.scrollTop = targetCard.offsetTop - (content.clientHeight / 2) + (targetCard.clientHeight / 2);
@@ -2004,6 +2301,37 @@
     updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
   };
 
+  // Select all multi-select items (Clear "none" and select all others)
+  window.selectAllMultiSelect = function () {
+    if (!currentActiveSelectEl) return;
+    const id = currentActiveSelectEl.id;
+    if (!multiSelectIds.has(id)) return;
+    
+    const sel = new Set();
+    const originalOptions = Array.from(currentActiveSelectEl.options);
+    originalOptions.forEach(opt => {
+      if (opt.value !== 'none') {
+        sel.add(opt.value);
+      }
+    });
+    
+    multiSelectState[id] = sel;
+    saveMultiSelectState(id);
+    
+    // Update all card selected states in drawer
+    const scrollBox = document.getElementById('customDropdownDrawerContent');
+    if (scrollBox) {
+      scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+        if (c.dataset.value !== 'none') {
+          c.classList.add('selected');
+        } else {
+          c.classList.remove('selected');
+        }
+      });
+    }
+    updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
+  };
+
   function buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox) {
     const card = document.createElement('div');
     card.dataset.value = opt.value;
@@ -2020,6 +2348,7 @@
 
     // Retrieve image/description from Perchance list object
     let imageUrl = null;
+    let itemDescription = '';
     const listName = selectToListNameMap[selectEl.id];
     if (listName) {
       try {
@@ -2047,6 +2376,10 @@
             if (imageUrl.startsWith('assets/images/')) {
               imageUrl = imageUrl.replace('assets/images/', 'assets/Images/');
             }
+          }
+          let rawDesc = String(itemObj.description ?? '').trim();
+          if (rawDesc && rawDesc !== 'undefined') {
+            itemDescription = rawDesc;
           }
         }
       } catch (e) { /* silent */ }
@@ -2110,6 +2443,13 @@
     title.textContent = opt.textContent;
     contentWrapper.appendChild(title);
 
+    if (itemDescription) {
+      const desc = document.createElement('div');
+      desc.className = 'card-description';
+      desc.textContent = itemDescription;
+      contentWrapper.appendChild(desc);
+    }
+
     // Checkmark circle (built for both single/multi select, visible on selected via CSS)
     const check = document.createElement('div');
     check.className = 'card-check';
@@ -2126,12 +2466,30 @@
       if (isMulti) {
         // Toggle selection
         const sel = multiSelectState[selectEl.id] || new Set();
-        if (sel.has(opt.value)) {
-          sel.delete(opt.value);
-          card.classList.remove('selected');
+        if (opt.value === 'none') {
+          if (sel.has('none')) {
+            sel.delete('none');
+            card.classList.remove('selected');
+          } else {
+            sel.clear();
+            sel.add('none');
+            scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+              c.classList.toggle('selected', c.dataset.value === 'none');
+            });
+          }
         } else {
-          sel.add(opt.value);
-          card.classList.add('selected');
+          if (sel.has(opt.value)) {
+            sel.delete(opt.value);
+            card.classList.remove('selected');
+          } else {
+            if (sel.has('none')) {
+              sel.delete('none');
+              const noneCard = scrollBox.querySelector('.custom-select-card[data-value="none"]');
+              if (noneCard) noneCard.classList.remove('selected');
+            }
+            sel.add(opt.value);
+            card.classList.add('selected');
+          }
         }
         multiSelectState[selectEl.id] = sel;
         saveMultiSelectState(selectEl.id);
@@ -2165,6 +2523,20 @@
     }
 
     const isMulti = multiSelectIds.has(selectEl.id);
+
+    // Update dynamic header badge (Single-Select vs Multi-Select)
+    const headerBadgeEl = document.getElementById('drawerHeaderBadge');
+    if (headerBadgeEl) {
+      if (isMulti) {
+        headerBadgeEl.textContent = 'Multi-Select';
+        headerBadgeEl.className = 'badge rounded-pill fw-semibold text-uppercase bg-primary-subtle text-primary border border-primary-subtle';
+      } else {
+        headerBadgeEl.textContent = 'Single-Select';
+        headerBadgeEl.className = 'badge rounded-pill fw-semibold text-uppercase bg-secondary-subtle text-secondary border border-secondary-subtle';
+      }
+      headerBadgeEl.style.display = 'inline-block';
+    }
+
     const originalOptions = Array.from(selectEl.options);
     const itemsCount = originalOptions.length;
     scrollBox.innerHTML = '';
@@ -2196,9 +2568,32 @@
       drawer.classList.remove('is-multi');
     }
 
+    // Sort options: selected options first (stable sort)
+    const sortedOptions = originalOptions.map((opt, idx) => ({ opt, idx }));
+    sortedOptions.sort((a, b) => {
+      let aSelected = false;
+      let bSelected = false;
+      if (isMulti) {
+        const sel = multiSelectState[selectEl.id] || new Set();
+        const isAImplicit = sel.size === 0 && a.opt.value === 'none';
+        const isBImplicit = sel.size === 0 && b.opt.value === 'none';
+        aSelected = sel.has(a.opt.value) || isAImplicit;
+        bSelected = sel.has(b.opt.value) || isBImplicit;
+      } else {
+        aSelected = a.idx === selectEl.selectedIndex;
+        bSelected = b.idx === selectEl.selectedIndex;
+      }
+      
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+      return a.idx - b.idx; // Stable sort
+    });
+
     // Build cards
-    originalOptions.forEach((opt, idx) => {
-      scrollBox.appendChild(buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox));
+    sortedOptions.forEach(({ opt, idx }, sortedIdx) => {
+      const card = buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox);
+      card.style.animationDelay = `${sortedIdx * 20}ms`;
+      scrollBox.appendChild(card);
     });
 
     drawer.classList.add('open');
@@ -2216,7 +2611,7 @@
         targetIdx = selectEl.selectedIndex;
       }
       if (targetIdx != null && targetIdx >= 0) {
-        const targetCard = scrollBox.children[targetIdx];
+        const targetCard = scrollBox.querySelector(`.custom-select-card[data-index="${targetIdx}"]`);
         if (targetCard) {
           if (drawer.classList.contains('expanded')) {
             scrollBox.scrollTop = targetCard.offsetTop - (scrollBox.clientHeight / 2) + (targetCard.clientHeight / 2);
@@ -2335,9 +2730,15 @@
     if (localStorage.characterInstruction) {
       characterInstructionEl.value = localStorage.characterInstruction;
     }
+    if (localStorage.loreInstruction) {
+      loreInstructionEl.value = localStorage.loreInstruction;
+    }
+    if (localStorage.introInstruction) {
+      introInstructionEl.value = localStorage.introInstruction;
+    }
 
     // Restore output textareas from localStorage
-    const tabs = ['plot', 'world', 'roleplay', 'character'];
+    const tabs = ['plot', 'world', 'roleplay', 'character', 'lore', 'intro'];
     tabs.forEach(tab => {
       const resEl = document.getElementById(tab + 'ResponseEl');
       if (resEl && localStorage[tab + 'Response']) {

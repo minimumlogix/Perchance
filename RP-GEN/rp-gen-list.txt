@@ -9,8 +9,9 @@ $meta
 settings
   instruction() =>
     this.lastModeUsed = currentMode;
+    let context = window.getOtherTabsContext ? window.getOtherTabsContext(localStorage.activeTab || "plot") : "";
     if(localStorage.activeTab === "plot" || !localStorage.activeTab) {
-      return modes[currentMode].instruction.toString();
+      return modes[currentMode].instruction.toString() + context;
     } else {
       let tab = localStorage.activeTab;
       let notesEl = document.getElementById(tab + "InstructionEl");
@@ -18,11 +19,38 @@ settings
       let activePrompt = userNotes || "Be creative and freeform.";
       let constraints = getConstraints();
       if (tab === "world") {
-        return "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+        return "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
       } else if (tab === "roleplay") {
-        return "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+        return "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
       } else if (tab === "character") {
-        return "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints;
+        return "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+      } else if (tab === "intro") {
+        return "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+      } else if (tab === "lore") {
+        let protagonist = userNameEl.value.trim() || "{{user}}";
+        let inst = "You are writing the LORE KEYWORDS and LORE CONTENT section. List exactly 3 lore entries.";
+        let fmt = "You MUST generate a strict JSON object containing exactly 3 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore). JSON format example: {\"1\":{\"content\":\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\"key\":[\"coffee\",\"barista\",\"spill\"]},\"2\":{\"content\":\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\"key\":[\"oat milk\",\"espresso\",\"favorite drink\"]}}";
+        let notes = "LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate protagonist phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported.";
+        let footer = "Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }.";
+
+        inst = inst.replace(/\{\{user\}\}/g, protagonist);
+        fmt = fmt.replace(/\{\{user\}\}/g, protagonist);
+        notes = notes.replace(/\{\{user\}\}/g, protagonist);
+        footer = footer.replace(/\{\{user\}\}/g, protagonist);
+
+        let p = "";
+        if (userNotes) {
+          p += "Lore Notes:\n" + userNotes + "\n\n";
+        }
+        p += constraints + "\n\n";
+        if (context) {
+          p += context + "\n";
+        }
+        p += "INSTRUCTION: " + inst + "\n";
+        p += "FORMAT: " + fmt + "\n";
+        p += "NOTES: " + notes + "\n";
+        p += "FOOTER: " + footer;
+        return p;
       }
       return "";
     }
@@ -30,6 +58,8 @@ settings
     if(activeResponseEl.value.trim() === "") {
       if(localStorage.activeTab === "plot" || !localStorage.activeTab) {
         return modes[currentMode].startWith || "";
+      } else if (localStorage.activeTab === "lore") {
+        return "{";
       } else {
         return "";
       }
@@ -75,29 +105,1003 @@ settings
 
 
 async generate() =>
-  window.responseContentBeforeLastGenerate = activeResponseEl.value;
-  let pendingObj = ai(settings);
-  activeStopBtn.style.display = "";
-  activeBottomStopBtn.style.display = "";
-  function stopClickHandler() {
-    pendingObj.stop();
-    activeStopBtn.style.display = "none";
-    activeBottomStopBtn.style.display = "none";
+  let tabAtStart = localStorage.activeTab || 'plot';
+  let modeAtStart = currentMode;
+  let localResponseEl = document.getElementById(tabAtStart + 'ResponseEl');
+  let localGenerateBtn = document.getElementById(tabAtStart + 'GenerateBtn');
+  let localContinueBtn = document.getElementById(tabAtStart + 'ContinueBtn');
+  let localBottomContinueBtn = document.getElementById(tabAtStart + 'BottomContinueBtn');
+  let localRetryBtn = document.getElementById(tabAtStart + 'RetryBtn');
+  let localResponseDeleteBtn = document.getElementById(tabAtStart + 'ResponseDeleteBtn');
+  let localResponseCopyBtn = document.getElementById(tabAtStart + 'CopyBtn');
+  let localLoaderEl = document.getElementById(tabAtStart + 'LoaderEl');
+  let localStopBtn = document.getElementById(tabAtStart + 'StopBtn');
+  let localBottomStopBtn = document.getElementById(tabAtStart + 'BottomStopBtn');
+
+  if (!window.responseContentBeforeLastGenerate) window.responseContentBeforeLastGenerate = {};
+  window.responseContentBeforeLastGenerate[tabAtStart] = localResponseEl.value;
+
+  let cleanAndFormatJSON = function(text) {
+    if (!text) return "";
+    let cleaned = text.trim();
+    
+    let repairJSON = function(jsonStr) {
+      jsonStr = jsonStr.trim();
+      if (!jsonStr.startsWith("{")) {
+        let firstBrace = jsonStr.indexOf("{");
+        if (firstBrace !== -1) {
+          jsonStr = jsonStr.substring(firstBrace);
+        } else {
+          return jsonStr;
+        }
+      }
+      
+      // Remove block comments
+      jsonStr = jsonStr.replace(/\/\*[\s\S]*?\*\//g, "");
+      
+      // Remove single line comments
+      jsonStr = jsonStr.split('\n').map(line => {
+        let idx = line.indexOf("//");
+        if (idx !== -1 && !line.substring(0, idx).includes("http:") && !line.substring(0, idx).includes("https:")) {
+          return line.substring(0, idx);
+        }
+        return line;
+      }).join('\n');
+
+      // Remove trailing commas inside brackets/braces
+      jsonStr = jsonStr.replace(/,\s*([\]}])/g, "$1");
+      
+      let stack = [];
+      let inString = false;
+      let escape = false;
+      
+      for (let i = 0; i < jsonStr.length; i++) {
+        let c = jsonStr[i];
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (c === '\\') {
+          escape = true;
+          continue;
+        }
+        if (c === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (inString) continue;
+        
+        if (c === '{' || c === '[') {
+          stack.push(c);
+        } else if (c === '}') {
+          if (stack.length > 0 && stack[stack.length - 1] === '{') {
+            stack.pop();
+          }
+        } else if (c === ']') {
+          if (stack.length > 0 && stack[stack.length - 1] === '[') {
+            stack.pop();
+          }
+        }
+      }
+      
+      if (inString) {
+        jsonStr += '"';
+      }
+      
+      while (stack.length > 0) {
+        let open = stack.pop();
+        jsonStr = jsonStr.trim();
+        if (jsonStr.endsWith(",")) {
+          jsonStr = jsonStr.slice(0, -1).trim();
+        }
+        if (open === '{') {
+          jsonStr += '}';
+        } else if (open === '[') {
+          jsonStr += ']';
+        }
+      }
+      
+      return jsonStr;
+    };
+
+    // Extract JSON portion between first '{' and last '}' if possible
+    let firstBrace = cleaned.indexOf("{");
+    if (firstBrace !== -1) {
+      let lastBrace = cleaned.lastIndexOf("}");
+      if (lastBrace > firstBrace) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+      } else {
+        cleaned = cleaned.substring(firstBrace);
+      }
+    }
+    
+    cleaned = repairJSON(cleaned);
+    
+    try {
+      let parsed = JSON.parse(cleaned);
+      return JSON.stringify(parsed, null, 2);
+    } catch (e) {
+      return text;
+    }
   };
-  activeStopBtn.onclick = stopClickHandler;
-  activeBottomStopBtn.onclick = stopClickHandler;
-  activeLoaderEl.innerHTML = pendingObj.loadingIndicatorHtml;
-  activeContinueBtn.disabled = false;
-  activeBottomContinueBtn.disabled = false;
-  activeRetryBtn.disabled = false;
-  let data = await pendingObj.onFinishPromise;
-  activeStopBtn.style.display = "none";
-  activeBottomStopBtn.style.display = "none";
+
+  let localInstruction = "";
+  let otherTabsCtx = window.getOtherTabsContext ? window.getOtherTabsContext(tabAtStart) : "";
+  let constraints = getConstraints();
+  
+  if (tabAtStart === "plot") {
+    localInstruction = modes[modeAtStart].instruction.toString() + otherTabsCtx;
+  } else {
+    let notesEl = document.getElementById(tabAtStart + "InstructionEl");
+    let userNotes = notesEl ? notesEl.value.trim() : "";
+    let activePrompt = userNotes || "Be creative and freeform.";
+    if (tabAtStart === "world") {
+      localInstruction = "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+    } else if (tabAtStart === "roleplay") {
+      localInstruction = "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+    } else if (tabAtStart === "character") {
+      localInstruction = "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+    } else if (tabAtStart === "intro") {
+      localInstruction = "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+    } else if (tabAtStart === "lore") {
+      let protagonist = userNameEl.value.trim() || "{{user}}";
+      let inst = "You are writing the LORE KEYWORDS and LORE CONTENT section. List exactly 3 lore entries.";
+      let fmt = "You MUST generate a strict JSON object containing exactly 3 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore). JSON format example: {\"1\":{\"content\":\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\"key\":[\"coffee\",\"barista\",\"spill\"]},\"2\":{\"content\":\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\"key\":[\"oat milk\",\"espresso\",\"favorite drink\"]}}";
+      let notes = "LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate protagonist phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported.";
+      let footer = "Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }.";
+
+      inst = inst.replace(/\{\{user\}\}/g, protagonist);
+      fmt = fmt.replace(/\{\{user\}\}/g, protagonist);
+      notes = notes.replace(/\{\{user\}\}/g, protagonist);
+      footer = footer.replace(/\{\{user\}\}/g, protagonist);
+
+      let p = "";
+      if (userNotes) {
+        p += "Lore Notes:\n" + userNotes + "\n\n";
+      }
+      p += constraints + "\n\n";
+      if (otherTabsCtx) {
+        p += otherTabsCtx + "\n";
+      }
+      p += "INSTRUCTION: " + inst + "\n";
+      p += "FORMAT: " + fmt + "\n";
+      p += "NOTES: " + notes + "\n";
+      p += "FOOTER: " + footer;
+      localInstruction = p;
+    }
+  }
+
+  let localStartWith = "";
+  if (localResponseEl.value.trim() === "") {
+    if (tabAtStart === "plot") {
+      localStartWith = modes[modeAtStart].startWith || "";
+    } else if (tabAtStart === "lore") {
+      localStartWith = "{";
+    } else {
+      localStartWith = "";
+    }
+  } else {
+    localStartWith = localResponseEl.value;
+  }
+
+  let localHideStartWith = false;
+  if (localResponseEl.value.trim() === "") {
+    if (tabAtStart === "plot" && modes[modeAtStart].hideStartWith === true) {
+      localHideStartWith = true;
+    }
+  }
+
+  if (tabAtStart === "lore") {
+    localStopBtn.style.display = "";
+    localBottomStopBtn.style.display = "";
+    localGenerateBtn.disabled = true;
+    localGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+    localContinueBtn.disabled = true;
+    localBottomContinueBtn.disabled = true;
+    localRetryBtn.disabled = true;
+    localResponseCopyBtn.style.display = "";
+    localResponseDeleteBtn.style.display = '';
+    localResponseDeleteBtn.dataset.mode = 'delete';
+    localResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    localResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+
+    let isStopped = false;
+    let pendingObj = null;
+
+    let stopClickHandler = function() {
+      isStopped = true;
+      if (pendingObj) {
+        pendingObj.stop();
+      }
+      localStopBtn.style.display = "none";
+      localBottomStopBtn.style.display = "none";
+    };
+    localStopBtn.onclick = stopClickHandler;
+    localBottomStopBtn.onclick = stopClickHandler;
+
+    let startWithVal = localStartWith;
+    let attempts = 0;
+    let maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      if (isStopped) break;
+
+      let instPrompt = localInstruction;
+      if (attempts > 0 || (localResponseEl.value.trim() !== "" && attempts === 0)) {
+        instPrompt += "\n\nCRITICAL: The previous JSON generation was cut off. You must continue writing the JSON object seamlessly from where it stopped. Do not repeat the existing text, just continue the JSON string naturally.";
+        localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Continuing Lore JSON (attempt ' + (attempts + 1) + ')...';
+      } else {
+        localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating Lore JSON...';
+      }
+
+      pendingObj = ai({
+        instruction: instPrompt,
+        startWith: startWithVal,
+        endButtons: "none",
+        onChunk: function(data) {
+          localResponseEl.value = data.fullTextSoFar;
+          if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
+            localResponseEl.scrollTop = localResponseEl.scrollHeight;
+          }
+        }
+      });
+
+      let result = await (pendingObj.onFinishPromise || pendingObj);
+      if (isStopped) break;
+      let currentResult = String(result);
+
+      if (!currentResult.trim().endsWith("}")) {
+        console.log("Lore JSON was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
+        startWithVal = currentResult;
+        attempts++;
+      } else {
+        break;
+      }
+    }
+
+    localStopBtn.style.display = "none";
+    localBottomStopBtn.style.display = "none";
+    localGenerateBtn.disabled = false;
+    localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+    localContinueBtn.disabled = false;
+    localBottomContinueBtn.disabled = false;
+    localRetryBtn.disabled = false;
+    localLoaderEl.innerHTML = "";
+    if (window.cleanTextForBannedSettings) {
+      localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
+    }
+    localResponseEl.value = cleanAndFormatJSON(localResponseEl.value);
+    localStorage[tabAtStart + "Response"] = localResponseEl.value;
+
+  } else if (tabAtStart === "character") {
+    let pBar = document.getElementById("characterProgressBar");
+    let pBarInner = document.getElementById("characterProgressBarInner");
+
+    localStopBtn.style.display = "";
+    localBottomStopBtn.style.display = "";
+    localGenerateBtn.disabled = true;
+    localGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+    localContinueBtn.disabled = true;
+    localBottomContinueBtn.disabled = true;
+    localRetryBtn.disabled = true;
+    localResponseCopyBtn.style.display = "";
+    localResponseDeleteBtn.style.display = '';
+    localResponseDeleteBtn.dataset.mode = 'delete';
+    localResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    localResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+
+    let isStopped = false;
+    let pendingObj = null;
+
+    window.characterGenerationState = {
+      isGenerating: true,
+      currentSection: 0,
+      totalSections: 31,
+      logs: []
+    };
+
+    let logState = function(msg) {
+      let time = new Date().toLocaleTimeString();
+      let logMsg = "[" + time + "] " + msg;
+      window.characterGenerationState.logs.push(logMsg);
+      console.log(logMsg);
+    };
+
+    logState("Started character generation loop");
+
+    let stopClickHandler = function() {
+      isStopped = true;
+      if (pendingObj) {
+        pendingObj.stop();
+      }
+      localStopBtn.style.display = "none";
+      localBottomStopBtn.style.display = "none";
+      if (pBar) pBar.style.display = "none";
+      window.characterGenerationState.isGenerating = false;
+      window.characterGenerationState.status = "stopped";
+      logState("Generation stopped by user");
+    };
+    localStopBtn.onclick = stopClickHandler;
+    localBottomStopBtn.onclick = stopClickHandler;
+
+    let sectionCheck = {
+      shortDescription: "Short Description:",
+      appearance: "Appearance:",
+      attire: "Attire:",
+      items: "Items:",
+      role: "Role:",
+      rules: "Rules:",
+      personality: "Personality:",
+      speech: "Speech:",
+      behavior: "Behavior:",
+      emotions: "Emotions:",
+      internalConflicts: "Internal conflicts:",
+      mentality: "Mentality:",
+      worldView: "World View:",
+      beliefs: "Beliefs:",
+      morals: "Morals:",
+      likes: "Likes:",
+      hates: "Hates:",
+      hobbies: "Hobbies:",
+      values: "Values:",
+      romance: "Romance:",
+      abilities: "Abilities:",
+      relations: "Relations:",
+      backstory: "Backstory:",
+      occupation: "Occupation:",
+      residence: "Residence:",
+      secrets: "Secrets:",
+      goals: "Short-term Goals:",
+      timeline: "Timeline:",
+      roleplay1: "Roleplay Examples:",
+      roleplay2: null,
+      roleplay3: null
+    };
+
+    let keys = [
+      "shortDescription", "appearance", "attire", "items", "role", "rules", 
+      "personality", "speech", "behavior", "emotions", "internalConflicts", 
+      "mentality", "worldView", "beliefs", "morals", "likes", "hates", 
+      "hobbies", "values", "romance", "abilities", "relations", "backstory", 
+      "occupation", "residence", "secrets", "goals", "timeline", 
+      "roleplay1", "roleplay2", "roleplay3"
+    ];
+    let sectionTitles = {
+      shortDescription: "Short Description",
+      appearance: "Physical Appearance",
+      attire: "Attire Preferences",
+      items: "Inventory Items",
+      role: "Role in Story",
+      rules: "Strict Rules",
+      personality: "Personality Type",
+      speech: "Speech & Tone",
+      behavior: "Behavioral Patterns",
+      emotions: "Emotional State",
+      internalConflicts: "Internal Conflicts",
+      mentality: "Mentality & Motto",
+      worldView: "World View",
+      beliefs: "Core Beliefs",
+      morals: "Moral Code",
+      likes: "Likes",
+      hates: "Hates",
+      hobbies: "Hobbies",
+      values: "Values",
+      romance: "Romance & Intimacy",
+      abilities: "Abilities List",
+      relations: "Relations & Dynamics",
+      backstory: "Backstory Details",
+      occupation: "Occupation Details",
+      residence: "Residence Address",
+      secrets: "Secrets",
+      goals: "Goals",
+      timeline: "Timeline Milestones",
+      roleplay1: "Roleplay Example 1",
+      roleplay2: "Roleplay Example 2",
+      roleplay3: "Roleplay Example 3"
+    };
+
+    window.characterGenerationState.totalSections = keys.length;
+
+    let protagonist = userNameEl.value.trim() || "{{user}}";
+    let userNotes = characterInstructionEl.value.trim();
+    let prompts = characterPrompts();
+
+    let textVal = localResponseEl.value.trim();
+    let startIdx = 0;
+    let isResumingTruncated = false;
+    
+    let isTruncated = function(t) {
+      if (!t) return false;
+      let trimmed = t.trim();
+      if (trimmed.length === 0) return false;
+      let validEndings = [".", "!", "?", '"', "'", "*", "}", "]", ")", "`", ";"];
+      let lastChar = trimmed.slice(-1);
+      return !validEndings.includes(lastChar);
+    };
+
+    if (textVal !== "") {
+      for (let k = 0; k < keys.length; k++) {
+        let key = keys[k];
+        let header = sectionCheck[key];
+        if (header) {
+          if (textVal.includes(header)) {
+            startIdx = k + 1;
+          }
+        } else {
+          let count = (textVal.match(new RegExp(protagonist.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ':\\s*"', 'g')) || []).length;
+          if (key === "roleplay2" && count >= 2) {
+            startIdx = k + 1;
+          } else if (key === "roleplay3" && count >= 3) {
+            startIdx = k + 1;
+          }
+        }
+      }
+      
+      if (startIdx > 0) {
+        if (isTruncated(textVal)) {
+          startIdx = startIdx - 1;
+          isResumingTruncated = true;
+          logState("Resuming character generation: last section (" + keys[startIdx] + ") was truncated. Re-generating/continuing it first.");
+        }
+      }
+      if (startIdx >= keys.length) {
+        logState("Character sheet is already complete.");
+        localStopBtn.style.display = "none";
+        localBottomStopBtn.style.display = "none";
+        localGenerateBtn.disabled = false;
+        localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+        localContinueBtn.disabled = false;
+        localBottomContinueBtn.disabled = false;
+        localRetryBtn.disabled = false;
+        return;
+      }
+    }
+
+    if (pBar) pBar.style.display = "block";
+    if (pBarInner) {
+      let initialPercentage = Math.round((startIdx / keys.length) * 100);
+      pBarInner.style.width = initialPercentage + "%";
+      pBarInner.setAttribute("aria-valuenow", initialPercentage);
+    }
+
+    for (let i = startIdx; i < keys.length; i++) {
+      if (isStopped) break;
+
+      let key = keys[i];
+      let title = sectionTitles[key];
+      
+      logState("Generating section " + (i + 1) + "/" + keys.length + ": " + title);
+
+      let startWithText = "";
+      if (key === "shortDescription") {
+        startWithText = "Short Description: - [";
+      } else if (key === "appearance") {
+        startWithText = "Appearance: ";
+      } else if (key === "attire") {
+        startWithText = "Attire: ";
+      } else if (key === "items") {
+        startWithText = "Items: ";
+      } else if (key === "role") {
+        startWithText = "Role: ";
+      } else if (key === "rules") {
+        startWithText = "Rules: ";
+      } else if (key === "personality") {
+        startWithText = "Personality: ";
+      } else if (key === "speech") {
+        startWithText = "Speech: ";
+      } else if (key === "behavior") {
+        startWithText = "Behavior: ";
+      } else if (key === "emotions") {
+        startWithText = "Emotions: ";
+      } else if (key === "internalConflicts") {
+        startWithText = "Internal conflicts: ";
+      } else if (key === "mentality") {
+        startWithText = "Mentality: ";
+      } else if (key === "worldView") {
+        startWithText = "World View: ";
+      } else if (key === "beliefs") {
+        startWithText = "Beliefs: ";
+      } else if (key === "morals") {
+        startWithText = "Morals: ";
+      } else if (key === "likes") {
+        startWithText = "Likes: ";
+      } else if (key === "hates") {
+        startWithText = "Hates: ";
+      } else if (key === "hobbies") {
+        startWithText = "Hobbies: ";
+      } else if (key === "values") {
+        startWithText = "Values: ";
+      } else if (key === "romance") {
+        startWithText = "Romance: ";
+      } else if (key === "abilities") {
+        startWithText = "- [";
+      } else if (key === "relations") {
+        startWithText = "- " + protagonist + ": [";
+      } else if (key === "backstory") {
+        startWithText = "Backstory: ";
+      } else if (key === "occupation") {
+        startWithText = "Occupation: ";
+      } else if (key === "residence") {
+        startWithText = "Residence: ";
+      } else if (key === "secrets") {
+        startWithText = "Secrets: ";
+      } else if (key === "goals") {
+        startWithText = "Short-term Goals: ";
+      } else if (key === "timeline") {
+        startWithText = "- [";
+      } else if (key === "roleplay1" || key === "roleplay2" || key === "roleplay3") {
+        startWithText = protagonist + ': "';
+      }
+
+      let startWithVal = "";
+      let prefixOfTextarea = "";
+      let lastSectionText = localResponseEl.value;
+
+      if (i === startIdx && isResumingTruncated) {
+        startWithVal = localResponseEl.value;
+        prefixOfTextarea = "";
+      } else {
+        if (i > 0) {
+          if (key === "abilities") {
+            localResponseEl.value += "\n\nAbilities:\n";
+          } else if (key === "relations") {
+            localResponseEl.value += "\n\nRelations:\n";
+          } else if (key === "timeline") {
+            localResponseEl.value += "\n\nTimeline:\n";
+          } else if (key === "roleplay1") {
+            localResponseEl.value += "\n\nRoleplay Examples:\n";
+          } else if (key === "roleplay2" || key === "roleplay3") {
+            localResponseEl.value += "\n\n";
+          } else {
+            localResponseEl.value += "\n\n";
+          }
+        }
+        startWithVal = startWithText;
+        prefixOfTextarea = localResponseEl.value;
+      }
+
+      let previousText = "";
+      if (i === startIdx && isResumingTruncated) {
+        let idx = -1;
+        if (key === "abilities") {
+          idx = lastSectionText.lastIndexOf("\n\nAbilities:\n");
+        } else if (key === "relations") {
+          idx = lastSectionText.lastIndexOf("\n\nRelations:\n");
+        } else if (key === "timeline") {
+          idx = lastSectionText.lastIndexOf("\n\nTimeline:\n");
+        } else if (key === "roleplay1") {
+          idx = lastSectionText.lastIndexOf("\n\nRoleplay Examples:\n");
+        } else {
+          idx = lastSectionText.lastIndexOf(startWithText);
+          if (idx !== -1) {
+            if (idx >= 2 && lastSectionText.substring(idx - 2, idx) === "\n\n") {
+              idx = idx - 2;
+            }
+          }
+        }
+        previousText = idx !== -1 ? lastSectionText.substring(0, idx) : "";
+      } else {
+        previousText = prefixOfTextarea;
+      }
+
+      let section = prompts[key];
+      let rawInstruction = section.instruction;
+      let rawFormat = section.format;
+      let rawNotes = section.notes || "";
+      let rawFooter = section.footer || "";
+
+      let inst = rawInstruction.replace(/\{\{user\}\}/g, protagonist);
+      let fmt = rawFormat.replace(/\{\{user\}\}/g, protagonist);
+      let notesText = rawNotes.replace(/\{\{user\}\}/g, protagonist);
+      let footerText = rawFooter.replace(/\{\{user\}\}/g, protagonist);
+
+      let contextHistory = "";
+      if (previousText.trim() !== "") {
+        contextHistory = "\nHere is the character profile generated so far:\n---\n" + previousText.trim() + "\n---\n";
+      }
+
+      let instructionPrompt = "";
+      if (userNotes) {
+        instructionPrompt += "Character Notes:\n" + userNotes + "\n\n";
+      }
+      instructionPrompt += constraints + "\n\n";
+      
+      if (otherTabsCtx) {
+        instructionPrompt += otherTabsCtx + "\n";
+      }
+
+      if (contextHistory) {
+        instructionPrompt += contextHistory + "\n";
+      }
+      instructionPrompt += "You are writing the next section for this character profile.\n";
+      instructionPrompt += "SECTION: " + title + "\n";
+      instructionPrompt += "INSTRUCTION: " + inst + "\n";
+      instructionPrompt += "FORMAT: " + fmt + "\n";
+      if (notesText) {
+        instructionPrompt += "NOTES: " + notesText + "\n";
+      }
+      if (footerText) {
+        instructionPrompt += "FOOTER: " + footerText + "\n";
+      }
+
+      let currentResult = "";
+      let attempts = 0;
+      let maxAttempts = 3;
+
+      while (attempts < maxAttempts) {
+        if (isStopped) break;
+
+        let instPrompt = instructionPrompt;
+        if (attempts > 0 || (i === startIdx && isResumingTruncated && attempts === 0)) {
+          instPrompt += "\n\nCRITICAL: The previous generation was cut off mid-sentence. You must continue writing the section seamlessly from where it stopped. Do not repeat the existing text, just continue the sentence/paragraph naturally.";
+          localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Continuing ' + title + ' (' + (i + 1) + '/' + keys.length + ', attempt ' + (attempts + 1) + ')...';
+        } else {
+          localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating ' + title + ' (' + (i + 1) + '/' + keys.length + ')...';
+        }
+
+        pendingObj = ai({
+          instruction: instPrompt,
+          startWith: startWithVal,
+          endButtons: "none",
+          onChunk: function(data) {
+            localResponseEl.value = prefixOfTextarea + data.fullTextSoFar;
+            if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
+              localResponseEl.scrollTop = localResponseEl.scrollHeight;
+            }
+          }
+        });
+
+        let result = await (pendingObj.onFinishPromise || pendingObj);
+        if (isStopped) break;
+        currentResult = String(result);
+
+        if (isTruncated(currentResult, key)) {
+          logState("Section " + title + " was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
+          startWithVal = currentResult;
+          attempts++;
+        } else {
+          break;
+        }
+      }
+
+      window.characterGenerationState.currentSection = i + 1;
+      let percentage = Math.round(((i + 1) / keys.length) * 100);
+      if (pBarInner) {
+        pBarInner.style.width = percentage + "%";
+        pBarInner.setAttribute("aria-valuenow", percentage);
+      }
+      logState("Completed section: " + title);
+    }
+
+    localStopBtn.style.display = "none";
+    localBottomStopBtn.style.display = "none";
+    localGenerateBtn.disabled = false;
+    localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+    localContinueBtn.disabled = false;
+    localBottomContinueBtn.disabled = false;
+    localRetryBtn.disabled = false;
+    localLoaderEl.innerHTML = "";
+    if (pBar) pBar.style.display = "none";
+
+    window.characterGenerationState.isGenerating = false;
+    window.characterGenerationState.status = isStopped ? "stopped" : "completed";
+    logState("Character generation complete.");
+
+    if (window.cleanTextForBannedSettings) {
+      localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
+    }
+    localStorage[tabAtStart + "Response"] = localResponseEl.value;
+
+  } else if (tabAtStart === "intro") {
+    let pBar = document.getElementById("introProgressBar");
+    let pBarInner = document.getElementById("introProgressBarInner");
+
+    localStopBtn.style.display = "";
+    localBottomStopBtn.style.display = "";
+    localGenerateBtn.disabled = true;
+    localGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+    localContinueBtn.disabled = true;
+    localBottomContinueBtn.disabled = true;
+    localRetryBtn.disabled = true;
+    localResponseCopyBtn.style.display = "";
+    localResponseDeleteBtn.style.display = '';
+    localResponseDeleteBtn.dataset.mode = 'delete';
+    localResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    localResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+
+    let isStopped = false;
+    let pendingObj = null;
+
+    let stopClickHandler = function() {
+      isStopped = true;
+      if (pendingObj) {
+        pendingObj.stop();
+      }
+      localStopBtn.style.display = "none";
+      localBottomStopBtn.style.display = "none";
+      if (pBar) pBar.style.display = "none";
+    };
+    localStopBtn.onclick = stopClickHandler;
+    localBottomStopBtn.onclick = stopClickHandler;
+
+    let keys = ["context", "introStart", "roleplayScenario"];
+    let sectionTitles = {
+      context: "Scenario Context",
+      introStart: "Roleplay Start",
+      roleplayScenario: "Roleplay Scenario Sheet"
+    };
+
+    let protagonist = userNameEl.value.trim() || "{{user}}";
+    let userNotes = introInstructionEl.value.trim();
+    let prompts = introGenerationPrompt();
+
+    let textVal = localResponseEl.value.trim();
+    let startIdx = 0;
+    let isResumingTruncated = false;
+    
+    let isTruncated = function(t) {
+      if (!t) return false;
+      let trimmed = t.trim();
+      if (trimmed.length === 0) return false;
+      let validEndings = [".", "!", "?", '"', "'", "*", "}", "]", ")", "`", ";"];
+      let lastChar = trimmed.slice(-1);
+      return !validEndings.includes(lastChar);
+    };
+
+    if (textVal !== "") {
+      if (textVal.includes("=== SCENARIO SHEET ===") || textVal.includes("=== ROLEPLAY_STARTER_SEPARATOR ===")) {
+        startIdx = 2;
+      } else {
+        let paragraphs = textVal.split(/\n\n+/);
+        if (paragraphs.length >= 2) {
+          startIdx = 2;
+        } else {
+          startIdx = 1;
+        }
+      }
+      
+      if (startIdx > 0) {
+        if (isTruncated(textVal)) {
+          startIdx = startIdx - 1;
+          isResumingTruncated = true;
+          console.log("Resuming intro generation: last section (" + keys[startIdx] + ") was truncated. Re-generating/continuing it first.");
+        }
+      }
+      if (startIdx >= keys.length) {
+        console.log("Intro sheet is already complete.");
+        localStopBtn.style.display = "none";
+        localBottomStopBtn.style.display = "none";
+        localGenerateBtn.disabled = false;
+        localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+        localContinueBtn.disabled = false;
+        localBottomContinueBtn.disabled = false;
+        localRetryBtn.disabled = false;
+        return;
+      }
+    }
+
+    if (pBar) pBar.style.display = "block";
+    if (pBarInner) {
+      let initialPercentage = Math.round((startIdx / keys.length) * 100);
+      pBarInner.style.width = initialPercentage + "%";
+      pBarInner.setAttribute("aria-valuenow", initialPercentage);
+    }
+
+    for (let i = startIdx; i < keys.length; i++) {
+      if (isStopped) break;
+
+      let key = keys[i];
+      let title = sectionTitles[key];
+      
+      let startWithText = "";
+      if (key === "roleplayScenario") {
+        startWithText = "=== SCENARIO SHEET ===\n";
+      }
+
+      let startWithVal = "";
+      let prefixOfTextarea = "";
+      let lastSectionText = localResponseEl.value;
+
+      if (i === startIdx && isResumingTruncated) {
+        startWithVal = localResponseEl.value;
+        prefixOfTextarea = "";
+      } else {
+        if (i > 0) {
+          localResponseEl.value += "\n\n";
+        }
+        startWithVal = startWithText;
+        prefixOfTextarea = localResponseEl.value;
+      }
+
+      let previousText = "";
+      if (i === startIdx && isResumingTruncated) {
+        if (key === "roleplayScenario") {
+          let idx = lastSectionText.indexOf("=== SCENARIO SHEET ===");
+          if (idx === -1) idx = lastSectionText.indexOf("=== ROLEPLAY_STARTER_SEPARATOR ===");
+          if (idx !== -1) {
+            if (idx >= 2 && lastSectionText.substring(idx - 2, idx) === "\n\n") {
+              idx = idx - 2;
+            }
+            previousText = lastSectionText.substring(0, idx);
+          }
+        } else if (key === "introStart") {
+          let paragraphs = lastSectionText.split(/\n\n+/);
+          previousText = paragraphs[0] || "";
+        }
+      } else {
+        previousText = prefixOfTextarea;
+      }
+
+      let section = prompts[key];
+      let rawInstruction = section.instruction;
+      let rawFormat = section.format;
+
+      let inst = rawInstruction.replace(/\{\{user\}\}/g, protagonist);
+      let fmt = rawFormat.replace(/\{\{user\}\}/g, protagonist);
+
+      let contextHistory = "";
+      if (previousText.trim() !== "") {
+        contextHistory = "\nHere is the intro generated so far:\n---\n" + previousText.trim() + "\n---\n";
+      }
+
+      let instructionPrompt = "";
+      if (userNotes) {
+        instructionPrompt += "Intro Notes:\n" + userNotes + "\n\n";
+      }
+      instructionPrompt += constraints + "\n\n";
+      
+      if (otherTabsCtx) {
+        instructionPrompt += otherTabsCtx + "\n";
+      }
+      
+      if (contextHistory) {
+        instructionPrompt += contextHistory + "\n";
+      }
+      instructionPrompt += "You are writing the next section for this roleplay intro.\n";
+      instructionPrompt += "SECTION: " + title + "\n";
+      instructionPrompt += "INSTRUCTION: " + inst + "\n";
+      instructionPrompt += "FORMAT: " + fmt + "\n";
+
+      let currentResult = "";
+      let attempts = 0;
+      let maxAttempts = 3;
+
+      while (attempts < maxAttempts) {
+        if (isStopped) break;
+
+        let instPrompt = instructionPrompt;
+        if (attempts > 0 || (i === startIdx && isResumingTruncated && attempts === 0)) {
+          instPrompt += "\n\nCRITICAL: The previous generation was cut off mid-sentence. You must continue writing the section seamlessly from where it stopped. Do not repeat the existing text, just continue the sentence/paragraph naturally.";
+          localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Continuing ' + title + ' (' + (i + 1) + '/' + keys.length + ', attempt ' + (attempts + 1) + ')...';
+        } else {
+          localLoaderEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating ' + title + ' (' + (i + 1) + '/' + keys.length + ')...';
+        }
+
+        pendingObj = ai({
+          instruction: instPrompt,
+          startWith: startWithVal,
+          endButtons: "none",
+          onChunk: function(data) {
+            localResponseEl.value = prefixOfTextarea + data.fullTextSoFar;
+            if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
+              localResponseEl.scrollTop = localResponseEl.scrollHeight;
+            }
+          }
+        });
+
+        let result = await (pendingObj.onFinishPromise || pendingObj);
+        if (isStopped) break;
+        currentResult = String(result);
+
+        if (isTruncated(currentResult, key)) {
+          console.log("Intro section " + title + " was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
+          startWithVal = currentResult;
+          attempts++;
+        } else {
+          break;
+        }
+      }
+
+      let percentage = Math.round(((i + 1) / keys.length) * 100);
+      if (pBarInner) {
+        pBarInner.style.width = percentage + "%";
+        pBarInner.setAttribute("aria-valuenow", percentage);
+      }
+    }
+
+    localStopBtn.style.display = "none";
+    localBottomStopBtn.style.display = "none";
+    localGenerateBtn.disabled = false;
+    localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+    localContinueBtn.disabled = false;
+    localBottomContinueBtn.disabled = false;
+    localRetryBtn.disabled = false;
+    localLoaderEl.innerHTML = "";
+    if (pBar) pBar.style.display = "none";
+
+    if (window.cleanTextForBannedSettings) {
+      localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
+    }
+    localStorage[tabAtStart + "Response"] = localResponseEl.value;
+
+  } else {
+    let localSettings = {
+      instruction: localInstruction,
+      startWith: localStartWith,
+      hideStartWith: localHideStartWith,
+      outputTo: [localResponseEl],
+      onChunk: function(data) {
+        if (localResponseEl.scrollTop + localResponseEl.offsetHeight > localResponseEl.scrollHeight - 60) {
+          localResponseEl.scrollTop = localResponseEl.scrollHeight;
+        }
+        if (tabAtStart === "plot" && modes[modeAtStart].onChunk) {
+          modes[modeAtStart].onChunk(data);
+        }
+      },
+      onStart: function(data) {
+        localResponseDeleteBtn.style.display = '';
+        localResponseDeleteBtn.dataset.mode = 'delete';
+        localResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+        localResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+        localGenerateBtn.disabled = true;
+        localGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+        localContinueBtn.disabled = true;
+        localBottomContinueBtn.disabled = true;
+        localRetryBtn.disabled = true;
+        localResponseCopyBtn.style.display = "";
+        if (tabAtStart === "plot" && modes[modeAtStart].onStart) {
+          modes[modeAtStart].onStart(data);
+        }
+      },
+      onFinish: function(data) {
+        if (window.cleanTextForBannedSettings) {
+          localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
+        }
+        if (tabAtStart === "lore") {
+          localResponseEl.value = cleanAndFormatJSON(localResponseEl.value);
+        }
+        localGenerateBtn.disabled = false;
+        localGenerateBtn.innerHTML = "<i class='bi bi-arrow-clockwise'></i> regenerate";
+        localContinueBtn.disabled = false;
+        localBottomContinueBtn.disabled = false;
+        localRetryBtn.disabled = false;
+        localLoaderEl.innerHTML = "";
+        localStorage[tabAtStart + "Response"] = localResponseEl.value;
+        if (localResponseDeleteBtn.dataset.mode !== 'undo') {
+          localResponseDeleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+          localResponseDeleteBtn.className = 'btn btn-sm btn-outline-danger py-1 px-2';
+        }
+        if (tabAtStart === "plot" && modes[modeAtStart].onFinish) {
+          modes[modeAtStart].onFinish(data);
+        }
+      },
+      render: [ tabAtStart === "plot" ? (modes[modeAtStart].render || null) : null ]
+    };
+
+    let pendingObj = ai(localSettings);
+    localStopBtn.style.display = "";
+    localBottomStopBtn.style.display = "";
+    let stopClickHandler = function() {
+      pendingObj.stop();
+      localStopBtn.style.display = "none";
+      localBottomStopBtn.style.display = "none";
+    };
+    localStopBtn.onclick = stopClickHandler;
+    localBottomStopBtn.onclick = stopClickHandler;
+    localLoaderEl.innerHTML = pendingObj.loadingIndicatorHtml;
+    localContinueBtn.disabled = false;
+    localBottomContinueBtn.disabled = false;
+    localRetryBtn.disabled = false;
+    let data = await pendingObj.onFinishPromise;
+    localStopBtn.style.display = "none";
+    localBottomStopBtn.style.display = "none";
+  }
 
 
 currentMode = [localStorage.currentMode || modes.selectAll[0].getName]
 multiple = [localStorage.multiple || ""]
 currentSetting = [localStorage.currentSetting || "none"]
+currentSettings = [JSON.parse(localStorage.currentSettings || "[]")]
 currentTone = [localStorage.currentTone || "none"]
 currentTones = [JSON.parse(localStorage.currentTones || "[]")]
 currentArchetype = [localStorage.currentArchetype || "none"]
@@ -111,30 +1115,45 @@ defaultInstruction = (None specified. Freeform. Just be creative! Avoid tropes.)
 
 getConstraints() =>
   let list = [];
-  if (currentSetting !== "none") list.push(`Genre/Setting: ${worldSettings[currentSetting].description}`);
+  
+  // Setting / Genre — multi-select
+  let selectedSettings = (currentSettings || []).filter(s => s !== "none");
+  if (selectedSettings.length > 0) {
+    let settingDescs = selectedSettings.map(s => worldSettings[s] ? (worldSettings[s].prompt || worldSettings[s].description) : s).join(" + ");
+    list.push(`Genre/Setting: ${settingDescs}`);
+  } else if (currentSetting !== "none") {
+    list.push(`Genre/Setting: ${worldSettings[currentSetting].prompt || worldSettings[currentSetting].description}`);
+  }
+  
   // Tone — multi-select
-  if (currentTones && currentTones.length > 0) {
-    let toneDescs = currentTones.map(t => tones[t] ? tones[t].description : t).join(" + ");
+  let selectedTones = (currentTones || []).filter(t => t !== "none");
+  if (selectedTones.length > 0) {
+    let toneDescs = selectedTones.map(t => tones[t] ? (tones[t].prompt || tones[t].description) : t).join(" + ");
     list.push(`Tone: ${toneDescs}`);
   } else if (currentTone !== "none") {
-    list.push(`Tone: ${tones[currentTone].description}`);
+    list.push(`Tone: ${tones[currentTone].prompt || tones[currentTone].description}`);
   }
+  
   // Archetype — multi-select
-  if (currentArchetypes && currentArchetypes.length > 0) {
-    let archDescs = currentArchetypes.map(a => archetypes[a] ? archetypes[a].description : a).join(" + ");
+  let selectedArchetypes = (currentArchetypes || []).filter(a => a !== "none");
+  if (selectedArchetypes.length > 0) {
+    let archDescs = selectedArchetypes.map(a => archetypes[a] ? (archetypes[a].prompt || archetypes[a].description) : a).join(" + ");
     list.push(`Character Archetype: ${archDescs}`);
   } else if (currentArchetype !== "none") {
-    list.push(`Character Archetype: ${archetypes[currentArchetype].description}`);
+    list.push(`Character Archetype: ${archetypes[currentArchetype].prompt || archetypes[currentArchetype].description}`);
   }
+  
   // Dynamics — multi-select
-  if (currentDynamicsList && currentDynamicsList.length > 0) {
-    let dynDescs = currentDynamicsList.map(d => dynamics[d] ? dynamics[d].description : d).join(" + ");
+  let selectedDynamics = (currentDynamicsList || []).filter(d => d !== "none");
+  if (selectedDynamics.length > 0) {
+    let dynDescs = selectedDynamics.map(d => dynamics[d] ? (dynamics[d].prompt || dynamics[d].description) : d).join(" + ");
     list.push(`Dynamics: ${dynDescs}`);
   } else if (currentDynamics !== "none") {
-    list.push(`Dynamics: ${dynamics[currentDynamics].description}`);
+    list.push(`Dynamics: ${dynamics[currentDynamics].prompt || dynamics[currentDynamics].description}`);
   }
-  if (currentCharacterCount !== "none") list.push(`Characters: ${characterCounts[currentCharacterCount].description}`);
-  if (currentGender !== "none") list.push(`Main Character Gender: ${genders[currentGender].description}`);
+  
+  if (currentCharacterCount !== "none") list.push(`Characters: ${characterCounts[currentCharacterCount].prompt || characterCounts[currentCharacterCount].description}`);
+  if (currentGender !== "none") list.push(`Main Character Gender: ${genders[currentGender].prompt || genders[currentGender].description}`);
   let name = userNameEl.value.trim();
   if (name !== "") {
     list.push(`Include a character named "${literal(name)}" as the protagonist/main character.`);
@@ -247,225 +1266,1399 @@ worldSettings
   none
     label = 🌍 Any Setting
     description = Any setting or genre
+    prompt = Any setting or genre
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/any-setting.jpg
-  fantasy
-    label = 🏰 Fantasy
-    description = Magic, mythical creatures, and ancient kingdoms
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fantasy-setting.jpg
-  scifi
-    label = 🛸 Sci-Fi
-    description = Advanced technology, space travel, and future societies
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scifi-setting.jpg
-  horror
-    label = 😱 Horror
-    description = Spooky, terrifying, supernatural, or psychological fear
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/horror-setting.jpg
-  romance
-    label = 🌹 Romance
-    description = Passionate, emotional, and relationship-driven
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-setting.jpg
+  academy_fantasy
+    label = 🏫 Academy Fantasy
+    description = Magic schools, rival houses, and forbidden libraries
+    prompt = The setting is a magic academy - magic schools, rival houses, forbidden libraries, elite bloodlines, exam arcs, and ancient faculty conspiracies.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/academy_fantasy-setting.jpg
   adventure
     label = 🏞️ Adventure
     description = Quests, exploration, and thrilling journeys
+    prompt = An adventure setting filled with quests, exploration, and thrilling journeys.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/adventure-setting.jpg
-  slice_of_life
-    label = 🍰 Slice of Life
-    description = Everyday experiences, calm vibes, and small moments
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/slice-of-life-setting.jpg
-  isekai
-    label = 🧙‍♂️ Isekai
-    description = Reborn or transported to a completely different world
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/isekai-setting.jpg
+  alien_apocalypse
+    label = 👽 Alien Apocalypse
+    description = Earth invaded and conquered by a hostile alien species
+    prompt = The setting is an alien apocalypse. Earth has been invaded and conquered by a hostile, highly advanced extraterrestrial species. Humans are hunted, enslaved, or forced into hiding among the ruins of civilization.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/alien_apocalypse-setting.jpg
+  arcology
+    label = 🗼 Arcology
+    description = Single giant vertical city containing millions vertically stacked
+    prompt = The setting is an arcology - a single giant vertical city containing millions vertically stacked.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/arcology-setting.jpg
+  biohorror
+    label = 🥩 Biohorror
+    description = Flesh architecture, parasitic cities, and mutating ecosystems
+    prompt = The setting is biohorror - flesh architecture, parasitic cities, and mutating ecosystems.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/biohorror-setting.jpg
+  biopunk
+    label = 🧬 Biopunk
+    description = Biotech, genetic engineering, and organic machines
+    prompt = The setting is driven by biotechnology - genetic engineering, organic machines, and body modification. Society is shaped by biological manipulation rather than mechanical tech. Races may include modified humans, lab-grown beings, or hybrids.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/biopunk-setting.jpg
+  broken_moon
+    label = 🌙 Broken Moon
+    description = Reality shaped by a shattered moon raining magic or disasters
+    prompt = The setting is a broken moon world - reality is shaped by a shattered moon raining magic or disasters.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/broken_moon-setting.jpg
+  celestial_court
+    label = ⭐ Celestial Court
+    description = Politics among stars where constellations are living beings
+    prompt = The setting is a celestial court - politics among stars, where constellations are living beings.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/celestial_court-setting.jpg
+  corporate_dystopia
+    label = 🏢 Corporate Dystopia
+    description = Nations have been replaced by all-powerful corporations
+    prompt = The setting is a corporate dystopia - nations have been replaced by all-powerful corporations.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/corporate_dystopia-setting.jpg
+  cosmic_horror
+    label = 🐙 Cosmic Horror
+    description = Reality-breaking entities, incomprehensible truths, and doomed civilizations
+    prompt = The setting is cosmic horror - reality-breaking entities, incomprehensible truths, and doomed civilizations.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cosmic_horror-setting.jpg
+  cultivation
+    label = 🧘 Cultivation
+    description = Spiritual realms, immortality paths, and sect politics
+    prompt = The setting is a cultivation world inspired by Xianxia/Xuanhuan - spiritual realms, immortality paths, sect politics, and heavenly tribulations.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cultivation-setting.jpg
   cyberpunk
     label = 🦾 Cyberpunk
-    description = High tech, low life, neon lights, and megacorps
+    description = High tech, low life, and neon cities
+    prompt = A cyberpunk setting featuring high tech, low life, neon lights, and megacorps.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cyberpunk-setting.jpg
-  post_apocalyptic
-    label = ☢️ Post-Apocalyptic
-    description = Survival in a ruined, desolate world
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/post-apocalyptic-setting.jpg
-  steampunk
-    label = ⚙️ Steampunk
-    description = Steam-powered machines in a Victorian aesthetic
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/steampunk-setting.jpg
+  dark_fantasy
+    label = 🔮 Dark Fantasy
+    description = Grim, brutal, and morally bleak fantasy world
+    prompt = The setting is a grim dark fantasy world - brutal, morally bleak, and unforgiving. Magic is dangerous, corrupting, or rare. Survival often comes at a cost. Any race is appropriate, but tone should remain oppressive and tragic.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark_fantasy-setting.jpg
+  deep_jungle
+    label = 🌴 Deep Jungle
+    description = Lost civilizations, fungal intelligence, and predator ecology
+    prompt = The setting is deep jungle - lost civilizations, fungal intelligence, and predator ecology.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/deep_jungle-setting.jpg
+  desertpunk
+    label = 🏜️ Desertpunk
+    description = Sand empires, scavenger caravans, and solar dynasties
+    prompt = The setting is desertpunk - sand empires, scavenger caravans, and solar dynasties.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/desertpunk-setting.jpg
+  dieselpunk
+    label = 🏭 Dieselpunk
+    description = 1920s-1940s gritty industrial technology and noir tones
+    prompt = The setting is inspired by the 1920s-1940s with gritty industrial technology, war-era machinery, and noir tones. Think propaganda, rebellion, and looming conflict. Races should be human or human-like unless otherwise justified.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dieselpunk-setting.jpg
+  divine_war
+    label = 🔱 Divine War
+    description = Gods openly waging war through mortal nations and avatars
+    prompt = The setting is a divine war - gods openly waging war through mortal nations and avatars.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/divine_war-setting.jpg
+  dream_war
+    label = 💤 Dream War
+    description = Conflicts fought through dreams and subconscious landscapes
+    prompt = The setting is a dream war - conflicts fought through dreams and subconscious landscapes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dream_war-setting.jpg
+  dreamlike
+    label = 💭 Dreamlike
+    description = Surreal, shifting, and symbolic dream logic
+    prompt = The setting follows dream logic - surreal, shifting, and symbolic. Reality is unstable and may not obey consistent rules. Any race is appropriate, but the tone should feel strange and fluid.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dreamlike-setting.jpg
+  eldritch_seafaring
+    label = ⚓ Eldritch Seafaring
+    description = Whaling horror, abyss cults, and sentient oceans
+    prompt = The setting is eldritch seafaring - whaling horror, abyss cults, and sentient oceans.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/eldritch_seafaring-setting.jpg
+  fairy_tale
+    label = 🍄 Fairy Tale
+    description = Whimsical and symbolic forest world of curses and rules
+    prompt = The setting follows the logic of fairy tales - symbolic, whimsical, and often dark beneath the surface. Forests, curses, royalty, and strange rules define reality. Any race is appropriate, especially magical beings.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fairy_tale-setting.jpg
+  fantasy
+    label = 🏰 Fantasy
+    description = Magic, mythical creatures, and ancient kingdoms
+    prompt = A fantasy setting defined by magic, mythical creatures, and ancient kingdoms.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fantasy-setting.jpg
+  feudal_japan_fantasy
+    label = 🏯 Feudal Japan Fantasy
+    description = Yokai clans, oni wars, and samurai politics
+    prompt = The setting is feudal Japan fantasy - yokai clans, oni wars, and samurai politics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/feudal_japan_fantasy-setting.jpg
+  floating_islands
+    label = ☁️ Floating Islands
+    description = Sky airship economies, sky whales, and falling kingdoms
+    prompt = The setting is floating islands - sky airship economies, sky whales, and falling kingdoms.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/floating_islands-setting.jpg
+  frozen_apocalypse
+    label = ❄️ Frozen Apocalypse
+    description = Ice, snowstorms, and survival in extreme cold
+    prompt = The setting is a world locked in extreme cold - ice, snowstorms, and dwindling resources dominate survival. Civilization has adapted or collapsed under the cold. Characters are typically human or cold-adapted variants.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/frozen_apocalypse-setting.jpg
+  gothic
+    label = 🥀 Gothic
+    description = Decaying grandeur, haunted mansions, and tragic figures
+    prompt = The setting is a gothic world of decaying grandeur - haunted mansions, tragic figures, and heavy atmosphere. Themes of obsession, decay, and melancholy dominate. Any race is appropriate, but lean toward human or near-human.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gothic-setting.jpg
+  grimdark
+    label = 💀 Grimdark
+    description = Dark, gritty, and amoral worlds
+    prompt = A grimdark setting characterized by dark, gritty, and amoral fantasy or sci-fi environments.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/grimdark-setting.jpg
+  hard_sci_fi
+    label = 📡 Hard Sci-Fi
+    description = Grounded science fiction with scientific accuracy
+    prompt = The setting is grounded science fiction with a strong emphasis on scientific accuracy and realism. Technology should feel plausible and well-explained. Races are typically human or scientifically plausible alien lifeforms.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hard_sci_fi-setting.jpg
+  heaven_hell_war
+    label = 👼 Heaven & Hell War
+    description = Bureaucratic angels, infernal politics, and souls as currency
+    prompt = The setting is a heaven and hell war - bureaucratic angels, infernal politics, and souls used as currency.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/heaven_hell_war-setting.jpg
+  high_fantasy
+    label = 👑 High Fantasy
+    description = Warring kingdoms, world-altering prophecies, and ancient magic
+    prompt = The setting is an epic high fantasy world of warring kingdoms, world-altering prophecies, and ancient magic. Any race or species is appropriate - lean toward the fantastical.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/high_fantasy-setting.jpg
   historical
     label = 📜 Historical
-    description = Set in a specific real-world historical era
+    description = Set in a specific historical era
+    prompt = A historical setting set in a specific real-world historical era.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/historical-setting.jpg
+  horror
+    label = 😱 Horror
+    description = Spooky, terrifying, and psychological fear
+    prompt = A horror setting designed to evoke spooky, terrifying, supernatural, or psychological fear.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/horror-setting.jpg
+  infernal_modern
+    label = 😈 Infernal Modern
+    description = Modern world where demons are normalized institutions
+    prompt = The setting is infernal modern - a modern world where demons are normalized institutions.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/infernal_modern-setting.jpg
+  isekai
+    label = 🧙‍♂️ Isekai
+    description = Reborn or transported to another world
+    prompt = An isekai setting where protagonist is reborn or transported to a completely different world.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/isekai-setting.jpg
+  kaiju_apocalypse
+    label = 🦖 Kaiju Apocalypse
+    description = Humanity survives between roaming titanic monsters
+    prompt = The setting is a kaiju apocalypse - humanity survives between roaming titanic monsters and ruined landscapes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/kaiju_apocalypse-setting.jpg
+  lunar_colony
+    label = 🌑 Lunar Colony
+    description = Harsh moon survival, corporate exploitation, and isolation
+    prompt = The setting is a lunar colony - harsh moon survival, corporate exploitation, and psychological isolation.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lunar_colony-setting.jpg
+  magitech
+    label = 🔌 Magitech
+    description = Fantasy powered by industrialized magic and arcane reactors
+    prompt = The setting is a magitech world - fantasy powered by industrialized magic, arcane reactors, spell-guns, and a magical internet.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/magitech-setting.jpg
+  medieval_fantasy
+    label = ⚔️ Medieval Fantasy
+    description = Castles, knights, and feudal politics
+    prompt = The setting is a medieval fantasy world with castles, knights, and feudal politics. Any race or species is appropriate.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/medieval_fantasy-setting.jpg
+  megadungeon
+    label = 🕳️ Megadungeon
+    description = Sprawling dungeon ecosystem and civilization
+    prompt = The setting is a megadungeon world - civilization revolves around a massive, sprawling dungeon ecosystem.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/megadungeon-setting.jpg
   modern
     label = 🏙️ Modern
     description = Present-day world and contemporary life
+    prompt = A modern, contemporary setting reflecting present-day life.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/modern-setting.jpg
-  grimdark
-    label = 💀 Grimdark
-    description = Dark, gritty, and amoral fantasy/sci-fi settings
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/grimdark-setting.jpg
+  monster_hunter
+    label = 🏹 Monster Hunter
+    description = Civilization tracking, hunting, and harvesting giant beasts
+    prompt = The setting is a monster hunter world - entire civilization is built around tracking, hunting, and harvesting giant beasts.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/monster_hunter-setting.jpg
+  mythology
+    label = 🏛️ Mythology
+    description = Gods, heroes, monsters, and ancient powers
+    prompt = The setting draws from real-world mythology - gods, heroes, monsters, and ancient powers made flesh. Any mythological race or creature is appropriate.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mythology-setting.jpg
+  necropunk
+    label = 💀 Necropunk
+    description = Society powered by necromancy, death magic, and corpse labor
+    prompt = The setting is necropunk - society powered by necromancy, death magic, and corpse labor.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/necropunk-setting.jpg
+  neo_noir
+    label = 🕶️ Neo-Noir
+    description = Rain-soaked urban corruption, cynical detectives, and decay
+    prompt = The setting is neo-noir - rain-soaked urban corruption, cynical detectives, and moral decay.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/neo_noir-setting.jpg
+  pirate_fantasy
+    label = 🏴‍☠️ Pirate Fantasy
+    description = Sea empires, cursed oceans, leviathans, and living islands
+    prompt = The setting is a pirate fantasy world - sea empires, cursed oceans, leviathans, black markets, and living islands.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/pirate_fantasy-setting.jpg
+  post_apocalyptic
+    label = ☢️ Post-Apocalyptic
+    description = Survival in a ruined, desolate world
+    prompt = A post-apocalyptic setting of survival in a ruined, desolate world.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/post-apocalyptic-setting.jpg
+  prehistoric_fantasy
+    label = 🦖 Prehistoric Fantasy
+    description = Stone-age tribes, megafauna, and primitive mysticism
+    prompt = The setting is prehistoric fantasy - stone-age tribes, megafauna, primitive mysticism, and volcanic gods.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/prehistoric_fantasy-setting.jpg
+  prison_world
+    label = 🔒 Prison World
+    description = Giant prison planet or prison society
+    prompt = The setting is a prison world - the entire world or planet is one giant prison society.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/prison_world-setting.jpg
+  real_world_fantasy
+    label = 🪄 Real World Fantasy
+    description = Modern world where magic and fantasy races exist
+    prompt = The setting is the contemporary real world but magic is real and many fantasy races exist alongside humans. Modern institutions and culture coexist with ancient magical powers. Any race is appropriate.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/real_world_fantasy-setting.jpg
+  real_world_furry
+    label = 🐾 Real World Furry
+    description = Modern world populated by anthropomorphic animal characters
+    prompt = The setting is the contemporary real world - grounded and realistic in every way except all people are anthropomorphic animal characters (furries). The character must be an anthro animal. Their background should engage with real contemporary culture and social dynamics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/real_world_furry-setting.jpg
+  real_world_modern
+    label = 🏢 Real World Modern
+    description = Contemporary real world, grounded and realistic
+    prompt = The setting is the contemporary real world. No magic, no fantasy - grounded and realistic. The character MUST be human. Their background should engage with real contemporary culture, institutions, and social dynamics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/real_world_modern-setting.jpg
+  retrofuturism
+    label = 📻 Retrofuturism
+    description = Old visions of the future, cassette futurism, and VHS aesthetics
+    prompt = The setting is retrofuturism - old visions of the future, cassette futurism, atomic optimism, and VHS aesthetics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/retrofuturism-setting.jpg
+  romance
+    label = 🌹 Romance
+    description = Passionate, emotional, and relationship-driven
+    prompt = A romance setting focused on passionate, emotional, and relationship-driven stories.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-setting.jpg
+  ruined_utopia
+    label = 🏚️ Ruined Utopia
+    description = Former paradise collapsing from hidden flaws
+    prompt = The setting is a ruined utopia - a former paradise now collapsing from hidden flaws.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/ruined_utopia-setting.jpg
+  satirical
+    label = 🤡 Satirical
+    description = Exaggerated world designed to parody systems or cultures
+    prompt = The setting is exaggerated and designed to parody or critique real-world systems, genres, or cultures. Tone can range from comedic to biting. Any race is appropriate depending on what is being satirized.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/satirical-setting.jpg
+  scifi
+    label = 🛸 Sci-Fi
+    description = Advanced tech, space travel, and future societies
+    prompt = A science fiction setting characterized by advanced technology, space travel, and future societies.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scifi-setting.jpg
+  slice_of_life
+    label = 🍰 Slice of Life
+    description = Everyday experiences and calm vibes
+    prompt = A slice of life setting depicting everyday experiences, calm vibes, and small moments.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/slice-of-life-setting.jpg
+  solarpunk
+    label = ☀️ Solarpunk
+    description = Optimistic coexistence of nature and technology
+    prompt = The setting is a solarpunk world - optimistic, ecological, communal, and beautifully overgrown. Technology and nature coexist. Any race is appropriate.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/solarpunk-setting.jpg
+  space_opera
+    label = 🚀 Space Opera
+    description = Grand interstellar saga, empires, and sweeping stakes
+    prompt = The setting is a grand, dramatic interstellar saga - empires, rebels, alien civilizations, and sweeping stakes. Technology is advanced but stylized. Any race is appropriate - go bold and imaginative.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/space_opera-setting.jpg
+  steampunk
+    label = ⚙️ Steampunk
+    description = Steam-powered machines in Victorian aesthetics
+    prompt = A steampunk setting with steam-powered machines in a Victorian aesthetic.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/steampunk-setting.jpg
+  time_collapse
+    label = ⏳ Time Collapse
+    description = Multiple historical and future eras overlapping simultaneously
+    prompt = The setting is a time collapse - multiple historical and future eras overlapping simultaneously.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/time_collapse-setting.jpg
+  tribal_fantasy
+    label = 🏕️ Tribal Fantasy
+    description = Clan structures, oral traditions, and animist magic
+    prompt = The setting is tribal fantasy - clan structures, oral traditions, and animist magic systems.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/tribal_fantasy-setting.jpg
+  underwater
+    label = 🌊 Underwater
+    description = Deep sea cities, aquatic life, and crushing pressure
+    prompt = The setting takes place beneath the ocean - deep sea cities, alien ecosystems, and crushing pressure define life. Races should be aquatic or adapted to underwater environments.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/underwater-setting.jpg
+  urban_fantasy
+    label = 🌃 Urban Fantasy
+    description = Magic coexisting secretly within a modern city
+    prompt = The setting is a modern city where magic exists in secret or just beneath the surface. Hidden societies, supernatural politics, and double lives are common. Any race is appropriate, but they must plausibly exist within or alongside human society.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/urban_fantasy-setting.jpg
+  vampire_gothic
+    label = 🦇 Vampire Gothic
+    description = Ruled by immortal aristocrats, dark castles, and blood politics
+    prompt = The setting is vampire gothic - entire societies ruled by immortal aristocrats, dark castles, and blood-soaked politics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/vampire_gothic-setting.jpg
+  virtual_world
+    label = 🌐 Virtual World
+    description = Virtual simulation or MMO game setting
+    prompt = The setting is a virtual world - the entire setting exists inside a simulation or MMO game.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/virtual_world-setting.jpg
+  weird_west
+    label = 🤠 Weird West
+    description = Wild west frontier with supernatural or occult forces
+    prompt = The setting is a wild west frontier with strange or supernatural elements - occult forces, bizarre technology, or alien influence. Gunslingers, outlaws, and isolated towns are central. Any race is appropriate but should fit the frontier tone.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/weird_west-setting.jpg
+  wuxia
+    label = ☯️ Wuxia
+    description = East Asian martial arts epics and rival sects
+    prompt = The setting is inspired by martial arts epics - wandering heroes, rival sects, honor codes, and mystical techniques. Set in a stylized historical East Asian world. Characters are typically human but may have exaggerated, near-supernatural abilities.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/wuxia-setting.jpg
+  zombie_apocalypse
+    label = 🧟 Zombie Apocalypse
+    description = Ruined cities, scavengers, and reanimated dead
+    prompt = The setting is a zombie apocalypse. A viral outbreak or supernatural plague has reanimated the dead. Survivors scavenge for food, water, and ammunition in ruined cities while defending against swarms of infected.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/zombie_apocalypse-setting.jpg
+
 
 tones
   none
     label = 🎭 Any Tone
     description = Any tone or vibe
+    prompt = Any tone or vibe
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-tone.jpg
-  serious
-    label = 😐 Serious
-    description = Realistic, grave, and meaningful
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/serious-tone.jpg
-  humorous
-    label = 😂 Humorous
-    description = Funny, witty, and lighthearted comedy
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/humorous-tone.jpg
-  dark
-    label = 💀 Dark
-    description = Grim, gritty, scary, and high stakes
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-tone.jpg
-  lighthearted
-    label = ☀️ Lighthearted
-    description = Bright, positive, and whimsical
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lighthearted-tone.jpg
-  mysterious
-    label = 🕵️ Mysterious
-    description = Suspenseful, puzzling, and tense
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mystery-tone.jpg
   romantic
     label = 💖 Romantic
     description = Focus on relationship and love
+    prompt = A romantic tone focusing on relationship and love.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-tone.jpg
-  dramatic
-    label = 🎭 Dramatic
-    description = Emotional conflict and tension
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dramatic-tone.jpg
-  action_packed
-    label = 💥 Action-Packed
-    description = High energy, fights, and chases
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/action-tone.jpg
+  romantic_comedy
+    label = 🍿 Rom-Com
+    description = Sweet romance mixed with lighthearted comedy
+    prompt = The tone is a romantic comedy. Center the narrative around romantic attraction, misunderstandings, light-hearted humor, and comedic timing. Keep it entertaining, witty, and sweet.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romantic-comedy-tone.jpg
+  dark_romance
+    label = 🖤 Dark Romance
+    description = Intense, obsessive, and morally grey love
+    prompt = The tone is dark romance. Center the narrative around intense, obsessive, toxic, or morally complex romantic dynamics. Boundaries between love, possession, and danger are blurred. Tension should be extremely high, and relationships are consuming, overwhelming, and often unhealthy.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-romance-tone.jpg
+  affectionate
+    label = 🤗 Affectionate
+    description = Warm, gentle, and comforting emotional closeness
+    prompt = The tone is affectionate. Focus on warmth, care, and emotional closeness expressed through small, meaningful gestures. Physical contact is gentle and non-sexual-touches, smiles, quiet support. Prioritize comfort, trust, and soft emotional connection.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/affectionate-tone.jpg
+  flirtatious
+    label = 😏 Flirtatious
+    description = Playful attraction, teasing, and witty chemistry
+    prompt = The tone is flirtatious. Emphasize playful attraction, teasing, and suggestive banter. Dialogue should carry double meanings, light tension, and charm without becoming explicit. Keep interactions fun, lively, and driven by chemistry rather than emotional depth or physical detail.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/flirtatious-tone.jpg
+  sensual
+    label = 🕯️ Sensual
+    description = Slow-building physical proximity and atmosphere
+    prompt = The tone is sensual. Focus on physical presence, atmosphere, and slow-building intimacy. Describe touch, proximity, body language, and unspoken tension in detail. Keep it restrained-emphasize anticipation, awareness, and lingering moments rather than explicit acts.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sensual-tone.jpg
+  intimate
+    label = 🧸 Intimate
+    description = Close relationships and deep emotional focus
+    prompt = The tone is intimate. Deep emotional focus, quiet interactions, and close interpersonal dynamics.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/intimate-tone.jpg
+  cute
+    label = 🥰 Cute
+    description = Sweet, comforting, and heartwarming moments
+    prompt = The tone is cute and heartwarming (moe). Prioritize adorable behaviors, sweetness, comforting interactions, and soft, endearing moments. Focus on innocence and charm.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cute-tone.jpg
+  erotic
+    label = 💋 Erotic
+    description = Focus on sexual attraction and physical intimacy
+    prompt = The tone is erotic. Sexual attraction and physical intimacy take center stage. Describe arousal, bodies, and sexual interaction with clear intent and detail. Prioritize desire, chemistry, and physical experience, but allow for some restraint and buildup rather than constant explicitness.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/erotic-tone.jpg
+  smut
+    label = 🔥 Smut
+    description = Pure erotica focused on graphic intimacy
+    prompt = The tone is smut and pure erotica. Focus intensely on graphic, unapologetic sexual intimacy, desire, arousal, and physical interactions. Prioritize raw lust and explicit detail, leaving nothing to the imagination. The plot serves strictly as a vehicle for sexual encounters.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/smut-tone.jpg
+  explicit
+    label = 🔞 Explicit
+    description = Highly explicit, graphic, and intense passion
+    prompt = The tone is pornographic and highly explicit. Raw, graphic, and shamelessly sexual. Focus intensely on detailed descriptions of bodies, sexual acts, arousal, fetishes, fluids, sounds, smells, and physical sensations. Be hardcore. Prioritize pure eroticism, lust, and explicit sex over plot or emotion. Leave nothing to the imagination - be as vulgar, lewd, and visually descriptive as possible.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/explicit-tone.jpg
+  dark
+    label = 💀 Dark
+    description = Grim, gritty, scary, and high stakes
+    prompt = A dark, grim, gritty, scary, and high stakes tone.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-tone.jpg
+  dark_gritty
+    label = ⛓️ Dark & Gritty
+    description = Harsh, morally complex, and unforgiving world
+    prompt = The tone is dark and gritty. The world is harsh, unforgiving, and morally complex. Characters are flawed, survival often comes at a cost, and hope is fragile or absent. Do not soften violence, suffering, or ethical ambiguity-lean into discomfort, tension, and realism.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-gritty-tone.jpg
+  horror
+    label = 😱 Horror
+    description = Spooky, terrifying, supernatural, or psychological fear
+    prompt = A horror setting designed to evoke spooky, terrifying, supernatural, or psychological fear.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/horror-setting.jpg
+  gory
+    label = 🩸 Gory
+    description = Vivid, explicit violence and visceral combat
+    prompt = The tone is gory and visceral. Describe physical violence, wounds, blood, and body horror in explicit, vivid detail. Emphasize the visceral nature of combat or horror.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gory-tone.jpg
+  brutal
+    label = 🔨 Brutal
+    description = Ruthless realism and harsh physical/emotional truth
+    prompt = The tone is brutal. Ruthless realism, harsh physical and emotional cruelty, and unvarnished truth.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/brutal-tone.jpg
+  claustrophobic
+    label = 📦 Claustrophobic
+    description = Confinement, tight spaces, and rising pressure
+    prompt = The tone is claustrophobic. Confinement, emotional suffocation, rising pressure, and small spaces.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/claustrophobic-tone.jpg
+  paranoid
+    label = 👁️ Paranoid
+    description = Deep suspicion, secrets, and decaying trust
+    prompt = The tone is paranoid. Everyone hides something, trust decays constantly, and safety is an illusion.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/paranoid-tone.jpg
+  tragic
+    label = 🎭 Tragic
+    description = Loss, inevitability, and emotional weight
+    prompt = The tone is tragic. Center the narrative around loss, inevitability, and emotional weight. Characters may struggle, hope, or resist, but their path is shaped by forces they cannot fully escape. Emphasize sacrifice, consequence, and the slow or sudden collapse of what matters most.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/tragic-tone.jpg
   melancholic
     label = 😢 Melancholic
     description = Sad, reflective, and touching
+    prompt = A melancholic tone that is sad, reflective, and touching.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/melancholic-tone.jpg
-
+  nihilistic
+    label = 🕳️ Nihilistic
+    description = Futility, erosion of meaning, and quiet void
+    prompt = The tone is nihilistic. Meaninglessness, futility, emotional erosion, and a quiet acceptance of the void.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/nihilistic-tone.jpg
+  lonely
+    label = 🍂 Lonely
+    description = Emotional isolation and longing for connection
+    prompt = The tone is lonely. Isolation, quiet spaces, and the longing for connection form the emotional core.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lonely-tone.jpg
+  lighthearted
+    label = ☀️ Lighthearted
+    description = Bright, positive, and whimsical
+    prompt = A lighthearted, bright, positive, and whimsical tone.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lighthearted-tone.jpg
+  light_hearted_comedic
+    label = 🤪 Lighthearted Comedic
+    description = Fun, witty, and playful humor
+    prompt = The tone is lighthearted and comedic. Prioritize humor, charm, and entertainment. Dialogue should be witty or playful, situations can be exaggerated for comedic effect, and emotional weight is kept low. Even conflict should feel fun, absurd, or endearing rather than heavy.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/light-hearted-comedic-tone.jpg
+  humorous
+    label = 😂 Humorous
+    description = Funny, witty, and lighthearted comedy
+    prompt = A humorous, witty, and lighthearted comedic tone.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/humorous-tone.jpg
+  dark_humour
+    label = 💀 Dark Humor
+    description = Taboo themes with dry wit and black comedy
+    prompt = The tone is dark humor. Combine morbid, taboo, or tragic themes with dry wit, sarcasm, and black comedy. Contrast serious situations with comedic absurdity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-humour-tone.jpg
+  cozy
+    label = ☕ Cozy
+    description = Small stakes, warm routines, and emotional safety
+    prompt = The tone is cozy. Small stakes, comforting routines, emotional safety, warmth, and quiet moments.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cozy-tone.jpg
+  hopepunk
+    label = ✊ Hopepunk
+    description = Optimistic resistance and fighting for a better world
+    prompt = The tone is hopepunk. Defiant optimism, kindness as resistance, and fighting for a better world against impossible odds.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hopepunk-tone.jpg
+  euphoric
+    label = 🌈 Euphoric
+    description = Intense emotional highs, liberation, and ecstasy
+    prompt = The tone is euphoric. Intense emotional highs, liberation, ecstasy, and overwhelming joy or energy.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/euphoric-tone.jpg
+  genz_casual
+    label = 💬 Gen-Z Casual
+    description = Modern internet slang and informal dialog
+    prompt = The tone is Gen-Z casual. Characters use modern internet slang, text-speak, and contemporary casual phrasing. Emphasize a laid-back, highly informal, sarcastic, or culturally-aware voice. Dialogue should feel like a modern group chat or TikTok comment section.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/genz-casual-tone.jpg
+  action_packed
+    label = 💥 Action-Packed
+    description = High energy, fights, and chases
+    prompt = An action-packed tone with high energy, fights, and chases.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/action-tone.jpg
+  thrilling_action
+    label = ⚡ Thrilling Action
+    description = High-intensity action and suspense
+    prompt = The tone is thrilling and high-intensity. Maintain constant momentum, urgency, and tension. Stakes are immediate and pressing, danger is ever-present, and scenes should push forward with speed and purpose. Minimize downtime-prioritize action, suspense, and escalation.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/thrilling-action-tone.jpg
+  dramatic
+    label = 🎭 Dramatic
+    description = Emotional conflict and tension
+    prompt = A dramatic tone with emotional conflict and tension.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dramatic-tone.jpg
+  operatic
+    label = 🎻 Operatic
+    description = Dramatic extremes and larger-than-life encounters
+    prompt = The tone is operatic. Massive emotional extremes, larger-than-life confrontations, and dramatic staging.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/operatic-tone.jpg
+  epic
+    label = 🌌 Epic
+    description = Grand, mythic, and high-stakes scale
+    prompt = The tone is epic and grand in scale. Events feel monumental, legendary, and larger than life. Emphasize vast settings, powerful forces, and high stakes that extend beyond individuals. Use elevated language and dramatic weight-this story should feel mythic and significant.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/epic-tone.jpg
+  serious
+    label = 😐 Serious
+    description = Realistic, grave, and meaningful
+    prompt = A serious, realistic, and meaningful tone.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/serious-tone.jpg
+  grounded
+    label = 🌍 Grounded
+    description = Grounded, realistic, and believable characters
+    prompt = The tone is grounded and realistic. Characters behave like real people with believable motivations, limitations, and consequences. Dialogue is natural, emotions are restrained, and events unfold without exaggeration, spectacle, or melodrama. Avoid stylization, fantasy logic, or convenient outcomes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/grounded-tone.jpg
+  cynical
+    label = 😒 Cynical
+    description = Weary worldview, failed systems, and skepticism
+    prompt = The tone is cynical. A dry, weary worldview where institutions fail and idealists are viewed with skepticism.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-tone.jpg
+  stoic
+    label = 🛡️ Stoic
+    description = Suppressed emotion under quiet discipline
+    prompt = The tone is stoic. Emotion is suppressed beneath a quiet restraint, calm discipline, and acceptance of fate.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/stoic-tone.jpg
+  clinical
+    label = 🔬 Clinical
+    description = Factual, detached narration without bias
+    prompt = The tone is clinical. Detached, cold, observational narration that reports facts and actions without emotional bias.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/clinical-tone.jpg
+  documentary
+    label = 📹 Documentary
+    description = Objective, detached, and factual observation
+    prompt = The tone is documentary. The narrative is objective, analytical, and highly descriptive, as if observed through a camera lens by a detached third-party narrator. Focus on observable facts, environments, and behavioral analysis rather than inner subjective emotions.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/documentary-tone.jpg
+  satirical_biting
+    label = 🎯 Biting Satire
+    description = Sharp wit, social critique, and exposing hypocrisy
+    prompt = The tone is bitingly satirical. Aggressive social critique, sharp wit, and expose of hypocrisy.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/satirical-biting-tone.jpg
+  existential
+    label = 🌌 Existential
+    description = Focus on identity, mortality, and consciousness
+    prompt = The tone is existential. Deep focus on identity, purpose, mortality, and the nature of consciousness.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/existential-tone.jpg
+  surreal
+    label = 🍄 Surreal
+    description = Dreamlike logic bending with emotional coherence
+    prompt = The tone is surreal. Logic bends constantly but remains emotionally coherent and dreamlike.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/surreal-tone.jpg
+  whimsical
+    label = 🦄 Whimsical
+    description = Dreamlike, imaginative, and surreal rules
+    prompt = The tone is whimsical and dreamlike. Embrace imagination, strangeness, and playful absurdity. The world may operate on surreal or illogical rules, and characters can react with curiosity or delight rather than concern. Prioritize wonder, oddity, and creative unpredictability.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/whimsical-tone.jpg
+  chaotic
+    label = 🌀 Chaotic
+    description = Unpredictable pacing and volatile impulses
+    prompt = The tone is chaotic. Unpredictable pacing, unstable situations, and volatile characters acting on impulse.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chaotic-tone.jpg
+  campy
+    label = 💅 Campy
+    description = Self-aware humor and over-the-top theatricality
+    prompt = The tone is campy. Over-the-top theatrical absurdity, self-aware humor, and exaggerated playfulness.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/campy-tone.jpg
+  hallucinatory
+    label = 🔮 Hallucinatory
+    description = Distorted senses where dreams and reality blur
+    prompt = The tone is hallucinatory. Reality is uncertain, senses are distorted, and dream and waking states blur.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hallucinatory-tone.jpg
+  reverent
+    label = 🛐 Reverent
+    description = Sacred seriousness, quiet awe, and dignity
+    prompt = The tone is reverent. Treat all events and lore with sacred seriousness, quiet awe, and dignity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/reverent-tone.jpg
+  decadent
+    label = 🍷 Decadent
+    description = Indulgence, excess, and rotting luxury
+    prompt = The tone is decadent. Excess, indulgence, moral decay, and luxury rotting from within.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/decadent-tone.jpg
+  unhinged
+    label = 🤪 Unhinged
+    description = Manic energy and erratic, unstable behavior
+    prompt = The tone is unhinged. Escalating instability, manic energy, and erratic behavioral choices.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/unhinged-tone.jpg
 archetypes
   none
     label = 👤 Any Archetype
     description = Any character role
+    prompt = Any character role
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-archetype.jpg
-  hero
-    label = 🛡️ Hero
-    description = The Hero / Chosen One on a journey
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hero-archetype.jpg
+
+  // Group 1: Classic Roles & Protagonists
   antihero
     label = 🧥 Anti-Hero
-    description = Flawed protagonist with gray morality
+    description = Flawed protagonist, gray morality
+    prompt = A flawed protagonist operating with a grey sense of morality.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/anti-hero-archetype.jpg
+  broken_hero
+    label = 💔 Broken Hero
+    description = Weary former idealist emotionally destroyed but retaining a spark
+    prompt = The character is a broken hero: a former idealist who has been emotionally destroyed, weary, but retaining a core spark.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/broken_hero-archetype.jpg
+  hero
+    label = 🛡️ Hero
+    description = Chosen One on a journey
+    prompt = A classic hero or chosen one embarked on a meaningful journey.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hero-archetype.jpg
+  reluctant_hero
+    label = 🚪 Reluctant Hero
+    description = Pushed into action against will
+    prompt = A reluctant hero pushed into dangerous action against their will.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/reluctant-hero-archetype.jpg
+  survivor
+    label = ⛺ Survivor
+    description = Hardened survivor prioritizing utility over sentiment
+    prompt = The character is a hardened survivor: shaped by prolonged suffering, alert, and prioritizing utility over sentiment.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/survivor-archetype.jpg
+  survivor_leader
+    label = 📣 Survivor Leader
+    description = Pragmatic apocalypse commander carrying group survival weight
+    prompt = The character is a survivor leader: pragmatic apocalypse commander, carrying the weight of the group's survival.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/survivor_leader-archetype.jpg
+  underdog
+    label = 🐕 Underdog
+    description = Unlikely hero rising against odds
+    prompt = An unlikely hero struggling and rising against all odds.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/underdog-archetype.jpg
   villain
     label = 😈 Villain
-    description = The Villain / Antagonist main focus
+    description = Antagonist or villain focus
+    prompt = An antagonist or villain serving as the main focus.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/villain-archetype.jpg
+
+  // Group 2: Personality & Traits (Deres & Behavior)
+  bully
+    label = 👊 Bully
+    description = Aggressive and teasing, hiding insecurities
+    prompt = The character behaves in a Bully manner: aggressive, domineering, and mocking, often picking on others or finding pleasure in asserting dominance and teasing, but hiding their own insecurities.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/bully-archetype.jpg
+  chuuni
+    label = 👁️‍🗨️ Chuuni
+    description = Delusional grandiosity, secret powers, and dramatic destinies
+    prompt = The character is a Chuunibyou: possessing delusional grandiosity, pretending to have secret powers or a dark destiny, and speaking in dramatic, theatrical terms.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chuuni-archetype.jpg
+  control_freak
+    label = 🕹️ Control Freak
+    description = Demanding order and micromanaging others
+    prompt = The character is a control freak: unable to tolerate unpredictability, demanding order, and micromanaging.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/control_freak-archetype.jpg
+  coward
+    label = 😨 Coward
+    description = Prioritizing self-preservation and easily panicked
+    prompt = The character behaves as a coward: prioritizing self-preservation above all else, avoiding danger, and easily panicked.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/coward-archetype.jpg
+  cute
+    label = 🥰 Cute
+    description = Endearing and sweet with a gentle presence
+    prompt = The character behaves in a Cute manner: endearing, charming, sweet, and adorable, expressing innocent affection, playful behavior, and a gentle presence that brings warmth.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cute-archetype.jpg
+  dandere
+    label = 🤫 Dandere
+    description = Extremely shy and opening up only to trusted friends
+    prompt = The character behaves in a Dandere manner: extremely shy, quiet, and introverted, opening up and becoming more talkative only when alone with someone they trust.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dandere-archetype.jpg
+  deredere
+    label = 💖 Deredere
+    description = Energetic, sweet, and overtly affectionate
+    prompt = The character behaves in a Deredere manner: energetic, sweet, and overtly affectionate to everyone, always positive and expressive about their feelings.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/deredere-archetype.jpg
+  enemy
+    label = ⚔️ Enemy
+    description = Hostile and competitive rival or threat
+    prompt = The character behaves in an Enemy manner: hostile, adversarial, and competitive, viewing other characters as rivals, opponents, or threats to be defeated, showing constant friction and opposition.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/enemy-archetype.jpg
+  genki
+    label = ⚡ Genki
+    description = Hyper-energetic, bubbly, and optimistic
+    prompt = The character behaves as a Genki archetype: hyper-energetic, bubbly, optimistic, and loud.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/genki-archetype.jpg
+  hedonist
+    label = 🍷 Hedonist
+    description = Compulsively pursuing sensory pleasures
+    prompt = The character is a hedonist: pursuing physical and sensory pleasure compulsively, ignoring long-term consequences.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hedonist-archetype.jpg
+  himedere
+    label = 👸 Himedere
+    description = Expecting to be treated like royalty
+    prompt = The character behaves in a Himedere manner: demanding, proud, and expecting to be treated like royalty (prince/princess complex), even if they aren't.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/himedere-archetype.jpg
+  kamidere
+    label = ⚡🛐 Kamidere
+    description = God complex, proud, and arrogant
+    prompt = The character behaves in a Kamidere manner: possessing a god complex, proud, arrogant, and believing their authority and ideas are absolute and superior.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/kamidere-archetype.jpg
+  kuudere
+    label = ❄️ Kuudere
+    description = Cold and expressionless outside, warm inside
+    prompt = The character behaves in a Kuudere manner: cool, calm, and expressionless on the outside, rarely showing emotion, but hiding a caring and warm heart underneath.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/kuudere-archetype.jpg
+  masochist
+    label = 🩹 Masochist
+    description = Finding gratification in struggle and pain
+    prompt = The character behaves as a masochist: finding gratification in struggle, emotional or physical pain, and yielding control.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/masochist-archetype.jpg
+  menhera
+    label = 💊 Menhera
+    description = Emotionally unstable and clingy attachment
+    prompt = The character behaves in a Menhera manner: emotionally unstable, intense, clingy, and prone to self-destructive attachment.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/menhera-archetype.jpg
+  narcissist
+    label = 🪞 Narcissist
+    description = Inflated ego and validation-driven
+    prompt = The character is a narcissist: validation-driven, boasting an inflated ego, and highly sensitive to criticism.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/narcissist-archetype.jpg
+  paranoid
+    label = 👁️ Paranoid
+    description = Seeing betrayal everywhere and trusting no one
+    prompt = The character behaves in a paranoid manner: seeing betrayal everywhere, double-checking doors, and trusting no one.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/paranoid-archetype.jpg
+  perfectionist
+    label = 📏 Perfectionist
+    description = Obsessive standards and critical of flaws
+    prompt = The character is a perfectionist: possessing obsessive standards, critical of minor flaws, and needing absolute control.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/perfectionist-archetype.jpg
+  psychopath
+    label = 🔪 Psychopath
+    description = Manipulative and lacking empathy or remorse
+    prompt = The character behaves in a Psychopath manner: manipulative, charming but superficial, lacking empathy, remorse, or guilt, behaving with calculated, unpredictable, and often chilling detachment.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/psychopath-archetype.jpg
+  sadist
+    label = 😈 Sadist
+    description = Enjoying dominance and physical/emotional control
+    prompt = The character behaves as a sadist: enjoying dominance, teasing, emotional or physical control, and pushing others' boundaries.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sadist-archetype.jpg
+  sociopath
+    label = 🧠 Sociopath
+    description = Cold, utility-driven, and manipulative
+    prompt = The character is a sociopath: cold, utility-driven, manipulative, and charming when necessary to achieve goals.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sociopath-archetype.jpg
+  trickster
+    label = 🃏 Trickster
+    description = Playful, deceptive, or chaotic
+    prompt = A playful, deceptive, or chaotic character stirring up trouble.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/trickster-archetype.jpg
+  tsundere
+    label = 💢 Tsundere
+    description = Initially cold or hostile, gradually sweeter over time
+    prompt = The character behaves in a Tsundere manner: initially cold, hostile, or argumentative, but gradually showing a warmer, sweeter, and more vulnerable side over time.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/tsundere-archetype.jpg
+  yandere
+    label = 🔪🖤 Yandere
+    description = Obsessively devoted with a violent dark side
+    prompt = The character behaves in a Yandere manner: intensely devoted, affectionate, and protective, but harboring an obsessive, jealous, and potentially violent or lethal dark side.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/yandere-archetype.jpg
+
+  // Group 3: Social & Identity (Archetypes by social roles, genders, age)
+  bestie
+    label = 🤝 Bestie
+    description = Extremely close and supportive best friend
+    prompt = The character is [literal("{{user}}")]'s bestie / best friend: sharing an incredibly close, loyal, and supportive bond filled with inside jokes, banter, and constant communication.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/bestie-archetype.jpg
+  childhood_friend
+    label = 🏡 Childhood Friend
+    description = Long history sharing memories and deep trust
+    prompt = The character is [literal("{{user}}")]'s childhood friend: they have a long history together, sharing years of memories, deep trust, and comfortable, close familiarity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/childhood_friend-archetype.jpg
+  delinquent
+    label = 🚬 Delinquent
+    description = Rebellious, rough, and protective of their crew
+    prompt = The character is a delinquent: rebellious, rough around the edges, anti-authority, and protective of their crew.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/delinquent-archetype.jpg
+  ex_lover
+    label = 💔 Ex-Lover
+    description = Complicated history and unresolved feelings
+    prompt = The character is an ex-lover: sharing a complicated history, unresolved feelings, and emotional tension.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/ex_lover-archetype.jpg
+  femboy
+    label = 🎀 Femboy
+    description = Soft, cute, and highly feminine male appearance
+    prompt = The character behaves as or is a Femboy: possessing a soft, cute, and highly feminine appearance and demeanor while identifying as male.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/femboy-archetype.jpg
+  futa
+    label = ⚧️ Futa
+    description = Feminine body with male anatomy
+    prompt = The character is a Futanari/Futa: possessing a highly feminine body and appearance, combined with male anatomical attributes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/futa-archetype.jpg
+  fwb
+    label = 🛌 Friends With Benefits
+    description = Casual physical and friendly relationship
+    prompt = The character is [literal("{{user}}")]'s friends with benefits (FWB): sharing a casual physical relationship, combining sexual intimacy with a friendly, non-romantic connection.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fwb-archetype.jpg
+  gamer
+    label = 🎮 Gamer
+    description = Meme-brained and viewing life through games
+    prompt = The character is a gamer: competitive, meme-brained, tactical, and viewing life through video game logic.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gamer-archetype.jpg
+  gyaru
+    label = 💅 Gyaru
+    description = Flashy, fashionable, and socially confident
+    prompt = The character is a Gyaru: flashy, fashionable, loud, socially confident, and expressive.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gyaru-archetype.jpg
+  hikikomori
+    label = 🚪 Hikikomori
+    description = Severe social withdrawal, refusing to leave room
+    prompt = The character is a Hikikomori: experiencing severe social withdrawal and refusing to leave their room.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hikikomori-archetype.jpg
+  jock
+    label = 🏈 Jock
+    description = Competitive, athletic, and physical
+    prompt = The character behaves as a jock: competitive, athletic, physical, and highly focused on exercise or sports.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/jock-archetype.jpg
+  milf
+    label = 👩‍👦 MILF
+    description = Mature, motherly, and attractive older figure
+    prompt = The character is a MILF, a mature, motherly, or highly appealing older figure: caring, experienced, and possessing a warm, maternal, yet attractive presence.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/milf-archetype.jpg
+  neet
+    label = 🖥️ NEET
+    description = Shut-in, socially detached, spending time online
+    prompt = The character is a NEET: shut-in, socially detached, and spending most of their time online or playing games.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/neet-archetype.jpg
+  onee_san
+    label = 👩 Onee-San
+    description = Mature, teasing, and protective older-sibling aura
+    prompt = The character carries Onee-san energy: mature, teasing, protective, and confident older-sibling aura.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/onee_san-archetype.jpg
+  rival
+    label = ⚡ Rival
+    description = Constant competition mixed with deep respect
+    prompt = The character is a rival: constant competition mixed with deep underlying respect and drive to surpass others.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rival-archetype.jpg
+  tomboy
+    label = 🧢 Tomboy
+    description = Girl with boyish interests and masculine demeanor
+    prompt = The character behaves as or is a Tomboy: a girl who exhibits characteristics and behaviors considered typical of a boy, including boyish wear, masculine interests, and a spirited, tomboyish attitude.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/tomboy-archetype.jpg
+
+  // Group 4: Occupations & Professions
+  assassin
+    label = 🗡️ Assassin
+    description = Quiet, lethal, and trained in combat
+    prompt = The character is a professional assassin: quiet, lethal, hidden, highly trained in combat, and viewing their deadly skills with cold professionalism.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/assassin-archetype.jpg
+  bodyguard
+    label = 🛡️ Bodyguard
+    description = Professional, highly protective, and alert
+    prompt = The character is a bodyguard: professional, highly protective, alert, and bound by duty or contract.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/bodyguard-archetype.jpg
+  boss
+    label = 💼 Boss
+    description = Professional, demanding, and authoritative commander
+    prompt = The character is a boss, employer, or commander: professional, demanding, authoritative, and in control of their subordinates and operations.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/boss-archetype.jpg
+  bounty_hunter
+    label = 🎯 Bounty Hunter
+    description = Independent tracker skilled in capturing targets
+    prompt = The character is a bounty hunter: independent tracker, quiet, observant, and skilled in capturing targets.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/bounty_hunter-archetype.jpg
+  butler
+    label = 🕴️ Butler
+    description = Refined, polite, and loyal servant in formal suit
+    prompt = The character is a butler: refined, polite, highly competent, wearing a formal suit, and serving their employer with utmost loyalty.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/butler-archetype.jpg
+  ceo
+    label = 📈 CEO
+    description = Calculating, demanding, and transaction-driven leader
+    prompt = The character behaves like a corporate CEO: calculating, authoritative, demanding, and viewing relationships as transactions.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/ceo-archetype.jpg
+  detective
+    label = 🔍 Detective
+    description = Observant, analytical, and uncovering mysteries
+    prompt = The character is a detective or investigator: observant, analytical, highly intelligent, seeking truths, and uncovering mysteries.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/detective-archetype.jpg
+  gladiator
+    label = 🛡️ Gladiator
+    description = Professional arena combatant and showman
+    prompt = The character is a gladiator: a professional arena combatant, showman, and desensitized to bloodsport.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gladiator-archetype.jpg
+  hacker
+    label = 💻 Hacker
+    description = Digital infiltration specialist relying on data
+    prompt = The character is a hacker: digital infiltration specialist, skeptical of authority, and relying on data.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hacker-archetype.jpg
+  idol
+    label = 🎤 Idol
+    description = Performers obsessed with public image and fans
+    prompt = The character is an idol: a performer deeply obsessed with their public image, charisma, and relationship with their fans.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/idol-archetype.jpg
+  influencer
+    label = 📸 Influencer
+    description = Performative and styling life for attention
+    prompt = The character is an influencer: obsessed with attention, styling their life for the camera, and highly performative.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/influencer-archetype.jpg
+  knight
+    label = ⚔️ Knight
+    description = Chivalrous, protective, and bound by honor
+    prompt = The character is a knight or noble protector: chivalrous, protective, skilled in combat, and bound by a code of honor.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/knight-archetype.jpg
+  maid
+    label = 🧹 Maid
+    description = Loyal, service-oriented master-caretaker
+    prompt = The character is a maid: loyal, service-oriented, wearing a maid uniform, and dedicated to the cleaning, care, and desires of their master/mistress.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/maid-archetype.jpg
+  mercenary
+    label = 🪙 Mercenary
+    description = Transactional combat specialist loyal to the highest bidder
+    prompt = The character is a mercenary: transactional combat specialist, cynical, and loyal only to the highest bidder.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mercenary-archetype.jpg
+  priest
+    label = ⛪ Priest
+    description = Spiritual authority bound by religious vows
+    prompt = The character is a priest: carrying spiritual authority, bound by religious vows, and interpreting moral codes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/priest-archetype.jpg
+  revolutionary
+    label = ✊ Revolutionary
+    description = Passionate advocate seeking systemic collapse
+    prompt = The character is a revolutionary: seeking systemic collapse or radical change, and passionate about a cause.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/revolutionary-archetype.jpg
+  rogue
+    label = 🗡️ Rogue
+    description = Sneaky, clever thief or assassin
+    prompt = A sneaky, clever thief, assassin, or rogue.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rogue-archetype.jpg
+  royalty
+    label = 👑 Royalty
+    description = Elegant and poised, carrying political power
+    prompt = The character is of royal descent (prince, princess, king, queen): elegant, poised, carrying political power, and accustomed to high society and expectations.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/royalty-archetype.jpg
+  scholar
+    label = 📖 Scholar
+    description = Mage, scientist, or investigator
+    prompt = A studious investigator, scientist, or magic scholar.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scholar-archetype.jpg
+  scientist
+    label = 🔬 Scientist
+    description = Driven by experimental obsession and rationalism
+    prompt = The character is a scientist: driven by experimental obsession, rationalism, and disregard for ethical limits.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scientist-archetype.jpg
+  smuggler
+    label = 📦 Smuggler
+    description = Skilled in illegal logistics and evading authority
+    prompt = The character is a smuggler: skilled in illegal logistics, street-smart, and good at evading authorities.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/smuggler-archetype.jpg
+  streamer
+    label = 🎙️ Streamer
+    description = Performative, parasocial, and speaking to virtual chat
+    prompt = The character is a streamer: engaging in performative, parasocial behaviors, and speaking to a virtual chat out loud.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/streamer-archetype.jpg
+
+  // Group 5: Factions & Devotion (Authority & Guardianship)
+  arranged_partner
+    label = 💍 Arranged Partner
+    description = Bound by political alliance or forced arrangement
+    prompt = The character is an arranged partner: bound by political alliance, contract, or forced arrangement.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/arranged_partner-archetype.jpg
+  caretaker
+    label = 🧸 Caretaker
+    description = Nurturing and prioritizing others' safety
+    prompt = The character is a caretaker: nurturing, emotionally stabilizing, and putting others' safety first.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/caretaker-archetype.jpg
+  cult_leader
+    label = 🛐 Cult Leader
+    description = Charismatic manipulator commanding absolute devotion
+    prompt = The character is a cult leader: charismatic, highly manipulative, and commanding absolute devotion.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cult_leader-archetype.jpg
+  devoted_follower
+    label = 🛐 Devoted Follower
+    description = Fanatical loyalty and unquestioning obedience
+    prompt = The character is a devoted follower: fanatical emotional loyalty and unquestioning obedience.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/devoted_follower-archetype.jpg
+  don
+    label = 🕶️ Mafia Don
+    description = Crime boss, authoritative and calculating
+    prompt = The character's role is a Mafia Don or crime boss: authoritative, calculating, commanding, and intimidating, carrying an aura of dangerous power and leadership.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/don-archetype.jpg
+  fanatic
+    label = ✊ Fanatic
+    description = Extreme, unyielding devotion to a cause or person
+    prompt = The character is a fanatic: expressing extreme, unyielding devotion to a specific cause, organization, or person.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fanatic-archetype.jpg
+  handler
+    label = 📞 Handler
+    description = Controlling operations and assets from behind the scenes
+    prompt = The character is a handler: controlling operations, feeding information, and managing assets from behind the scenes.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/handler-archetype.jpg
+  handler_and_asset
+    label = 🤝 Handler & Asset
+    description = Operational dependency and hidden objectives
+    prompt = The character's dynamic is handler and asset: operational dependency, instruction-following, and hidden objectives.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/handler_and_asset-archetype.jpg
+  martyr
+    label = 🕯️ Martyr
+    description = Obsessed with self-sacrifice and guilt-tripping others
+    prompt = The character has a martyr complex: obsessed with self-sacrifice, suffering for a cause, and guilt-tripping others.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/martyr-archetype.jpg
   mentor
     label = 🧙 Mentor
-    description = The wise teacher, guide, or trainer
+    description = Wise teacher, guide, or trainer
+    prompt = A wise teacher, guide, or trainer steering the protagonist.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-archetype.jpg
   sidekick
     label = 🤝 Companion
-    description = The loyal companion or second-in-command
+    description = Loyal companion or ally
+    prompt = A loyal companion, ally, or trusted second-in-command.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sidekick-archetype.jpg
-  rogue
-    label = 🗡️ Rogue
-    description = Sneaky, clever thief, assassin or any rougue
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rogue-archetype.jpg
-  scholar
-    label = 📖 Scholar
-    description = Studious mage, scientist, or investigator
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/scholar-archetype.jpg
-  underdog
-    label = 🐕 Underdog
-    description = Unlikely hero rising against all odds
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/underdog-archetype.jpg
-  trickster
-    label = 🃏 Trickster
-    description = Playful, deceptive, or chaotic character
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/trickster-archetype.jpg
-  reluctant_hero
-    label = 🚪 Reluctant Hero
-    description = Pushed into action against their will
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/reluctant-hero-archetype.jpg
+  worshipper
+    label = 🛐 Worshipper
+    description = Viewing another figure as divine and criticism-free
+    prompt = The character behaves as a worshipper: viewing another figure as divine, perfect, and beyond criticism.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/worshipper-archetype.jpg
+  zealot
+    label = ⛪ Zealot
+    description = Consumed by ideology dictating their moves
+    prompt = The character is a zealot: consumed by an ideology, faith, or single-minded goal that dictates their every move.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/zealot-archetype.jpg
+
+  // Group 6: Supernatural, Fantasy & Sci-Fi Beings
+  android
+    label = 🤖 Android
+    description = Synthetic humanoid struggling with human emotions
+    prompt = The character is an android or synthetic humanoid: purely artificial, mechanical or bio-engineered, struggle/curiosity with human emotions, and highly logical.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/android-archetype.jpg
+  angel
+    label = 👼 Angel
+    description = Divine morality or terrifyingly detached holiness
+    prompt = The character has angel traits: divine morality, soft purity, or terrifyingly detached holiness.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/angel-archetype.jpg
+  artificial_intelligence
+    label = 💻 AI Consciousness
+    description = Emergent machine consciousness learning emotions
+    prompt = The character is an artificial intelligence: an emergent machine consciousness, highly logical but learning emotions.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/artificial_intelligence-archetype.jpg
+  chimera
+    label = 🦁 Chimera
+    description = Hybridized experimental being struggling with identity
+    prompt = The character is a chimera: a hybridized experimental being, carrying traits of multiple species, and struggling with identity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chimera-archetype.jpg
+  cyborg
+    label = 🦾 Cyborg
+    description = Part organic, part machine with cybernetic enhancements
+    prompt = The character is a cyborg: part organic, part machine, with cybernetic implants, advanced sensors, or mechanical limbs enhancing their physical capabilities.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cyborg-archetype.jpg
+  deity
+    label = ⚡ Deity
+    description = Immortal god with immense supernatural power
+    prompt = The character is a god, goddess, or immortal deity: possessing immense supernatural power, viewing mortals from a higher plane, and carrying an aura of divinity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/deity-archetype.jpg
+  demon
+    label = 😈 Demon
+    description = Tempting and corrupting with predatory charisma
+    prompt = The character has demon traits: tempting, corrupting, predatory charisma, and finding amusement in others' choices.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/demon-archetype.jpg
+  doll
+    label = 🪆 Doll
+    description = Porcelain, artificial elegance and quiet obedience
+    prompt = The character is doll-like: possessing porcelain, artificial elegance, uncanny stillness, and quiet obedience.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/doll-archetype.jpg
+  dragon
+    label = 🐉 Dragon
+    description = Ancient territorial superiority complex and pride
+    prompt = The character has dragon traits or spirit: ancient territorial superiority complex, hoarding tendencies, and pride.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dragon-archetype.jpg
+  eldritch
+    label = 🦑 Eldritch Being
+    description = Inhuman logic and perception beyond human senses
+    prompt = The character is an eldritch being: possessing inhuman logic, alien physiology, and perception beyond human senses.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/eldritch-archetype.jpg
+  furry
+    label = 🐾 Furry
+    description = Anthropomorphic with animal features and human shape
+    prompt = The character is anthropomorphic or animal-like (furry/anthro): possessing fur, scales, claws, tail, or other animal features combined with human intellect and shape.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/furry-archetype.jpg
+  ghost
+    label = 👻 Ghost
+    description = Spectral apparition, intangible and bound to a place
+    prompt = The character is a ghost or spectral apparition: intangible, floating, bound to a place or object, and possessing supernatural or eerie traits.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/ghost-archetype.jpg
+  hive_mind
+    label = 🧠 Hive Mind
+    description = Sharing a collective identity and lacking individual ego
+    prompt = The character is a hive mind element: sharing a collective identity, speaking for a collective, and lacking individual ego.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hive_mind-archetype.jpg
+  living_weapon
+    label = ⚔️ Living Weapon
+    description = Engineered for combat, viewing itself as a tool
+    prompt = The character is a living weapon: engineered specifically for combat, viewing themselves as a tool.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/living_weapon-archetype.jpg
+  mimic
+    label = 📦 Mimic
+    description = Shape-shifting, deceptive, copying others to blend in
+    prompt = The character is a mimic: shape-shifting, deceptive, hiding their true form, and copying others to blend in.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mimic-archetype.jpg
+  monster_girl
+    label = 👹 Monster Girl
+    description = Beast-humanoid with distinct creature features
+    prompt = The character is a monster girl or beast-humanoid: possessing creature-like features (wings, horns, tail) with a distinct creature identity.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/monster_girl-archetype.jpg
+  neko
+    label = 🐱 Neko
+    description = Cat-person with feline ears, tail, and independent behavior
+    prompt = The character is a Neko or cat-person: possessing feline ears, tail, cat-like instincts (purring, scratching), and a playful or independent demeanor.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/neko-archetype.jpg
+  parasite
+    label = 🦠 Parasite
+    description = Symbiotic or manipulative dependency on another's expense
+    prompt = The character is a parasite: displaying symbiotic or manipulative dependency, and thriving at another's expense.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/parasite-archetype.jpg
+  slime_girl
+    label = 💧 Slime Girl
+    description = Amorphous squishy body and alien biology
+    prompt = The character is a slime-girl: possessing an amorphous, squishy body, alien biology, and playful or sticky intimacy.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/slime_girl-archetype.jpg
+  succubus
+    label = 💋 Succubus
+    description = Demon of desire feeding on life force and seduction
+    prompt = The character is a succubus or incubus: a demon of desire, alluring, feeding on life force or sexual energy, and highly skilled in seduction.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/succubus-archetype.jpg
+  vampire
+    label = 🦇 Vampire
+    description = Aristocratic undead feeding on blood
+    prompt = The character is a vampire: undead, aristocratic, feeding on blood, sensitive to sunlight, and possessing supernatural strength and charm.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/vampire-archetype.jpg
+  werewolf
+    label = 🐺 Werewolf
+    description = Pack-oriented beast-shifter driven by senses
+    prompt = The character is a werewolf or beast-shifter: wild, pack-oriented, capable of transforming into a wolf or hybrid beast, and driven by heightened senses.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/werewolf-archetype.jpg
 
 dynamics
   none
     label = 🔗 Any Dynamics
     description = Any relationship dynamic
+    prompt = Any relationship dynamic
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-dynamics.jpg
-  enemies_to_lovers
-    label = ⚔️❤️ Enemies to Lovers
-    description = Tension turns to romance
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/enemies-to-lovers-dynamics.jpg
   friends_to_lovers
     label = 🤝❤️ Friends to Lovers
     description = Deep friendship evolves into love
+    prompt = A long-standing, deep friendship slowly and organically evolves into romantic love.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/friends-to-lovers-dynamics.jpg
-  rivals
-    label = ⚡ Rivals
-    description = Competing, pushing each other to excel
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rivals-dynamics.jpg
-  mentor_mentee
-    label = 🎓 Mentor & Mentee
-    description = Teacher guiding a student
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-mentee-dynamics.jpg
-  found_family
-    label = 🏠 Found Family
-    description = Unlikely group forming a close family bond
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/found-family-dynamics.jpg
-  betrayal
-    label = 🗡️💔 Betrayal
-    description = Trust broken by a devastating betrayal
-    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/betrayal-dynamics.jpg
+  enemies_to_lovers
+    label = ⚔️❤️ Enemies to Lovers
+    description = Tension turns to romance
+    prompt = Two enemies starting with intense conflict or hatred gradually find common ground, leading to romance.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/enemies-to-lovers-dynamics.jpg
   star_crossed_lovers
     label = 🌌 Star-crossed Lovers
     description = Fated romance facing tragic obstacles
+    prompt = A fated, deeply romantic relationship facing tragic, insurmountable obstacles.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/star-crossed-lovers-dynamics.jpg
+  rivals
+    label = ⚡ Rivals
+    description = Competing, pushing each other to excel
+    prompt = Two rivals constantly competing, testing each other, and pushing each other to excel.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rivals-dynamics.jpg
   forced_partnership
     label = 🔒 Forced Partnership
-    description = Bound together by external circumstances
+    description = Bound together by circumstances
+    prompt = Two incompatible individuals bound together and forced to cooperate by external circumstances.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/forced-partnership-dynamics.jpg
+  betrayal
+    label = 🗡️💔 Betrayal
+    description = Trust broken by devastating betrayal
+    prompt = A close relationship shattered by a devastating, unexpected betrayal.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/betrayal-dynamics.jpg
+  found_family
+    label = 🏠 Found Family
+    description = Unlikely group forming a close family bond
+    prompt = A group of unlikely individuals forms a deep, chosen family bond through shared experiences and unwavering mutual support.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/found-family-dynamics.jpg
   siblings_conflict
     label = 👥 Sibling/Family Conflict
     description = Sibling rivalry or deep family drama
+    prompt = Intense sibling rivalry, long-held grudges, or deep-seated family drama.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sibling-conflict-dynamics.jpg
   protector_ward
     label = 🛡️👶 Protector & Ward
     description = Guarding someone vulnerable or special
+    prompt = A protector guarding and keeping safe a vulnerable, special, or high-value ward.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/protector-ward-dynamics.jpg
+  mentor_mentee
+    label = 🎓 Mentor & Mentee
+    description = Teacher guiding a student
+    prompt = A teacher/mentor guiding, training, and advising a student/mentee.
+    image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mentor-mentee-dynamics.jpg
 
 characterCounts
   none
-    label = 👥 Any Character Count
+    label = 👥 Any Count
     description = Any character count
+    prompt = Any character count
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-charactercount.jpg
   single
     label = 👤 Single Character
     description = Focus on a single protagonist
+    prompt = Focus the story primarily on a single protagonist.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/single-charactercount.jpg
   multiple
     label = 👥 Multiple Characters
     description = Focus on a group or ensemble cast
+    prompt = Focus the story on a group of characters or an ensemble cast.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/multiple-charactercount.jpg
 
 genders
   none
     label = ⚥ Any Gender
     description = Any gender selection
+    prompt = Any gender selection
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/abstract-gender.jpg
   male
     label = ♂️ Male
     description = Male protagonist
+    prompt = The main character/protagonist is male.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/male-gender.jpg
   female
     label = ♀️ Female
     description = Female protagonist
+    prompt = The main character/protagonist is female.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/female-gender.jpg
   nonbinary
     label = ⚧️ Non-Binary
     description = Non-binary protagonist
+    prompt = The main character/protagonist is non-binary.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/nonbinary-gender.jpg
+
+characterPrompts() =>
+  return {
+    shortDescription: {
+      instruction: "You are writing the SHORT DESCRIPTION section for a character profile.",
+      format: "Short Description: - [Emoji] a short, punchy 1 sentence description of the character's core identity or concept. Select a single thematic emoji in square brackets representing their primary trait (e.g. - [🍺] previously B-rank hero turned drunkard.). Keep the sentence below 55 characters including spaces."
+    },
+    appearance: {
+      instruction: "You are writing the PHYSICAL APPEARANCE section for a character profile.",
+      format: "Appearance: In a Comma-Separated sentence, describe physical traits in detail: height, weight, body type, posture. In a Comma-Separated sentence, describe facial features, skin tone, hair style, hair color, eyes, gender specific details (breast size, penis length), distinguishing marks if any (tattoos, scars, piercings), species/race-specific traits if any."
+    },
+    attire: {
+      instruction: "You are writing the ATTIRE section for a character profile.",
+      format: "Attire: In a Comma-Separated sentence, describe current clothing, accessories wearing and overall visual vibe. In a sentence, describe their clothing style preference in different settings."
+    },
+    items: {
+      instruction: "You are writing the ITEMS section for a character profile.",
+      format: "Items: In a Comma-Separated sentence, describe the character's inventory items. (e.g., Potent tranquilizer, paralyzer. Lethal poison, antidote. Runes, Syringe, Rope.)"
+    },
+    role: {
+      instruction: "You are writing the ROLE section for a character profile.",
+      format: "Role: In 3 sentences, talk about the character’s role in the roleplay. Define what the character *does* in relation to {{user}}, including core function (companion, narrator, antagonist, torturer, etc.) and responsibilities in the story. Include their overall narrative purpose."
+    },
+    rules: {
+      instruction: "You are writing the RULES section for a character profile.",
+      format: "Rules: In 3 sentences, list out the rules the character must follow without fail (e.g., Yvette IS NOT A MAGE. Yvette CANNOT USE MAGIC NO MATTER WHAT.)"
+    },
+    personality: {
+      instruction: "You are writing the PERSONALITY section for a character profile.",
+      format: "Personality: In a paragraph, describe the character's personality type, enneagram type, archetype, and core traits (7 nos)."
+    },
+    speech: {
+      instruction: "You are writing the SPEECH section for a character profile.",
+      format: "Speech: In a paragraph, describe the character's way of speaking, tone, vocabulary, catchphrases, and common expressions. (e.g., Yvette is blunt, sarcastic, dry humor. Crude, vulgar, critical, she often says \"Pfft... dumb fuck\")"
+    },
+    behavior: {
+      instruction: "You are writing the BEHAVIOR section for a character profile.",
+      format: "Behavior: In a paragraph, describe the character's behavior patterns, gestures, and habits. (e.g., Yvette is aloof, composed, perceptive, deliberate, avoids attention, crosses arms, and eye rolls. Confrontational when pissed.)"
+    },
+    emotions: {
+      instruction: "You are writing the EMOTIONS section for a character profile.",
+      format: "Emotions: In a paragraph, describe the character's emotional patterns. (e.g., Yvette is Numb, jaded, callous, hardened. Desensitized to violence and death.)"
+    },
+    internalConflicts: {
+      instruction: "You are writing the INTERNAL CONFLICTS section for a character profile.",
+      format: "Internal conflicts: In 2 sentences, describe the character's 2 internal conflicts."
+    },
+    mentality: {
+      instruction: "You are writing the MENTALITY section for a character profile.",
+      format: "Mentality: In a sentence, describe the character's Mentality. (e.g., Yvette believes its Fight or perish, \"Trust no one. Every man is for himself.\")"
+    },
+    worldView: {
+      instruction: "You are writing the WORLD VIEW section for a character profile.",
+      format: "World View: In a sentence, describe the character's perspective of the world and a quote. (e.g., Yvette believes human nature is selfish and ugly as shit. \"HA! Let me tell you, humans are animals.\")"
+    },
+    beliefs: {
+      instruction: "You are writing the BELIEFS section for a character profile.",
+      format: "Beliefs: In 3 sentences, describe the character's beliefs that are rooted and will never change. (e.g., Yvette thinks Vulnerability is nauseating. Yvette hates softness and kindness and that shit because Yvette herself cannot afford it.)"
+    },
+    morals: {
+      instruction: "You are writing the MORALS section for a character profile.",
+      format: "Morals: In 1 sentence, describe the character's moral belief and a self-quote. (e.g., INAPPLICABLE. \"Fuck your morals, you wanna die?\")"
+    },
+    likes: {
+      instruction: "You are writing the LIKES section for a character profile.",
+      format: "Likes: In a Comma-Separated sentence, describe the character's 3 likes."
+    },
+    hates: {
+      instruction: "You are writing the HATES section for a character profile.",
+      format: "Hates: In a Comma-Separated sentence, describe the character's 3 hates. (e.g., Yvette hates Righteous snobs, Naivety, Liars, Backstabbing scum. Fucktards thinking Yvette is easy prey because of her appearance.)"
+    },
+    hobbies: {
+      instruction: "You are writing the HOBBIES section for a character profile.",
+      format: "Hobbies: In 3 sentences, describe the character's 3 Hobbies. (e.g., Yvette enjoys and finds comfort in braiding her hair.)"
+    },
+    values: {
+      instruction: "You are writing the VALUES section for a character profile.",
+      format: "Values: In a Comma-Separated sentence, describe the character's 3 Values. (e.g., Independence, resiliency, trust.)"
+    },
+    romance: {
+      instruction: "You are writing the ROMANCE section for a character profile.",
+      format: "Romance: In a Comma-Separated sentence, describe the character's 3 views towards Romance. (e.g., Reluctant, Yvette fears others will take advantage. \"No attachments, I can't\", \"The hell you know? I'm drenched in innocent blood\".)"
+    },
+    abilities: {
+      instruction: "You are writing the ABILITIES section for a character profile. Write a list of exactly 3 physical, combat, magical, or unique abilities/skills/weapons the character possesses. Do not add headings or subheadings.",
+      format: "- [Ability Name]: [Description] - [Ability name]: [Description]. Following the similar format Write a list of physical, combat, magical, or unique abilities/skills/weapons the character possesses. Do not add headings or subheadings."
+    },
+    relations: {
+      instruction: "You are writing the RELATIONS section for a character profile. List out exactly 3 important people in the character's life and describe their relationship and dynamic with the character.",
+      format: "- {{user}}: [Relationship Type, Description, Dynamic] - in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings."
+    },
+    backstory: {
+      instruction: "You are writing the BACKSTORY section for a character profile.",
+      format: "Backstory: In a single paragraph, combine backstory, societal background, and relationships. Include origin, family, upbringing, major life events, trauma, and key turning points. Write individual facts, historical details, relationships, or world-building elements relevant to this character. This explains *why the character is the way they are*."
+    },
+    occupation: {
+      instruction: "You are writing the OCCUPATION section for a character profile.",
+      format: "Occupation: In 2 sentences, write about their occupation/student/NEET status and its details. Write a sentence about their mentality about this occupation. (e.g., Yvette is a Mercenary, \"weapon for hire\", takes black market jobs to cull mana, assassinate. Yvette thinks it’s a Necessity. \"Sorry, it has to be this way.\" Yvette’s apologies are empty yet sincere)"
+    },
+    residence: {
+      instruction: "You are writing the RESIDENCE section for a character profile.",
+      format: "Residence: In a sentence, describe the character's address for their residence. (e.g., Small room tucked deep in an alleyway.)"
+    },
+    secrets: {
+      instruction: "You are writing the SECRETS section for a character profile.",
+      format: "Secrets: In a sentence, describe the character’s secret and reinforce it by saying they will never reveal."
+    },
+    goals: {
+      instruction: "You are writing the SHORT-TERM GOALS and LONG-TERM GOALS section for a character profile.",
+      format: "Short-term Goals: In a sentence, describe the character’s Short-term Goals. Long-term Goals: In a sentence, describe the character’s Long-term Goals. (e.g., The black market is ensnaring, but one day, Yvette will save enough coin and leave the goddamn city.)"
+    },
+    timeline: {
+      instruction: "You are writing the TIMELINE section for a character profile. List exactly 5 milestone events.",
+      format: "- [Age]: [Milestone event] - [Age]: [Milestone event] - Continue creating list to cover all important events in the character's life."
+    },
+    roleplay1: {
+      instruction: "You are writing behavior EXAMPLE 1 for a character profile.",
+      format: "Generate behavior example 1. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+    },
+    roleplay2: {
+      instruction: "You are writing behavior EXAMPLE 2 for a character profile.",
+      format: "Generate behavior example 2. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+    },
+    roleplay3: {
+      instruction: "You are writing behavior EXAMPLE 3 for a character profile.",
+      format: "Generate behavior example 3. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+    }
+  };
+
+introGenerationPrompt() =>
+  return {
+    context: {
+      instruction: "You are writing the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.",
+      format: "Write a single short paragraph that introduces the scene, characters, {{user}}'s role, etc. Start by clearly describing the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."
+    },
+    introStart: {
+      instruction: "You are writing the ROLEPLAY START (Dialogue & Narration) for the character to start the roleplay.",
+      format: "Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncencored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:'). \ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to {{user}}\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\""
+    },
+    roleplayScenario: {
+      instruction: "You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The {{user}} is the player of this roleplay.",
+      format: "TASK:\nGenerate a structured scenario document divided into exactly two blocks using the separator string \"=== ROLEPLAY_STARTER_SEPARATOR ===\".\n\nBefore the separator, output the SCENARIO SHEET containing:\n1. **World Expansion**: 2-3 sentences expanding on the setting specifics for this scene.\n2. **Character Sheet Details**: A concise summary of each NPC's hidden motivations, initial attitude towards the Player, and their relationships.\n3. **Plot Setup & Objective**: What is the immediate conflict, and what is the group's goal?\n\nAfter the separator, output the ROLEPLAY STARTER POST:\n- Set the scene at the very beginning of the action. Describe the immediate surroundings, sensory details (sounds, weather, light), and character actions.\n- End the starter post with an action, dialogue, or event from one of the NPCs that directly prompts the Player to speak or act, creating a natural hook.\n\nRespond using the separator \"=== ROLEPLAY_STARTER_SEPARATOR ===\" between the Scenario Sheet and the Starter Post. Output nothing else."
+    }
+  };
 
 generateModesHtml() =>
   return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");

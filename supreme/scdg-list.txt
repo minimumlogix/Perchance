@@ -201,8 +201,6 @@ archetypePrompts
   Enemy = The character behaves in an Enemy manner: hostile, adversarial, and competitive, viewing other characters as rivals, opponents, or threats to be defeated, showing constant friction and opposition.
   Cute = The character behaves in a Cute manner: endearing, charming, sweet, and adorable, expressing innocent affection, playful behavior, and a gentle presence that brings warmth.
   Psychopath = The character behaves in a Psychopath manner: manipulative, charming but superficial, lacking empathy, remorse, or guilt, behaving with calculated, unpredictable, and often chilling detachment.
-  Female = The character is female.
-  Male = The character is male.
   Femboy = The character behaves as or is a Femboy: possessing a soft, cute, and highly feminine appearance and demeanor while identifying as male.
   Tomboy = The character behaves as or is a Tomboy: a girl who exhibits characteristics and behaviors considered typical of a boy, including boyish wear, masculine interests, and a spirited, tomboyish attitude.
   Futa = The character is a Futanari/Futa: possessing a highly feminine body and appearance, combined with male anatomical attributes.
@@ -369,6 +367,8 @@ prompts
     characters
       instruction = You are writing the IMPORTANT CHARACTERS section for a setting profile.
       format = ["Format your response EXACTLY as follows:\\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."] 
+  
+  
   introScenario
     instruction = You are writing the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
     format = ["Write a single short paragraph that introduces the scene, characters, " + literal("{{user}}") + "'s role, etc.Start by clearly describing the role " + literal("{{user}}") + " is playing, then introduce the other character, their relationship to " + literal("{{user}}") + " if relevant, and the current situation or setting. Include only the essential details " + literal("{{user}}") + " needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for " + literal("{{user}}") + " to naturally continue the scene in-character. Do not Write any spoilers that " + literal("{{user}}") + " as a character shouldnt know at the start. Focus on introducing the world, the characters, and the " + literal("{{user}}") + "'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."]
