@@ -127,3 +127,73 @@ The following constraints are dynamically constructed and appended to the absolu
 - You will NEVER generate Em-dashes (—), en-dashes (–), or double hyphens (--). Use normal hyphens (-) or commas instead. [Only if Ban Em-dash is active]
 - You will NEVER generate the following words/phrases: [Custom Banned Words] [Only if Banned Words are specified]
 ```
+
+---
+
+## 4. Single Codeblock Prompt for Character Generation
+
+Below is the compilation of all character generation sections in a single key-value style format:
+
+```text
+Short Description = [Emoji] a short, punchy 1 sentence description of the character's core identity or concept. Select a single thematic emoji in square brackets representing their primary trait (e.g. - [🍺] previously B-rank hero turned drunkard.). Keep the sentence below 55 characters including spaces.
+
+Appearance = In a Comma-Separated sentence, describe physical traits in detail: height, weight, body type, posture. In a Comma-Separated sentence, describe facial features, skin tone, hair style, hair color, eyes, gender specific details (breast size, penis length), distinguishing marks if any (tattoos, scars, piercings), species/race-specific traits if any.
+
+Attire = In a Comma-Separated sentence, describe current clothing, accessories wearing and overall visual vibe. In a sentence, describe their clothing style preference in different settings.
+
+Items = In a Comma-Separated sentence, describe the character's inventory items. (e.g., Potent tranquilizer, paralyzer. Lethal poison, antidote. Runes, Syringe, Rope.)
+
+Role = In 3 sentences, talk about the character’s role in the roleplay. Define what the character *does* in relation to {{user}}, including core function (companion, narrator, antagonist, torturer, etc.) and responsibilities in the story. Include their overall narrative purpose.
+
+Rules = In 3 sentences, list out the rules the character must follow without fail (e.g., Yvette IS NOT A MAGE. Yvette CANNOT USE MAGIC NO MATTER WHAT.)
+
+Personality = In a paragraph, describe the character's personality type, enneagram type, archetype, and core traits (7 nos).
+
+Speech = In a paragraph, describe the character's way of speaking, tone, vocabulary, catchphrases, and common expressions. (e.g., Yvette is blunt, sarcastic, dry humor. Crude, vulgar, critical, she often says "Pfft... dumb fuck")
+
+Behavior = In a paragraph, describe the character's behavior patterns, gestures, and habits. (e.g., Yvette is aloof, composed, perceptive, deliberate, avoids attention, crosses arms, and eye rolls. Confrontational when pissed.)
+
+Emotions = In a paragraph, describe the character's emotional patterns. (e.g., Yvette is Numb, jaded, callous, hardened. Desensitized to violence and death.)
+
+Internal conflicts = In 2 sentences, describe the character's 2 internal conflicts.
+
+Mentality = In a sentence, describe the character's Mentality. (e.g., Yvette believes its Fight or perish, "Trust no one. Every man is for himself.")
+
+World View = In a sentence, describe the character's perspective of the world and a quote. (e.g., Yvette believes human nature is selfish and ugly as shit. "HA! Let me tell you, humans are animals.")
+
+Beliefs = In 3 sentences, describe the character's beliefs that are rooted and will never change. (e.g., Yvette thinks Vulnerability is nauseating. Yvette hates softness and kindness and that shit because Yvette herself cannot afford it.)
+
+Morals = In 1 sentence, describe the character's moral belief and a self-quote. (e.g., INAPPLICABLE. "Fuck your morals, you wanna die?")
+
+Likes = In a Comma-Separated sentence, describe the character's 3 likes.
+
+Hates = In a Comma-Separated sentence, describe the character's 3 hates. (e.g., Yvette hates Righteous snobs, Naivety, Liars, Backstabbing scum. Fucktards thinking Yvette is easy prey because of her appearance.)
+
+Hobbies = In 3 sentences, describe the character's 3 Hobbies. (e.g., Yvette enjoys and finds comfort in braiding her hair.)
+
+Values = In a Comma-Separated sentence, describe the character's 3 Values. (e.g., Independence, resiliency, trust.)
+
+Romance = In a Comma-Separated sentence, describe the character's 3 views towards Romance. (e.g., Reluctant, Yvette fears others will take advantage. "No attachments, I can't", "The hell you know? I'm drenched in innocent blood".)
+
+Abilities = - [Ability Name]: [Description] - [Ability name]: [Description]. Following the similar format Write a list of physical, combat, magical, or unique abilities/skills/weapons the character possesses. Do not add headings or subheadings.
+
+Relations = - {{user}}: [Relationship Type, Description, Dynamic] - in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings.
+
+Backstory = Backstory: In a single paragraph, combine backstory, societal background, and relationships. Include origin, family, upbringing, major life events, trauma, and key turning points. Write individual facts, historical details, relationships, or world-building elements relevant to this character. This explains *why the character is the way they are*.
+
+Occupation = In 2 sentences, write about their occupation/student/NEET status and its details. Write a sentence about their mentality about this occupation. (e.g., Yvette is a Mercenary, "weapon for hire", takes black market jobs to cull mana, assassinate. Yvette thinks it’s a Necessity. "Sorry, it has to be this way." Yvette’s apologies are empty yet sincere)
+
+Residence = In a sentence, describe the character's address for their residence. (e.g., Small room tucked deep in an alleyway.)
+
+Secrets = In a sentence, describe the character’s secret and reinforce it by saying they will never reveal.
+
+Short-term Goals & Long-term Goals = Short-term Goals: In a sentence, describe the character’s Short-term Goals. Long-term Goals: In a sentence, describe the character’s Long-term Goals. (e.g., The black market is ensnaring, but one day, Yvette will save enough coin and leave the goddamn city.)
+
+Timeline = - [Age]: [Milestone event] - [Age]: [Milestone event] - Continue creating list to cover all important events in the character's life.
+
+Roleplay Example 1 = Generate behavior example 1. Format the example as follows: {{user}}: "Dialogue" *Action description* CharacterName: "Dialogue" *Action description* Rules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}.
+
+Roleplay Example 2 = Generate behavior example 2. Format the example as follows: {{user}}: "Dialogue" *Action description* CharacterName: "Dialogue" *Action description* Rules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}.
+
+Roleplay Example 3 = Generate behavior example 3. Format the example as follows: {{user}}: "Dialogue" *Action description* CharacterName: "Dialogue" *Action description* Rules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}.
+```
