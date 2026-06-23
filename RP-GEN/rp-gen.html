@@ -1108,7 +1108,7 @@
       btn.classList.add('text-white');
       setTimeout(() => {
         btn.innerHTML = oldHtml;
-        btn.classList.replace('btn-success', 'btn-outline-secondary');
+      btn.classList.replace('btn-success', 'btn-outline-secondary');
         btn.classList.remove('text-white');
       }, 2000);
     };
@@ -1117,7 +1117,7 @@
     window.getCurrentAIContextPrompt = function() {
       let tab = localStorage.activeTab || 'plot';
       let mode = window.currentMode || 'creative';
-      let otherTabsCtx = window.getOtherTabsContext ? window.getOtherTabsContext(tab) : "";
+      let otherTabsCtx = window.getOtherTabsContext ? (window.literal ? window.literal(window.getOtherTabsContext(tab)) : window.getOtherTabsContext(tab)) : "";
       let constraints = window.getConstraints ? window.getConstraints() : "";
       
       let localInstruction = "";
@@ -1126,62 +1126,62 @@
         let plotLength = localStorage.plotTextLength || 'medium';
         let lengthPrompt = "";
         if (plotLength === 'short') {
-          lengthPrompt = "\nConstraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
+          lengthPrompt = "\n- Constraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
         } else if (plotLength === 'long') {
-          lengthPrompt = "\nConstraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
+          lengthPrompt = "\n- Constraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
         } else {
-          lengthPrompt = "\nConstraint: The generated plot outline should be of standard medium length (around 200-250 words).";
+          lengthPrompt = "\n- Constraint: The generated plot outline should be of standard medium length (around 200-250 words).";
         }
         let modeInst = "";
         if (window.modes && window.modes[mode]) {
           modeInst = window.modes[mode].instruction.toString();
         }
-        localInstruction = modeInst + lengthPrompt + otherTabsCtx;
+        localInstruction = modeInst + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
       } else {
         let notesEl = document.getElementById(tab + "InstructionEl");
-        let userNotes = notesEl ? notesEl.value.trim() : "";
+        let userNotes = notesEl ? (window.literal ? window.literal(notesEl.value.trim()) : notesEl.value.trim()) : "";
         let activePrompt = userNotes || "Be creative and freeform.";
         
         if (tab === "world") {
           let focus = localStorage.worldFocus || 'any';
           let focusPrompt = "";
           if (focus === 'micro') {
-            focusPrompt = "\nFocus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
+            focusPrompt = "\n- Focus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
           } else if (focus === 'macro') {
-            focusPrompt = "\nFocus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
+            focusPrompt = "\n- Focus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
           } else {
-            focusPrompt = "\nFocus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
+            focusPrompt = "\n- Focus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
           }
 
           let worldLength = localStorage.worldTextLength || 'medium';
           let lengthPrompt = "";
           if (worldLength === 'short') {
-            lengthPrompt = "\nConstraint: Keep the generated world-building details concise and short (under 120 words).";
+            lengthPrompt = "\n- Constraint: Keep the generated world-building details concise and short (under 120 words).";
           } else if (worldLength === 'long') {
-            lengthPrompt = "\nConstraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
+            lengthPrompt = "\n- Constraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
           } else {
-            lengthPrompt = "\nConstraint: The generated world-building details should be of standard medium length (around 200-250 words).";
+            lengthPrompt = "\n- Constraint: The generated world-building details should be of standard medium length (around 200-250 words).";
           }
 
-          localInstruction = "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + focusPrompt + lengthPrompt + otherTabsCtx;
+          localInstruction = "## TASK\n- You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n- User Notes: " + activePrompt + focusPrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "roleplay") {
           let rpLength = localStorage.roleplayTextLength || 'medium';
           let lengthPrompt = "";
           if (rpLength === 'short') {
-            lengthPrompt = "\nConstraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
+            lengthPrompt = "\n- Constraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
           } else if (rpLength === 'long') {
-            lengthPrompt = "\nConstraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
+            lengthPrompt = "\n- Constraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
           } else {
-            lengthPrompt = "\nConstraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
+            lengthPrompt = "\n- Constraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
           }
 
-          localInstruction = "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + lengthPrompt + otherTabsCtx;
+          localInstruction = "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "character") {
-          localInstruction = "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+          localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "intro") {
-          localInstruction = "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+          localInstruction = "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "lore") {
-          let protagonist = (window.userNameEl ? window.userNameEl.value.trim() : "") || "{{user}}";
+          let protagonist = window.literal ? window.literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User") : ((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
           let loreCount = parseInt(localStorage.loreCount || '3');
           if (isNaN(loreCount) || loreCount < 1) loreCount = 3;
           
@@ -1202,18 +1202,15 @@
           notes = notes.replace(/\{\{user\}\}/g, protagonist);
           footer = footer.replace(/\{\{user\}\}/g, protagonist);
 
-          let p = "";
+          let p = "## TASK\n";
+          p += "- " + inst + "\n";
+          p += "- FORMAT: " + fmt + "\n";
+          p += "- Notes: " + notes + "\n";
+          p += "- Footer Constraint: " + footer + "\n";
           if (userNotes) {
-            p += "Lore Notes:\n" + userNotes + "\n\n";
+            p += "- Lore Notes: " + userNotes + "\n";
           }
-          p += constraints + "\n\n";
-          if (otherTabsCtx) {
-            p += otherTabsCtx + "\n";
-          }
-          p += "INSTRUCTION: " + inst + "\n";
-          p += "FORMAT: " + fmt + "\n";
-          p += "NOTES: " + notes + "\n";
-          p += "FOOTER: " + footer;
+          p += (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
           localInstruction = p;
         }
       }
@@ -1221,7 +1218,7 @@
       let startWithText = "";
       let localResponseEl = document.getElementById(tab + 'ResponseEl');
       if (localResponseEl && localResponseEl.value.trim() !== "") {
-        startWithText = "\n\n=== CURRENT PROGRESS (Continue from here) ===\n" + localResponseEl.value;
+        startWithText = "\n\n=== CURRENT PROGRESS (Continue from here) ===\n" + (window.literal ? window.literal(localResponseEl.value) : localResponseEl.value);
       }
       
       return localInstruction + startWithText;
@@ -1237,10 +1234,16 @@
       }
     };
 
-    // Update real-time input event listeners for context viewer
+    // Update real-time input and change event listeners for context viewer
     document.addEventListener('input', (e) => {
       const target = e.target;
       if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT')) {
+        window.updateBrainContextView();
+      }
+    });
+    document.addEventListener('change', (e) => {
+      const target = e.target;
+      if (target && (target.tagName === 'SELECT' || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
         window.updateBrainContextView();
       }
     });
@@ -1283,6 +1286,10 @@
       localStorage.banBolding = banBolding;
       localStorage.banEmdash = banEmdash;
       localStorage.customBannedWords = customBanned;
+      
+      if (typeof window.updateBrainContextView === 'function') {
+        window.updateBrainContextView();
+      }
     };
 
      // Load settings from localStorage to Drawer UI
@@ -2722,6 +2729,9 @@
     // Update Perchance global variable
     if (typeof window !== 'undefined') {
       window[globalVar] = arr;
+    }
+    if (typeof window.updateBrainContextView === 'function') {
+      window.updateBrainContextView();
     }
   }
 

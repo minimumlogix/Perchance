@@ -2,32 +2,77 @@ ai = {import:ai-text-plugin}
 comments = {import:comments-plugin}
 literal = {import:literal-plugin} // <-- we use this to ignore perchance syntax in the user's instruction
 
+protagonistName = [literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User")]
+
+
+
 $meta
   title = Roleplay Idea Generator
   description = Generate genuinely creative and interesting plot/story ideas for roleplays, horror story plots, fantasy romance, plot twist ideas, flash fiction ideas, mystery plots, childrens' book ideas, zombie plot ideas, sci-fi fantasy, and so on. It's creative and smart, and there are no limits/restrictions on daily usage. You don't even need to login! Just give the AI some keywords and/or characters and/or instructions, and it'll will generate a plot/story idea for you. Completely free, fast, smart, no filter, and creative.
 
 settings
   instruction() =>
+    window.literal = literal;
     this.lastModeUsed = currentMode;
-    let context = window.getOtherTabsContext ? window.getOtherTabsContext(localStorage.activeTab || "plot") : "";
+    let context = window.getOtherTabsContext ? literal(window.getOtherTabsContext(localStorage.activeTab || "plot")) : "";
     if(localStorage.activeTab === "plot" || !localStorage.activeTab) {
-      return modes[currentMode].instruction.toString() + context;
+      let plotLength = localStorage.plotTextLength || 'medium';
+      let lengthPrompt = "";
+      if (plotLength === 'short') {
+        lengthPrompt = "\n- Constraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
+      } else if (plotLength === 'long') {
+        lengthPrompt = "\n- Constraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
+      } else {
+        lengthPrompt = "\n- Constraint: The generated plot outline should be of standard medium length (around 200-250 words).";
+      }
+      let constraints = getConstraints();
+      return modes[currentMode].instruction.toString() + lengthPrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
     } else {
       let tab = localStorage.activeTab;
       let notesEl = document.getElementById(tab + "InstructionEl");
-      let userNotes = notesEl ? notesEl.value.trim() : "";
+      let userNotes = notesEl ? literal(notesEl.value.trim()) : "";
       let activePrompt = userNotes || "Be creative and freeform.";
       let constraints = getConstraints();
       if (tab === "world") {
-        return "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+        let focus = localStorage.worldFocus || 'any';
+        let focusPrompt = "";
+        if (focus === 'micro') {
+          focusPrompt = "\n- Focus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
+        } else if (focus === 'macro') {
+          focusPrompt = "\n- Focus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
+        } else {
+          focusPrompt = "\n- Focus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
+        }
+
+        let worldLength = localStorage.worldTextLength || 'medium';
+        let lengthPrompt = "";
+        if (worldLength === 'short') {
+          lengthPrompt = "\n- Constraint: Keep the generated world-building details concise and short (under 120 words).";
+        } else if (worldLength === 'long') {
+          lengthPrompt = "\n- Constraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
+        } else {
+          lengthPrompt = "\n- Constraint: The generated world-building details should be of standard medium length (around 200-250 words).";
+        }
+
+        return "## TASK\n- You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n- User Notes: " + activePrompt + focusPrompt + lengthPrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "roleplay") {
-        return "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+        let rpLength = localStorage.roleplayTextLength || 'medium';
+        let lengthPrompt = "";
+        if (rpLength === 'short') {
+          lengthPrompt = "\n- Constraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
+        } else if (rpLength === 'long') {
+          lengthPrompt = "\n- Constraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
+        } else {
+          lengthPrompt = "\n- Constraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
+        }
+
+        return "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "character") {
-        return "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+        return "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "intro") {
-        return "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + context;
+        return "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "lore") {
-        let protagonist = userNameEl.value.trim() || "{{user}}";
+        let protagonist = literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
         let inst = "You are writing the LORE KEYWORDS and LORE CONTENT section. List exactly 3 lore entries.";
         let fmt = "You MUST generate a strict JSON object containing exactly 3 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore). JSON format example: {\"1\":{\"content\":\"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\"key\":[\"coffee\",\"barista\",\"spill\"]},\"2\":{\"content\":\"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\"key\":[\"oat milk\",\"espresso\",\"favorite drink\"]}}";
         let notes = "LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate protagonist phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported.";
@@ -38,18 +83,15 @@ settings
         notes = notes.replace(/\{\{user\}\}/g, protagonist);
         footer = footer.replace(/\{\{user\}\}/g, protagonist);
 
-        let p = "";
+        let p = "## TASK\n";
+        p += "- " + inst + "\n";
+        p += "- FORMAT: " + fmt + "\n";
+        p += "- Notes: " + notes + "\n";
+        p += "- Footer Constraint: " + footer + "\n";
         if (userNotes) {
-          p += "Lore Notes:\n" + userNotes + "\n\n";
+          p += "- Lore Notes: " + userNotes + "\n";
         }
-        p += constraints + "\n\n";
-        if (context) {
-          p += context + "\n";
-        }
-        p += "INSTRUCTION: " + inst + "\n";
-        p += "FORMAT: " + fmt + "\n";
-        p += "NOTES: " + notes + "\n";
-        p += "FOOTER: " + footer;
+        p += (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
         return p;
       }
       return "";
@@ -64,7 +106,7 @@ settings
         return "";
       }
     } else {
-      return activeResponseEl.value;
+      return literal(activeResponseEl.value);
     }
   hideStartWith = [ activeResponseEl.value.trim() === "" && (localStorage.activeTab === "plot" || !localStorage.activeTab) && modes[currentMode].hideStartWith === true ? true : false ]
   outputTo = [activeResponseEl]  // this targets the active response element textarea
@@ -108,6 +150,7 @@ settings
 
 
 async generate() =>
+  window.literal = literal;
   let tabAtStart = localStorage.activeTab || 'plot';
   let modeAtStart = currentMode;
   let localResponseEl = document.getElementById(tabAtStart + 'ResponseEl');
@@ -229,64 +272,64 @@ async generate() =>
   };
 
   let localInstruction = "";
-  let otherTabsCtx = window.getOtherTabsContext ? window.getOtherTabsContext(tabAtStart) : "";
+  let otherTabsCtx = window.getOtherTabsContext ? literal(window.getOtherTabsContext(tabAtStart)) : "";
   let constraints = getConstraints();
   
   if (tabAtStart === "plot") {
     let plotLength = localStorage.plotTextLength || 'medium';
     let lengthPrompt = "";
     if (plotLength === 'short') {
-      lengthPrompt = "\nConstraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
+      lengthPrompt = "\n- Constraint: Keep the generated plot outline concise, short, and to the point (under 120 words).";
     } else if (plotLength === 'long') {
-      lengthPrompt = "\nConstraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
+      lengthPrompt = "\n- Constraint: Make the generated plot outline highly detailed, fully fleshed out, and extensive (at least 350-500 words).";
     } else {
-      lengthPrompt = "\nConstraint: The generated plot outline should be of standard medium length (around 200-250 words).";
+      lengthPrompt = "\n- Constraint: The generated plot outline should be of standard medium length (around 200-250 words).";
     }
-    localInstruction = modes[modeAtStart].instruction.toString() + lengthPrompt + otherTabsCtx;
+    localInstruction = modes[modeAtStart].instruction.toString() + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
   } else {
     let notesEl = document.getElementById(tabAtStart + "InstructionEl");
-    let userNotes = notesEl ? notesEl.value.trim() : "";
+    let userNotes = notesEl ? literal(notesEl.value.trim()) : "";
     let activePrompt = userNotes || "Be creative and freeform.";
     if (tabAtStart === "world") {
       let focus = localStorage.worldFocus || 'any';
       let focusPrompt = "";
       if (focus === 'micro') {
-        focusPrompt = "\nFocus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
+        focusPrompt = "\n- Focus Constraint: Focus exclusively on a microscopic level—detailed data on a single state, city, specific place, or localized area. Describe its local culture, architecture, inhabitants, local rules, and specific points of interest in high detail.";
       } else if (focus === 'macro') {
-        focusPrompt = "\nFocus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
+        focusPrompt = "\n- Focus Constraint: Focus on a macroscopic level—detailed data on the entire world, global lore, continents, broad geography, global history, overarching factions, and global systems.";
       } else {
-        focusPrompt = "\nFocus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
+        focusPrompt = "\n- Focus Constraint: Provide a balanced overview of the setting, incorporating both global backdrop and specific localized details.";
       }
 
       let worldLength = localStorage.worldTextLength || 'medium';
       let lengthPrompt = "";
       if (worldLength === 'short') {
-        lengthPrompt = "\nConstraint: Keep the generated world-building details concise and short (under 120 words).";
+        lengthPrompt = "\n- Constraint: Keep the generated world-building details concise and short (under 120 words).";
       } else if (worldLength === 'long') {
-        lengthPrompt = "\nConstraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
+        lengthPrompt = "\n- Constraint: Make the generated world-building details highly extensive, descriptive, and detailed (at least 350-500 words).";
       } else {
-        lengthPrompt = "\nConstraint: The generated world-building details should be of standard medium length (around 200-250 words).";
+        lengthPrompt = "\n- Constraint: The generated world-building details should be of standard medium length (around 200-250 words).";
       }
 
-      localInstruction = "You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + focusPrompt + lengthPrompt + otherTabsCtx;
+      localInstruction = "## TASK\n- You are a creative world-builder. Based on the following notes, generate rich and detailed world-building content including setting, lore, geography, factions, and atmosphere.\n- User Notes: " + activePrompt + focusPrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "roleplay") {
       let rpLength = localStorage.roleplayTextLength || 'medium';
       let lengthPrompt = "";
       if (rpLength === 'short') {
-        lengthPrompt = "\nConstraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
+        lengthPrompt = "\n- Constraint: Keep the roleplay starter scene and details concise and short (under 120 words).";
       } else if (rpLength === 'long') {
-        lengthPrompt = "\nConstraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
+        lengthPrompt = "\n- Constraint: Make the roleplay starter scene and details highly detailed, long, and immersive (at least 350-500 words).";
       } else {
-        lengthPrompt = "\nConstraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
+        lengthPrompt = "\n- Constraint: The roleplay starter scene and details should be of standard medium length (around 200-250 words).";
       }
 
-      localInstruction = "You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n\nUser Notes: " + activePrompt + "\n" + constraints + lengthPrompt + otherTabsCtx;
+      localInstruction = "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "character") {
-      localInstruction = "You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+      localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "intro") {
-      localInstruction = "You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n\nUser Notes: " + activePrompt + "\n" + constraints + otherTabsCtx;
+      localInstruction = "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "lore") {
-      let protagonist = userNameEl.value.trim() || "{{user}}";
+      let protagonist = literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
       let loreCount = parseInt(localStorage.loreCount || '3');
       if (isNaN(loreCount) || loreCount < 1) loreCount = 3;
       
@@ -307,18 +350,15 @@ async generate() =>
       notes = notes.replace(/\{\{user\}\}/g, protagonist);
       footer = footer.replace(/\{\{user\}\}/g, protagonist);
 
-      let p = "";
+      let p = "## TASK\n";
+      p += "- " + inst + "\n";
+      p += "- FORMAT: " + fmt + "\n";
+      p += "- Notes: " + notes + "\n";
+      p += "- Footer Constraint: " + footer + "\n";
       if (userNotes) {
-        p += "Lore Notes:\n" + userNotes + "\n\n";
+        p += "- Lore Notes: " + userNotes + "\n";
       }
-      p += constraints + "\n\n";
-      if (otherTabsCtx) {
-        p += otherTabsCtx + "\n";
-      }
-      p += "INSTRUCTION: " + inst + "\n";
-      p += "FORMAT: " + fmt + "\n";
-      p += "NOTES: " + notes + "\n";
-      p += "FOOTER: " + footer;
+      p += (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
       localInstruction = p;
     }
   }
@@ -333,7 +373,7 @@ async generate() =>
       localStartWith = "";
     }
   } else {
-    localStartWith = localResponseEl.value;
+    localStartWith = literal(localResponseEl.value);
   }
 
   let localHideStartWith = false;
@@ -408,7 +448,7 @@ async generate() =>
 
       if (!currentResult.trim().endsWith("}")) {
         console.log("Lore JSON was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
-        startWithVal = currentResult;
+        startWithVal = literal(currentResult);
         attempts++;
       } else {
         break;
@@ -558,8 +598,8 @@ async generate() =>
 
     window.characterGenerationState.totalSections = keys.length;
 
-    let protagonist = userNameEl.value.trim() || "{{user}}";
-    let userNotes = characterInstructionEl.value.trim();
+    let protagonist = literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
+    let userNotes = literal(characterInstructionEl.value.trim());
     let prompts = characterPrompts();
 
     let textVal = localResponseEl.value.trim();
@@ -751,34 +791,32 @@ async generate() =>
       let notesText = rawNotes.replace(/\{\{user\}\}/g, protagonist);
       let footerText = rawFooter.replace(/\{\{user\}\}/g, protagonist);
 
-      let contextHistory = "";
-      if (previousText.trim() !== "") {
-        contextHistory = "\nHere is the character profile generated so far:\n---\n" + previousText.trim() + "\n---\n";
-      }
-
-      let instructionPrompt = "";
-      if (userNotes) {
-        instructionPrompt += "Character Notes:\n" + userNotes + "\n\n";
-      }
-      instructionPrompt += constraints + "\n\n";
-      
-      if (otherTabsCtx) {
-        instructionPrompt += otherTabsCtx + "\n";
-      }
-
-      if (contextHistory) {
-        instructionPrompt += contextHistory + "\n";
-      }
-      instructionPrompt += "You are writing the next section for this character profile.\n";
-      instructionPrompt += "SECTION: " + title + "\n";
-      instructionPrompt += "INSTRUCTION: " + inst + "\n";
-      instructionPrompt += "FORMAT: " + fmt + "\n";
+      let instructionPrompt = "## TASK\n";
+      instructionPrompt += "- You are a creative character designer. Write the next section for this character profile.\n";
+      instructionPrompt += "- SECTION: " + title + "\n";
+      instructionPrompt += "- INSTRUCTION: " + inst + "\n";
+      instructionPrompt += "- FORMAT: " + fmt + "\n";
       if (notesText) {
-        instructionPrompt += "NOTES: " + notesText + "\n";
+        instructionPrompt += "- Notes: " + notesText + "\n";
       }
       if (footerText) {
-        instructionPrompt += "FOOTER: " + footerText + "\n";
+        instructionPrompt += "- Footer Constraint: " + footerText + "\n";
       }
+      if (userNotes) {
+        instructionPrompt += "- Character Notes: " + userNotes + "\n";
+      }
+
+      let contextBlocks = [];
+      if (otherTabsCtx) {
+        contextBlocks.push(otherTabsCtx);
+      }
+      if (previousText.trim() !== "") {
+        contextBlocks.push("Here is the character profile generated so far:\n" + previousText.trim());
+      }
+      if (contextBlocks.length > 0) {
+        instructionPrompt += "\n\n## CONTEXT\n" + contextBlocks.join("\n\n---\n");
+      }
+      instructionPrompt += "\n\n" + constraints;
 
       let currentResult = "";
       let attempts = 0;
@@ -817,7 +855,7 @@ async generate() =>
 
         if (isTruncated(currentResult, key)) {
           logState("Section " + title + " was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
-          startWithVal = currentResult;
+          startWithVal = literal(currentResult);
           attempts++;
         } else {
           break;
@@ -890,8 +928,8 @@ async generate() =>
       introStart: "Roleplay Start"
     };
 
-    let protagonist = userNameEl.value.trim() || "{{user}}";
-    let userNotes = introInstructionEl.value.trim();
+    let protagonist = literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
+    let userNotes = literal(introInstructionEl.value.trim());
     let prompts = introGenerationPrompt();
 
     let textVal = localResponseEl.value.trim();
@@ -996,28 +1034,26 @@ async generate() =>
           : "\nPerspective Constraint: Write the opening actions/narration in THIRD-PERSON perspective (using 'he', 'she', 'they', 'their', character names, etc.). Do not use first-person pronouns for narration.";
       }
 
-      let contextHistory = "";
-      if (previousText.trim() !== "") {
-        contextHistory = "\nHere is the intro generated so far:\n---\n" + previousText.trim() + "\n---\n";
+      let instructionPrompt = "## TASK\n";
+      instructionPrompt += "- You are a creative writer. Write the next section for this roleplay intro.\n";
+      instructionPrompt += "- SECTION: " + title + "\n";
+      instructionPrompt += "- INSTRUCTION: " + inst + "\n";
+      instructionPrompt += "- FORMAT: " + fmt + "\n";
+      if (userNotes) {
+        instructionPrompt += "- Intro Notes: " + userNotes + "\n";
       }
 
-      let instructionPrompt = "";
-      if (userNotes) {
-        instructionPrompt += "Intro Notes:\n" + userNotes + "\n\n";
-      }
-      instructionPrompt += constraints + "\n\n";
-      
+      let contextBlocks = [];
       if (otherTabsCtx) {
-        instructionPrompt += otherTabsCtx + "\n";
+        contextBlocks.push(otherTabsCtx);
       }
-      
-      if (contextHistory) {
-        instructionPrompt += contextHistory + "\n";
+      if (previousText.trim() !== "") {
+        contextBlocks.push("Here is the intro generated so far:\n" + previousText.trim());
       }
-      instructionPrompt += "You are writing the next section for this roleplay intro.\n";
-      instructionPrompt += "SECTION: " + title + "\n";
-      instructionPrompt += "INSTRUCTION: " + inst + "\n";
-      instructionPrompt += "FORMAT: " + fmt + "\n";
+      if (contextBlocks.length > 0) {
+        instructionPrompt += "\n\n## CONTEXT\n" + contextBlocks.join("\n\n---\n");
+      }
+      instructionPrompt += "\n\n" + constraints;
 
       let currentResult = "";
       let attempts = 0;
@@ -1056,7 +1092,7 @@ async generate() =>
 
         if (isTruncated(currentResult, key)) {
           console.log("Intro section " + title + " was truncated. Retrying continuation (attempt " + (attempts + 1) + ")...");
-          startWithVal = currentResult;
+          startWithVal = literal(currentResult);
           attempts++;
         } else {
           break;
@@ -1090,7 +1126,7 @@ async generate() =>
       instruction: localInstruction,
       startWith: localStartWith,
       hideStartWith: localHideStartWith,
-      outputTo: [localResponseEl],
+      outputTo: localResponseEl,
       onChunk: function(data) {
         if (window.cleanTextForBannedSettings) {
           localResponseEl.value = window.cleanTextForBannedSettings(localResponseEl.value);
@@ -1139,7 +1175,7 @@ async generate() =>
           modes[modeAtStart].onFinish(data);
         }
       },
-      render: [ tabAtStart === "plot" ? (modes[modeAtStart].render || null) : null ]
+      render: tabAtStart === "plot" ? (modes[modeAtStart].render || null) : null
     };
 
     let pendingObj = ai(localSettings);
@@ -1178,75 +1214,106 @@ currentGender = [localStorage.currentGender || "none"]
 defaultInstruction = (None specified. Freeform. Just be creative! Avoid tropes.)
 
 getConstraints() =>
+  window.literal = literal;
+  window.getConstraints = getConstraints;
   let list = [];
   
+  let settingsList = window.worldSettings || worldSettings;
+  let tonesList = window.tones || tones;
+  let archetypesList = window.archetypes || archetypes;
+  let dynamicsList = window.dynamics || dynamics;
+  let characterCountsList = window.characterCounts || characterCounts;
+  let gendersList = window.genders || genders;
+
+  let parseJSON = function(val) {
+    try {
+      return JSON.parse(val || "[]");
+    } catch(e) {
+      return [];
+    }
+  };
+
+  // Mode (only for plot tab)
+  let tab = localStorage.activeTab || "plot";
+  if (tab === "plot") {
+    let modeName = window.currentMode || currentMode;
+    if (modeName && modes[modeName]) {
+      list.push(`Mode: ${modes[modeName].description}`);
+    }
+  }
+
   // Setting / Genre — multi-select
-  let selectedSettings = (currentSettings || []).filter(s => s !== "none");
+  let selectedSettings = parseJSON(localStorage.currentSettings).filter(s => s !== "none");
   if (selectedSettings.length > 0) {
-    let settingDescs = selectedSettings.map(s => worldSettings[s] ? (worldSettings[s].prompt || worldSettings[s].description) : s).join(" + ");
+    let settingDescs = selectedSettings.map(s => settingsList[s] ? (settingsList[s].prompt || settingsList[s].description) : s).join(" + ");
     list.push(`Genre/Setting: ${settingDescs}`);
-  } else if (currentSetting !== "none") {
-    list.push(`Genre/Setting: ${worldSettings[currentSetting].prompt || worldSettings[currentSetting].description}`);
   }
   
   // Tone — multi-select
-  let selectedTones = (currentTones || []).filter(t => t !== "none");
+  let selectedTones = parseJSON(localStorage.currentTones).filter(t => t !== "none");
   if (selectedTones.length > 0) {
-    let toneDescs = selectedTones.map(t => tones[t] ? (tones[t].prompt || tones[t].description) : t).join(" + ");
+    let toneDescs = selectedTones.map(t => tonesList[t] ? (tonesList[t].prompt || tonesList[t].description) : t).join(" + ");
     list.push(`Tone: ${toneDescs}`);
-  } else if (currentTone !== "none") {
-    list.push(`Tone: ${tones[currentTone].prompt || tones[currentTone].description}`);
   }
   
   // Archetype — multi-select
-  let selectedArchetypes = (currentArchetypes || []).filter(a => a !== "none");
+  let selectedArchetypes = parseJSON(localStorage.currentArchetypes).filter(a => a !== "none");
   if (selectedArchetypes.length > 0) {
-    let archDescs = selectedArchetypes.map(a => archetypes[a] ? (archetypes[a].prompt || archetypes[a].description) : a).join(" + ");
+    let archDescs = selectedArchetypes.map(a => archetypesList[a] ? (archetypesList[a].prompt || archetypesList[a].description) : a).join(" + ");
     list.push(`Character Archetype: ${archDescs}`);
-  } else if (currentArchetype !== "none") {
-    list.push(`Character Archetype: ${archetypes[currentArchetype].prompt || archetypes[currentArchetype].description}`);
   }
   
   // Dynamics — multi-select
-  let selectedDynamics = (currentDynamicsList || []).filter(d => d !== "none");
+  let selectedDynamics = parseJSON(localStorage.currentDynamicsList).filter(d => d !== "none");
   if (selectedDynamics.length > 0) {
-    let dynDescs = selectedDynamics.map(d => dynamics[d] ? (dynamics[d].prompt || dynamics[d].description) : d).join(" + ");
+    let dynDescs = selectedDynamics.map(d => dynamicsList[d] ? (dynamicsList[d].prompt || dynamicsList[d].description) : d).join(" + ");
     list.push(`Dynamics: ${dynDescs}`);
-  } else if (currentDynamics !== "none") {
-    list.push(`Dynamics: ${dynamics[currentDynamics].prompt || dynamics[currentDynamics].description}`);
   }
   
-  if (currentCharacterCount !== "none") list.push(`Characters: ${characterCounts[currentCharacterCount].prompt || characterCounts[currentCharacterCount].description}`);
-  if (currentGender !== "none") list.push(`Main Character Gender: ${genders[currentGender].prompt || genders[currentGender].description}`);
-  let name = userNameEl.value.trim();
+  // Character Count
+  let currentCharacterCount = localStorage.currentCharacterCount || "none";
+  if (currentCharacterCount !== "none" && characterCountsList[currentCharacterCount]) {
+    list.push(`Number of Characters: ${characterCountsList[currentCharacterCount].prompt || characterCountsList[currentCharacterCount].description}`);
+  }
+
+  // Gender
+  let currentGender = localStorage.currentGender || "none";
+  if (currentGender !== "none" && gendersList[currentGender]) {
+    list.push(`Character Gender: ${gendersList[currentGender].prompt || gendersList[currentGender].description}`);
+  }
+
+  // Protagonist Name
+  let name = (window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "";
   if (name !== "") {
-    list.push(`Include a character named "${literal(name)}" as the protagonist/main character.`);
+    let escapedName = literal(name);
+    list.push(`Include a character named "${escapedName}" as the protagonist/main character/player.`);
   }
 
   // Hardcoded safety rule: Absolutely no characters under 18
-  list.push("All characters must be 18 years of age or older. Absolutely do not generate or describe characters who are minors or under the age of 18.");
-
   let negConstraints = [];
+  negConstraints.push("All characters must be 18 years of age or older.");
+
+  // Style constraints
   if (localStorage.banBolding === "true") {
-    negConstraints.push("Bolding with asterisks (e.g. **text**). You must output plain text only.");
+    negConstraints.push("You will NEVER generate Bold text with asterisks (e.g. **text**). DO NOT BOLD HEADINGS, TITLES, OR KEYWORDS. You must write headings, titles, and labels in plain CAPITALIZED text (e.g. TITLE:, OPENING HOOK:, IDEA 1:) with no asterisks or markdown formatting.");
   }
   if (localStorage.banEmdash === "true") {
-    negConstraints.push("Em-dashes (—) or en-dashes (–) or double hyphens (--). Use normal hyphens (-) or commas.");
+    negConstraints.push("You will NEVER generate Em-dashes (—), en-dashes (–), or double hyphens (--). Use normal hyphens (-) or commas instead.");
   }
   let bannedInput = localStorage.customBannedWords || "";
   if (bannedInput.trim() !== "") {
     let words = bannedInput.split(",").map(w => w.trim()).filter(w => w.length > 0);
     if (words.length > 0) {
-      negConstraints.push("The following words/phrases: " + words.map(w => `"${w}"`).join(", "));
+      negConstraints.push("You will NEVER generate the following words/phrases: " + words.map(w => `"${w}"`).join(", "));
     }
   }
 
   let result = "";
   if (list.length > 0) {
-    result += "\nUse the following constraints/parameters for the generation:\n" + list.map(item => "- " + item).join("\n");
+    result += "\n## PARAMETERS\n" + list.map(item => "- " + item).join("\n");
   }
   if (negConstraints.length > 0) {
-    result += "\n\nCRITICAL SAFETY AND STYLE RESTRICTIONS:\nDO NOT generate or include the following under any circumstances:\n" + negConstraints.map(item => "- " + item).join("\n") + "\nStrictly enforce these restrictions in your response.";
+    result += "\n\n## CONSTRAINTS\n" + negConstraints.map(item => "- " + item).join("\n");
   }
   return result;
 
@@ -1256,80 +1323,83 @@ modes
     description = Write standard creative story/plot outlines.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/creative-mode.jpg
     instruction
-      Your task is to write [multiple?"several":"one"] plot/story idea[multiple?"s":""] for the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Your response should be engaging, authentic, descriptive and creative.[multiple?" Provide several different ideas.":" Write an engaging and interesting plot / story outline."]
+      ## TASK
+      - Write [multiple?"several plot/story ideas":"one plot/story outline"] for the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Your response should be engaging, authentic, descriptive and creative.[multiple?" Provide several different ideas.":" Write an engaging and interesting plot / story outline."]
       $output = [this.joinItems("\n")]
   childrens_book
     label = 🎈 Children's Book
     description = Perfect for children's stories with illustrations.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/childrens-book-mode.jpg
     instruction
-      Your task is to write [multiple?"several":"one"] children's story book outline[multiple?"s":""]/idea[multiple?"s":""] based on the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Since it's a children's story book, you can suggest potential visual elements that could accompany the story.
+      ## TASK
+      - Write [multiple?"several children's story book outlines":"one children's story book outline"] based on the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Since it's a children's story book, suggest potential visual elements that could accompany the story.
       $output = [this.joinItems("\n")]
   world_building
     label = 🗺️ World Building
     description = Build settings, concepts, lore, and geography.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/world-building-mode.jpg
     instruction
-      Write [multiple?"some":"a"] world building idea[multiple?"s":""]/concept[multiple?"s":""] based on the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Follow the above instruction to generate the world building idea[multiple?"s":""] for a story, tying in your idea[multiple?"s":""] with possible story plot points if relevant.
+      ## TASK
+      - Write [multiple?"world building ideas/concepts":"a world building idea/concept"] based on the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Follow the above instruction to generate the world building idea[multiple?"s":""] for a story, tying in your idea[multiple?"s":""] with possible story plot points if relevant.
       $output = [this.joinItems("\n")]
   roleplay_ideas
     label = 🎭 Roleplay Ideas
     description = Get detailed prompts, hooks, and starter scenes.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/roleplay-mode.jpg
     instruction
-      Write [multiple?"some":"a"] roleplay/story idea[multiple?"s":""] (including main plot points) based on the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Follow the above instruction to generate [multiple?"the":"an"] interesting/fun/engaging roleplay idea[multiple?"s":""] for a story. You can specify plot points, opening/starter scenes, character, and any other aspects that would be useful for someone who is trying to come up with fun/engaging ideas for a roleplay.
+      ## TASK
+      - Write [multiple?"roleplay/story ideas":"a roleplay/story idea"] (including main plot points) based on the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Follow the above instruction to generate [multiple?"interesting/fun/engaging roleplay ideas":"an interesting/fun/engaging roleplay idea"] for a story. You can specify plot points, opening/starter scenes, character, and any other aspects that would be useful for someone who is trying to come up with fun/engaging ideas for a roleplay.
       $output = [this.joinItems("\n")]
   conflict_ideas
     label = 💥 Conflict Ideas
     description = Find interesting challenges, dilemmas, and clashes.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/conflict-mode.jpg
     instruction
-      Write [multiple?"":"an "]idea[multiple?"s":""] for the conflict of a story, based on the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Follow the above instruction/idea to generate interesting/creative [multiple?"":"an "]idea[multiple?"s":""] for a story's conflict. Focus on aspects that would be useful for someone who is trying to come up with interesting ideas for the conflict in the story that they're writing.
+      ## TASK
+      - Write [multiple?"ideas":"an idea"] for the conflict of a story based on the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Follow the above instruction/idea to generate interesting/creative [multiple?"ideas":"an idea"] for a story's conflict. Focus on aspects that would be useful for someone who is trying to come up with interesting ideas for the conflict in the story that they're writing.
       $output = [this.joinItems("\n")]
   rpg
     label = 🎮 RPG / Quest
     description = Generate quests, NPCs, challenges, and rewards.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/rpg-mode.jpg
     instruction
-      Your task is to write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
       \n
-      Write a detailed and engaging RPG quest/adventure setup. Include:
-      - Quest Title & Premise
-      - Core Objectives
-      - Key NPCs and their motivations
-      - Notable Encounters/Challenges
-      - Possible rewards or outcomes
+      ## TASK
+      - Write [multiple?"several RPG questlines/encounters":"an RPG questline/encounter"] based on the following instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
+      - Write a detailed and engaging RPG quest/adventure setup. Include: Quest Title & Premise, Core Objectives, Key NPCs and their motivations, Notable Encounters/Challenges, and Possible rewards or outcomes.
       $output = [this.joinItems("\n")]
   freeform
     label = ✍️ Freeform
     description = Write freely with customized, prompt-based assistance.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/freeform-mode.jpg
     instruction
-      Your task is to help with story/plot writing based on this instruction:
-      INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       [getConstraints()]
+      \n
+      ## TASK
+      - Help with story/plot writing based on this instruction:
+      - INSTRUCTION: [literal(instructionEl.value.trim() || defaultInstruction)]
       $output = [this.joinItems("\n")]
 
 worldSettings
@@ -2121,12 +2191,12 @@ archetypes
   bestie
     label = 🤝 Bestie
     description = Extremely close and supportive best friend
-    prompt = The character is [literal("{{user}}")]'s bestie / best friend: sharing an incredibly close, loyal, and supportive bond filled with inside jokes, banter, and constant communication.
+    prompt = The character is [protagonistName]'s bestie / best friend: sharing an incredibly close, loyal, and supportive bond filled with inside jokes, banter, and constant communication.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/bestie-archetype.jpg
   childhood_friend
     label = 🏡 Childhood Friend
     description = Long history sharing memories and deep trust
-    prompt = The character is [literal("{{user}}")]'s childhood friend: they have a long history together, sharing years of memories, deep trust, and comfortable, close familiarity.
+    prompt = The character is [protagonistName]'s childhood friend: they have a long history together, sharing years of memories, deep trust, and comfortable, close familiarity.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/childhood_friend-archetype.jpg
   delinquent
     label = 🚬 Delinquent
@@ -2151,7 +2221,7 @@ archetypes
   fwb
     label = 🛌 Friends With Benefits
     description = Casual physical and friendly relationship
-    prompt = The character is [literal("{{user}}")]'s friends with benefits (FWB): sharing a casual physical relationship, combining sexual intimacy with a friendly, non-romantic connection.
+    prompt = The character is [protagonistName]'s friends with benefits (FWB): sharing a casual physical relationship, combining sexual intimacy with a friendly, non-romantic connection.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/fwb-archetype.jpg
   gamer
     label = 🎮 Gamer
@@ -2606,7 +2676,7 @@ characterPrompts() =>
     },
     role: {
       instruction: "You are writing the ROLE section for a character profile.",
-      format: "Role: In 3 sentences, talk about the character’s role in the roleplay. Define what the character *does* in relation to {{user}}, including core function (companion, narrator, antagonist, torturer, etc.) and responsibilities in the story. Include their overall narrative purpose."
+      format: "Role: In 3 sentences, talk about the character’s role in the roleplay. Define what the character *does* in relation to " + "{{" + "user}}" + ", including core function (companion, narrator, antagonist, torturer, etc.) and responsibilities in the story. Include their overall narrative purpose."
     },
     rules: {
       instruction: "You are writing the RULES section for a character profile.",
@@ -2674,7 +2744,7 @@ characterPrompts() =>
     },
     relations: {
       instruction: "You are writing the RELATIONS section for a character profile. List out exactly 3 important people in the character's life and describe their relationship and dynamic with the character.",
-      format: "- {{user}}: [Relationship Type, Description, Dynamic] - in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings."
+      format: "- " + "{{" + "user}}" + ": [Relationship Type, Description, Dynamic] - in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings."
     },
     backstory: {
       instruction: "You are writing the BACKSTORY section for a character profile.",
@@ -2702,15 +2772,15 @@ characterPrompts() =>
     },
     roleplay1: {
       instruction: "You are writing behavior EXAMPLE 1 for a character profile.",
-      format: "Generate behavior example 1. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+      format: "Generate behavior example 1. Format the example as follows: " + "{{" + "user}}" + ": \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to " + "{{" + "user}}" + "."
     },
     roleplay2: {
       instruction: "You are writing behavior EXAMPLE 2 for a character profile.",
-      format: "Generate behavior example 2. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+      format: "Generate behavior example 2. Format the example as follows: " + "{{" + "user}}" + ": \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to " + "{{" + "user}}" + "."
     },
     roleplay3: {
       instruction: "You are writing behavior EXAMPLE 3 for a character profile.",
-      format: "Generate behavior example 3. Format the example as follows: {{user}}: \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to {{user}}."
+      format: "Generate behavior example 3. Format the example as follows: " + "{{" + "user}}" + ": \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to " + "{{" + "user}}" + "."
     }
   };
 
@@ -2718,31 +2788,39 @@ introGenerationPrompt() =>
   return {
     context: {
       instruction: "You are writing the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.",
-      format: "Write a single short paragraph that introduces the scene, characters, {{user}}'s role, etc. Start by clearly describing the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."
+      format: "Write a single short paragraph that introduces the scene, characters, " + "{{" + "user}}" + "'s role, etc. Start by clearly describing the role " + "{{" + "user}}" + " is playing, then introduce the other character, their relationship to " + "{{" + "user}}" + " if relevant, and the current situation or setting. Include only the essential details " + "{{" + "user}}" + " needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for " + "{{" + "user}}" + " to naturally continue the scene in-character. Do not Write any spoilers that " + "{{" + "user}}" + " as a character shouldnt know at the start. Focus on introducing the world, the characters, and the " + "{{" + "user}}" + "'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."
     },
     introStart: {
       instruction: "You are writing the ROLEPLAY START (Dialogue & Narration) for the character to start the roleplay.",
-      format: "Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncencored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:'). \ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to {{user}}\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\""
+      format: "Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the " + "{{" + "user}}" + " and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncencored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:'). \ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to " + "{{" + "user}}" + "\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\""
     }
   };
 
 generateModesHtml() =>
+  window.getConstraints = getConstraints;
+  window.modes = modes;
   return modes.selectAll.map(m => `<option ${localStorage.currentMode === m.getName ? "selected" : ""} value="${m.getName}">${m.label}</option>`).join("");
 
 generateSettingsHtml() =>
+  window.worldSettings = worldSettings;
   return worldSettings.selectAll.map(s => `<option ${localStorage.currentSetting === s.getName ? "selected" : ""} value="${s.getName}">${s.label}</option>`).join("");
 
 generateTonesHtml() =>
+  window.tones = tones;
   return tones.selectAll.map(t => `<option ${localStorage.currentTone === t.getName ? "selected" : ""} value="${t.getName}">${t.label}</option>`).join("");
 
 generateArchetypesHtml() =>
+  window.archetypes = archetypes;
   return archetypes.selectAll.map(a => `<option ${localStorage.currentArchetype === a.getName ? "selected" : ""} value="${a.getName}">${a.label}</option>`).join("");
 
 generateDynamicsHtml() =>
+  window.dynamics = dynamics;
   return dynamics.selectAll.map(d => `<option ${localStorage.currentDynamics === d.getName ? "selected" : ""} value="${d.getName}">${d.label}</option>`).join("");
 
 generateCharacterCountsHtml() =>
+  window.characterCounts = characterCounts;
   return characterCounts.selectAll.map(c => `<option ${localStorage.currentCharacterCount === c.getName ? "selected" : ""} value="${c.getName}">${c.label}</option>`).join("");
 
 generateGendersHtml() =>
+  window.genders = genders;
   return genders.selectAll.map(g => `<option ${localStorage.currentGender === g.getName ? "selected" : ""} value="${g.getName}">${g.label}</option>`).join("");
