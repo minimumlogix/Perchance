@@ -233,8 +233,27 @@
 
         <!-- Character Modifiers -->
         <div id="characterModifiers" class="tab-modifier-section" style="display: none;">
-          <div class="text-center text-muted small py-2">
-            <i class="bi bi-info-circle"></i> No settings modifiers available for this section yet.
+          <div class="row g-3">
+            <div class="col-12 col-sm-6" id="characterLengthCol">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Character Card Style / Length</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-characterLength-short" onclick="window.setCharacterLength('short')">Short (Hook)</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-characterLength-medium" onclick="window.setCharacterLength('medium')">Medium (Compact)</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-characterLength-long" onclick="window.setCharacterLength('long')">Long (Detailed)</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-1 px-sm-2" id="btn-characterLength-superlong" onclick="window.setCharacterLength('superlong')">Super Long (Full)</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6" id="characterIdeasCol">
+              <div class="d-flex flex-column align-items-center align-items-sm-start">
+                <span class="mb-1 text-muted small fw-medium" style="font-size:75%;">Ideas Count</span>
+                <div class="btn-group modifier-btn-group w-100" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-2 px-sm-3" id="btn-characterIdeas-one" onclick="window.setCharacterIdeas('')">1️⃣ One</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1.5 px-2 px-sm-3" id="btn-characterIdeas-multiple" onclick="window.setCharacterIdeas('.')">🔢 Multiple</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1177,7 +1196,17 @@
 
           localInstruction = "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "character") {
-          localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
+          let characterLength = localStorage.characterTextLength || 'medium';
+          let isMultiple = (localStorage.multiple === '.' && characterLength !== 'superlong');
+          let lengthTask = "generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.";
+          if (characterLength === 'short') {
+            lengthTask = isMultiple ? "generate 3 different one-line character hooks." : "generate a one-line character hook.";
+          } else if (characterLength === 'medium') {
+            lengthTask = isMultiple ? "generate 3 different compact character cards." : "generate a compact character card.";
+          } else if (characterLength === 'long') {
+            lengthTask = isMultiple ? "generate 3 different detailed character cards." : "generate a detailed character card.";
+          }
+          localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, " + lengthTask + "\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "intro") {
           localInstruction = "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
         } else if (tab === "lore") {
@@ -2860,6 +2889,15 @@
     localStorage.roleplayTextLength = val;
     window.loadModifierSettings();
   };
+  window.setCharacterLength = function(val) {
+    localStorage.characterTextLength = val;
+    window.loadModifierSettings();
+  };
+  window.setCharacterIdeas = function(val) {
+    multiple = val;
+    localStorage.multiple = val;
+    window.loadModifierSettings();
+  };
   window.setLoreKeys = function(val) {
     localStorage.loreCount = val;
     window.loadModifierSettings();
@@ -2908,6 +2946,32 @@
     document.querySelectorAll('[id^="btn-roleplayLength-"]').forEach(btn => btn.classList.remove('active'));
     const roleplayLengthBtn = document.getElementById('btn-roleplayLength-' + roleplayLength);
     if (roleplayLengthBtn) roleplayLengthBtn.classList.add('active');
+
+    // Character Text Length and Ideas Count Visibility
+    const characterLength = localStorage.characterTextLength || 'medium';
+    document.querySelectorAll('[id^="btn-characterLength-"]').forEach(btn => btn.classList.remove('active'));
+    const characterLengthBtn = document.getElementById('btn-characterLength-' + characterLength);
+    if (characterLengthBtn) characterLengthBtn.classList.add('active');
+
+    const characterIdeasCol = document.getElementById('characterIdeasCol');
+    const characterLengthCol = document.getElementById('characterLengthCol');
+    if (characterLength === 'superlong') {
+      if (characterIdeasCol) characterIdeasCol.style.display = 'none';
+      if (characterLengthCol) characterLengthCol.className = 'col-12';
+    } else {
+      if (characterIdeasCol) characterIdeasCol.style.display = 'block';
+      if (characterLengthCol) characterLengthCol.className = 'col-12 col-sm-6';
+    }
+
+    const characterIdeas = localStorage.multiple || '';
+    document.querySelectorAll('[id^="btn-characterIdeas-"]').forEach(btn => btn.classList.remove('active'));
+    if (characterIdeas === '.') {
+      const btn = document.getElementById('btn-characterIdeas-multiple');
+      if (btn) btn.classList.add('active');
+    } else {
+      const btn = document.getElementById('btn-characterIdeas-one');
+      if (btn) btn.classList.add('active');
+    }
 
     // Lore Keys count
     const loreKeys = localStorage.loreCount || '3';

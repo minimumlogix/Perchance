@@ -68,7 +68,17 @@ settings
 
         return "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "character") {
-        return "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
+        let characterLength = localStorage.characterTextLength || 'medium';
+        let isMultiple = (localStorage.multiple === '.' && characterLength !== 'superlong');
+        let lengthTask = "generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.";
+        if (characterLength === 'short') {
+          lengthTask = isMultiple ? "generate 3 different one-line character hooks." : "generate a one-line character hook.";
+        } else if (characterLength === 'medium') {
+          lengthTask = isMultiple ? "generate 3 different compact character cards." : "generate a compact character card.";
+        } else if (characterLength === 'long') {
+          lengthTask = isMultiple ? "generate 3 different detailed character cards." : "generate a detailed character card.";
+        }
+        return "## TASK\n- You are a creative character designer. Based on the following notes, " + lengthTask + "\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "intro") {
         return "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "lore") {
@@ -489,10 +499,155 @@ async generate() =>
     let isStopped = false;
     let pendingObj = null;
 
+    let characterLength = localStorage.characterTextLength || 'medium';
+    let isMultiple = (localStorage.multiple === '.' && characterLength !== 'superlong');
+    let sectionCheck = {};
+    let keys = [];
+    let sectionTitles = {};
+
+    if (characterLength === 'short') {
+      if (isMultiple) {
+        sectionCheck = { hook1: "•", hook2: "•", hook3: "•" };
+        keys = ["hook1", "hook2", "hook3"];
+        sectionTitles = { hook1: "Character Hook 1", hook2: "Character Hook 2", hook3: "Character Hook 3" };
+      } else {
+        sectionCheck = { hook: "•" };
+        keys = ["hook"];
+        sectionTitles = { hook: "Character Hook" };
+      }
+    } else if (characterLength === 'medium') {
+      if (isMultiple) {
+        sectionCheck = {
+          name1: "Name:", role1: "Role:", coreConcept1: "Core Concept:", signatureTrait1: "Signature Trait:", uniqueAbility1: "Unique Ability:", goal1: "Goal:", complication1: "Complication:",
+          name2: "Name:", role2: "Role:", coreConcept2: "Core Concept:", signatureTrait2: "Signature Trait:", uniqueAbility2: "Unique Ability:", goal2: "Goal:", complication2: "Complication:",
+          name3: "Name:", role3: "Role:", coreConcept3: "Core Concept:", signatureTrait3: "Signature Trait:", uniqueAbility3: "Unique Ability:", goal3: "Goal:", complication3: "Complication:"
+        };
+        keys = [
+          "name1", "role1", "coreConcept1", "signatureTrait1", "uniqueAbility1", "goal1", "complication1",
+          "name2", "role2", "coreConcept2", "signatureTrait2", "uniqueAbility2", "goal2", "complication2",
+          "name3", "role3", "coreConcept3", "signatureTrait3", "uniqueAbility3", "goal3", "complication3"
+        ];
+        sectionTitles = {
+          name1: "Name (Character 1)", role1: "Role (Character 1)", coreConcept1: "Core Concept (Character 1)", signatureTrait1: "Signature Trait (Character 1)", uniqueAbility1: "Unique Ability (Character 1)", goal1: "Goal (Character 1)", complication1: "Complication (Character 1)",
+          name2: "Name (Character 2)", role2: "Role (Character 2)", coreConcept2: "Core Concept (Character 2)", signatureTrait2: "Signature Trait (Character 2)", uniqueAbility2: "Unique Ability (Character 2)", goal2: "Goal (Character 2)", complication2: "Complication (Character 2)",
+          name3: "Name (Character 3)", role3: "Role (Character 3)", coreConcept3: "Core Concept (Character 3)", signatureTrait3: "Signature Trait (Character 3)", uniqueAbility3: "Unique Ability (Character 3)", goal3: "Goal (Character 3)", complication3: "Complication (Character 3)"
+        };
+      } else {
+        sectionCheck = {
+          name: "Name:", role: "Role:", coreConcept: "Core Concept:", signatureTrait: "Signature Trait:", uniqueAbility: "Unique Ability:", goal: "Goal:", complication: "Complication:"
+        };
+        keys = ["name", "role", "coreConcept", "signatureTrait", "uniqueAbility", "goal", "complication"];
+        sectionTitles = {
+          name: "Name", role: "Role", coreConcept: "Core Concept", signatureTrait: "Signature Trait", uniqueAbility: "Unique Ability", goal: "Goal", complication: "Complication"
+        };
+      }
+    } else if (characterLength === 'long') {
+      if (isMultiple) {
+        sectionCheck = {
+          name1: "Name:", role1: "Role:", concept1: "Concept:", appearance1: "Appearance:", personality1: "Personality:", power1: "Power:", goal1: "Goal:", conflict1: "Conflict:", hook1: "Hook:",
+          name2: "Name:", role2: "Role:", concept2: "Concept:", appearance2: "Appearance:", personality2: "Personality:", power2: "Power:", goal2: "Goal:", conflict2: "Conflict:", hook2: "Hook:",
+          name3: "Name:", role3: "Role:", concept3: "Concept:", appearance3: "Appearance:", personality3: "Personality:", power3: "Power:", goal3: "Goal:", conflict3: "Conflict:", hook3: "Hook:"
+        };
+        keys = [
+          "name1", "role1", "concept1", "appearance1", "personality1", "power1", "goal1", "conflict1", "hook1",
+          "name2", "role2", "concept2", "appearance2", "personality2", "power2", "goal2", "conflict2", "hook2",
+          "name3", "role3", "concept3", "appearance3", "personality3", "power3", "goal3", "conflict3", "hook3"
+        ];
+        sectionTitles = {
+          name1: "Name (Character 1)", role1: "Role (Character 1)", concept1: "Concept (Character 1)", appearance1: "Appearance (Character 1)", personality1: "Personality (Character 1)", power1: "Power (Character 1)", goal1: "Goal (Character 1)", conflict1: "Conflict (Character 1)", hook1: "Hook (Character 1)",
+          name2: "Name (Character 2)", role2: "Role (Character 2)", concept2: "Concept (Character 2)", appearance2: "Appearance (Character 2)", personality2: "Personality (Character 2)", power2: "Power (Character 2)", goal2: "Goal (Character 2)", conflict2: "Conflict (Character 2)", hook2: "Hook (Character 2)",
+          name3: "Name (Character 3)", role3: "Role (Character 3)", concept3: "Concept (Character 3)", appearance3: "Appearance (Character 3)", personality3: "Personality (Character 3)", power3: "Power (Character 3)", goal3: "Goal (Character 3)", conflict3: "Conflict (Character 3)", hook3: "Hook (Character 3)"
+        };
+      } else {
+        sectionCheck = {
+          name: "Name:", role: "Role:", concept: "Concept:", appearance: "Appearance:", personality: "Personality:", power: "Power:", goal: "Goal:", conflict: "Conflict:", hook: "Hook:"
+        };
+        keys = ["name", "role", "concept", "appearance", "personality", "power", "goal", "conflict", "hook"];
+        sectionTitles = {
+          name: "Name", role: "Role", concept: "Concept", appearance: "Appearance", personality: "Personality", power: "Power", goal: "Goal", conflict: "Conflict", hook: "Hook"
+        };
+      }
+    } else {
+      sectionCheck = {
+        shortDescription: "Short Description:",
+        appearance: "Appearance:",
+        attire: "Attire:",
+        items: "Items:",
+        role: "Role:",
+        rules: "Rules:",
+        personality: "Personality:",
+        speech: "Speech:",
+        behavior: "Behavior:",
+        emotions: "Emotions:",
+        internalConflicts: "Internal conflicts:",
+        mentality: "Mentality:",
+        worldView: "World View:",
+        beliefs: "Beliefs:",
+        morals: "Morals:",
+        likes: "Likes:",
+        hates: "Hates:",
+        hobbies: "Hobbies:",
+        values: "Values:",
+        romance: "Romance:",
+        abilities: "Abilities:",
+        relations: "Relations:",
+        backstory: "Backstory:",
+        occupation: "Occupation:",
+        residence: "Residence:",
+        secrets: "Secrets:",
+        goals: "Short-term Goals:",
+        timeline: "Timeline:",
+        roleplay1: "Roleplay Examples:",
+        roleplay2: null,
+        roleplay3: null
+      };
+      keys = [
+        "shortDescription", "appearance", "attire", "items", "role", "rules", 
+        "personality", "speech", "behavior", "emotions", "internalConflicts", 
+        "mentality", "worldView", "beliefs", "morals", "likes", "hates", 
+        "hobbies", "values", "romance", "abilities", "relations", "backstory", 
+        "occupation", "residence", "secrets", "goals", "timeline", 
+        "roleplay1", "roleplay2", "roleplay3"
+      ];
+      sectionTitles = {
+        shortDescription: "Short Description",
+        appearance: "Physical Appearance",
+        attire: "Attire Preferences",
+        items: "Inventory Items",
+        role: "Role in Story",
+        rules: "Strict Rules",
+        personality: "Personality Type",
+        speech: "Speech & Tone",
+        behavior: "Behavioral Patterns",
+        emotions: "Emotional State",
+        internalConflicts: "Internal Conflicts",
+        mentality: "Mentality & Motto",
+        worldView: "World View",
+        beliefs: "Core Beliefs",
+        morals: "Moral Code",
+        likes: "Likes",
+        hates: "Hates",
+        hobbies: "Hobbies",
+        values: "Values",
+        romance: "Romance & Intimacy",
+        abilities: "Abilities List",
+        relations: "Relations & Dynamics",
+        backstory: "Backstory Details",
+        occupation: "Occupation Details",
+        residence: "Residence Address",
+        secrets: "Secrets",
+        goals: "Goals",
+        timeline: "Timeline Milestones",
+        roleplay1: "Roleplay Example 1",
+        roleplay2: "Roleplay Example 2",
+        roleplay3: "Roleplay Example 3"
+      };
+    }
+
     window.characterGenerationState = {
       isGenerating: true,
       currentSection: 0,
-      totalSections: 31,
+      totalSections: keys.length,
       logs: []
     };
 
@@ -519,84 +674,6 @@ async generate() =>
     };
     localStopBtn.onclick = stopClickHandler;
     localBottomStopBtn.onclick = stopClickHandler;
-
-    let sectionCheck = {
-      shortDescription: "Short Description:",
-      appearance: "Appearance:",
-      attire: "Attire:",
-      items: "Items:",
-      role: "Role:",
-      rules: "Rules:",
-      personality: "Personality:",
-      speech: "Speech:",
-      behavior: "Behavior:",
-      emotions: "Emotions:",
-      internalConflicts: "Internal conflicts:",
-      mentality: "Mentality:",
-      worldView: "World View:",
-      beliefs: "Beliefs:",
-      morals: "Morals:",
-      likes: "Likes:",
-      hates: "Hates:",
-      hobbies: "Hobbies:",
-      values: "Values:",
-      romance: "Romance:",
-      abilities: "Abilities:",
-      relations: "Relations:",
-      backstory: "Backstory:",
-      occupation: "Occupation:",
-      residence: "Residence:",
-      secrets: "Secrets:",
-      goals: "Short-term Goals:",
-      timeline: "Timeline:",
-      roleplay1: "Roleplay Examples:",
-      roleplay2: null,
-      roleplay3: null
-    };
-
-    let keys = [
-      "shortDescription", "appearance", "attire", "items", "role", "rules", 
-      "personality", "speech", "behavior", "emotions", "internalConflicts", 
-      "mentality", "worldView", "beliefs", "morals", "likes", "hates", 
-      "hobbies", "values", "romance", "abilities", "relations", "backstory", 
-      "occupation", "residence", "secrets", "goals", "timeline", 
-      "roleplay1", "roleplay2", "roleplay3"
-    ];
-    let sectionTitles = {
-      shortDescription: "Short Description",
-      appearance: "Physical Appearance",
-      attire: "Attire Preferences",
-      items: "Inventory Items",
-      role: "Role in Story",
-      rules: "Strict Rules",
-      personality: "Personality Type",
-      speech: "Speech & Tone",
-      behavior: "Behavioral Patterns",
-      emotions: "Emotional State",
-      internalConflicts: "Internal Conflicts",
-      mentality: "Mentality & Motto",
-      worldView: "World View",
-      beliefs: "Core Beliefs",
-      morals: "Moral Code",
-      likes: "Likes",
-      hates: "Hates",
-      hobbies: "Hobbies",
-      values: "Values",
-      romance: "Romance & Intimacy",
-      abilities: "Abilities List",
-      relations: "Relations & Dynamics",
-      backstory: "Backstory Details",
-      occupation: "Occupation Details",
-      residence: "Residence Address",
-      secrets: "Secrets",
-      goals: "Goals",
-      timeline: "Timeline Milestones",
-      roleplay1: "Roleplay Example 1",
-      roleplay2: "Roleplay Example 2",
-      roleplay3: "Roleplay Example 3"
-    };
-
-    window.characterGenerationState.totalSections = keys.length;
 
     let protagonist = literal((window.userNameEl ? window.userNameEl.value.trim() : "") || localStorage.userName || "User");
     let userNotes = literal(characterInstructionEl.value.trim());
@@ -668,71 +745,100 @@ async generate() =>
       
       logState("Generating section " + (i + 1) + "/" + keys.length + ": " + title);
 
-      let startWithText = "";
-      if (key === "shortDescription") {
-        startWithText = "Short Description: - [";
-      } else if (key === "appearance") {
-        startWithText = "Appearance: ";
-      } else if (key === "attire") {
-        startWithText = "Attire: ";
-      } else if (key === "items") {
-        startWithText = "Items: ";
-      } else if (key === "role") {
-        startWithText = "Role: ";
-      } else if (key === "rules") {
-        startWithText = "Rules: ";
-      } else if (key === "personality") {
-        startWithText = "Personality: ";
-      } else if (key === "speech") {
-        startWithText = "Speech: ";
-      } else if (key === "behavior") {
-        startWithText = "Behavior: ";
-      } else if (key === "emotions") {
-        startWithText = "Emotions: ";
-      } else if (key === "internalConflicts") {
-        startWithText = "Internal conflicts: ";
-      } else if (key === "mentality") {
-        startWithText = "Mentality: ";
-      } else if (key === "worldView") {
-        startWithText = "World View: ";
-      } else if (key === "beliefs") {
-        startWithText = "Beliefs: ";
-      } else if (key === "morals") {
-        startWithText = "Morals: ";
-      } else if (key === "likes") {
-        startWithText = "Likes: ";
-      } else if (key === "hates") {
-        startWithText = "Hates: ";
-      } else if (key === "hobbies") {
-        startWithText = "Hobbies: ";
-      } else if (key === "values") {
-        startWithText = "Values: ";
-      } else if (key === "romance") {
-        startWithText = "Romance: ";
-      } else if (key === "abilities") {
-        startWithText = "- [";
-      } else if (key === "relations") {
-        startWithText = "- " + protagonist + ": [";
-      } else if (key === "backstory") {
-        startWithText = "Backstory: ";
-      } else if (key === "occupation") {
-        startWithText = "Occupation: ";
-      } else if (key === "residence") {
-        startWithText = "Residence: ";
-      } else if (key === "secrets") {
-        startWithText = "Secrets: ";
-      } else if (key === "goals") {
-        startWithText = "Short-term Goals: ";
-      } else if (key === "timeline") {
-        startWithText = "- [";
-      } else if (key === "roleplay1" || key === "roleplay2" || key === "roleplay3") {
-        startWithText = protagonist + ': "';
+      let baseKey = key;
+      if (characterLength !== 'superlong') {
+        baseKey = key.replace(/[123]$/, '');
       }
 
+      let startWithText = "";
+      if (baseKey === "shortDescription") {
+        startWithText = "Short Description: - [";
+      } else if (baseKey === "appearance") {
+        startWithText = "Appearance: ";
+      } else if (baseKey === "attire") {
+        startWithText = "Attire: ";
+      } else if (baseKey === "items") {
+        startWithText = "Items: ";
+      } else if (baseKey === "role") {
+        startWithText = "Role: ";
+      } else if (baseKey === "rules") {
+        startWithText = "Rules: ";
+      } else if (baseKey === "personality") {
+        startWithText = "Personality: ";
+      } else if (baseKey === "speech") {
+        startWithText = "Speech: ";
+      } else if (baseKey === "behavior") {
+        startWithText = "Behavior: ";
+      } else if (baseKey === "emotions") {
+        startWithText = "Emotions: ";
+      } else if (baseKey === "internalConflicts") {
+        startWithText = "Internal conflicts: ";
+      } else if (baseKey === "mentality") {
+        startWithText = "Mentality: ";
+      } else if (baseKey === "worldView") {
+        startWithText = "World View: ";
+      } else if (baseKey === "beliefs") {
+        startWithText = "Beliefs: ";
+      } else if (baseKey === "morals") {
+        startWithText = "Morals: ";
+      } else if (baseKey === "likes") {
+        startWithText = "Likes: ";
+      } else if (baseKey === "hates") {
+        startWithText = "Hates: ";
+      } else if (baseKey === "hobbies") {
+        startWithText = "Hobbies: ";
+      } else if (baseKey === "values") {
+        startWithText = "Values: ";
+      } else if (baseKey === "romance") {
+        startWithText = "Romance: ";
+      } else if (baseKey === "abilities") {
+        startWithText = "- [";
+      } else if (baseKey === "relations") {
+        startWithText = "- " + protagonist + ": [";
+      } else if (baseKey === "backstory") {
+        startWithText = "Backstory: ";
+      } else if (baseKey === "occupation") {
+        startWithText = "Occupation: ";
+      } else if (baseKey === "residence") {
+        startWithText = "Residence: ";
+      } else if (baseKey === "secrets") {
+        startWithText = "Secrets: ";
+      } else if (baseKey === "goals") {
+        startWithText = "Short-term Goals: ";
+      } else if (baseKey === "timeline") {
+        startWithText = "- [";
+      } else if (baseKey === "roleplay1" || baseKey === "roleplay2" || baseKey === "roleplay3") {
+        startWithText = protagonist + ': "';
+      } else if (baseKey === "hook") {
+        if (characterLength === 'short') {
+          startWithText = "• ";
+        } else {
+          startWithText = "Hook: ";
+        }
+      } else if (baseKey === "name") {
+        startWithText = "Name: ";
+      } else if (baseKey === "coreConcept") {
+        startWithText = "Core Concept: ";
+      } else if (baseKey === "signatureTrait") {
+        startWithText = "Signature Trait: ";
+      } else if (baseKey === "uniqueAbility") {
+        startWithText = "Unique Ability: ";
+      } else if (baseKey === "goal") {
+        startWithText = "Goal: ";
+      } else if (baseKey === "complication") {
+        startWithText = "Complication: ";
+      } else if (baseKey === "concept") {
+        startWithText = "Concept: ";
+      } else if (baseKey === "power") {
+        startWithText = "Power: ";
+      } else if (baseKey === "conflict") {
+        startWithText = "Conflict: ";
+      }
+ 
       let startWithVal = "";
       let prefixOfTextarea = "";
       let lastSectionText = localResponseEl.value;
-
+ 
       if (i === startIdx && isResumingTruncated) {
         startWithVal = localResponseEl.value;
         prefixOfTextarea = "";
@@ -748,6 +854,14 @@ async generate() =>
             localResponseEl.value += "\n\nRoleplay Examples:\n";
           } else if (key === "roleplay2" || key === "roleplay3") {
             localResponseEl.value += "\n\n";
+          } else if (characterLength === 'short') {
+            localResponseEl.value += "\n";
+          } else if (characterLength === 'medium' || characterLength === 'long') {
+            if (baseKey === 'name') {
+              localResponseEl.value += "\n\n";
+            } else {
+              localResponseEl.value += "\n";
+            }
           } else {
             localResponseEl.value += "\n\n";
           }
@@ -755,7 +869,7 @@ async generate() =>
         startWithVal = startWithText;
         prefixOfTextarea = localResponseEl.value;
       }
-
+ 
       let previousText = "";
       if (i === startIdx && isResumingTruncated) {
         let idx = -1;
@@ -772,6 +886,8 @@ async generate() =>
           if (idx !== -1) {
             if (idx >= 2 && lastSectionText.substring(idx - 2, idx) === "\n\n") {
               idx = idx - 2;
+            } else if (idx >= 1 && lastSectionText.substring(idx - 1, idx) === "\n") {
+              idx = idx - 1;
             }
           }
         }
@@ -2656,7 +2772,7 @@ genders
     prompt = The main character/protagonist is non-binary.
     image = https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/nonbinary-gender.jpg
 
-characterPrompts() =>
+superLongCharacterPrompts() =>
   return {
     shortDescription: {
       instruction: "You are writing the SHORT DESCRIPTION section for a character profile.",
@@ -2783,6 +2899,117 @@ characterPrompts() =>
       format: "Generate behavior example 3. Format the example as follows: " + "{{" + "user}}" + ": \"Dialogue\" *Action description* CharacterName: \"Dialogue\" *Action description*\nRules for examples: 1. Use asterisks for actions and descriptions, NOT bolding. 2. Use quotation marks for all dialogue. 3. Write humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. 4. Include short, vivid descriptions of actions or scenarios. 5. Show the character’s unique voice, personality, and relationship to " + "{{" + "user}}" + "."
     }
   };
+
+shortCharacterPrompts() =>
+  return {
+    hook: {
+      instruction: "You are writing a ONE-LINE HOOK for a character. Combine [Archetype] + [Unique Twist] + [Conflict] into a single highly creative, punchy sentence. Avoid cliché phrasing.",
+      format: "Hook: • [Archetype] who [Unique Twist] and [Conflict]. (e.g., • Blind dragon hunter who sees through echoes and secretly protects dragons.)"
+    }
+  };
+
+mediumCharacterPrompts() =>
+  return {
+    name: {
+      instruction: "You are writing the NAME section for a compact character card.",
+      format: "Name: [A creative, fitting name for the character]"
+    },
+    role: {
+      instruction: "You are writing the ROLE section for a compact character card.",
+      format: "Role: [The character's primary function/occupation in the narrative]"
+    },
+    coreConcept: {
+      instruction: "You are writing the CORE CONCEPT section for a compact character card.",
+      format: "Core Concept: [A one-sentence summary of who they are and their main gimmick/premise]"
+    },
+    signatureTrait: {
+      instruction: "You are writing the SIGNATURE TRAIT section for a compact character card.",
+      format: "Signature Trait: [A one-sentence description of their most defining physical or behavioral trait]"
+    },
+    uniqueAbility: {
+      instruction: "You are writing the UNIQUE ABILITY section for a compact character card.",
+      format: "Unique Ability: [A one-sentence description of their special talent, magic, or skill]"
+    },
+    goal: {
+      instruction: "You are writing the GOAL section for a compact character card.",
+      format: "Goal: [A one-sentence description of their primary drive, motivation, or long-term objective]"
+    },
+    complication: {
+      instruction: "You are writing the COMPLICATION section for a compact character card.",
+      format: "Complication: [A one-sentence description of the main flaw, obstacle, or catch that complicates their goal]"
+    }
+  };
+
+longCharacterPrompts() =>
+  return {
+    name: {
+      instruction: "You are writing the NAME section for a detailed character card.",
+      format: "Name: [A creative, fitting name for the character]"
+    },
+    role: {
+      instruction: "You are writing the ROLE section for a detailed character card.",
+      format: "Role: [The character's primary function/occupation in the narrative]"
+    },
+    concept: {
+      instruction: "You are writing the CONCEPT section for a detailed character card.",
+      format: "Concept: [An exciting, one-sentence description of their core premise/identity]"
+    },
+    appearance: {
+      instruction: "You are writing the APPEARANCE section for a detailed character card.",
+      format: "Appearance: [A short comma-separated list of visual details: suit, ledger, monocle, clothing, notable features]"
+    },
+    personality: {
+      instruction: "You are writing the PERSONALITY section for a detailed character card.",
+      format: "Personality: [A short list or short sentence describing their demeanor, temperament, and core traits]"
+    },
+    power: {
+      instruction: "You are writing the POWER section for a detailed character card.",
+      format: "Power: [A single punchy sentence describing their primary ability or unique magical force]"
+    },
+    goal: {
+      instruction: "You are writing the GOAL section for a detailed character card.",
+      format: "Goal: [A single sentence describing their primary ambition or ultimate objective]"
+    },
+    conflict: {
+      instruction: "You are writing the CONFLICT section for a detailed character card.",
+      format: "Conflict: [A single sentence describing the direct problem, challenge, or consequence of their existence/work]"
+    },
+    hook: {
+      instruction: "You are writing the HOOK section for a detailed character card.",
+      format: "Hook: [A highly engaging, punchy sentence explaining why this character is compelling to interact with]"
+    }
+  };
+
+characterPrompts() =>
+  let len = localStorage.characterTextLength || 'medium';
+  let isMultiple = (localStorage.multiple === '.' && len !== 'superlong');
+  let basePrompts = {};
+  if (len === 'short') {
+    basePrompts = shortCharacterPrompts();
+  } else if (len === 'medium') {
+    basePrompts = mediumCharacterPrompts();
+  } else if (len === 'long') {
+    basePrompts = longCharacterPrompts();
+  } else {
+    return superLongCharacterPrompts();
+  }
+
+  if (!isMultiple) {
+    return basePrompts;
+  }
+
+  // Create prompts mapping for suffix 1, 2, and 3
+  let mappedPrompts = {};
+  let baseKeys = Object.keys(basePrompts);
+  for (let k = 0; k < baseKeys.length; k++) {
+    let key = baseKeys[k];
+    let definition = basePrompts[key];
+    mappedPrompts[key + "1"] = definition;
+    mappedPrompts[key + "2"] = definition;
+    mappedPrompts[key + "3"] = definition;
+  }
+  return mappedPrompts;
+
 
 introGenerationPrompt() =>
   return {
