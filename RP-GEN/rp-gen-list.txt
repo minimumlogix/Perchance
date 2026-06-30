@@ -70,15 +70,30 @@ settings
       } else if (tab === "character") {
         let characterLength = localStorage.characterTextLength || 'medium';
         let isMultiple = (localStorage.multiple === '.' && characterLength !== 'superlong');
-        let lengthTask = "generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.";
-        if (characterLength === 'short') {
-          lengthTask = isMultiple ? "generate 3 different one-line character hooks." : "generate a one-line character hook.";
-        } else if (characterLength === 'medium') {
-          lengthTask = isMultiple ? "generate 3 different compact character cards." : "generate a compact character card.";
-        } else if (characterLength === 'long') {
-          lengthTask = isMultiple ? "generate 3 different detailed character cards." : "generate a detailed character card.";
+        if (characterLength === 'superlong') {
+          return "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
+        } else {
+          let taskDesc = "";
+          let formatDesc = "";
+          if (characterLength === 'short') {
+            taskDesc = isMultiple ? "generate 3 different creative one-line character hooks." : "generate a creative one-line character hook.";
+            formatDesc = "Each hook must be a single sentence in the following format:\n• [Archetype] who [Unique Twist] and [Conflict]. (e.g. • Blind dragon hunter who sees through echoes and secretly protects dragons.)";
+          } else if (characterLength === 'medium') {
+            taskDesc = isMultiple ? "generate 3 different compact character cards." : "generate a compact character card.";
+            formatDesc = "Format each card exactly as follows:\nName: [Name]\nRole: [Role]\nCore Concept: [Core Concept]\nSignature Trait: [Signature Trait]\nUnique Ability: [Unique Ability]\nGoal: [Goal]\nComplication: [Complication]";
+          } else if (characterLength === 'long') {
+            taskDesc = isMultiple ? "generate 3 different detailed character cards." : "generate a detailed character card.";
+            formatDesc = "Format each card exactly as follows:\nName: [Name]\nRole: [Role]\nConcept: [Concept]\nAppearance: [Appearance]\nPersonality: [Personality]\nPower: [Power]\nGoal: [Goal]\nConflict: [Conflict]\nHook: [Hook]";
+          }
+          
+          if (isMultiple) {
+            formatDesc += "\n\nSeparate each card/hook with a blank line. Do not write any other introductory or concluding text, just output the cards/hooks.";
+          } else {
+            formatDesc += "\n\nDo not write any other introductory or concluding text, just output the card/hook.";
+          }
+
+          return "## TASK\n- You are a creative character designer. Based on the following notes, " + taskDesc + "\n- User Notes: " + activePrompt + "\n\n## FORMAT\n" + formatDesc + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
         }
-        return "## TASK\n- You are a creative character designer. Based on the following notes, " + lengthTask + "\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "intro") {
         return "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (context ? "\n\n## CONTEXT\n" + context : "") + "\n\n" + constraints;
       } else if (tab === "lore") {
@@ -335,7 +350,32 @@ async generate() =>
 
       localInstruction = "## TASK\n- You are a creative roleplay writer. Based on the following scenario description, write an engaging roleplay starter scene with hooks, character dynamics, and atmosphere.\n- User Notes: " + activePrompt + lengthPrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "character") {
-      localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
+      let characterLength = localStorage.characterTextLength || 'medium';
+      let isMultiple = (localStorage.multiple === '.' && characterLength !== 'superlong');
+      if (characterLength === 'superlong') {
+        localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, generate a detailed character profile including personality, backstory, motivations, quirks, and appearance.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
+      } else {
+        let taskDesc = "";
+        let formatDesc = "";
+        if (characterLength === 'short') {
+          taskDesc = isMultiple ? "generate 3 different creative one-line character hooks." : "generate a creative one-line character hook.";
+          formatDesc = "Each hook must be a single sentence in the following format:\n• [Archetype] who [Unique Twist] and [Conflict]. (e.g. • Blind dragon hunter who sees through echoes and secretly protects dragons.)";
+        } else if (characterLength === 'medium') {
+          taskDesc = isMultiple ? "generate 3 different compact character cards." : "generate a compact character card.";
+          formatDesc = "Format each card exactly as follows:\nName: [Name]\nRole: [Role]\nCore Concept: [Core Concept]\nSignature Trait: [Signature Trait]\nUnique Ability: [Unique Ability]\nGoal: [Goal]\nComplication: [Complication]";
+        } else if (characterLength === 'long') {
+          taskDesc = isMultiple ? "generate 3 different detailed character cards." : "generate a detailed character card.";
+          formatDesc = "Format each card exactly as follows:\nName: [Name]\nRole: [Role]\nConcept: [Concept]\nAppearance: [Appearance]\nPersonality: [Personality]\nPower: [Power]\nGoal: [Goal]\nConflict: [Conflict]\nHook: [Hook]";
+        }
+        
+        if (isMultiple) {
+          formatDesc += "\n\nSeparate each card/hook with a blank line. Do not write any other introductory or concluding text, just output the cards/hooks.";
+        } else {
+          formatDesc += "\n\nDo not write any other introductory or concluding text, just output the card/hook.";
+        }
+
+        localInstruction = "## TASK\n- You are a creative character designer. Based on the following notes, " + taskDesc + "\n- User Notes: " + activePrompt + "\n\n## FORMAT\n" + formatDesc + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
+      }
     } else if (tabAtStart === "intro") {
       localInstruction = "## TASK\n- You are a creative writer. Based on the following notes, write or continue an engaging roleplay intro.\n- User Notes: " + activePrompt + (otherTabsCtx ? "\n\n## CONTEXT\n" + otherTabsCtx : "") + "\n\n" + constraints;
     } else if (tabAtStart === "lore") {
@@ -479,7 +519,7 @@ async generate() =>
     localResponseEl.value = cleanAndFormatJSON(localResponseEl.value);
     localStorage[tabAtStart + "Response"] = localResponseEl.value;
 
-  } else if (tabAtStart === "character") {
+  } else if (tabAtStart === "character" && (localStorage.characterTextLength || 'medium') === 'superlong') {
     let pBar = document.getElementById("characterProgressBar");
     let pBarInner = document.getElementById("characterProgressBarInner");
 
