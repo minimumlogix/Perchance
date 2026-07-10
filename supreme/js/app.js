@@ -216,6 +216,60 @@
             commentsOptions: {},
             galleryOptions: {}
         };
+
+        // Dynamically define getters for prompts that use compile() via instruction.evaluateItem
+        const categories = ['characterPage', 'worldPage', 'roleplayPage', 'characterSheetPage', 'assistantPage'];
+        categories.forEach(cat => {
+            let prompts = window.root.prompts[cat];
+            if (!prompts) return;
+            Object.keys(prompts).forEach(key => {
+                let prompt = prompts[key];
+                if (prompt && typeof prompt.compile === 'function') {
+                    Object.defineProperty(prompt, 'instruction', {
+                        get: function() {
+                            return {
+                                get evaluateItem() {
+                                    if (cat === 'characterPage') {
+                                        if (key === 'worldLore') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.userNotes, window.root.existingWorldName, window.root.needsName);
+                                        if (key === 'worldLoreImage') return prompt.compile(window.root.text);
+                                        if (key === 'identityDetails') return prompt.compile(window.root.existingContext, window.root.worldLoreVal, window.root.allUserNotes, window.root.settingAndTone, window.root.blankFields);
+                                        if (key === 'overview') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.worldLoreVal, window.root.detailsStr);
+                                        if (key === 'imageCaption') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.appearanceText);
+                                        if (key === 'backgroundImage') return prompt.compile(window.root.scenario);
+                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.wikiOverride);
+                                        if (key === 'chatCss') return prompt.compile(window.root.generatedText, window.root.settingValue, window.root.toneValues);
+                                        if (key === 'chatLore') return prompt.compile();
+                                        if (key === 'chatStyleGuide') return prompt.compile();
+                                    }
+                                    if (cat === 'worldPage') {
+                                        if (key === 'bannerImage') return prompt.compile(window.root.wName, window.root.wSetting, window.root.wTones, window.root.overviewText);
+                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.override);
+                                    }
+                                    if (cat === 'roleplayPage') {
+                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.override);
+                                        if (key === 'worldLore') return prompt.compile(window.root.name, window.root.setting, window.root.tonesStr);
+                                        if (key === 'npcGeneration') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.setting);
+                                        if (key === 'scenarioNotes') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.npcsText, window.root.userRole);
+                                    }
+                                    if (cat === 'characterSheetPage') {
+                                        if (key === 'sheetGeneration') return prompt.compile(window.root.charData);
+                                    }
+                                    if (cat === 'assistantPage') {
+                                        if (key === 'assessIntention') return prompt.compile(window.root.text);
+                                        if (key === 'methodology') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.text);
+                                        if (key === 'finalOutputThinking') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.methodology, window.root.text);
+                                        if (key === 'finalOutputNoThinking') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.text);
+                                        if (key === 'imagePrompt') return prompt.compile(window.root.context, window.root.text);
+                                    }
+                                    return "";
+                                }
+                            };
+                        },
+                        configurable: true
+                    });
+                }
+            });
+        });
         
         // Setup missing plugin functions so generator preview works locally
         if (typeof window.ai === "undefined") {
