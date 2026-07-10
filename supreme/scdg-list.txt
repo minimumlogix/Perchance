@@ -302,7 +302,7 @@ galleryOptions
 prompts
   shortDescription
     instruction = You are writing the SHORT DESCRIPTION section for a character profile.
-    format = Format your response EXACTLY as follows:\nShort Description:\n- [Emoji] a short, punchy 1 sentence description of the character's core identity or concept. Select a single thematic emoji in square brackets representing their primary trait (e.g. - [🍺] previously B-rank hero turned drunkard.). Keep the sentence below 55 characters including spaces.
+    format = Format your response EXACTLY as follows:\nShort Description:\n- \[Emoji\] a short, punchy 1 sentence description of the character's core identity or concept. Select a single thematic emoji in square brackets representing their primary trait (e.g. - \[🍺\] previously B-rank hero turned drunkard.). Keep the sentence below 55 characters including spaces.
   
   appearance
     instruction = You are writing the APPEARANCE, ATTIRE, and ITEMS section for a character profile.
@@ -327,11 +327,11 @@ prompts
   
   abilities
     instruction = You are writing the ABILITIES section for a character profile.
-    format = Format your response EXACTLY as follows:\n- [Ability Name]: [Description]\n- [Ability name]: [Description]. Following the similar format Write a list of physical, combat, magical, or unique abilities/skills/weapons the character possesses. Do not add headings or subheadings.
+    format = Format your response EXACTLY as follows:\n- \[Ability Name\]: \[Description\]\n- \[Ability name\]: \[Description\]. Following the similar format Write a list of physical, combat, magical, or unique abilities/skills/weapons the character possesses. Do not add headings or subheadings.
   
   relations
     instruction = You are writing the RELATIONS section for a character profile.
-    format = Format your response EXACTLY as follows:\n- \{\{user\}\}: [Relationship Type, Description, Dynamic]\n- in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings.
+    format = Format your response EXACTLY as follows:\n- \{\{user\}\}: \[Relationship Type, Description, Dynamic\]\n- in the same listed format, list out all the important people in the character's life and describe their relationship and dynamic with the character. Do not add headings or subheadings.
   
   background
     instruction = You are writing the BACKSTORY, OCCUPATION, RESIDENCE, SECRETS, SHORT-TERM GOALS and LONG-TERM GOALS section for a character profile.
@@ -339,13 +339,13 @@ prompts
   
   timeline
     instruction = You are writing the TIMELINE section for a character profile.
-    format = Format your response EXACTLY as follows:\n- [Age]: [Milestone event]\n- [Age]: [Milestone event]\n- Continue creating list to cover all important events in the character's life.
+    format = Format your response EXACTLY as follows:\n- \[Age\]: \[Milestone event\]\n- \[Age\]: \[Milestone event\]\n- Continue creating list to cover all important events in the character's life.
   
   lore
     instruction = You are writing the LORE KEYWORDS and LORE CONTENT section for a character profile.
-    format = You MUST generate a strict JSON object containing between 4 and 5 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\", \"4\", \"5\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore).\n\nJSON format example:\n{\n  \"1\": {\n    \"content\": \"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\n    \"key\": [\"coffee\", \"barista\", \"spill\"]\n  },\n  \"2\": {\n    \"content\": \"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\n    \"key\": [\"oat milk\", \"espresso\", \"favorite drink\"]\n  }\n}
+    format = You MUST generate a strict JSON object containing between 4 and 5 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\", \"4\", \"5\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore).\n\nJSON format example:\n\{\n  \"1\": \{\n    \"content\": \"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\n    \"key\": \[ \"coffee\", \"barista\", \"spill\" \]\n  \},\n  \"2\": \{\n    \"content\": \"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\n    \"key\": \[ \"oat milk\", \"espresso\", \"favorite drink\" \]\n  \}\n\}\n
     notes = LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate \{\{user\}\} phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported.
-    footer = Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }.
+    footer = Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with \{ and ending with \}.
   
   roleplay
     instruction = You are writing the ROLEPLAY EXAMPLES section for a character profile.
