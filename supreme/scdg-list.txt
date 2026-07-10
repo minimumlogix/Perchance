@@ -359,6 +359,7 @@ prompts
     format = Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the \{{user\}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncencored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* \"The security sweeps are on a ten-minute loop.\").\n- Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:'). \ncharacter's short name: \"dialogues that reflect the character’s personality and relationship to \{{user\}}\". *Include actions or pauses*. E.g., \"dialogue...\" *muttered while fumbling with something* \"more dialogue as per the character\"
 
   compile(sectionName, context, notes, lengthVal, overview, worldLore) =>
+    window.literal = literal;
     let p = this[sectionName];
     if (!p) return "";
     let parts = [p.instruction];
@@ -382,6 +383,7 @@ prompts
     worldLore
       instruction = You are writing a concise, factual "World Lore" summary for a character generator. This text will be used by AI to generate consistent characters, so it must contain actionable facts - NOT atmospheric prose.
       compile(settingValue, toneStr, userNotes, existingWorldName, needsName) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Setting: " + settingValue + "\nTones: " + toneStr + (userNotes ? "\nUser Hints / Notes: " + userNotes : "") + (existingWorldName ? "\nWorld Name: " + existingWorldName : ""));
         parts.push("Rules (STRICTLY FOLLOW):\n1. Write 3-5 SHORT bullet points or brief sentences. Each one is a concrete, specific fact.\n2. Cover: time period & location, technology/magic level, society/political structure, daily life tone, and one major ongoing conflict or theme.\n3. DO NOT write flowery prose, metaphors, poetic imagery, or literary descriptions.\n4. DO NOT write vague statements like \"magic exists\" - be specific: what kind, how it works, who has it.\n5. Format: plain sentences or short bullet points. No headers. No intro/outro.\n6. Aim for 60-120 words maximum." + (needsName ? "\n7. At the very end, on its own line, output exactly: WORLD_NAME: [A short, creative 1-4 word name for this world, fitting the setting]" : ""));
@@ -392,11 +394,13 @@ prompts
     worldLoreImage
       instruction = Based on the world lore below, extract 5-8 vivid visual keyphrases for an environment/landscape concept art prompt.
       compile(text) =>
+        window.literal = literal;
         return this.instruction + "\nLore: " + text + "\n\nRespond with ONLY a comma-separated list of visual descriptors. Focus on colors, architecture, weather, and landmarks. No extra text.";
 
     identityDetails
       instruction = You are filling in missing identity fields for a character. Generate ONLY the missing fields listed below - do not generate anything else.
       compile(existingContext, worldLoreVal, allUserNotes, settingAndTone, blankFields) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("IMPORTANT - scan the user notes and overview carefully before generating. If an explicit value for any field is stated anywhere (e.g. \"25 year old\", \"she/her\", \"human\", \"asian\"), you MUST use that exact value. Do not infer or reinterpret. Only invent a value if no indication exists anywhere in the provided context.");
         parts.push("REGENERATION RULE: If a field is blank and listed in the \"Fields to generate\" list, it is because we want to replace the old value. Do NOT reuse the old value of this field even if it is mentioned in the existing character context below (e.g. if \"name\" is to be generated, do not reuse the old name mentioned in the background or personality sections; generate a completely new name instead).");
@@ -412,6 +416,7 @@ prompts
     overview
       instruction = You are a master character concept designer. Generate exactly one single creative, masterpiece, original, non-cliche character concept as a single cohesive paragraph. Do not generate multiple paragraphs, headings, bullet points, or lists.
       compile(settingValue, toneStr, worldLoreVal, detailsStr) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Setting: " + (settingValue || "unspecified") + "\nTone: " + toneStr + (worldLoreVal ? "\nWorld Lore: " + worldLoreVal : "") + (detailsStr ? "\n" + detailsStr : ""));
         parts.push("Requirements:\n- Write a single descriptive paragraph (roughly 4-6 sentences) outlining the character.\n- This paragraph must combine a basic idea of the character's appearance, role, personality, scenario, and dynamic context with {{user}}.\n- The description should flow naturally and depict the character's core aesthetic and situation (e.g., 'Curvy, cute, blue hair. Extreme tsundere assassin who was {{user}}'s childhood friend...').\n- At the very end of this paragraph, include exactly one signature quote from the character (in double quotes) that captures their unique voice and tone.\n- Do NOT use any headings (like 'Appearance:' or 'Personality:'), do not use bold markdown, and do not write multiple paragraphs. Only output the single cohesive paragraph with the quote at the end.");
@@ -421,6 +426,7 @@ prompts
     imageCaption
       instruction = You are generating an image prompt for an AI image generator. Below is a character's physical appearance description. Extract the purely VISUAL elements and format them as a comma-separated list of descriptive keyphrases.
       compile(settingValue, toneStr, appearanceText) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Rules:\n1. Only include things that can be seen in an image. Do NOT include personality traits, backstory, abstract concepts, or emotions.\n2. DO include specific visual details: hair colour and style, eye colour, skin tone, clothing style and colour, notable accessories, body type, distinguishing features, apparent age range, gender presentation, race/species.\n3. Include ONE concise colour palette phrase at the end if apparent.\n4. Let the setting and tone subtly influence HOW you describe visual elements.\n5. Keep each keyphrase short and concrete.\n6. Order keyphrases from most important to least.\n7. Avoid redundant or low-impact details.\n\nSetting: " + (settingValue || "unspecified") + "\nTone: " + toneStr);
         parts.push("Physical appearance description:\n---\n" + appearanceText + "\n---");
@@ -430,11 +436,13 @@ prompts
     backgroundImage
       instruction = Extract ONLY the physical setting, environment, lighting, and atmosphere from the following text into a concise visual description. Do NOT mention any people, characters, actions, or dialogue. Just describe the empty scenery:
       compile(scenario) =>
+        window.literal = literal;
         return this.instruction + "\n\n" + scenario;
 
     wikiImport
       instruction = TASK: Extract character information from the provided text to populate a complete character profile.
       compile(content, wikiOverride) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Text:\n" + content.slice(0, 12000));
         parts.push("Respond with ONLY a JSON object in this format:\n{\n  \"name\": \"...\",\n  \"age\": \"...\",\n  \"gender\": \"...\",\n  \"orientation\": \"...\",\n  \"race\": \"...\",\n  \"ethnicity\": \"...\",\n  \"shortDescription\": \"...\",\n  \"role\": \"...\",\n  \"appearance\": \"...\",\n  \"personality\": \"...\",\n  \"beliefs\": \"...\",\n  \"preferences\": \"...\",\n  \"abilities\": \"...\",\n  \"relations\": \"...\",\n  \"background\": \"...\",\n  \"timeline\": \"...\",\n  \"lore\": \"...\",\n  \"roleplay\": \"...\"\n}\n- Keep identity fields (name, age, gender, orientation, race, ethnicity) short.\n- shortDescription: single-sentence emoji-prefixed concept.\n- role: 3-sentence description of the character's narrative role and relationship to the {{user}}/protagonist.\n- appearance, background, personality, beliefs, and preferences should be detailed paragraphs (4+ sentences each) based on the text.\n- personality: focus on core traits, speech, behavior, emotions, and internal conflicts.\n- beliefs: focus on mentality, world view, beliefs, morals, and core philosophies.\n- preferences: focus on likes, hates, hobbies, values, and romance views.\n- abilities, relations, timeline: bulleted lists based on the text.\n- lore: 5-10 specific timeless facts or world-building details extracted from the text, formatted as a bulleted/numbered list or multi-line text.\n- roleplay: A custom roleplay starting scene or greeting message written in the first person or third person from the character's perspective based on their lore.\n- If a field is unknown, use null.");
@@ -447,6 +455,7 @@ prompts
     chatCss
       instruction = You are generating CSS styling for an AI character chat interface message bubble. The interface uses a dark background.
       compile(generatedText, settingValue, toneValues) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Character description:\n---\n" + generatedText + "\n---\nSetting: " + settingValue + "\nTone: " + toneValues);
         parts.push("Generate atmospheric CSS styling that suits this character's personality, aesthetic, and tone.\n\nRespond with ONLY a valid JSON object in this format:\n{\n  \"css\": \"...\",\n  \"googleFont\": \"...\"\n}");
@@ -455,11 +464,13 @@ prompts
     chatLore
       instruction = You are preparing a character for an AI roleplay chat system.
       compile() =>
+        window.literal = literal;
         return this.instruction + "\n\nRespond with ONLY valid JSON:\n{\n  \"roleInstruction\": \"...\",\n  \"loreEntries\": [\"...\"]\n}";
 
     chatStyleGuide
       instruction = Write a concise style guide for an AI roleplaying as this character...
       compile() =>
+        window.literal = literal;
         return this.instruction;
 
   worldPage
@@ -487,6 +498,7 @@ prompts
         role = Important Characters of this world
         rules = Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph.
       compile(section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction) =>
+        window.literal = literal;
         let config = this[section];
         if (!config) return "";
         let parts = ["You are an expert world-builder and lore compiler. You are writing the " + section.toUpperCase() + " section for a detailed world log."];
@@ -498,11 +510,13 @@ prompts
     bannerImage
       instruction = Based on the world setting and overview details below, extract 6-8 visual keyphrases for an environment/landscape concept art prompt.
       compile(wName, wSetting, wTones, overviewText) =>
+        window.literal = literal;
         return this.instruction + "\nName: " + (wName || "Unnamed") + "\nSetting: " + wSetting + "\nTones: " + wTones + "\nOverview details: " + overviewText + "\n\nRespond with ONLY a comma-separated list of visual descriptors. Focus on structures, color palette, lighting, climate, and landmarks. No introductory or concluding text.";
 
     wikiImport
       instruction = TASK: Extract world-building and setting details from the provided text to populate a complete world setting profile.
       compile(content, override) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Text:\n" + content.slice(0, 12000));
         parts.push("Respond with ONLY a JSON object in this format:\n{\n  \"name\": \"...\",\n  \"setting\": \"...\",\n  \"tones\": [\"...\", \"...\"],\n  \"themes\": \"...\",\n  \"overview\": \"...\",\n  \"rules\": \"...\",\n  \"races\": \"...\",\n  \"regions\": \"...\",\n  \"factions\": \"...\",\n  \"bestiary\": \"...\",\n  \"characters\": \"...\"\n}\n- Keep \"name\" and \"setting\" (e.g. Fantasy, Cyberpunk) short.\n- tones: array of tones (choose from: Grounded, Thrilling Action, Dark Gritty, Light-hearted Comedic, Mysterious, Romantic, Erotic, Tragic, Whimsical, Epic, Affectionate, Flirtatious, Sensual).\n- themes: comma-separated core themes.\n- overview, rules, races, regions, factions, bestiary, and characters should be detailed descriptions describing each area based on the text.\n- If a field is unknown, use null.");
@@ -516,6 +530,7 @@ prompts
     wikiImport
       instruction = TASK: Extract roleplay scenario details from the provided text to populate a roleplay configuration.
       compile(content, override) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("Text:\n" + content.slice(0, 12000));
         parts.push("Respond with ONLY a JSON object in this format:\n{\n  \"worldName\": \"...\",\n  \"worldLore\": \"...\",\n  \"setting\": \"...\",\n  \"tones\": [\"...\", \"...\"],\n  \"themes\": \"...\",\n  \"userName\": \"...\",\n  \"userRole\": \"...\",\n  \"npcs\": [\n    { \"name\": \"...\", \"species\": \"...\", \"personality\": \"...\", \"role\": \"...\" }\n  ],\n  \"scenarioNotes\": \"...\"\n}\n- worldName, userName, userRole: short text.\n- setting: short genre.\n- tones: array of tone names.\n- themes: comma-separated list of themes.\n- worldLore, scenarioNotes: detailed descriptions.\n- npcs: array of up to 4 major characters from the text, with name, species, personality summary, and role in story.\n- If a field is unknown, use null.");
@@ -528,22 +543,26 @@ prompts
     worldLore
       instruction = Write a concise world overview (3-4 sentences maximum) for a roleplay setting.
       compile(name, setting, tonesStr) =>
+        window.literal = literal;
         return this.instruction + "\nWorld Name: " + name + "\nSetting: " + setting + "\nTones: " + tonesStr + "\n\nDo not include titles. Write in a factual, evocative style. Do not use the em-dash (\u2014) character. Output only the lore content.";
 
     npcGeneration
       instruction = Generate a single creative NPC profile fitting the world described below.
       compile(worldName, worldLore, setting) =>
+        window.literal = literal;
         return this.instruction + "\nWorld Name: " + worldName + "\nLore: " + worldLore + "\nSetting Genre: " + setting + "\n\nYou MUST respond with exactly a JSON object containing keys: \"name\", \"species\", \"personality\", \"role\".\nExample response:\n{\n  \"name\": \"Kaito\",\n  \"species\": \"Cyborg\",\n  \"personality\": \"Quiet, tactical, distrustful.\",\n  \"role\": \"Infiltrator and guide.\"\n}\n\nOutput ONLY the valid raw JSON object. Do not wrap in markdown ```json blocks. Do not use em-dashes.";
 
     scenarioNotes
       instruction = Generate a creative RPG roleplay conflict scenario / plot hook (2-3 sentences maximum).
       compile(worldName, worldLore, npcsText, userRole) =>
+        window.literal = literal;
         return this.instruction + "\nWorld Name: " + worldName + "\nWorld Lore: " + worldLore + "\nNPCs: " + (npcsText || "Generic side characters") + "\nPlayer Role: " + userRole + "\n\nEstablish an immediate danger, mystery, or conflict that unites the player and the NPCs. Output only the scenario notes. Do not write titles. Do not use em-dashes.";
 
     roleplayScenario
       instruction = You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The \{{user\}} is the player of this roleplay.
       format = TASK:\nGenerate a structured scenario document divided into exactly two blocks using the separator string \"=== ROLEPLAY_STARTER_SEPARATOR ===\".\n\nBefore the separator, output the SCENARIO SHEET containing:\n1. **World Expansion**: 2-3 sentences expanding on the setting specifics for this scene.\n2. **Character Sheet Details**: A concise summary of each NPC's hidden motivations, initial attitude towards the Player, and their relationships.\n3. **Plot Setup & Objective**: What is the immediate conflict, and what is the group's goal?\n\nAfter the separator, output the ROLEPLAY STARTER POST:\n- Set the scene at the very beginning of the action. Describe the immediate surroundings, sensory details (sounds, weather, light), and character actions.\n- End the starter post with an action, dialogue, or event from one of the NPCs that directly prompts the Player to speak or act, creating a natural hook.\n\nRespond using the separator \"=== ROLEPLAY_STARTER_SEPARATOR ===\" between the Scenario Sheet and the Starter Post. Output nothing else.
       compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("WORLD DATA:\n- World Name: " + worldName + "\n- World Lore/Setting: " + worldLore + "\n- Setting Genre: " + setting + "\n- Atmospheric Tones: " + tonesStr + "\n- Themes/Keywords: " + themes);
         parts.push("PLAYER DATA (The User):\n- Player Name: " + pName + "\n- Player Role/Background: " + pRole);
@@ -557,6 +576,7 @@ prompts
     sheetGeneration
       instruction = You are a character design parsing assistant. Analyze the character data below and return a structured JSON character sheet dashboard.\nIf details are missing, extrapolate them logically based on the character's gender, species, setting, and background.
       compile(charData) =>
+        window.literal = literal;
         let parts = [this.instruction];
         parts.push("INPUT CHARACTER PROFILE:\nName: " + charData.name + "\nAge: " + charData.age + "\nGender: " + charData.gender + "\nSpecies/Race: " + charData.species + "\nEthnicity: " + charData.ethnicity + "\nOrientation: " + charData.orientation + "\n\nShort Description:\n" + charData.shortDescription + "\n\nAppearance & Attire:\n" + charData.appearance + "\n\nPersonality & Behavior:\n" + charData.personality + "\n\nRole & Rules:\n" + charData.role + "\n\nBeliefs & Morals:\n" + charData.beliefs + "\n\nPreferences & Romance:\n" + charData.preferences + "\n\nAbilities:\n" + charData.abilities + "\n\nRelations:\n" + charData.relations + "\n\nBackground & Goals:\n" + charData.background + "\n\nTimeline:\n" + charData.timeline + "\n\nWorld Setting & Lore:\n" + charData.lore + "\n\nDialogue Examples:\n" + charData.roleplay + "\n\nIntro Scenario Context:\n" + charData.introScenario + "\n\nIntro Start Script:\n" + charData.introStart);
         parts.push("JSON FORMAT TO RETURN (DO NOT return anything except this JSON object, wrapped in a ```json block):\n{\n  \"tagline\": \"A short, catchy, thematic tagline or quotes summarizing the character, max 80 characters.\",\n  \"summary\": \"A concise overview summarizing the character's narrative concept, personality, and background, max 300 characters.\",\n  \"identity\": {\n    \"name\": \"" + charData.name + "\",\n    \"species\": \"Species or race\",\n    \"age\": \"Age\",\n    \"gender\": \"Gender / Pronouns\",\n    \"orientation\": \"Sexual orientation\",\n    \"occupation\": \"Occupation or main function\",\n    \"status\": \"Alive, active, or deceased\",\n    \"affiliation\": \"Factions, groups, or key associations\"\n  },\n  \"physical\": {\n    \"height\": \"Height in metric or imperial\",\n    \"build\": \"Build / body description\",\n    \"hair\": \"Hair color and style\",\n    \"eyes\": \"Eye color and shape\",\n    \"features\": \"Scar, tattoos, accessories, or other distinguishing marks\",\n    \"style\": \"Attire style, clothing details, or armor\"\n  },\n  \"psychology\": {\n    \"mbti\": \"MBTI personality type (e.g. INFJ, ENTJ)\",\n    \"alignment\": \"Moral alignment (e.g. Chaotic Good, Lawful Evil)\",\n    \"motive\": \"Core motivation or goal\",\n    \"likes\": \"Three things they like, comma-separated\",\n    \"dislikes\": \"Three things they dislike, comma-separated\",\n    \"fears\": \"Fears, phobias, or core vulnerabilities\",\n    \"summary\": \"Brief summary of personality traits\"\n  },\n  \"inventory\": [\n    \"Item 1: Brief desc\",\n    \"Item 2: Brief desc\",\n    \"Item 3: Brief desc\"\n  ],\n  \"relations\": [\n    \"Name 1 (Relationship): Brief description of dynamic\",\n    \"Name 2 (Relationship): Brief description of dynamic\"\n  ],\n  \"lore\": [\n    \"Interesting historical or setting fact 1\",\n    \"Interesting historical or setting fact 2\",\n    \"Interesting historical or setting fact 3\"\n  ],\n  \"scenario\": {\n    \"context\": \"Context of their starting roleplay scene\",\n    \"speakingStyle\": \"Speaking style, quirks, or accents\"\n  }\n}");
@@ -566,26 +586,31 @@ prompts
     assessIntention
       instruction = You are a router. Based on the user request, output strictly ONE WORD from this list: \"image\", \"text\", \"both\". If they ask to see, draw, or generate an image/portrait, output \"image\" or \"both\". Otherwise output \"text\".
       compile(text) =>
+        window.literal = literal;
         return this.instruction + "\nUser Request: " + text;
 
     methodology
       instruction = Generate a brief step-by-step methodology to fulfill this user request. Only output the steps.
       compile(assistantPersonality, context, text) =>
+        window.literal = literal;
         return "CRITICAL IDENTITY & DIRECTIVE: You are the Supreme Character Generator AI Assistant co-writer. The 'Supreme Character Generator' is an application for designing, editing, and compiling structured roleplay character profiles and world settings. " + assistantPersonality.joinItems(" ") + " " + this.instruction + "\n" + context + "\nRequest: " + text;
 
     finalOutputThinking
       instruction = Fulfill the user request based on the methodology.
       compile(assistantPersonality, context, methodology, text) =>
+        window.literal = literal;
         return "CRITICAL IDENTITY & DIRECTIVE: You are the Supreme Character Generator AI Assistant co-writer. The 'Supreme Character Generator' is an application for designing, editing, and compiling structured roleplay character profiles and world settings. " + assistantPersonality.joinItems(" ") + " " + this.instruction + "\n" + context + "\nMethodology: " + methodology + "\nUser Request: " + text;
 
     finalOutputNoThinking
       instruction = Fulfill the user request.
       compile(assistantPersonality, context, text) =>
+        window.literal = literal;
         return "CRITICAL IDENTITY & DIRECTIVE: You are the Supreme Character Generator AI Assistant co-writer. The 'Supreme Character Generator' is an application for designing, editing, and compiling structured roleplay character profiles and world settings. " + assistantPersonality.joinItems(" ") + " " + this.instruction + "\n" + context + "\nUser Request: " + text;
 
     imagePrompt
       instruction = Write a succinct image generation prompt for text-to-image AI based on the user request. Describe the visuals clearly. Only output the prompt.
       compile(context, text) =>
+        window.literal = literal;
         return this.instruction + "\n" + context + "\nRequest: " + text;
 
 assistantPersonality
