@@ -849,18 +849,7 @@
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
 
-        root.worldName = worldName;
-        root.worldLore = worldLore;
-        root.setting = setting;
-        root.tonesStr = tonesStr;
-        root.themes = themes;
-        root.pName = pName;
-        root.pRole = pRole;
-        root.npcsText = npcsText;
-        root.scenarioNotes = scenarioNotes;
-        root.lengthInstruction = lengthInstruction;
-
-        let prompt = root.prompts.roleplayPage.roleplayScenario.instruction.evaluateItem;
+        let prompt = root.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction);
 
         if (tabScenario) {
             tabScenario.innerHTML = "";

@@ -1181,205 +1181,47 @@
     window.maybeGenerateDetails = window.generateIdentityDetails;
 
     window.buildShortDescriptionPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.shortDescription;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("shortDescription", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildAbilitiesPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.abilities;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("abilities", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildRelationsPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.relations;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("relations", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildTimelinePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.timeline;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("timeline", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildRolePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.role;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("role", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildAppearancePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.appearance;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        parts.push(p.notes.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("appearance", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildBackgroundPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.background;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("background", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildPersonalityPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.personality;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("personality", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildBeliefsPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.beliefs;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("beliefs", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildPreferencesPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.preferences;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("preferences", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildLorePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.lore;
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        parts.push(p.notes.evaluateItem);
-        parts.push(p.footer.evaluateItem);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        return root.prompts.compile("lore", context, notes, lengthVal, overview, worldLore);
     };
 
     window.splitOldIntroText = function (text) {
@@ -1413,11 +1255,7 @@
     };
 
     window.buildRoleplayExamplePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let p = root.prompts.roleplay;
         let perspective = getSelectedPerspective();
-        
         let perspectiveRule = perspective === "First_Person"
             ? "IMPORTANT NARRATION PERSPECTIVE: All narration and actions inside the roleplay examples must be written in the FIRST-PERSON perspective from the character's point of view (using 'I', 'me', 'my' for the character's actions and thoughts). Do NOT write narration in the third person."
             : "IMPORTANT NARRATION PERSPECTIVE: All narration must be written in the THIRD-PERSON perspective (using the character's name or 'he/she/they' for narration/actions).";
@@ -1433,27 +1271,13 @@ START_OF_DIALOG
 END_OF_DIALOG
 Note: Only add multiple characters if there are any. Write their dialogue in the same way.`;
 
-        let parts = [p.instruction.evaluateItem];
-        let lenInstr = getLengthInstruction(lengthVal);
-        if (lenInstr) parts.push(lenInstr);
-        parts.push(p.format.evaluateItem);
-        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
-        parts.push(robustFormatRule);
-        parts.push(perspectiveRule);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        let extraNotes = "CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.\n\n" + robustFormatRule + "\n\n" + perspectiveRule;
+        let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
+        
+        return root.prompts.compile("roleplay", context, finalNotes, lengthVal, overview, worldLore);
     };
 
     window.buildIntroScenarioPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let lengthInstruction = getLengthInstruction(lengthVal);
         let perspective = getSelectedPerspective();
         
         let ignorePerspective = true;
@@ -1462,34 +1286,21 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             ignorePerspective = ignorePerspectiveToggle.checked;
         }
             
-        let parts = [root.prompts.introScenario.instruction.evaluateItem];
-        parts.push(root.prompts.introScenario.format.evaluateItem);
-        
-        parts.push("CRITICAL: The narrative voice MUST strongly reflect the selected Tone.");
-        parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
+        let extraNotes = "CRITICAL: The narrative voice MUST strongly reflect the selected Tone.\n" +
+            "IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.";
         
         if (!ignorePerspective) {
             let perspectiveRule = perspective === "First_Person"
                 ? "PERSPECTIVE: Write the scenario context description from the character's first-person perspective, reflecting their thoughts and observations of the environment (using 'I', 'me', 'my')."
                 : "PERSPECTIVE: Write the scenario context description from a third-person narrative perspective.";
-            parts.push(perspectiveRule);
+            extraNotes += "\n" + perspectiveRule;
         }
         
-        if (lengthInstruction) parts.push(lengthInstruction);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
+        return root.prompts.compile("introScenario", context, finalNotes, lengthVal, overview, worldLore);
     };
 
     window.buildIntroStartPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        let settingAndTone = getSettingAndToneContext();
-        let referencedCtx = getReferencedCharactersContext();
-        let lengthInstruction = getLengthInstruction(lengthVal);
         let perspective = getSelectedPerspective();
         
         let perspectiveRule = perspective === "First_Person"
@@ -1497,27 +1308,16 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             : "IMPORTANT NARRATION PERSPECTIVE: The narration must be written in the THIRD-PERSON perspective (using the character's name or 'he/she/they' for narration/actions).";
             
         let scenarioContext = getSectionText("introScenario");
-        
-        let parts = [root.prompts.introStart.instruction.evaluateItem];
-        parts.push(root.prompts.introStart.format.evaluateItem);
-        parts.push(perspectiveRule);
-        
-        parts.push("CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.");
-        parts.push("IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.");
+        let extraNotes = perspectiveRule + "\n" +
+            "CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.\n" +
+            "IMPORTANT PERSPECTIVE RULE: When referring to the user in the narrative or actions, you MUST use second-person perspective ('you', 'your', 'yours'). Do not refer to the user as 'the user' or '{{user}}' in the narration; address them directly as 'you'.";
         
         if (scenarioContext) {
-            parts.push("SCENARIO CONTEXT (The scene takes place in this context):\n---\n" + scenarioContext + "\n---");
+            extraNotes += "\nSCENARIO CONTEXT (The scene takes place in this context):\n---\n" + scenarioContext + "\n---";
         }
         
-        if (lengthInstruction) parts.push(lengthInstruction);
-        if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-        if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-        if (overview) parts.push("\nGeneral character overview: " + overview);
-        if (notes) parts.push("\nSection-specific notes: " + notes);
-        if (referencedCtx) parts.push("\n" + referencedCtx);
-        if (settingAndTone) parts.push("\n" + settingAndTone);
-        parts.push(getBannedFormattingRule());
-        return parts.join("\n\n");
+        let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
+        return root.prompts.compile("introStart", context, finalNotes, lengthVal, overview, worldLore);
     };
 
     // ─── MAIN GENERATION ──────────────────────────────────────────────

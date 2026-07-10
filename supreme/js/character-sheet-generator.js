@@ -9,13 +9,15 @@
         let scripts = document.getElementsByTagName("script");
         for (let s of scripts) {
             if (s.src && s.src.includes("minimumlogix.github.io/Perchance/supreme/")) {
-                return s.src.split("app.js")[0].split("character-generator.js")[0].split("sheets-generator.js")[0];
+                let parts = s.src.split("minimumlogix.github.io/Perchance/supreme/");
+                return parts[0] + "minimumlogix.github.io/Perchance/supreme/";
             }
         }
         let links = document.getElementsByTagName("link");
         for (let l of links) {
             if (l.href && l.href.includes("minimumlogix.github.io/Perchance/supreme/")) {
-                return l.href.split("styles.css")[0];
+                let parts = l.href.split("minimumlogix.github.io/Perchance/supreme/");
+                return parts[0] + "minimumlogix.github.io/Perchance/supreme/";
             }
         }
         return "./";
@@ -24,7 +26,7 @@
     window.applySheetStyleLayout = function(styleName) {
         let link = document.getElementById("sheet-styles-link");
         if (link) {
-            link.href = getBaseUrl() + "sheet-styles-" + styleName + ".css";
+            link.href = getBaseUrl() + "css/sheet-styles-" + styleName + ".css";
         }
     };
 
@@ -673,7 +675,7 @@
         
         let cssRules = "";
         try {
-            let stylesheetUrl = getBaseUrl() + "sheet-styles-" + styleLayout + ".css";
+            let stylesheetUrl = getBaseUrl() + "css/sheet-styles-" + styleLayout + ".css";
             let res = await fetch(stylesheetUrl);
             cssRules = await res.text();
         } catch(e) {

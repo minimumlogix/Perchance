@@ -51,37 +51,142 @@
                 Forced_Cohabitation: { evaluateItem: "The relationship dynamic is forced cohabitation." },
                 Fake_Relationship: { evaluateItem: "The relationship dynamic is a fake relationship." }
             },
-            prompts: new Proxy({
+            prompts: {
+                compile: function(sectionName, context, notes, lengthVal, overview, worldLore) {
+                    let p = this[sectionName];
+                    if (!p) return "";
+                    let parts = [p.instruction ? p.instruction.evaluateItem : ""];
+                    let lenInstr = window.getLengthInstruction ? window.getLengthInstruction(lengthVal) : "";
+                    if (lenInstr) parts.push(lenInstr);
+                    parts.push(p.format ? p.format.evaluateItem : "");
+                    if (p.notes && p.notes.evaluateItem) parts.push(p.notes.evaluateItem);
+                    if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
+                    if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
+                    if (overview) parts.push("\nGeneral character overview: " + overview);
+                    if (notes) parts.push("\nSection-specific notes: " + notes);
+                    let refCtx = window.getReferencedCharactersContext ? window.getReferencedCharactersContext() : "";
+                    if (refCtx) parts.push("\n" + refCtx);
+                    let setTone = window.getSettingAndToneContext ? window.getSettingAndToneContext() : "";
+                    if (setTone) parts.push("\n" + setTone);
+                    if (p.footer && p.footer.evaluateItem) parts.push(p.footer.evaluateItem);
+                    if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
+                    return parts.join("\n\n");
+                },
                 role: { instruction: { evaluateItem: "You are writing the ROLE and RULES section." }, format: { evaluateItem: "Format: Role: ... Rules: ..." } },
                 appearance: { instruction: { evaluateItem: "You are writing the APPEARANCE, ATTIRE, and ITEMS section." }, format: { evaluateItem: "Format: Appearance: ... Attire: ..." }, notes: { evaluateItem: "Be specific and visual." } },
                 background: { instruction: { evaluateItem: "You are writing the BACKSTORY, OCCUPATION, RESIDENCE, SECRETS, SHORT-TERM GOALS, LONG-TERM GOALS, and SKILLS section." }, format: { evaluateItem: "Format: Backstory: ... Occupation: ..." } },
                 personality: { instruction: { evaluateItem: "You are writing the PERSONALITY, SPEECH, BEHAVIOR, EMOTIONS, and INTERNAL CONFLICTS section." }, format: { evaluateItem: "Format: Personality: ... Speech: ..." } },
                 beliefs: { instruction: { evaluateItem: "You are writing the MENTALITY, WORLD VIEW, BELIEFS, and MORALS section." }, format: { evaluateItem: "Format: Mentality: ... World View: ..." } },
                 preferences: { instruction: { evaluateItem: "You are writing the LIKES, HATES, HOBBIES, VALUES, and ROMANCE section." }, format: { evaluateItem: "Format: Likes: ... Hates: ..." } },
+                abilities: { instruction: { evaluateItem: "You are writing the ABILITIES section." }, format: { evaluateItem: "Format: - Ability: ..." } },
+                relations: { instruction: { evaluateItem: "You are writing the RELATIONS section." }, format: { evaluateItem: "Format: - user: ..." } },
+                timeline: { instruction: { evaluateItem: "You are writing the TIMELINE section." }, format: { evaluateItem: "Format: - Age: ..." } },
                 lore: {
                     instruction: { evaluateItem: "You are writing the LORE KEYWORDS and LORE CONTENT section for a character profile." },
-                    format: { evaluateItem: "You MUST generate a strict JSON object containing between 4 and 5 lore entries. The keys of the JSON object must be strings \"1\", \"2\", \"3\", \"4\", \"5\". Each entry must contain a \"content\" string (the lore details) and a \"key\" array of strings (lowercase keywords/phrases that trigger this lore).\n\nJSON format example:\n{\n  \"1\": {\n    \"content\": \"Jasper once spilt an entire latte on a celebrity's shoes, earning him the nickname 'Cappuccino Calamity' at the coffee shop.\",\n    \"key\": [\"coffee\", \"barista\", \"spill\"]\n  },\n  \"2\": {\n    \"content\": \"Jasper's absolute favorite drink is a dark roast with a splash of oat milk.\",\n    \"key\": [\"oat milk\", \"espresso\", \"favorite drink\"]\n  }\n}" },
-                    notes: { evaluateItem: "LORE Note:\n- Use short, clear lowercase keywords in the \"key\" array, tied to the character's personality, scenario, or setting.\n- Anticipate user phrasing; choose words with minimal synonyms to ensure exact matches.\n- Keep the lore \"content\" concise and interesting to enhance the character's quirks or context.\n- Avoid typos, as only exact matches are supported." },
-                    footer: { evaluateItem: "Output ONLY the raw JSON object. Do not include any markdown formatting, do not wrap it in ```json, do not write any introductory or concluding text. Output a valid, parsable JSON string starting with { and ending with }." }
+                    format: { evaluateItem: "You MUST generate a strict JSON object containing between 4 and 5 lore entries." },
+                    notes: { evaluateItem: "LORE Note..." },
+                    footer: { evaluateItem: "Output ONLY the raw JSON object." }
                 },
                 roleplay: { instruction: { evaluateItem: "You are writing the ROLEPLAY EXAMPLES section." }, format: { evaluateItem: "Format: <user>: ... CharacterName: ..." } },
                 introScenario: { instruction: { evaluateItem: "You are writing the SCENE CONTEXT / SCENARIO CONTEXT section." }, format: { evaluateItem: "Format: Scene Context: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } },
-                introStart: { instruction: { evaluateItem: "You are writing the ROLEPLAY START (Dialogue & Narration) section." }, format: { evaluateItem: "Format: Intro Script: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } }
-            }, {
-                get: (target, prop) => {
-                    if (prop in target) {
-                        return new Proxy(target[prop], {
-                            get: (t, p) => {
-                                if (p in t) return t[p];
-                                return { evaluateItem: "" };
-                            }
-                        });
+                introStart: { instruction: { evaluateItem: "You are writing the ROLEPLAY START (Dialogue & Narration) section." }, format: { evaluateItem: "Format: Intro Script: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } },
+                characterPage: {
+                    worldLore: {
+                        compile: function(settingValue, toneStr, userNotes, existingWorldName, needsName) {
+                            return "You are writing a concise, factual \"World Lore\" summary.\nSetting: " + settingValue + "\nTones: " + toneStr;
+                        }
+                    },
+                    worldLoreImage: {
+                        compile: function(text) { return "Extract environment visual keyphrases from:\n" + text; }
+                    },
+                    identityDetails: {
+                        compile: function(existingContext, worldLoreVal, allUserNotes, settingAndTone, blankFields) {
+                            return "Fill missing identity fields: " + blankFields;
+                        }
+                    },
+                    overview: {
+                        compile: function(settingValue, toneStr, worldLoreVal, detailsStr) {
+                            return "Generate one single character concept paragraph.\nSetting: " + settingValue;
+                        }
+                    },
+                    imageCaption: {
+                        compile: function(settingValue, toneStr, appearanceText) {
+                            return "Extract purely VISUAL elements from:\n" + appearanceText;
+                        }
+                    },
+                    backgroundImage: {
+                        compile: function(scenario) { return "Extract background environment from:\n" + scenario; }
+                    },
+                    wikiImport: {
+                        compile: function(content, wikiOverride) { return "Extract character info from text."; }
+                    },
+                    chatCss: {
+                        compile: function(generatedText, settingValue, toneValues) { return "Generate bubble CSS."; }
+                    },
+                    chatLore: {
+                        compile: function() { return "Prepare for AI chat system."; }
+                    },
+                    chatStyleGuide: {
+                        compile: function() { return "Write concise style guide."; }
                     }
-                    return new Proxy({}, {
-                        get: (t, p) => ({ evaluateItem: "" })
-                    });
+                },
+                worldPage: {
+                    sectionGeneration: {
+                        compile: function(section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction) {
+                            return "Expert world-builder writing " + section + ".\nWorld Name: " + wName;
+                        }
+                    },
+                    bannerImage: {
+                        compile: function(wName, wSetting, wTones, overviewText) {
+                            return "Extract environment visual keyphrases for " + wName;
+                        }
+                    },
+                    wikiImport: {
+                        compile: function(content, override) { return "Extract world-building details."; }
+                    }
+                },
+                roleplayPage: {
+                    wikiImport: {
+                        compile: function(content, override) { return "Extract roleplay details."; }
+                    },
+                    worldLore: {
+                        compile: function(name, setting, tonesStr) { return "Write concise world overview."; }
+                    },
+                    npcGeneration: {
+                        compile: function(worldName, worldLore, setting) { return "Generate single NPC profile."; }
+                    },
+                    scenarioNotes: {
+                        compile: function(worldName, worldLore, npcsText, userRole) { return "Generate creative plot hook."; }
+                    },
+                    roleplayScenario: {
+                        compile: function(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction) {
+                            return "Create roleplay scenario sheet.\nWorld Name: " + worldName;
+                        }
+                    }
+                },
+                characterSheetPage: {
+                    sheetGeneration: {
+                        compile: function(charData) { return "Return structured JSON character sheet dashboard."; }
+                    }
+                },
+                assistantPage: {
+                    assessIntention: {
+                        compile: function(text) { return "Assess intent for " + text; }
+                    },
+                    methodology: {
+                        compile: function(assistantPersonality, context, text) { return "Generate methodology."; }
+                    },
+                    finalOutputThinking: {
+                        compile: function(assistantPersonality, context, methodology, text) { return "Fulfill request based on methodology."; }
+                    },
+                    finalOutputNoThinking: {
+                        compile: function(assistantPersonality, context, text) { return "Fulfill request."; }
+                    },
+                    imagePrompt: {
+                        compile: function(context, text) { return "Write image prompt."; }
+                    }
                 }
-            }),
+            },
             visualStyles: {
                 selectAll: [
                     { getName: "Anime Portrait", "meta:tags": { basicAnime: 1 } },

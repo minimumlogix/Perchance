@@ -320,49 +320,7 @@
         let lengthVal = window.worldState.activeLength || "medium";
         let lengthInstruction = getLengthInstruction(lengthVal);
 
-        // Build prompts based on section
-        let promptConfig = {
-            overview: {
-                role: "World Overview, including Setting, Technology, Daily Life, and Secrets",
-                rules: "Format your response EXACTLY as follows (Do NOT use markdown bold/italic inside headers/text, output as clean lines/bullets):\n- The Setting : A paragraph covering the core setting, themes, underlying reality, and emotional atmosphere.\n- Technology: A paragraph explaining technology level, infrastructure, and everyday practical life.\n- Daily Life: A paragraph describing lifestyle across different social groups.\n- Secrets: A paragraph revealing truths about the world that are hidden from people living inside it."
-            },
-            rules: {
-                role: "Rules of the world",
-                rules: "Format your response EXACTLY as follows:\nList world rules that shape survival, values, economics, culture, conflict, or behavior. Provide a maximum of 5 rules as a clean bulleted list."
-            },
-            races: {
-                role: "Races residing in this world",
-                rules: "For each race (fill as per appropriate race count for the setting, e.g. 2-4 major races), write its name followed by description.\nFormat each race EXACTLY as follows:\n- Race_Name: A paragraph describing appearance, origins, culture, social structure, strengths, weaknesses, relationships with others, and role in the world."
-            },
-            regions: {
-                role: "Regions of the world",
-                rules: "Provide a list of at least 5 regions.\nFormat each region EXACTLY as follows:\n- Region_Name: A paragraph description of the region's climate, landscape, landmarks, and significance."
-            },
-            factions: {
-                role: "Major Factions shaping global power structures",
-                rules: "Provide a list of at least 4 factions.\nFormat each faction EXACTLY as follows:\n- Faction_Name: A paragraph including identity, leadership, goals, one representative quote, and flag/symbol/sign information. Also talk about if its a secret group or publically known."
-            },
-            bestiary: {
-                role: "Bestiary and common animals of the world",
-                rules: "Provide at least 4 important creatures/beasts and a list of common animals.\nFormat EXACTLY as follows:\n- Creature_Name: A paragraph describing appearance, habitat, behavior, danger level, ecological role, folklore, and any unusual traits or uses.\n\n- Common animals: a list, as a sentence, comma-separated."
-            },
-            characters: {
-                role: "Important Characters of this world",
-                rules: "Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."
-            }
-        };
-
-        let config = promptConfig[section];
-        root.section = section;
-        root.wName = wName;
-        root.wSetting = wSetting;
-        root.wTones = wTones;
-        root.wThemes = wThemes;
-        root.sectionNotes = sectionNotes;
-        root.configRole = config.role;
-        root.configRules = config.rules;
-        root.lengthInstruction = lengthInstruction;
-        let instruction = root.prompts.worldPage.sectionGeneration.instruction.evaluateItem;
+        let instruction = root.prompts.worldPage.sectionGeneration.compile(section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction);
 
         if (outputEl) {
             outputEl.innerHTML = "";
