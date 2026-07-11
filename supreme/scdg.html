@@ -80,18 +80,11 @@
             </div>
             <div
                 style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.2rem; border-top: 1px solid var(--panel-border); padding-top: 0.5rem;">
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button id="darkModeBtn" onclick="window.toggleManualDarkMode();"
-                        style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:var(--panel-header-bg); border:1px solid var(--panel-border); color:var(--text-main); font-size:0.95rem; cursor:pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.2s;"
-                        title="Toggle Theme">
-                        <i class="bi bi-moon-stars"></i>
-                    </button>
-                    <button id="brainDrawerBtn" onclick="window.toggleBrainDrawer();"
-                        style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:var(--panel-header-bg); border:1px solid var(--panel-border); color:var(--text-main); font-size:0.95rem; cursor:pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.2s;"
-                        title="View AI Context">
-                        <i class="bi bi-brain"></i>
-                    </button>
-                </div>
+                <button id="darkModeBtn" onclick="window.toggleManualDarkMode();"
+                    style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:var(--panel-header-bg); border:1px solid var(--panel-border); color:var(--text-main); font-size:0.95rem; cursor:pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background 0.2s, transform 0.2s;"
+                    title="Toggle Theme">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
                 <span class="sidebar-version"
                     style="font-size: 70%; opacity: 0.4; font-family: monospace;">v1.5.0</span>
             </div>
@@ -2621,40 +2614,39 @@
 
 
 
-<!-- Side Brain Context Drawer -->
-<div id="brainDrawer" class="side-drawer">
-  <div class="side-drawer-header">
-    <h5 class="m-0 fw-bold" style="display:flex; align-items:center; gap:0.4rem; font-size:1rem; color:var(--text-main); margin:0;">
-        <i class="bi bi-brain" style="color:var(--accent-color);"></i> AI Context Viewer
-    </h5>
-    <button class="btn-close" onclick="window.toggleBrainDrawer()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.2rem; display:inline-flex; align-items:center; justify-content:center; padding:0.25rem;"><i class="bi bi-x-lg"></i></button>
-  </div>
-  <div class="side-drawer-body" style="height: calc(100% - 60px); display:flex; flex-direction:column; gap:0.75rem; box-sizing:border-box;">
-    <p class="small text-muted" style="font-size: 11px; line-height: 1.4; margin:0; opacity:0.85;">
-        Select a prompt template below to view the compiled text context that will be sent to the AI.
-    </p>
-    
-    <select id="contextPromptSelect" onchange="window.updateBrainContextView()" class="select-input" style="width:100%; box-sizing:border-box;">
-        <!-- Options populated dynamically -->
-    </select>
-    
-    <div style="position:relative; flex:1; min-height:0; display:flex; flex-direction:column;">
-      <textarea id="brainContextTextarea" readonly 
-        style="width:100%; flex:1; font-size: 11px; background: rgba(0, 0, 0, 0.15); color: var(--text-main); border:1px solid var(--panel-border); resize: none; border-radius: 8px; font-family: monospace; white-space: pre-wrap; outline:none; box-sizing:border-box; padding:0.75rem;"></textarea>
-      
-      <button id="copyBrainContextBtn" class="btn btn-sm btn-secondary" 
-        style="position:absolute; top: 8px; right: 8px; font-size: 11px; opacity: 0.85; z-index: 10; padding:0.25rem 0.5rem;" onclick="window.copyBrainContext()">
-        <i class="bi bi-clipboard"></i> Copy
-      </button>
+<!-- Side Brain Context Sidebar -->
+<div id="brainSidebarEl" class="sidebar-container">
+    <button onclick="window.toggleBrainDrawer()" id="brainSidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn" style="top: 3.25rem;">
+        <i class="bi bi-brain"></i> context
+    </button>
+    <div class="sidebar-header">
+        <b class="sidebar-header-title"><i class="bi bi-brain" style="color:var(--accent-color);"></i> AI Context</b>
+        <button onclick="window.toggleBrainDrawer()" class="btn btn-ghost sidebar-close-btn"><i class="bi bi-x-lg"></i></button>
     </div>
-    
-    <div style="font-size: 70%; text-align:center; color:var(--text-muted); opacity:0.8;">
-      Updates dynamically when you edit notes, switch selections, or generate.
+    <div class="sidebar-body" style="padding: 0.75rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; overflow: hidden; height: calc(100% - 50px); box-sizing: border-box;">
+        <p class="small text-muted" style="font-size: 11px; line-height: 1.4; margin:0; opacity:0.85;">
+            Select a prompt template below to view the compiled text context that will be sent to the AI.
+        </p>
+        
+        <select id="contextPromptSelect" onchange="window.updateBrainContextView()" class="select-input" style="width:100%; box-sizing:border-box;">
+            <!-- Options populated dynamically -->
+        </select>
+        
+        <div style="position:relative; flex:1; min-height:0; display:flex; flex-direction:column;">
+            <textarea id="brainContextTextarea" readonly 
+                style="width:100%; flex:1; font-size: 11px; background: rgba(0, 0, 0, 0.15); color: var(--text-main); border:1px solid var(--panel-border); resize: none; border-radius: 8px; font-family: monospace; white-space: pre-wrap; outline:none; box-sizing:border-box; padding:0.5rem;"></textarea>
+            
+            <button id="copyBrainContextBtn" class="btn btn-sm btn-secondary" 
+                style="position:absolute; top: 6px; right: 6px; font-size: 10px; opacity: 0.85; z-index: 10; padding:0.2rem 0.4rem;" onclick="window.copyBrainContext()">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+        </div>
+        
+        <div style="font-size: 70%; text-align:center; color:var(--text-muted); opacity:0.8;">
+            Updates dynamically when you edit notes, switch selections, or generate.
+        </div>
     </div>
-  </div>
 </div>
-
-<div id="drawerOverlay" class="drawer-overlay" onclick="window.closeAllDrawers()"></div>
 
 <!-- FEEDBACK -->
 <div style="position:fixed; bottom:0.5rem; right:0.5rem; text-align:right; z-index:100;">

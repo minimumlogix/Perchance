@@ -1413,8 +1413,15 @@
 
     window.toggleSidebar = function () {
         let sidebar = document.getElementById("sidebarEl");
+        let brainSidebar = document.getElementById("brainSidebarEl");
+        if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
+            brainSidebar.style.transform = "translateX(100%)";
+        }
         let isOpen = sidebar.style.transform === "translateX(0%)";
         sidebar.style.transform = isOpen ? "translateX(100%)" : "translateX(0%)";
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
+        }
     };
 
     window.toggleGallery = function () {
@@ -1621,7 +1628,8 @@
             }
         }
         window.activeTab = tabName;
-        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+        let brainSidebar = document.getElementById('brainSidebarEl');
+        if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
             window.updateBrainContextOptions();
             window.updateBrainContextView();
         }
@@ -1790,29 +1798,69 @@
                 cursorChar: '|'
             });
         }
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
+        }
     }, 500);
 
-    // ─── AI CONTEXT VIEWER CONTROLLERS ───
     window.toggleBrainDrawer = function() {
-        const drawer = document.getElementById('brainDrawer');
-        const overlay = document.getElementById('drawerOverlay');
-        if (!drawer || !overlay) return;
+        let sidebar = document.getElementById("sidebarEl");
+        let brainSidebar = document.getElementById("brainSidebarEl");
+        if (!brainSidebar) return;
         
-        const isOpen = drawer.classList.toggle('open');
-        if (isOpen) {
-            overlay.classList.add('show');
+        if (sidebar && sidebar.style.transform === "translateX(0%)") {
+            sidebar.style.transform = "translateX(100%)";
+        }
+        
+        let isOpen = brainSidebar.style.transform === "translateX(0%)";
+        brainSidebar.style.transform = isOpen ? "translateX(100%)" : "translateX(0%)";
+        
+        if (!isOpen) {
             window.updateBrainContextOptions();
             window.updateBrainContextView();
-        } else {
-            overlay.classList.remove('show');
+        }
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
         }
     };
     
     window.closeAllDrawers = function() {
-        const drawer = document.getElementById('brainDrawer');
-        const overlay = document.getElementById('drawerOverlay');
-        if (drawer) drawer.classList.remove('open');
-        if (overlay) overlay.classList.remove('show');
+        let sidebar = document.getElementById("sidebarEl");
+        let brainSidebar = document.getElementById("brainSidebarEl");
+        if (sidebar) sidebar.style.transform = "translateX(100%)";
+        if (brainSidebar) brainSidebar.style.transform = "translateX(100%)";
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
+        }
+    };
+
+    window.syncSidebarToggleButtons = function() {
+        let sidebar = document.getElementById("sidebarEl");
+        let brainSidebar = document.getElementById("brainSidebarEl");
+        let sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+        let brainSidebarToggleBtn = document.getElementById("brainSidebarToggleBtn");
+        
+        if (!sidebar || !brainSidebar || !sidebarToggleBtn || !brainSidebarToggleBtn) return;
+        
+        let isSavedOpen = sidebar.style.transform === "translateX(0%)";
+        let isBrainOpen = brainSidebar.style.transform === "translateX(0%)";
+        
+        if (isSavedOpen) {
+            brainSidebarToggleBtn.style.opacity = "0";
+            brainSidebarToggleBtn.style.pointerEvents = "none";
+            sidebarToggleBtn.style.opacity = "1";
+            sidebarToggleBtn.style.pointerEvents = "auto";
+        } else if (isBrainOpen) {
+            sidebarToggleBtn.style.opacity = "0";
+            sidebarToggleBtn.style.pointerEvents = "none";
+            brainSidebarToggleBtn.style.opacity = "1";
+            brainSidebarToggleBtn.style.pointerEvents = "auto";
+        } else {
+            sidebarToggleBtn.style.opacity = "1";
+            sidebarToggleBtn.style.pointerEvents = "auto";
+            brainSidebarToggleBtn.style.opacity = "1";
+            brainSidebarToggleBtn.style.pointerEvents = "auto";
+        }
     };
     
     window.updateBrainContextView = function() {
@@ -2164,13 +2212,15 @@
 
     // Real-time updates when inputs or settings change
     document.addEventListener('input', function() {
-        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+        let brainSidebar = document.getElementById('brainSidebarEl');
+        if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
             window.updateBrainContextView();
         }
     });
     
     document.addEventListener('change', function() {
-        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+        let brainSidebar = document.getElementById('brainSidebarEl');
+        if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
             window.updateBrainContextView();
         }
     });
