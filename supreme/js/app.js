@@ -194,10 +194,12 @@
             },
             lengthSpecifiers: {
                 "super-short": { evaluateItem: "1 line each" },
+                "super_short": { evaluateItem: "1 line each" },
                 "short": { evaluateItem: "2-3 lines each" },
                 "medium": { evaluateItem: "4-5 lines each" },
                 "long": { evaluateItem: "6-7 lines each" },
-                "super-long": { evaluateItem: "8+ lines each" }
+                "super-long": { evaluateItem: "8+ lines each" },
+                "super_long": { evaluateItem: "8+ lines each" }
             },
             image: function(promptData) {
                 return {

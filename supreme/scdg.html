@@ -581,14 +581,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <select class="select-input length-select" id="shortDescriptionLengthEl"
-                                    onchange="localStorage.shortDescriptionLength=this.value">
-                                    <option value="super-short">Super Short</option>
-                                    <option value="short">Short</option>
-                                    <option value="medium" selected>Medium</option>
-                                    <option value="long">Long</option>
-                                    <option value="super-long">Super Long</option>
-                                </select>
+
                                 <button class="btn btn-primary" id="shortDescriptionGenBtnEl"
                                     onclick="generateSection('shortDescription')"><i class="bi bi-sparkles"></i>
                                     Generate</button>

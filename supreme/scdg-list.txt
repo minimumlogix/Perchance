@@ -283,11 +283,11 @@ dynamicPrompts
 ////////////////////////////////////////
 
 lengthSpecifiers
-  super-short = 1 line maximum for each section
+  super_short = 1 line maximum for each section
   short = 2 lines maximum for each section
   medium = 4 lines minimum for each section
   long = 6 lines minimum for each section
-  super-long = 8 Lines minimum for each section
+  super_long = 8 Lines minimum for each section
 
 galleryOptions
   gallery = true

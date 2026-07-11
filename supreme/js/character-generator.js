@@ -953,8 +953,13 @@
     };
     window.getLengthInstruction = function (lengthVal) {
         if (!lengthVal || lengthVal === "custom") return "";
-        if (typeof root !== 'undefined' && root.lengthSpecifiers && root.lengthSpecifiers[lengthVal]) {
-            return "IMPORTANT Length Constraint: " + root.lengthSpecifiers[lengthVal].evaluateItem;
+        let key = lengthVal.replace("-", "_");
+        let spec = null;
+        if (typeof root !== 'undefined' && root.lengthSpecifiers) {
+            spec = root.lengthSpecifiers[key] || root.lengthSpecifiers[lengthVal];
+        }
+        if (spec) {
+            return "IMPORTANT Length Constraint: " + spec.evaluateItem;
         }
         return "";
     };
@@ -1619,6 +1624,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
     // ─── GLOBAL LENGTH OVERRIDE ────────────────────────────────────────
     window.getEffectiveLengthForSection = function (section) {
+        if (section === "shortDescription") return "custom";
         let globalVal = localStorage.globalLength || 'custom';
         if (globalVal && globalVal !== 'custom') return globalVal;
         let id = (section === "introScenario" || section === "introStart") ? "intro" : section;
@@ -1915,16 +1921,18 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
     window.updateGlobalLengthUI = function (val) {
         let isCustom = !val || val === 'custom';
-        let selects = document.querySelectorAll(".length-select");
+        let selects = document.querySelectorAll("select[id$='LengthEl']");
         selects.forEach(sel => {
+            let wrapper = document.getElementById("custom-select-" + sel.id);
+            let target = wrapper || sel;
             if (isCustom) {
-                sel.style.opacity = "1";
-                sel.style.pointerEvents = "auto";
-                sel.title = "";
+                target.style.opacity = "1";
+                target.style.pointerEvents = "auto";
+                target.title = "";
             } else {
-                sel.style.opacity = "0.35";
-                sel.style.pointerEvents = "none";
-                sel.title = "Overridden by Global Length: " + val;
+                target.style.opacity = "0.35";
+                target.style.pointerEvents = "none";
+                target.title = "Overridden by Global Length: " + val;
             }
         });
     };
@@ -4564,8 +4572,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let worldLoreLengthEl = document.getElementById("worldLoreLengthEl");
         if (worldLoreLengthEl) worldLoreLengthEl.value = localStorage.worldLoreLength || worldLoreLengthEl.value || "medium";
 
-        let shortDescriptionLengthEl = document.getElementById("shortDescriptionLengthEl");
-        if (shortDescriptionLengthEl) shortDescriptionLengthEl.value = localStorage.shortDescriptionLength || shortDescriptionLengthEl.value || "medium";
+        // shortDescriptionLengthEl removed
 
         let shortDescriptionNotesEl = document.getElementById("shortDescriptionNotesEl");
         if (shortDescriptionNotesEl) shortDescriptionNotesEl.value = localStorage.shortDescriptionNotes || "";
