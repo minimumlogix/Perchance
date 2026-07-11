@@ -182,7 +182,7 @@ async function sendAssistantMessage() {
     try {
         // Phase 1: Assess Intention
         msgBlock.thinkingBlock.childNodes[0].nodeValue = "Assessing intent ";
-        root.text = text;
+        root.text = window.literal(text);
         const intentInstruction = root.prompts.assistantPage.assessIntention.instruction.evaluateItem;
         
         let intentResult = await window.ai({ instruction: intentInstruction });
@@ -198,8 +198,8 @@ async function sendAssistantMessage() {
         if (enableThinking) {
             // Phase 2: Methodology
             msgBlock.thinkingBlock.childNodes[0].nodeValue = "Developing methodology ";
-            root.context = context;
-            root.text = text;
+            root.context = window.literal(context);
+            root.text = window.literal(text);
             const methodInstruction = root.prompts.assistantPage.methodology.instruction.evaluateItem;
             
             let methodResult = await window.ai({ instruction: methodInstruction });
@@ -215,9 +215,9 @@ async function sendAssistantMessage() {
         msgBlock.bubble.style.display = "block";
         
         if (intent === "text" || intent === "both") {
-            root.context = context;
-            root.methodology = methodology;
-            root.text = text;
+            root.context = window.literal(context);
+            root.methodology = window.literal(methodology);
+            root.text = window.literal(text);
             const finalInstruction = enableThinking
                 ? root.prompts.assistantPage.finalOutputThinking.instruction.evaluateItem
                 : root.prompts.assistantPage.finalOutputNoThinking.instruction.evaluateItem;
@@ -240,8 +240,8 @@ async function sendAssistantMessage() {
             }
             
             // Generate Image Prompt
-            root.context = context;
-            root.text = text;
+            root.context = window.literal(context);
+            root.text = window.literal(text);
             const imgPromptInstruction = root.prompts.assistantPage.imagePrompt.instruction.evaluateItem;
             let imgPromptResult = await window.ai({ instruction: imgPromptInstruction });
             let finalImgPrompt = (imgPromptResult.generatedText || imgPromptResult.text || "").trim();

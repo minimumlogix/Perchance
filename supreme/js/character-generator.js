@@ -387,8 +387,8 @@
 
         root.settingValue = settingValue;
         root.toneStr = toneStr;
-        root.userNotes = userNotes;
-        root.existingWorldName = existingWorldName;
+        root.userNotes = window.literal(userNotes);
+        root.existingWorldName = window.literal(existingWorldName);
         root.needsName = needsName;
         let instruction = root.prompts.characterPage.worldLore.instruction.evaluateItem;
 
@@ -1083,9 +1083,9 @@
         let overviewNotes = overviewOverride !== undefined ? overviewOverride : (document.getElementById("overviewNotesEl") || {}).value || "";
         let worldLoreVal = worldLoreOverride !== undefined ? worldLoreOverride : (document.getElementById("worldLoreEl") || {}).value || "";
         let allUserNotes = [sectionNotes || "", overviewNotes].filter(Boolean).join("\n");
-        root.existingContext = existingContext;
-        root.worldLoreVal = worldLoreVal;
-        root.allUserNotes = allUserNotes;
+        root.existingContext = window.literal(existingContext);
+        root.worldLoreVal = window.literal(worldLoreVal);
+        root.allUserNotes = window.literal(allUserNotes);
         root.settingAndTone = settingAndTone;
         root.blankFields = blankFields.join(", ");
         let instruction = root.prompts.characterPage.identityDetails.instruction.evaluateItem;
@@ -1149,48 +1149,62 @@
 
     window.maybeGenerateDetails = window.generateIdentityDetails;
 
+    /**
+     * Sanitizes arguments before compiling the prompt template using Perchance prompts.
+     */
+    function literalCompile(key, context, notes, lengthVal, overview, worldLore) {
+        return root.prompts.compile(
+            key,
+            window.literal(context),
+            window.literal(notes),
+            lengthVal,
+            window.literal(overview),
+            window.literal(worldLore)
+        );
+    }
+
     window.buildShortDescriptionPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("shortDescription", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("shortDescription", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildAbilitiesPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("abilities", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("abilities", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildRelationsPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("relations", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("relations", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildTimelinePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("timeline", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("timeline", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildRolePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("role", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("role", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildAppearancePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("appearance", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("appearance", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildBackgroundPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("background", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("background", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildPersonalityPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("personality", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("personality", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildBeliefsPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("beliefs", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("beliefs", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildPreferencesPrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("preferences", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("preferences", context, notes, lengthVal, overview, worldLore);
     };
 
     window.buildLorePrompt = function (context, notes, lengthVal, overview, worldLore) {
-        return root.prompts.compile("lore", context, notes, lengthVal, overview, worldLore);
+        return literalCompile("lore", context, notes, lengthVal, overview, worldLore);
     };
 
     window.splitOldIntroText = function (text) {
@@ -1243,7 +1257,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let extraNotes = "CRITICAL: The dialogue, inner thoughts, and narrative voice MUST strongly reflect the selected Tone. Heavily adapt the character's vocabulary, attitude, and speaking style to fit this tone.\n\n" + robustFormatRule + "\n\n" + perspectiveRule;
         let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
         
-        return root.prompts.compile("roleplay", context, finalNotes, lengthVal, overview, worldLore);
+        return root.prompts.compile(
+            "roleplay",
+            window.literal(context),
+            window.literal(finalNotes),
+            lengthVal,
+            window.literal(overview),
+            window.literal(worldLore)
+        );
     };
 
     window.buildIntroScenarioPrompt = function (context, notes, lengthVal, overview, worldLore) {
@@ -1266,7 +1287,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         }
         
         let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
-        return root.prompts.compile("introScenario", context, finalNotes, lengthVal, overview, worldLore);
+        return root.prompts.compile(
+            "introScenario",
+            window.literal(context),
+            window.literal(finalNotes),
+            lengthVal,
+            window.literal(overview),
+            window.literal(worldLore)
+        );
     };
 
     window.buildIntroStartPrompt = function (context, notes, lengthVal, overview, worldLore) {
@@ -1286,7 +1314,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         }
         
         let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
-        return root.prompts.compile("introStart", context, finalNotes, lengthVal, overview, worldLore);
+        return root.prompts.compile(
+            "introStart",
+            window.literal(context),
+            window.literal(finalNotes),
+            lengthVal,
+            window.literal(overview),
+            window.literal(worldLore)
+        );
     };
 /* ==========================================================================
    MAIN AI GENERATION ENGINE
@@ -2849,7 +2884,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         saveCharacterButtonClickHandler(btn, btn);
     };
 
-    window.saveActiveWorkspaceState = function () {
+    window.saveActiveWorkspaceState = window.debounce(function () {
         localStorage.activeCharacterId = window.activeCharacterId || "";
         localStorage.activeCharacterSections = JSON.stringify(window.characterSections || {});
         localStorage.selectedAvatarUrl = window.selectedAvatarUrl || "";
@@ -2867,7 +2902,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         localStorage.activeImages = JSON.stringify(imgUrls);
         
         window.syncActiveImagesToCache();
-    };
+    }, 300);
 
     window.updateTopBarSaveButtons = function () {
         let container = document.getElementById("saveButtonsContainer");

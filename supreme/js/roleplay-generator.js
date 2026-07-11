@@ -34,7 +34,7 @@
     };
 
     // Save state to localStorage
-    window.saveRoleplayState = function () {
+    window.saveRoleplayState = window.debounce(function () {
         try {
             // Read current DOM values
             window.roleplayState.worldName = document.getElementById("rpWorldNameEl")?.value || "";
@@ -62,7 +62,7 @@
         } catch (e) {
             console.warn("Failed to save roleplayState to localStorage:", e);
         }
-    };
+    }, 300);
 
     // Load a saved world into Roleplay inputs
     window.loadSavedWorldIntoRoleplay = function (id) {
@@ -320,117 +320,36 @@
     };
 
     window.initCustomRoleplaySettingDropdown = function () {
-        let listEl = document.getElementById("rpSettingOptionsList");
-        if (!listEl) return;
-        
-        let keys = [];
-        const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.settingPrompts) {
-            keys = window.getPerchanceListKeys(window.root.settingPrompts);
-        }
-        if (!keys || keys.length === 0) {
-            keys = window.SETTING_KEYS || [
-                "Any", "Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
-                "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
-                "Zombie_apocalypse", "Alien_apocalypse",
-                "Horror", "Mythology", "Solarpunk", "Dark_Fantasy", "Urban_Fantasy",
-                "Steampunk", "Dieselpunk", "Space_Opera", "Hard_Sci_Fi", "Weird_West",
-                "Gothic", "Fairy_Tale", "Wuxia", "Isekai", "Biopunk",
-                "Frozen_Apocalypse", "Underwater", "Dreamlike", "Satirical"
-            ];
-        }
-        if (!keys.includes("Any")) {
-            keys.unshift("Any");
-        }
-        
-        listEl.innerHTML = keys.map(k => {
-            let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
-            return `
-                <div class="dropdown-option-item" data-value="${k}" onclick="selectRoleplaySetting('${k}', true)">
-                    <span>${label}</span>
-                    <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
-                </div>
-            `;
-        }).join("");
-
-        // Select initial value
-        let val = window.roleplayState.setting || "Any";
-        selectRoleplaySetting(val, false);
+        window.initializeDropdownOptions({
+            listElId: "rpSettingOptionsList",
+            fallbackKeys: window.SETTING_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.settingPrompts : null,
+            selectedValue: window.roleplayState.setting || "Any",
+            onSelect: "selectRoleplaySetting",
+            isMultiSelect: false
+        });
+        selectRoleplaySetting(window.roleplayState.setting || "Any", false);
     };
 
     window.initCustomRoleplayToneDropdown = function () {
-        let listEl = document.getElementById("rpToneOptionsList");
-        if (!listEl) return;
-        
-        let keys = [];
-        const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.tonePrompts) {
-            keys = window.getPerchanceListKeys(window.root.tonePrompts);
-        }
-        if (!keys || keys.length === 0) {
-            keys = window.TONE_KEYS || [
-                "Any", "Grounded", "Thrilling_Action", "Dark_Gritty", "Light_hearted_Comedic",
-                "Mysterious", "Romantic", "Erotic", "Tragic", "Whimsical", "Epic",
-                "Affectionate", "Flirtatious", "Sensual", "Explicit", "Romantic_Comedy",
-                "Dark_Humour", "Gory", "Cute", "Dark_Romance", "Smut", "GenZ_Casual",
-                "Documentary", "Slow_Burn"
-            ];
-        }
-        
-        keys = keys.filter(k => k !== "Any");
-        
-        let html = `
-            <label class="dropdown-option-item-checkbox">
-                <input type="checkbox" id="rpToneAnyCheckbox" value="Any"
-                    onchange="handleRoleplayToneAnyToggle(this)"
-                    style="accent-color:var(--accent-color);">
-                <span>Any</span>
-            </label>
-            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
-        `;
-        
-        html += keys.map(k => {
-            let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
-            return `
-                <label class="dropdown-option-item-checkbox">
-                    <input type="checkbox" class="rpToneCheckbox" value="${k}"
-                        onchange="handleRoleplayToneChange()" style="accent-color:var(--accent-color);">
-                    <span>${label}</span>
-                </label>
-            `;
-        }).join("");
-        
-        listEl.innerHTML = html;
+        window.initializeDropdownOptions({
+            listElId: "rpToneOptionsList",
+            fallbackKeys: window.TONE_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.tonePrompts : null,
+            selectedValue: window.roleplayState.tones || ["Any"],
+            onSelect: "handleRoleplayTone",
+            isMultiSelect: true,
+            inputName: "rpTone"
+        });
+        loadRoleplayTones();
     };
 
     window.filterRoleplayTones = function (query) {
-        let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#rpToneOptionsList .dropdown-option-item-checkbox");
-        items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
-            if (item.querySelector("#rpToneAnyCheckbox")) {
-                item.style.display = "flex";
-                return;
-            }
-            if (text.includes(q)) {
-                item.style.display = "flex";
-            } else {
-                item.style.display = "none";
-            }
-        });
+        window.filterDropdownOptions("rpToneOptionsList", query);
     };
 
     window.filterRoleplaySettings = function (query) {
-        let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#rpSettingOptionsList .dropdown-option-item");
-        items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
-            if (text.includes(q)) {
-                item.style.display = "flex";
-            } else {
-                item.style.display = "none";
-            }
-        });
+        window.filterDropdownOptions("rpSettingOptionsList", query);
     };
 
     // Tones management specifically for Roleplay Generator
@@ -539,8 +458,8 @@
             }
             setGenerationStatus("🧠 Extracting scenario details...");
             let override = (document.getElementById("rpWikiOverrideEl") || {}).value || "";
-            root.content = content;
-            root.override = override;
+            root.content = window.literal(content);
+            root.override = window.literal(override);
             let instruction = root.prompts.roleplayPage.wikiImport.instruction.evaluateItem;
 
             let res = await ai({ instruction });
@@ -636,7 +555,7 @@
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        root.name = name;
+        root.name = window.literal(name);
         root.setting = setting;
         root.tonesStr = tonesStr;
         let instruction = root.prompts.roleplayPage.worldLore.instruction.evaluateItem;
@@ -673,8 +592,8 @@
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        root.worldName = worldName;
-        root.worldLore = worldLore;
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
         root.setting = setting;
         let instruction = root.prompts.roleplayPage.npcGeneration.instruction.evaluateItem;
 
@@ -726,10 +645,10 @@
         btn.disabled = true;
         btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
-        root.worldName = worldName;
-        root.worldLore = worldLore;
-        root.npcsText = npcsText;
-        root.userRole = userRole;
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.npcsText = window.literal(npcsText);
+        root.userRole = window.literal(userRole);
         let instruction = root.prompts.roleplayPage.scenarioNotes.instruction.evaluateItem;
 
         let notesEl = document.getElementById("rpScenarioNotesEl");
@@ -854,7 +773,18 @@
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
 
-        let prompt = root.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction);
+        let prompt = root.prompts.roleplayPage.roleplayScenario.compile(
+            window.literal(worldName), 
+            window.literal(worldLore), 
+            setting, 
+            tonesStr, 
+            window.literal(themes), 
+            window.literal(pName), 
+            window.literal(pRole), 
+            window.literal(npcsText), 
+            window.literal(scenarioNotes), 
+            lengthInstruction
+        );
 
         if (tabScenario) {
             tabScenario.innerHTML = "";

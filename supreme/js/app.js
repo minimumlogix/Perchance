@@ -408,6 +408,13 @@
                 return { url: "https://user.uploads.dev/mock-lorebook-url.txt" };
             };
         }
+
+        if (typeof window.literal === "undefined") {
+            window.literal = function(text) {
+                if (typeof text !== "string") return text;
+                return text.replace(/([\[\]\{\}])/g, "\\$1");
+            };
+        }
     }
 
     // ─── PERCHANCE CONTEXT ──────────────────────────────────────────────
@@ -517,14 +524,8 @@
                 if (dropdown) dropdown.classList.add("open");
                 
                 // Sort when opened
-                if (menuId === "settingDropdownMenu") sortDropdownList("settingOptionsList");
-                else if (menuId === "wSettingDropdownMenu") sortDropdownList("wSettingOptionsList");
-                else if (menuId === "rpSettingDropdownMenu") sortDropdownList("rpSettingOptionsList");
-                else if (menuId === "toneDropdownMenu") sortDropdownList("toneOptionsList");
-                else if (menuId === "wToneDropdownMenu") sortDropdownList("wToneOptionsList");
-                else if (menuId === "rpToneDropdownMenu") sortDropdownList("rpToneOptionsList");
-                else if (menuId === "archetypeDropdownMenu") sortDropdownList("archetypeOptionsList");
-                else if (menuId === "dynamicDropdownMenu") sortDropdownList("dynamicOptionsList");
+                let listId = menuId.replace("DropdownMenu", "OptionsList");
+                sortDropdownList(listId);
             } else {
                 menu.style.display = "none";
                 if (dropdown) dropdown.classList.remove("open");
@@ -534,14 +535,8 @@
                 let search = menu.querySelector(".dropdown-search-input");
                 if (search) {
                     search.value = "";
-                    if (menuId === "settingDropdownMenu") filterSettings("");
-                    else if (menuId === "wSettingDropdownMenu" && typeof filterWorldSettings === "function") filterWorldSettings("");
-                    else if (menuId === "rpSettingDropdownMenu" && typeof filterRoleplaySettings === "function") filterRoleplaySettings("");
-                    else if (menuId === "toneDropdownMenu" && typeof filterTones === "function") filterTones("");
-                    else if (menuId === "wToneDropdownMenu" && typeof filterWorldTones === "function") filterWorldTones("");
-                    else if (menuId === "rpToneDropdownMenu" && typeof filterRoleplayTones === "function") filterRoleplayTones("");
-                    else if (menuId === "archetypeDropdownMenu" && typeof filterArchetypes === "function") filterArchetypes("");
-                    else if (menuId === "dynamicDropdownMenu" && typeof filterDynamics === "function") filterDynamics("");
+                    let listId = menuId.replace("DropdownMenu", "OptionsList");
+                    window.filterDropdownOptions(listId, "");
                     
                     setTimeout(() => search.focus(), 50);
                 }
@@ -630,7 +625,7 @@
         return key.replace(/_/g, " ");
     };
 
-    var SETTING_KEYS = [
+    window.SETTING_KEYS = [
         "Any", "Fantasy", "Medieval_Fantasy", "High_Fantasy", "Sci_Fi", "Cyberpunk",
         "Real_World_Modern", "Real_World_Furry", "Real_World_Fantasy", "Historical", "Post_Apocalyptic",
         "Zombie_apocalypse", "Alien_apocalypse",
@@ -647,7 +642,7 @@
         "Dream_War", "Necropunk", "Infernal_Modern", "Ruined_Utopia"
     ];
 
-    var TONE_KEYS = [
+    window.TONE_KEYS = [
         "Any", "Grounded", "Thrilling_Action", "Dark_Gritty", "Light_hearted_Comedic",
         "Mysterious", "Romantic", "Erotic", "Tragic", "Whimsical", "Epic",
         "Affectionate", "Flirtatious", "Sensual", "Explicit", "Romantic_Comedy",
@@ -660,7 +655,7 @@
         "Clinical", "Unhinged"
     ];
 
-    var ARCHETYPE_KEYS = [
+    window.ARCHETYPE_KEYS = [
         "Any", "Tsundere", "Yandere", "Kuudere", "Dandere", "Deredere", "Himedere", "Kamidere",
         "Female", "Male", "Femboy", "Tomboy", "Futa", "childhood_friend", "Bestie", "FWB",
         "Don", "Boss", "Milf", "Furry", "Ghost", "Maid", "Butler", "Detective", "Knight", "Royalty",
@@ -678,7 +673,7 @@
         "Doll", "Mimic"
     ];
 
-    var DYNAMIC_KEYS = [
+    window.DYNAMIC_KEYS = [
         "Any", "Enemies_To_Lovers", "Forbidden_Love", "Mentor_Student", "Hunter_And_Prey",
         "Mutual_Obsession", "Forced_Cohabitation", "Fake_Relationship", "Protector_And_Protected",
         "Rivals_With_Tension", "Betrayal_Reconciliation", "Toxic_Codependency", "Worship_And_Disgust",
@@ -686,49 +681,99 @@
         "Master_And_Servant", "Creator_And_Creation"
     ];
 
-
-    window.initCustomSettingDropdown = function () {
-        let listEl = document.getElementById("settingOptionsList");
+    /**
+     * Dynamically populates custom select dropdown element.
+     */
+    window.initializeDropdownOptions = function (config) {
+        let listEl = document.getElementById(config.listElId);
         if (!listEl) return;
         
         let keys = [];
         const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.settingPrompts) {
-            keys = window.getPerchanceListKeys(window.root.settingPrompts);
+        if (isPerchance && config.perchanceSource) {
+            keys = window.getPerchanceListKeys(config.perchanceSource);
         }
         if (!keys || keys.length === 0) {
-            keys = SETTING_KEYS;
+            keys = config.fallbackKeys;
         }
         if (!keys.includes("Any")) {
             keys.unshift("Any");
         }
         
-        listEl.innerHTML = keys.map(k => {
-            let label = window.getDropdownDisplayLabel(k);
-            return `
-                <div class="dropdown-option-item" data-value="${k}" onclick="selectSetting('${k}', true)">
-                    <span>${label}</span>
-                    <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
+        if (config.isMultiSelect) {
+            keys = keys.filter(k => k !== "Any");
+            let html = `
+                <div class="dropdown-option-item-checkbox" data-value="Any">
+                    <label style="display: flex; align-items: center; width: 100%; height: 100%; padding: 0.35rem 0.5rem; cursor: pointer; user-select: none; gap: 0.5rem; margin: 0;">
+                        <input type="checkbox" id="${config.inputName}AnyCheckbox" value="Any" onchange="${config.onSelect}AnyToggle(this)" style="cursor: pointer; accent-color: var(--accent-color);">
+                        <span>Any</span>
+                    </label>
                 </div>
+                <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
             `;
-        }).join("");
-
-        // Select initial value from localStorage or default to "Any"
-        let currentSetting = localStorage.setting || "Any";
-        selectSetting(currentSetting, false);
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `
+                    <div class="dropdown-option-item-checkbox" data-value="${k}">
+                        <label style="display: flex; align-items: center; width: 100%; height: 100%; padding: 0.35rem 0.5rem; cursor: pointer; user-select: none; gap: 0.5rem; margin: 0;">
+                            <input type="checkbox" class="${config.inputName}Checkbox" value="${k}" onchange="${config.onSelect}Change()" style="cursor: pointer; accent-color: var(--accent-color);">
+                            <span>${label}</span>
+                        </label>
+                    </div>
+                `;
+            }).join("");
+            listEl.innerHTML = html;
+        } else {
+            listEl.innerHTML = keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `
+                    <div class="dropdown-option-item" data-value="${k}" onclick="${config.onSelect}('${k}', true)">
+                        <span>${label}</span>
+                        <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
+                    </div>
+                `;
+            }).join("");
+        }
     };
 
-    window.filterSettings = function (query) {
+    /**
+     * Filters list items in a custom dropdown.
+     */
+    window.filterDropdownOptions = function (listId, query) {
         let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#settingOptionsList .dropdown-option-item");
+        let listEl = document.getElementById(listId);
+        if (!listEl) return;
+        
+        let items = listEl.querySelectorAll(".dropdown-option-item, .dropdown-option-item-checkbox");
         items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
+            if (item.getAttribute("data-value") === "Any" || item.querySelector("[value='Any']")) {
+                item.style.display = "flex";
+                return;
+            }
+            let span = item.querySelector("span");
+            let text = span ? span.textContent.toLowerCase() : item.textContent.toLowerCase();
             if (text.includes(q)) {
                 item.style.display = "flex";
             } else {
                 item.style.display = "none";
             }
         });
+    };
+
+    window.initCustomSettingDropdown = function () {
+        window.initializeDropdownOptions({
+            listElId: "settingOptionsList",
+            fallbackKeys: window.SETTING_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.settingPrompts : null,
+            selectedValue: localStorage.setting || "Any",
+            onSelect: "selectSetting",
+            isMultiSelect: false
+        });
+        selectSetting(localStorage.setting || "Any", false);
+    };
+
+    window.filterSettings = function (query) {
+        window.filterDropdownOptions("settingOptionsList", query);
     };
 
     window.selectSetting = function (value, closeMenu = true) {
@@ -887,115 +932,45 @@
     };
 
     window.initCustomToneDropdown = function () {
-        let listEl = document.getElementById("toneOptionsList");
-        if (!listEl) return;
-        
-        let keys = [];
-        const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.tonePrompts) {
-            keys = window.getPerchanceListKeys(window.root.tonePrompts);
-        }
-        if (!keys || keys.length === 0) {
-            keys = TONE_KEYS;
-        }
-        
-        keys = keys.filter(k => k !== "Any");
-        
-        let html = `
-            <label class="dropdown-option-item-checkbox">
-                <input type="checkbox" id="toneAnyCheckbox" value="Any"
-                    onchange="handleToneAnyToggle(this)"
-                    style="accent-color:var(--accent-color);">
-                <span>Any</span>
-            </label>
-            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
-        `;
-        
-        html += keys.map(k => {
-            let label = window.getDropdownDisplayLabel(k);
-            return `
-                <label class="dropdown-option-item-checkbox">
-                    <input type="checkbox" class="toneCheckbox" value="${k}"
-                        onchange="handleToneChange()" style="accent-color:var(--accent-color);">
-                    <span>${label}</span>
-                </label>
-            `;
-        }).join("");
-        
-        listEl.innerHTML = html;
+        let saved = ["Any"];
+        try {
+            if (localStorage.tones) saved = JSON.parse(localStorage.tones);
+        } catch (e) {}
+        window.initializeDropdownOptions({
+            listElId: "toneOptionsList",
+            fallbackKeys: window.TONE_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.tonePrompts : null,
+            selectedValue: saved,
+            onSelect: "handleTone",
+            isMultiSelect: true,
+            inputName: "tone"
+        });
+        loadTones();
     };
 
     window.initCustomArchetypeDropdown = function () {
-        let listEl = document.getElementById("archetypeOptionsList");
-        if (!listEl) return;
-        
-        let keys = [];
-        const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.archetypePrompts) {
-            keys = window.getPerchanceListKeys(window.root.archetypePrompts);
-        }
-        if (!keys || keys.length === 0) {
-            keys = ARCHETYPE_KEYS;
-        }
-        
-        keys = keys.filter(k => k !== "Any");
-        
-        let html = `
-            <label class="dropdown-option-item-checkbox">
-                <input type="checkbox" id="archetypeAnyCheckbox" value="Any"
-                    onchange="handleArchetypeAnyToggle(this)"
-                    style="accent-color:var(--accent-color);">
-                <span>Any</span>
-            </label>
-            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
-        `;
-        
-        html += keys.map(k => {
-            let label = window.getDropdownDisplayLabel(k);
-            return `
-                <label class="dropdown-option-item-checkbox">
-                    <input type="checkbox" class="archetypeCheckbox" value="${k}"
-                        onchange="handleArchetypeChange()" style="accent-color:var(--accent-color);">
-                    <span>${label}</span>
-                </label>
-            `;
-        }).join("");
-        
-        listEl.innerHTML = html;
+        let saved = ["Any"];
+        try {
+            if (localStorage.archetypes) saved = JSON.parse(localStorage.archetypes);
+        } catch (e) {}
+        window.initializeDropdownOptions({
+            listElId: "archetypeOptionsList",
+            fallbackKeys: window.ARCHETYPE_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.archetypePrompts : null,
+            selectedValue: saved,
+            onSelect: "handleArchetype",
+            isMultiSelect: true,
+            inputName: "archetype"
+        });
+        loadArchetypes();
     };
 
     window.filterTones = function (query) {
-        let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#toneOptionsList .dropdown-option-item-checkbox");
-        items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
-            if (item.querySelector("#toneAnyCheckbox")) {
-                item.style.display = "flex";
-                return;
-            }
-            if (text.includes(q)) {
-                item.style.display = "flex";
-            } else {
-                item.style.display = "none";
-            }
-        });
+        window.filterDropdownOptions("toneOptionsList", query);
     };
 
     window.filterArchetypes = function (query) {
-        let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#archetypeOptionsList .dropdown-option-item-checkbox");
-        items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
-            if (item.querySelector("#archetypeAnyCheckbox")) {
-                item.style.display = "flex";
-                return;
-            }
-            if (text.includes(q)) {
-                item.style.display = "flex";
-            } else {
-                item.style.display = "none";
-            }
-        });
+        window.filterDropdownOptions("archetypeOptionsList", query);
     };
 
     // Dynamic Dropdown functions
@@ -1057,59 +1032,24 @@
     };
 
     window.initCustomDynamicDropdown = function () {
-        let listEl = document.getElementById("dynamicOptionsList");
-        if (!listEl) return;
-        
-        let keys = [];
-        const isPerchance = window.location.hostname.includes("perchance.org");
-        if (isPerchance && typeof window.root !== "undefined" && window.root.dynamicPrompts) {
-            keys = window.getPerchanceListKeys(window.root.dynamicPrompts);
-        }
-        if (!keys || keys.length === 0) {
-            keys = DYNAMIC_KEYS;
-        }
-        
-        keys = keys.filter(k => k !== "Any");
-        
-        let html = `
-            <label class="dropdown-option-item-checkbox">
-                <input type="checkbox" id="dynamicAnyCheckbox" value="Any"
-                    onchange="handleDynamicAnyToggle(this)"
-                    style="accent-color:var(--accent-color);">
-                <span>Any</span>
-            </label>
-            <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
-        `;
-        
-        html += keys.map(k => {
-            let label = window.getDropdownDisplayLabel(k);
-            return `
-                <label class="dropdown-option-item-checkbox">
-                    <input type="checkbox" class="dynamicCheckbox" value="${k}"
-                        onchange="handleDynamicChange()" style="accent-color:var(--accent-color);">
-                    <span>${label}</span>
-                </label>
-            `;
-        }).join("");
-        
-        listEl.innerHTML = html;
+        let saved = ["Any"];
+        try {
+            if (localStorage.dynamics) saved = JSON.parse(localStorage.dynamics);
+        } catch (e) {}
+        window.initializeDropdownOptions({
+            listElId: "dynamicOptionsList",
+            fallbackKeys: window.DYNAMIC_KEYS,
+            perchanceSource: typeof root !== "undefined" ? root.dynamicPrompts : null,
+            selectedValue: saved,
+            onSelect: "handleDynamic",
+            isMultiSelect: true,
+            inputName: "dynamic"
+        });
+        loadDynamics();
     };
 
     window.filterDynamics = function (query) {
-        let q = query.toLowerCase().trim();
-        let items = document.querySelectorAll("#dynamicOptionsList .dropdown-option-item-checkbox");
-        items.forEach(item => {
-            let text = item.querySelector("span").textContent.toLowerCase();
-            if (item.querySelector("#dynamicAnyCheckbox")) {
-                item.style.display = "flex";
-                return;
-            }
-            if (text.includes(q)) {
-                item.style.display = "flex";
-            } else {
-                item.style.display = "none";
-            }
-        });
+        window.filterDropdownOptions("dynamicOptionsList", query);
     };
 
     // Perspective Dropdown functions
@@ -1864,6 +1804,21 @@
 /* ==========================================================================
    UI STATUS AND STATE HELPERS
    ========================================================================== */
+    /**
+     * Debounces a function call so that it only executes after a specified delay.
+     * @param {Function} func - The function to debounce.
+     * @param {number} wait - The delay in milliseconds.
+     * @returns {Function} A debounced wrapper function.
+     */
+    window.debounce = function (func, wait) {
+        let timeout;
+        return function (...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    };
+
     window.updateSavedCountBadge = function () {
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         let badgeEl = document.getElementById("savedCountBadgeEl");
