@@ -1620,6 +1620,11 @@
                 setAccentTheme(localStorage.activeThemeAccent || 'amethyst');
             }
         }
+        window.activeTab = tabName;
+        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+            window.updateBrainContextOptions();
+            window.updateBrainContextView();
+        }
     };
 
     // ─── SIDEBAR TAB NAVIGATION ───
@@ -1767,7 +1772,6 @@
         }
     };
 
-    // ─── OVERWRITE CHARACTER SLOT CONTROLLER ───
     setTimeout(() => {
         if (typeof Typed !== 'undefined') {
             new Typed('#typed-tagline', {
@@ -1787,3 +1791,386 @@
             });
         }
     }, 500);
+
+    // ─── AI CONTEXT VIEWER CONTROLLERS ───
+    window.toggleBrainDrawer = function() {
+        const drawer = document.getElementById('brainDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        if (!drawer || !overlay) return;
+        
+        const isOpen = drawer.classList.toggle('open');
+        if (isOpen) {
+            overlay.classList.add('show');
+            window.updateBrainContextOptions();
+            window.updateBrainContextView();
+        } else {
+            overlay.classList.remove('show');
+        }
+    };
+    
+    window.closeAllDrawers = function() {
+        const drawer = document.getElementById('brainDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        if (drawer) drawer.classList.remove('open');
+        if (overlay) overlay.classList.remove('show');
+    };
+    
+    window.updateBrainContextView = function() {
+        const textarea = document.getElementById('brainContextTextarea');
+        if (!textarea) return;
+        textarea.value = window.getCurrentAIContextPrompt ? window.getCurrentAIContextPrompt() : "";
+    };
+    
+    window.copyBrainContext = function() {
+        const el = document.getElementById('brainContextTextarea');
+        const btn = document.getElementById('copyBrainContextBtn');
+        if (!el || !btn) return;
+        navigator.clipboard.writeText(el.value);
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+        btn.classList.replace('btn-secondary', 'btn-success');
+        setTimeout(() => {
+            btn.innerHTML = oldHtml;
+            btn.classList.replace('btn-success', 'btn-secondary');
+        }, 2000);
+    };
+
+    window.updateBrainContextOptions = function() {
+        const select = document.getElementById('contextPromptSelect');
+        if (!select) return;
+        
+        let tab = window.activeTab || 'characters';
+        const prevValue = select.value;
+        select.innerHTML = '';
+        
+        let options = [];
+        if (tab === 'characters') {
+            options = [
+                { value: 'worldLore', text: 'World Lore Summary' },
+                { value: 'identityDetails', text: 'Core Identity Details' },
+                { value: 'overview', text: 'General Overview / Concept' },
+                { value: 'shortDescription', text: 'Short Description' },
+                { value: 'appearance', text: 'Appearance & Attire' },
+                { value: 'role', text: 'Role & Rules' },
+                { value: 'personality', text: 'Personality & Behavior' },
+                { value: 'beliefs', text: 'Mentality & Beliefs' },
+                { value: 'preferences', text: 'Likes, Hates & Romance' },
+                { value: 'abilities', text: 'Abilities & Skills' },
+                { value: 'relations', text: 'Relations & Dynamic' },
+                { value: 'background', text: 'Backstory & Goals' },
+                { value: 'timeline', text: 'Timeline & History' },
+                { value: 'lore', text: 'Lore Keywords & Content JSON' },
+                { value: 'roleplay', text: 'Dialogue Examples' },
+                { value: 'introScenario', text: 'Starting Scene Context' },
+                { value: 'introStart', text: 'First Message Start Script' },
+                { value: 'chatCss', text: 'Chat bubble CSS Styling' },
+                { value: 'chatLore', text: 'Chat Lorebook JSON' },
+                { value: 'chatStyleGuide', text: 'Chat Writing Style Guide' },
+                { value: 'imageCaption', text: 'Avatar Image Caption Prompt' },
+                { value: 'backgroundImage', text: 'Scene Background Image Prompt' },
+                { value: 'wikiImport', text: 'Wiki Importer Data Extractor' }
+            ];
+        } else if (tab === 'world') {
+            options = [
+                { value: 'worldOverview', text: 'World Overview' },
+                { value: 'worldRules', text: 'Rules of the World' },
+                { value: 'worldRaces', text: 'Races residing in World' },
+                { value: 'worldRegions', text: 'Regions of the World' },
+                { value: 'worldFactions', text: 'Major Factions' },
+                { value: 'worldBestiary', text: 'Bestiary & Animals' },
+                { value: 'worldCharacters', text: 'Important Characters' },
+                { value: 'bannerImage', text: 'World Banner Image Prompt' },
+                { value: 'wikiImportWorld', text: 'Wiki Importer Data Extractor' }
+            ];
+        } else if (tab === 'roleplay') {
+            options = [
+                { value: 'rpWorldLore', text: 'World Lore Summary' },
+                { value: 'npcGeneration', text: 'NPC Cast Generation' },
+                { value: 'scenarioNotes', text: 'Conflict / Plot Hook' },
+                { value: 'roleplayScenario', text: 'Full Scenario Sheet & Starter' },
+                { value: 'wikiImportRP', text: 'Wiki Importer Data Extractor' }
+            ];
+        } else if (tab === 'assistant') {
+            options = [
+                { value: 'assessIntention', text: 'User Request Routing (Intention)' },
+                { value: 'methodology', text: 'Fulfillment Methodology Steps' },
+                { value: 'finalOutputThinking', text: 'Response (With Thinking)' },
+                { value: 'finalOutputNoThinking', text: 'Response (Without Thinking)' },
+                { value: 'imagePrompt', text: 'Image Prompt Generator' }
+            ];
+        } else {
+            options = [
+                { value: 'none', text: 'No prompts in this tab' }
+            ];
+        }
+        
+        options.forEach(opt => {
+            let el = document.createElement('option');
+            el.value = opt.value;
+            el.textContent = opt.text;
+            select.appendChild(el);
+        });
+        
+        if (Array.from(select.options).some(o => o.value === prevValue)) {
+            select.value = prevValue;
+        }
+    };
+
+    window.getCurrentAIContextPrompt = function() {
+        let select = document.getElementById('contextPromptSelect');
+        if (!select) return "";
+        let val = select.value;
+        let tab = window.activeTab || 'characters';
+        
+        const getTonesStr = () => {
+            if (typeof window.getSelectedTones === 'function') {
+                return window.getSelectedTones().join(", ");
+            }
+            return "unspecified";
+        };
+
+        const getSettingVal = () => {
+            return document.getElementById("settingEl")?.value || "unspecified";
+        };
+
+        const getNotesVal = () => {
+            return document.getElementById("loreNotesEl")?.value || "";
+        };
+
+        const getWNameVal = () => {
+            return document.getElementById("worldNameEl")?.value || "";
+        };
+        
+        try {
+            if (tab === 'characters') {
+                if (val === 'worldLore') {
+                    return root.prompts.characterPage.worldLore.compile(
+                        getSettingVal(),
+                        getTonesStr(),
+                        getNotesVal(),
+                        getWNameVal(),
+                        true
+                    );
+                }
+                if (val === 'worldLoreImage') {
+                    let lore = window.getSectionText ? window.getSectionText("lore") : "";
+                    return root.prompts.characterPage.worldLoreImage.compile(lore);
+                }
+                if (val === 'identityDetails') {
+                    let existing = window.buildCharacterContext ? window.buildCharacterContext() : "";
+                    let lore = window.getSectionText ? window.getSectionText("lore") : "";
+                    
+                    let allSectionNotes = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline"]
+                        .map(s => (document.getElementById(s + "NotesEl") || {}).value || "")
+                        .filter(Boolean)
+                        .join("\n");
+                    
+                    let setTone = window.getSettingAndToneContext ? window.getSettingAndToneContext() : "";
+                    return root.prompts.characterPage.identityDetails.compile(
+                        existing,
+                        lore,
+                        allSectionNotes,
+                        setTone,
+                        "name, age, gender, orientation, species, ethnicity"
+                    );
+                }
+                if (val === 'overview') {
+                    let lore = window.getSectionText ? window.getSectionText("lore") : "";
+                    let detailsStr = "";
+                    if (typeof window.getDetailsContext === 'function') {
+                        let details = window.getDetailsContext();
+                        let detailsParts = [];
+                        if (details.name) detailsParts.push(`Name: ${details.name}`);
+                        if (details.age) detailsParts.push(`Age: ${details.age}`);
+                        if (details.gender) detailsParts.push(`Gender: ${details.gender}`);
+                        if (details.orientation) detailsParts.push(`Orientation: ${details.orientation}`);
+                        if (details.species) detailsParts.push(`Species/Race: ${details.species}`);
+                        if (details.ethnicity) detailsParts.push(`Ethnicity: ${details.ethnicity}`);
+                        detailsStr = `Character Details (you MUST strictly base the concept on these fields):\n${detailsParts.join("\n")}`;
+                    }
+                    return root.prompts.characterPage.overview.compile(
+                        getSettingVal(),
+                        getTonesStr(),
+                        lore,
+                        detailsStr
+                    );
+                }
+                if (val === 'imageCaption') {
+                    let appText = window.getSectionText ? window.getSectionText("appearance") : "";
+                    return root.prompts.characterPage.imageCaption.compile(
+                        getSettingVal(),
+                        getTonesStr(),
+                        appText
+                    );
+                }
+                if (val === 'backgroundImage') {
+                    let scenario = window.getSectionText ? window.getSectionText("introScenario") : "A scenic background";
+                    return root.prompts.characterPage.backgroundImage.compile(scenario);
+                }
+                if (val === 'wikiImport') {
+                    let wikiOverride = document.getElementById("wikiOverrideEl")?.value || "";
+                    return root.prompts.characterPage.wikiImport.compile("Source Text Here", wikiOverride);
+                }
+                if (val === 'chatCss') {
+                    let generated = window.getSectionText ? window.getSectionText("appearance") : "";
+                    return root.prompts.characterPage.chatCss.compile(generated, getSettingVal(), getTonesStr());
+                }
+                if (val === 'chatLore') {
+                    return root.prompts.characterPage.chatLore.compile();
+                }
+                if (val === 'chatStyleGuide') {
+                    return root.prompts.characterPage.chatStyleGuide.compile();
+                }
+                
+                const sections = ["shortDescription", "appearance", "role", "personality", "beliefs", "preferences", "abilities", "relations", "timeline", "lore", "roleplay", "introScenario", "introStart"];
+                if (sections.includes(val)) {
+                    let context = window.buildCharacterContext ? window.buildCharacterContext(val) : "";
+                    let notes = (document.getElementById(val + "NotesEl") || {}).value || "";
+                    let lengthVal = window.getEffectiveLengthForSection ? window.getEffectiveLengthForSection(val) : "medium";
+                    let overview = (document.getElementById("overviewNotesEl") || {}).value || "";
+                    let worldLore = (document.getElementById("worldLoreEl") || {}).value || "";
+                    
+                    if (val === "roleplay" && window.buildRoleplayExamplePrompt) {
+                        return window.buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    if (val === "introScenario" && window.buildIntroScenarioPrompt) {
+                        return window.buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    if (val === "introStart" && window.buildIntroStartPrompt) {
+                        return window.buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    return root.prompts.compile(val, context, notes, lengthVal, overview, worldLore);
+                }
+            }
+            
+            if (tab === 'world' && window.worldState) {
+                if (val.startsWith('world')) {
+                    let section = val.replace('world', '');
+                    section = section.charAt(0).toLowerCase() + section.slice(1);
+                    
+                    let wName = window.worldState.name || "Unnamed";
+                    let wSetting = window.worldState.setting;
+                    let wTones = window.worldState.tones ? window.worldState.tones.join(", ") : "";
+                    let wThemes = window.worldState.themes;
+                    let notesEl = document.getElementById("w" + section.charAt(0).toUpperCase() + section.slice(1) + "NotesEl");
+                    let sectionNotes = notesEl ? notesEl.value : "";
+                    let lenEl = document.getElementById("w" + section.charAt(0).toUpperCase() + section.slice(1) + "LengthEl");
+                    let lenVal = lenEl ? lenEl.value : "medium";
+                    let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lenVal) : "";
+                    
+                    return root.prompts.worldPage.sectionGeneration.compile(
+                        section,
+                        wName,
+                        wSetting,
+                        wTones,
+                        wThemes,
+                        sectionNotes,
+                        lengthInstruction
+                    );
+                }
+                if (val === 'bannerImage') {
+                    let wName = window.worldState.name || "Unnamed";
+                    let wSetting = window.worldState.setting;
+                    let wTones = window.worldState.tones ? window.worldState.tones.join(", ") : "";
+                    let overviewText = window.worldState.sections.overview || window.worldState.themes || "";
+                    return root.prompts.worldPage.bannerImage.compile(wName, wSetting, wTones, overviewText);
+                }
+                if (val === 'wikiImportWorld') {
+                    let override = document.getElementById("wWikiOverrideEl")?.value || "";
+                    return root.prompts.worldPage.wikiImport.compile("Source Text Here", override);
+                }
+            }
+            
+            if (tab === 'roleplay' && window.roleplayState) {
+                if (val === 'rpWorldLore') {
+                    let name = window.roleplayState.worldName || "Unnamed World";
+                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+                    return root.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr);
+                }
+                if (val === 'npcGeneration') {
+                    let worldName = window.roleplayState.worldName || "Unnamed World";
+                    let worldLore = window.roleplayState.worldLore || "";
+                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    return root.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting);
+                }
+                if (val === 'scenarioNotes') {
+                    let worldName = window.roleplayState.worldName || "Unnamed World";
+                    let worldLore = window.roleplayState.worldLore || "";
+                    let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map(n => n.name).filter(Boolean).join(", ") : "";
+                    let userRole = window.roleplayState.userRole || "Player";
+                    return root.prompts.roleplayPage.scenarioNotes.compile(worldName, worldLore, npcsText, userRole);
+                }
+                if (val === 'roleplayScenario') {
+                    let worldName = window.roleplayState.worldName || "Unnamed World";
+                    let worldLore = window.roleplayState.worldLore || "";
+                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+                    let themes = window.roleplayState.themes || "";
+                    let pName = window.roleplayState.userName || "Player";
+                    let pRole = window.roleplayState.userRole || "";
+                    let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map(n => {
+                        return `Name: ${n.name}\nSpecies/Race: ${n.species}\nPersonality: ${n.personality}\nRole in Scenario: ${n.role}`;
+                    }).join("\n\n") : "";
+                    let scenarioNotes = window.roleplayState.scenarioNotes || "";
+                    let lengthVal = document.getElementById("rpLengthEl")?.value || "medium";
+                    let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal) : "";
+                    return root.prompts.roleplayPage.roleplayScenario.compile(
+                        worldName,
+                        worldLore,
+                        setting,
+                        tonesStr,
+                        themes,
+                        pName,
+                        pRole,
+                        npcsText,
+                        scenarioNotes,
+                        lengthInstruction
+                    );
+                }
+                if (val === 'wikiImportRP') {
+                    let override = document.getElementById("rpWikiOverrideEl")?.value || "";
+                    return root.prompts.roleplayPage.wikiImport.compile("Source Text Here", override);
+                }
+            }
+            
+            if (tab === 'assistant') {
+                let text = document.getElementById("assistantChatInput")?.value || "User Request Here";
+                let context = window.getAssistantContext ? window.getAssistantContext() : "";
+                let personality = root.assistantPersonality;
+                
+                if (val === 'assessIntention') {
+                    return root.prompts.assistantPage.assessIntention.compile(text);
+                }
+                if (val === 'methodology') {
+                    return root.prompts.assistantPage.methodology.compile(personality, context, text);
+                }
+                if (val === 'finalOutputThinking') {
+                    return root.prompts.assistantPage.finalOutputThinking.compile(personality, context, "Steps here...", text);
+                }
+                if (val === 'finalOutputNoThinking') {
+                    return root.prompts.assistantPage.finalOutputNoThinking.compile(personality, context, text);
+                }
+                if (val === 'imagePrompt') {
+                    return root.prompts.assistantPage.imagePrompt.compile(context, text);
+                }
+            }
+        } catch (e) {
+            return "Error compiling prompt:\n" + e.message;
+        }
+        
+        return "No prompt context available.";
+    };
+
+    // Real-time updates when inputs or settings change
+    document.addEventListener('input', function() {
+        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+            window.updateBrainContextView();
+        }
+    });
+    
+    document.addEventListener('change', function() {
+        if (document.getElementById('brainDrawer')?.classList.contains('open')) {
+            window.updateBrainContextView();
+        }
+    });
