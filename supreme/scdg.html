@@ -2544,27 +2544,27 @@
 
 
 
-  <!-- Shared Dropdown Drawer -->
-  <div class="custom-dropdown-drawer has-search" id="customDropdownDrawer">
-    <div class="custom-dropdown-drawer-header">
-      <div style="display: flex; align-items: center;">
-        <span class="drawer-header-title" id="drawerHeaderTitle">SELECT OPTION</span>
-        <span class="badge rounded-pill fw-semibold text-uppercase" id="drawerHeaderBadge" style="font-size: 8px; padding: 2.5px 6px; letter-spacing: 0.05em; margin-left: 8px; vertical-align: middle; display: inline-block;"></span>
-      </div>
+    <!-- Shared Dropdown Drawer -->
+    <div class="custom-dropdown-drawer has-search" id="customDropdownDrawer">
+        <div class="custom-dropdown-drawer-header">
+            <div style="display: flex; align-items: center;">
+                <span class="drawer-header-title" id="drawerHeaderTitle">SELECT OPTION</span>
+                <span class="badge rounded-pill fw-semibold text-uppercase" id="drawerHeaderBadge" style="font-size: 8px; padding: 2.5px 6px; letter-spacing: 0.05em; margin-left: 8px; vertical-align: middle; display: inline-block;"></span>
+            </div>
+        </div>
+        <div class="custom-dropdown-search-wrapper" id="customDropdownSearchWrapper">
+            <span class="search-icon"><i class="bi bi-search"></i></span>
+            <input type="text" id="customDropdownSearchInput" placeholder="Search options..."
+                oninput="filterDrawerCards(this.value)">
+            <button id="customDropdownSearchClear" onclick="clearDrawerSearch()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
+        <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
+            <button class="drawer-footer-all" id="drawerSelectAllBtn" onclick="selectAllMultiSelect()"><i class="bi bi-check-all"></i> Select All</button>
+            <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearSelection()"><i class="bi bi-trash"></i> Clear</button>
+            <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()"><i class="bi bi-check-circle"></i> Done</button>
+        </div>
     </div>
-    <div class="custom-dropdown-search-wrapper" id="customDropdownSearchWrapper">
-      <span class="search-icon"><i class="bi bi-search"></i></span>
-      <input type="text" id="customDropdownSearchInput" placeholder="Search options..."
-        oninput="filterDrawerCards(this.value)">
-      <button id="customDropdownSearchClear" onclick="clearDrawerSearch()"><i class="bi bi-x-lg"></i></button>
-    </div>
-    <div class="custom-dropdown-drawer-content" id="customDropdownDrawerContent"></div>
-    <div class="custom-dropdown-drawer-footer" id="customDropdownDrawerFooter">
-      <button class="drawer-footer-all" id="drawerSelectAllBtn" onclick="selectAllMultiSelect()"><i class="bi bi-check-all"></i> Select All</button>
-      <button class="drawer-footer-clear" id="drawerClearBtn" onclick="clearSelection()"><i class="bi bi-trash"></i> Clear</button>
-      <button class="drawer-footer-done" id="drawerDoneBtn" onclick="closeDrawer()"><i class="bi bi-check-circle"></i> Done</button>
-    </div>
-  </div>
 
 <!-- Side Brain Context Sidebar -->
 <div id="brainSidebarEl" class="sidebar-container">

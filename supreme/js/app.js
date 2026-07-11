@@ -1153,7 +1153,9 @@
     const multiSelectIds = new Set();
     const multiSelectState = {};
 
-    const selectToListNameMap = {};
+    const selectToListNameMap = {
+        'visualStyleEl': 'visualStyles'
+    };
 
     const drawerHeaders = {
         'worldLoreLengthEl': 'WORLD LORE LENGTH',
@@ -1359,6 +1361,12 @@
                     listObj = eval(listName);
                 } catch (e) {
                     listObj = window[listName];
+                }
+                if (!listObj && typeof root !== 'undefined') {
+                    listObj = root[listName];
+                }
+                if (!listObj && typeof window.root !== 'undefined') {
+                    listObj = window.root[listName];
                 }
 
                 let itemObj = null;
