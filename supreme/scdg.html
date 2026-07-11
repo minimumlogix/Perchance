@@ -2,7 +2,6 @@
 <link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/styles.css">
 <link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/assistant.css">
 <link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/mobile-styles.css">
-<link rel="stylesheet" id="sheet-styles-link" href="">
 <script>
     // Bind Perchance plugins to the global window scope.
     // This allows external modular scripts (which are loaded as standard third-party scripts and
@@ -38,7 +37,6 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/js/app.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/js/character-generator.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/character-sheet-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/js/roleplay-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/js/world-generator.js" defer></script>
 <script src="https://minimumlogix.github.io/Perchance/supreme/js/assistant.js" defer></script>
@@ -56,8 +54,6 @@
         <div style="display: flex; flex-direction: column; padding: 0.5rem; gap: 0.2rem; flex: 1;">
             <div id="sidebar-item-characters" class="sidebar-item active" onclick="switchTab('characters')"><i
                     class="bi bi-people-fill"></i> Characters</div>
-            <div id="sidebar-item-character-sheet" class="sidebar-item" onclick="switchTab('character-sheet')"><i
-                    class="bi bi-file-earmark-person-fill"></i> Character Sheet</div>
             <div id="sidebar-item-world" class="sidebar-item" onclick="switchTab('world')"><i
                     class="bi bi-globe-americas"></i> World</div>
             <div id="sidebar-item-roleplay" class="sidebar-item" onclick="switchTab('roleplay')"><i
@@ -2140,72 +2136,6 @@
                 </div>
 
             </div><!-- end roleplayTabEl -->
-
-            <!-- CHARACTER SHEET TAB -->
-            <div id="characterSheetTabEl" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
-                <!-- HEADER -->
-                <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h1 style="text-align: left; margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 600;">Supreme Character Sheet Generator</h1>
-                        <p style="text-align: left; color: var(--text-muted); font-size: 90%; line-height: 1.5; margin: 0; max-width: 600px;">
-                            Compile a stunning visual dashboard character sheet. Select a character, choose a theme color, and let AI structure the details!
-                        </p>
-                    </div>
-                </div>
-
-                <!-- CONTROL BAR -->
-                <div class="global-params-bar" style="margin-top: 0; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
-                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                        <!-- CHARACTER SELECTOR -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--panel-header-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.4rem 0.75rem; height: 38px; box-sizing: border-box;">
-                            <i class="bi bi-people-fill" style="color: var(--accent-color);"></i>
-                            <span style="font-size: 85%; color: var(--text-muted); font-weight: 500; white-space: nowrap;">Character:</span>
-                            <select id="sheetCharacterSelector" onchange="loadCharacterForSheet(this.value)" style="background:transparent; border:none; color:var(--text-main); font-weight:600; cursor:pointer; outline:none; font-size:85%;">
-                                <option value="active">-- Active Workspace Character --</option>
-                            </select>
-                        </div>
-
-                        <!-- SHEET COLOR CUSTOMIZER -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--panel-header-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.4rem 0.75rem; height: 38px; box-sizing: border-box;">
-                            <i class="bi bi-palette-fill" style="color: var(--accent-color);"></i>
-                            <span style="font-size: 85%; color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-right: 0.25rem;">Sheet Theme:</span>
-                            <div style="display: flex; gap: 0.35rem; align-items: center;">
-                                <div id="sheet-theme-dot-emerald" onclick="setSheetTheme('emerald')" class="sheet-theme-dot" style="background:#10b981; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Emerald Green"></div>
-                                <div id="sheet-theme-dot-cyberpunk" onclick="setSheetTheme('cyberpunk')" class="sheet-theme-dot" style="background:#ff007f; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Cyberpunk Pink"></div>
-                                <div id="sheet-theme-dot-sunset" onclick="setSheetTheme('sunset')" class="sheet-theme-dot" style="background:#f59e0b; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Sunset Gold"></div>
-                                <div id="sheet-theme-dot-sapphire" onclick="setSheetTheme('sapphire')" class="sheet-theme-dot" style="background:#3b82f6; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Sapphire Blue"></div>
-                                <div id="sheet-theme-dot-crimson" onclick="setSheetTheme('crimson')" class="sheet-theme-dot" style="background:#ef4444; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Crimson Red"></div>
-                                <div id="sheet-theme-dot-amethyst" onclick="setSheetTheme('amethyst')" class="sheet-theme-dot" style="background:#7c3aed; width: 14px; height: 14px; border-radius: 50%; cursor: pointer;" title="Amethyst Purple"></div>
-                            </div>
-                        </div>
-
-                        <!-- SHEET STYLE LAYOUT -->
-                        <div style="display: flex; align-items: center; gap: 0.5rem; background: var(--panel-header-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 0.4rem 0.75rem; height: 38px; box-sizing: border-box;">
-                            <i class="bi bi-window" style="color: var(--accent-color);"></i>
-                            <span style="font-size: 85%; color: var(--text-muted); font-weight: 500; white-space: nowrap;">Style Layout:</span>
-                            <select id="sheetStyleSelector" onchange="setSheetStyleLayout(this.value)" style="background:transparent; border:none; color:var(--text-main); font-weight:600; cursor:pointer; outline:none; font-size:85%;">
-                                <option value="default">Default Glass</option>
-                                <option value="cyberpunk">Cyberpunk Neon</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                        <button id="sheetGenBtn" onclick="generateSheet()" class="btn btn-primary"><i class="bi bi-sparkles"></i> Generate Sheet (AI)</button>
-                        <button id="sheetStopBtn" onclick="stopSheetGeneration()" class="btn btn-secondary" style="display: none;"><i class="bi bi-stop-circle"></i> Stop</button>
-                        <button id="sheetSaveBtn" onclick="saveSheetData()" class="btn btn-secondary"><i class="bi bi-floppy"></i> Save Sheet</button>
-                        <button id="sheetExportHtmlBtn" onclick="exportSheetHTML()" class="btn btn-secondary"><i class="bi bi-file-earmark-arrow-down"></i> Export HTML</button>
-                        <button id="sheetExportMdBtn" onclick="copySheetMarkdown()" class="btn btn-secondary"><i class="bi bi-clipboard"></i> Copy Markdown</button>
-                    </div>
-                </div>
-
-                <div id="sheetStatusEl" style="font-size: 85%; color: var(--accent-color); min-height: 1.5rem; display: flex; align-items: center; gap: 0.5rem;"></div>
-
-                <!-- SHEET DISPLAY CONTENT -->
-                <div id="sheetContentCtn" class="sheet-container" style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
-                    <!-- Rendered dynamically -->
-                </div>
-            </div><!-- end characterSheetTabEl -->
 
             <!-- SETTINGS TAB -->
             <div id="settingsTabEl" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;">

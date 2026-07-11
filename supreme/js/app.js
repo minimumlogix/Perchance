@@ -164,12 +164,7 @@
                         }
                     }
                 },
-                characterSheetPage: {
-                    sheetGeneration: {
-                        compile: function(charData) { return "Return structured JSON character sheet dashboard."; }
-                    }
-                },
-                assistantPage: {
+                                assistantPage: {
                     assessIntention: {
                         compile: function(text) { return "Assess intent for " + text; }
                     },
@@ -218,7 +213,7 @@
         };
 
         // Dynamically define getters for prompts that use compile() via instruction.evaluateItem
-        const categories = ['characterPage', 'worldPage', 'roleplayPage', 'characterSheetPage', 'assistantPage'];
+        const categories = ['characterPage', 'worldPage', 'roleplayPage', 'assistantPage'];
         categories.forEach(cat => {
             let prompts = window.root.prompts[cat];
             if (!prompts) return;
@@ -250,9 +245,6 @@
                                         if (key === 'worldLore') return prompt.compile(window.root.name, window.root.setting, window.root.tonesStr);
                                         if (key === 'npcGeneration') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.setting);
                                         if (key === 'scenarioNotes') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.npcsText, window.root.userRole);
-                                    }
-                                    if (cat === 'characterSheetPage') {
-                                        if (key === 'sheetGeneration') return prompt.compile(window.root.charData);
                                     }
                                     if (cat === 'assistantPage') {
                                         if (key === 'assessIntention') return prompt.compile(window.root.text);
@@ -1576,13 +1568,11 @@
         
         // Hide all tabs
         let generatorTab = document.getElementById('generatorTabEl');
-        let characterSheetTab = document.getElementById('characterSheetTabEl');
         let settingsTab = document.getElementById('settingsTabEl');
         let roleplayTab = document.getElementById('roleplayTabEl');
         let worldTab = document.getElementById('worldTabEl');
         let assistantTab = document.getElementById('assistantTabEl');
         if (generatorTab) generatorTab.style.display = 'none';
-        if (characterSheetTab) characterSheetTab.style.display = 'none';
         if (settingsTab) settingsTab.style.display = 'none';
         if (roleplayTab) roleplayTab.style.display = 'none';
         if (worldTab) worldTab.style.display = 'none';
@@ -1592,11 +1582,6 @@
             let activeItem = document.getElementById('sidebar-item-characters');
             if (activeItem) activeItem.classList.add('active');
             if (generatorTab) generatorTab.style.display = 'flex';
-        } else if (tabName === 'character-sheet') {
-            let activeItem = document.getElementById('sidebar-item-character-sheet');
-            if (activeItem) activeItem.classList.add('active');
-            if (characterSheetTab) characterSheetTab.style.display = 'flex';
-            if (typeof renderCharacterSheetTab === 'function') renderCharacterSheetTab();
         } else if (tabName === 'world') {
             let activeItem = document.getElementById('sidebar-item-world');
             if (activeItem) activeItem.classList.add('active');

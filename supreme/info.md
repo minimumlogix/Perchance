@@ -8,14 +8,13 @@ This guide details all the core systems, hidden capabilities, and visual modules
 
 ## 🧭 Navigation & Core Modules
 
-The application is structured around **six main tabs** in the sidebar, supported by a shared global database:
+The application is structured around **five main tabs** in the sidebar, supported by a shared global database:
 
 1. **[Characters (SCDG)](#1-supreme-character-description-generator-scdg)**: Step-by-step descriptive prose builder, AI portrait generator, and scene staging canvas.
-2. **[Character Sheet](#2-interactive-character-sheet-dashboard)**: Dynamic visual dashboard compiled from unstructured character details.
-3. **[World](#3-supreme-world-generator)**: Sprawling environment builder mapping factions, rules, and bestiaries.
-4. **[Roleplay](#4-supreme-roleplay-scenario-generator)**: Dynamic setup creating multi-character starting points and player prompts.
-5. **[Assistant](#5-context-aware-ai-assistant)**: Interactive, context-aware AI chatbot to bounce ideas off of.
-6. **[Settings](#6-application-settings--generation-constraints)**: Detailed confirmation options, formatting restrictions, and theme selectors.
+2. **[World](#2-supreme-world-generator)**: Sprawling environment builder mapping factions, rules, and bestiaries.
+3. **[Roleplay](#3-supreme-roleplay-scenario-generator)**: Dynamic setup creating multi-character starting points and player prompts.
+4. **[Assistant](#4-context-aware-ai-assistant)**: Interactive, context-aware AI chatbot to bounce ideas off of.
+5. **[Settings](#5-application-settings--generation-constraints)**: Detailed confirmation options, formatting restrictions, and theme selectors.
 
 ---
 
@@ -71,29 +70,7 @@ Located inside the **Roleplay Intro** panel:
 
 ---
 
-## 2. Interactive Character Sheet Dashboard
-
-This module turns unstructured prose generated under SCDG into a sleek, visual character sheet.
-
-* **Layout Styles**: 
-  * **Default Glass**: Modern glassmorphism with soft blur backdrops and clean borders.
-  * **Cyberpunk Neon**: High-contrast dark cards with neon pink/blue borders and retro-grid elements.
-* **Accent Color Customization**: Live-updating color schemes (*Emerald Green, Cyberpunk Pink, Sunset Gold, Sapphire Blue, Crimson Red, Amethyst Purple*).
-* **Auto-Compiler**: Analyzes unstructured text and compiles it into:
-  * *Overview Summary & Tagline*
-  * *Identity & Physical Tables* (Age, Species, Hair, Eyes, Scars, Posture)
-  * *Psychology Table* (Personality, Mentality, Fears, Motives)
-  * *Dynamic Lists*: Editable bullet items for *Inventory, Relations, Lore & Facts, and Scenario quirks*.
-* **Visual Slot Picker**: Open a picker modal that displays all generated images for this character, allowing you to select and assign images to:
-  * *Cover Banner*
-  * *Profile Avatar*
-  * *Physical Portrait*
-  * *Relations Portrait*
-* **Offline HTML Export**: Generates a single standalone HTML file containing the entire dashboard layout, style sheets, icons, and **embedded base64 images**, allowing the file to be viewed completely offline with full styling.
-
----
-
-## 3. Supreme World Generator
+## 2. Supreme World Generator
 
 Builds extensive world settings with custom geography, societies, and rules.
 
@@ -111,7 +88,7 @@ Builds extensive world settings with custom geography, societies, and rules.
 
 ---
 
-## 4. Supreme Roleplay Scenario Generator
+## 3. Supreme Roleplay Scenario Generator
 
 Fleshes out multi-character scenarios where the player interacts with dynamic NPCs.
 
@@ -128,7 +105,7 @@ Fleshes out multi-character scenarios where the player interacts with dynamic NP
 
 ---
 
-## 5. Context-Aware AI Assistant
+## 4. Context-Aware AI Assistant
 
 An interactive chatbot helper integrated directly into the workspace.
 
@@ -138,7 +115,7 @@ An interactive chatbot helper integrated directly into the workspace.
 
 ---
 
-## 6. Application Settings & Generation Constraints
+## 5. Application Settings & Generation Constraints
 
 Configure system behavior, confirmation popups, and formatting rules.
 
