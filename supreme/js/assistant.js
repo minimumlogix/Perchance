@@ -1,5 +1,6 @@
-// assistant.js
-
+/* ==========================================================================
+   AI CHATBOT ASSISTANT CONTROLLER
+   ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     const aiThinkingToggle = document.getElementById("aiThinkingToggleEl");
     if (aiThinkingToggle) {
@@ -23,7 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
+/* ==========================================================================
+   ASSISTANT CONTEXT AND MARKDOWN PARSERS
+   ========================================================================== */
 function getAssistantContext() {
     let context = "Context:\n";
     // Check if sections have content (from app.js / character-generator.js logic)
@@ -87,7 +90,9 @@ function copyMessageText(btn) {
         console.error("Failed to copy text: ", err);
     });
 }
-
+/* ==========================================================================
+   CHAT MESSAGES HISTORY AND DOM MODIFIERS
+   ========================================================================== */
 function clearAssistantChat() {
     if (confirm("Are you sure you want to clear the chat history?")) {
         const messagesEl = document.getElementById("chatMessagesEl");
@@ -154,7 +159,9 @@ function createAssistantMessageBlock() {
     
     return { wrapper, thinkingBlock, methodologyBlock, bubble, copyBtn };
 }
-
+/* ==========================================================================
+   AI INTENTION ASSESSMENT & STREAM GENERATION PIPELINE
+   ========================================================================== */
 async function sendAssistantMessage() {
     const inputEl = document.getElementById("chatInputEl");
     const sendBtn = document.getElementById("chatSendBtnEl");

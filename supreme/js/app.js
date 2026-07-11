@@ -1,6 +1,6 @@
-    // ─── PERCHANCE CONTEXT STANDALONE MOCK ────────────────────────────────
-    // This allows the HTML file to run and be tested standalone in a local browser,
-    // while seamlessly using the live Perchance engine bindings when compiled online.
+/* ==========================================================================
+   STANDALONE DEVELOPMENT MOCK CONTEXT
+   ========================================================================== */
     const isPerchance = window.location.hostname.includes("perchance.org");
     if (typeof window.root === "undefined" && !isPerchance) {
         console.info("🔧 Supreme Character Description: Running in standalone local context. Injected developer mocks for Perchance engine.");
@@ -415,8 +415,9 @@
     // defined in 'SCD_LIST.txt' (the Perchance "Lists" panel). 
     // Perchance automatically injects these into the global scope. 
     // Do not re-declare them here unless local overrides are needed.
-
-    // ─── PANEL COLLAPSE ───────────────────────────────────────────────
+/* ==========================================================================
+   PANEL COLLAPSE UTILITY
+   ========================================================================== */
     window.togglePanel = function (panelId) {
         let panel = document.getElementById(panelId);
         let header = panel.querySelector('.panel-header');
@@ -437,8 +438,9 @@
             }
         }
     };
-
-    // ─── CUSTOM DROPDOWNS (SETTING & TONE) ──────────────────────────────
+/* ==========================================================================
+   CUSTOM DROPDOWN COMPONENT CONTROLLER
+   ========================================================================== */
     window.sortDropdownList = function (listElId) {
         const listEl = document.getElementById(listElId);
         if (!listEl) return;
@@ -1146,8 +1148,9 @@
         let val = localStorage.perspective || "Third_Person";
         selectPerspective(val, false);
     };
-
-    // === CUSTOM DROPDOWN DRAWER INTEGRATION ===
+/* ==========================================================================
+   MOBILE-FIRST SELECT DROPDOWN DRAWER INTEGRATION
+   ========================================================================== */
     let currentActiveSelectEl = null;
     let currentActiveWrapper = null;
     const multiSelectIds = new Set();
@@ -1802,8 +1805,9 @@
     } else {
         setAccentTheme('amethyst');
     }
-
-    // ─── DARK MODE ────────────────────────────────────────────────────
+/* ==========================================================================
+   THEME AND COLOR SCHEME CONTROLLER (DARK/LIGHT MODE)
+   ========================================================================== */
     window.toggleManualDarkMode = function () {
         let newScheme = getCurrentColorScheme() === "dark" ? "light" : "dark";
         localStorage.forceColorScheme = newScheme;
@@ -1857,8 +1861,9 @@
         if (localStorage.forceColorScheme) options.forceColorScheme = localStorage.forceColorScheme;
         return root.comments(options);
     };
-
-    // ─── UI UPDATES ───────────────────────────────────────────────────
+/* ==========================================================================
+   UI STATUS AND STATE HELPERS
+   ========================================================================== */
     window.updateSavedCountBadge = function () {
         let saved = JSON.parse(localStorage.savedCharacters || "[]");
         let badgeEl = document.getElementById("savedCountBadgeEl");
@@ -2022,13 +2027,59 @@
         return text.replace(/:::/g, ""); // Prevent Perchance image plugin prompt injection
     };
 
+    /**
+     * Formats generated AI section text to bold headers/labels.
+     * @param {string} text - The raw generated text.
+     * @returns {string} The formatted HTML string.
+     */
+    window.formatSectionText = function (text) {
+        if (!text) return "";
+        let r = text.replace(/(^|\n)([#*a-zA-Z/ _\-0-9]{1,50})(:\s?)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + (p3 === ":" ? ": " : p3));
+        return r.replace(/(^|\n)([#*]+[a-zA-Z/ _\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + p3);
+    };
+
+    /**
+     * Sanitizes AI generated text by applying user formatting preferences (banning em-dashes, bolding, or custom terms).
+     * @param {string} text - The raw text from the AI stream.
+     * @returns {string} The sanitized text.
+     */
+    window.sanitizeOutput = function (text) {
+        if (!text) return "";
+        let result = text;
+        
+        let banEmDash = localStorage.getItem("banEmDash") !== "false";
+        let banBolding = localStorage.getItem("banBolding") === "true";
+        let customBanned = (localStorage.getItem("customBanned") || "").trim();
+        
+        if (banEmDash) {
+            result = result.replace(/\u2014/g, " - ").replace(/\u2013/g, " - ");
+        }
+        
+        if (banBolding) {
+            result = result.replace(/\*\*/g, "");
+        }
+        
+        if (customBanned) {
+            let terms = customBanned.split(",").map(t => t.trim()).filter(t => t.length > 0);
+            for (let term of terms) {
+                // Remove custom banned terms case-insensitively
+                let escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let regex = new RegExp(escaped, 'gi');
+                result = result.replace(regex, "");
+            }
+        }
+        
+        return result;
+    };
+
     window.updateClearAllBtn = function () {
         let hasContent = ["role", "personality", "beliefs", "preferences", "appearance", "background", "lore", "roleplay"].some(s => getSectionText(s).length > 0);
         let btn = document.getElementById("clearAllBtn");
         if (btn) btn.style.opacity = hasContent ? "1" : "0.7";
     };
-
-    // ─── TAB NAVIGATION ───
+/* ==========================================================================
+   TAB NAVIGATION AND MAIN WORKSPACE CONTROLLER
+   ========================================================================== */
     window.switchTab = function (tabName) {
         // Toggle active navigation items
         document.querySelectorAll('.left-sidebar .sidebar-item').forEach(el => {
@@ -2114,8 +2165,9 @@
             }
         }
     };
-
-    // ─── PREMIUM CUSTOM CONFIRM DIALOG ───
+/* ==========================================================================
+   PREMIUM CUSTOM CONFIRMATION MODALS
+   ========================================================================== */
     window.showConfirmDialog = function (message, settingKey, onConfirm) {
         // If warning is disabled by settingKey, execute immediately
         if (settingKey && localStorage[settingKey] === 'false') {
@@ -2256,7 +2308,9 @@
             window.syncSidebarToggleButtons();
         }
     }, 500);
-
+/* ==========================================================================
+   REAL-TIME CONTEXT BRAIN VIEWER AND DEBUGGER
+   ========================================================================== */
     window.toggleBrainDrawer = function() {
         let sidebar = document.getElementById("sidebarEl");
         let brainSidebar = document.getElementById("brainSidebarEl");

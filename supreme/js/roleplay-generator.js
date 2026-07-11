@@ -1,4 +1,6 @@
-// ─── ROLEPLAY GENERATOR MODULE ──────────────────────────────────────────
+/* ==========================================================================
+   ROLEPLAY GENERATOR MODULE INITIAL STATE & LOADERS
+   ========================================================================== */
 (function () {
     // Initial State
     window.roleplayState = {
@@ -156,8 +158,9 @@
             setTimeout(() => { statusEl.textContent = ""; }, 3000);
         }
     };
-
-    // Dynamic NPCs list management
+/* ==========================================================================
+   DYNAMIC NPC GRID AND CAST LIST MANAGEMENT
+   ========================================================================== */
     window.addNPC = function () {
         window.roleplayState.npcs.push({ name: "", species: "", personality: "", role: "" });
         window.renderNPCGrid();
@@ -286,8 +289,9 @@
             `;
         }).join("");
     };
-
-    // Initialize custom dropdowns specifically for Roleplay Generator
+/* ==========================================================================
+   CUSTOM DROPDOWN CONFIGURATION
+   ========================================================================== */
     window.selectRoleplaySetting = function (value, closeMenu = true) {
         window.roleplayState.setting = value;
         let labelEl = document.getElementById("rpSettingLabel");
@@ -785,8 +789,9 @@
             }
         }
     };
-
-    // Generate Roleplay Scenario via AI
+/* ==========================================================================
+   AI SCENARIO & STARTER GENERATION ENGINE
+   ========================================================================== */
     window.generateRoleplay = async function () {
         if (window.roleplayState.isGenerating) return;
 

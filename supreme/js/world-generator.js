@@ -1,4 +1,6 @@
-// ─── WORLD GENERATOR MODULE ─────────────────────────────────────────────
+/* ==========================================================================
+   WORLD GENERATOR MODULE INITIAL STATE & LOADERS
+   ========================================================================== */
 (function () {
     // Initial State
     window.worldState = {
@@ -84,8 +86,9 @@
             console.warn("Failed to save activeWorldState:", e);
         }
     };
-
-    // Initialize custom dropdowns specifically for World Generator
+/* ==========================================================================
+   CUSTOM DROPDOWN CONFIGURATION
+   ========================================================================== */
     window.selectWorldSetting = function (value, closeMenu = true) {
         window.worldState.setting = value;
         let labelEl = document.getElementById("wSettingLabel");
@@ -284,8 +287,9 @@
             updateWorldToneLabel();
         }
     };
-
-    // AI Generation for World sections
+/* ==========================================================================
+   AI GENERATION ENGINE FOR WORLD SECTIONS
+   ========================================================================== */
     window.generateWorldSection = async function (section) {
         if (window.worldState.isGenerating[section]) return;
 
@@ -559,8 +563,9 @@
             }
         );
     };
-
-    // SAVED WORLDS DATABASE MANAGEMENT (localStorage.savedWorlds)
+/* ==========================================================================
+   LOCAL DATABASE AND FILE SAVE SLOTS MANAGEMENT
+   ========================================================================== */
     window.saveWorldButtonClickHandler = function (btn) {
         window.saveWorldState();
         let name = window.worldState.name.trim();

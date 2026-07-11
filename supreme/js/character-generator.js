@@ -1,4 +1,6 @@
-    // ─── CACHE STORAGE API MANAGER ─────────────────────────────────────
+/* ==========================================================================
+   CACHE STORAGE API MANAGER
+   ========================================================================== */
     const CACHE_NAME = "scdg-image-cache";
     let resolvedObjectUrls = new Map();
 
@@ -362,8 +364,9 @@
         
         await window.checkStorageUsage();
     };
-
-    // ─── WORLD LORE ───────────────────────────────────────────────────
+/* ==========================================================================
+   WORLD LORE NARRATIVE GENERATOR
+   ========================================================================== */
     window.generateWorldLore = async function (force = false) {
         if (!force && worldLoreEl.value.trim().length > 0) return;
 
@@ -854,12 +857,6 @@
         URL.revokeObjectURL(url);
     };
 
-    window.formatSectionText = function (text) {
-        if (!text) return "";
-        let r = text.replace(/(^|\n)([#*a-zA-Z/ _\-0-9]{1,50})(:\s?)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + (p3 === ":" ? ": " : p3));
-        return r.replace(/(^|\n)([#*]+[a-zA-Z/ _\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:var(--accent-color)">${p2.replace(/[#*]/g, "").trim()}</b>` + p3);
-    };
-
     window.setGenerationStatus = function (message) {
         let trimmed = (message || "").trim();
         if (!trimmed && window.generateAllRunning) {
@@ -923,8 +920,9 @@
             console.error("Error checking storage usage:", e);
         }
     };
-
-    // ─── PROMPT BUILDING ──────────────────────────────────────────────
+/* ==========================================================================
+   AI PROMPT COMPILER AND CONTEXT BUILDERS
+   ========================================================================== */
     // ⚠️ STRICT GLOBAL RULE: Apply to every AI prompt  -  dynamically build banned formatting rules
     window.getBannedFormattingRule = function () {
         let ruleParts = [];
@@ -953,35 +951,6 @@
         if (ruleParts.length === 0) return "";
         return "STRICT FORMATTING RULE: " + ruleParts.join(" ");
     };
-    window.sanitizeOutput = function (text) {
-        if (!text) return "";
-        let result = text;
-        
-        let banEmDash = localStorage.getItem("banEmDash") !== "false";
-        let banBolding = localStorage.getItem("banBolding") === "true";
-        let customBanned = (localStorage.getItem("customBanned") || "").trim();
-        
-        if (banEmDash) {
-            result = result.replace(/\u2014/g, " - ").replace(/\u2013/g, " - ");
-        }
-        
-        if (banBolding) {
-            result = result.replace(/\*\*/g, "");
-        }
-        
-        if (customBanned) {
-            let terms = customBanned.split(",").map(t => t.trim()).filter(t => t.length > 0);
-            for (let term of terms) {
-                // Remove custom banned terms case-insensitively
-                let escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                let regex = new RegExp(escaped, 'gi');
-                result = result.replace(regex, "");
-            }
-        }
-        
-        return result;
-    };
-
     window.getLengthInstruction = function (lengthVal) {
         if (!lengthVal || lengthVal === "custom") return "";
         if (typeof root !== 'undefined' && root.lengthSpecifiers && root.lengthSpecifiers[lengthVal]) {
@@ -1319,8 +1288,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let finalNotes = notes ? (notes + "\n\n" + extraNotes) : extraNotes;
         return root.prompts.compile("introStart", context, finalNotes, lengthVal, overview, worldLore);
     };
-
-    // ─── MAIN GENERATION ──────────────────────────────────────────────
+/* ==========================================================================
+   MAIN AI GENERATION ENGINE
+   ========================================================================== */
     window.generateSection = async function (section) {
         if (!window.sectionStreams) window.sectionStreams = {};
         if (window.sectionStreams[section]) window.sectionStreams[section].stop();
@@ -1727,7 +1697,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         }
         updateStyleOverridePlaceholder();
     };
-
+/* ==========================================================================
+   ROLEPLAY PREVIEW STAGE (IMAGE/SCENE GENERATOR)
+   ========================================================================== */
     window.generateRoleplayImageBg = async function() {
         let statusEl = document.getElementById("introImageStatus");
         let bgEl = document.getElementById("introImageBg");

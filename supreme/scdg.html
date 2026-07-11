@@ -1,28 +1,38 @@
 <link rel="icon" type="image/png" href="https://minimumlogix.github.io/Perchance/supreme/assets/SCG_favicon.png">
-<link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/styles.css">
-<link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/assistant.css">
-<link rel="stylesheet" href="https://minimumlogix.github.io/Perchance/supreme/css/mobile-styles.css">
 <script>
-    // Bind Perchance plugins to the global window scope.
-    // This allows external modular scripts (which are loaded as standard third-party scripts and
-    // cannot access the compiled Perchance Lists panel closure directly) to call Perchance plugins
-    // (ai, image, prompt2, uploadPlugin, and superFetch) as if they were standard global variables.
-    // At the same time, this maintains full compatibility with the local standalone mock context.
+    // ─── DYNAMIC RESOURCE LOADER ──────────────────────────────────────────
+    // Dynamically resolves local vs. production asset paths based on the running hostname.
+    // Enables seamless local development without changing script locations.
     (function () {
+        const isLocal = !window.location.hostname.includes("perchance.org");
+        const basePath = isLocal ? "" : "https://minimumlogix.github.io/Perchance/supreme/";
+
+        // 1. Inject Stylesheets
+        const stylesheets = [
+            "css/styles.css",
+            "css/assistant.css",
+            "css/mobile-styles.css"
+        ];
+        stylesheets.forEach(href => {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = basePath + href;
+            document.head.appendChild(link);
+        });
+
+        // 2. Bind Perchance plugins to the global window scope.
         const plugins = ['ai', 'image', 'prompt2', 'uploadPlugin', 'superFetch'];
         const mocks = {};
 
         plugins.forEach(name => {
             Object.defineProperty(window, name, {
                 get: function () {
-                    // 1. If compiled on Perchance, use the compiled plugin from the global 'root' or window.root object
                     if (typeof window.root !== "undefined" && typeof window.root[name] !== "undefined") {
                         return window.root[name];
                     }
                     if (typeof root !== "undefined" && typeof root[name] !== "undefined") {
                         return root[name];
                     }
-                    // 2. Fallback to local mock if defined
                     return mocks[name];
                 },
                 set: function (val) {
@@ -31,15 +41,26 @@
                 configurable: true
             });
         });
+
+        // 3. Inject Scripts in correct dependency order
+        const scripts = [
+            "js/app.js",
+            "js/character-generator.js",
+            "js/roleplay-generator.js",
+            "js/world-generator.js",
+            "js/assistant.js"
+        ];
+        scripts.forEach(src => {
+            const script = document.createElement("script");
+            script.src = basePath + src;
+            script.defer = true;
+            script.async = false; // Force scripts to execute in the appended order
+            document.head.appendChild(script);
+        });
     })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/app.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/character-generator.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/roleplay-generator.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/world-generator.js" defer></script>
-<script src="https://minimumlogix.github.io/Perchance/supreme/js/assistant.js" defer></script>
 <div class="app-container">
     <!-- LEFT SIDEBAR -->
     <div class="left-sidebar">
