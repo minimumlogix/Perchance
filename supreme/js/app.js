@@ -1147,134 +1147,595 @@
         selectPerspective(val, false);
     };
 
+    // === CUSTOM DROPDOWN DRAWER INTEGRATION ===
+    let currentActiveSelectEl = null;
+    let currentActiveWrapper = null;
+    const multiSelectIds = new Set();
+    const multiSelectState = {};
+
+    const selectToListNameMap = {};
+
+    const drawerHeaders = {
+        'worldLoreLengthEl': 'WORLD LORE LENGTH',
+        'charWorldImportSelector': 'LOAD SAVED WORLD',
+        'shortDescriptionLengthEl': 'SHORT DESCRIPTION LENGTH',
+        'appearanceLengthEl': 'APPEARANCE LENGTH',
+        'visualStyleEl': 'VISUAL STYLE',
+        'imageCountEl': 'IMAGE COUNT',
+        'roleLengthEl': 'ROLE/BACKGROUND LENGTH',
+        'personalityLengthEl': 'PERSONALITY LENGTH',
+        'beliefsLengthEl': 'BELIEFS LENGTH',
+        'preferencesLengthEl': 'PREFERENCES LENGTH',
+        'abilitiesLengthEl': 'ABILITIES LENGTH',
+        'relationsLengthEl': 'RELATIONS LENGTH',
+        'backgroundLengthEl': 'BACKGROUND LENGTH',
+        'timelineLengthEl': 'TIMELINE LENGTH',
+        'roleplayLengthEl': 'ROLEPLAY LENGTH',
+        'introLengthEl': 'INTRO LENGTH',
+        'wLengthEl': 'WORLD LORE LENGTH',
+        'rpLengthEl': 'STARTER LENGTH',
+        'rpWorldImportSelector': 'LOAD SAVED WORLD'
+    };
+
+    const gradients = [
+        'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+        'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+        'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+        'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+        'linear-gradient(135deg, #a6c0fe 0%, #f1a7f1 100%)',
+        'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+        'linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%)',
+        'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+        'linear-gradient(135deg, #f857a6 0%, #ff5858 100%)'
+    ];
+
+    function getGradientForString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return gradients[Math.abs(hash) % gradients.length];
+    }
+
+    function extractEmoji(text) {
+        if (!text) return '✨';
+        try {
+            const match = text.match(/(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u);
+            return match ? match[0] : text.charAt(0).toUpperCase();
+        } catch { return text.charAt(0).toUpperCase(); }
+    }
+
+    // Close drawer (Done button)
+    window.closeDrawer = function () {
+        const drawer = document.getElementById('customDropdownDrawer');
+        if (!drawer) return;
+        drawer.classList.remove('open', 'expanded');
+        if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
+        currentActiveSelectEl = null;
+        currentActiveWrapper = null;
+    };
+
+    // Clear select values (Clear button)
+    window.clearSelection = function () {
+        if (!currentActiveSelectEl) return;
+        const id = currentActiveSelectEl.id;
+        const isMulti = multiSelectIds.has(id);
+        if (isMulti) {
+            const sel = new Set();
+            const hasNoneOption = Array.from(currentActiveSelectEl.options).some(o => o.value === 'none');
+            if (hasNoneOption) {
+                sel.add('none');
+            }
+            multiSelectState[id] = sel;
+            updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
+            
+            const scrollBox = document.getElementById('customDropdownDrawerContent');
+            if (scrollBox) {
+                scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+                    c.classList.toggle('selected', c.dataset.value === 'none');
+                });
+            }
+        } else {
+            currentActiveSelectEl.selectedIndex = 0;
+            currentActiveSelectEl.dispatchEvent(new Event('change', { bubbles: true }));
+            if (typeof currentActiveSelectEl.onchange === 'function') currentActiveSelectEl.onchange();
+            
+            const labelSpan = currentActiveWrapper.querySelector('.custom-select-label');
+            if (labelSpan && currentActiveSelectEl.options[0]) {
+                labelSpan.textContent = currentActiveSelectEl.options[0].textContent;
+            }
+            
+            const scrollBox = document.getElementById('customDropdownDrawerContent');
+            if (scrollBox) {
+                scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+                    c.classList.toggle('selected', parseInt(c.dataset.index) === 0);
+                });
+            }
+        }
+    };
+
+    // Select all multi-select items (Clear "none" and select all others)
+    window.selectAllMultiSelect = function () {
+        if (!currentActiveSelectEl) return;
+        const id = currentActiveSelectEl.id;
+        if (!multiSelectIds.has(id)) return;
+        
+        const sel = new Set();
+        const originalOptions = Array.from(currentActiveSelectEl.options);
+        originalOptions.forEach(opt => {
+            if (opt.value !== 'none') {
+                sel.add(opt.value);
+            }
+        });
+        
+        multiSelectState[id] = sel;
+        
+        // Update all card selected states in drawer
+        const scrollBox = document.getElementById('customDropdownDrawerContent');
+        if (scrollBox) {
+            scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+                if (c.dataset.value !== 'none') {
+                    c.classList.add('selected');
+                } else {
+                    c.classList.remove('selected');
+                }
+            });
+        }
+        updateMultiSelectLabel(currentActiveSelectEl, currentActiveWrapper);
+    };
+
+    // Update trigger label + badge for a multi-select
+    function updateMultiSelectLabel(selectEl, wrapper) {
+        const labelSpan = wrapper.querySelector('.custom-select-label');
+        if (!labelSpan) return;
+        const sel = multiSelectState[selectEl.id];
+        if (!sel || sel.size === 0) {
+            labelSpan.textContent = selectEl.options[0] ? selectEl.options[0].textContent : '';
+            const existingBadge = wrapper.querySelector('.custom-select-badge');
+            if (existingBadge) existingBadge.remove();
+            return;
+        }
+        const values = Array.from(sel);
+        const firstOpt = Array.from(selectEl.options).find(o => o.value === values[0]);
+        labelSpan.textContent = firstOpt ? firstOpt.textContent : values[0];
+        let badge = wrapper.querySelector('.custom-select-badge');
+        if (sel.size > 1) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'custom-select-badge';
+                labelSpan.after(badge);
+            }
+            badge.textContent = `+${sel.size - 1}`;
+        } else {
+            if (badge) badge.remove();
+        }
+    }
+
+    function buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox) {
+        const card = document.createElement('div');
+        card.dataset.value = opt.value;
+        card.dataset.index = idx;
+
+        let isSelected = false;
+        if (isMulti) {
+            isSelected = (multiSelectState[selectEl.id] || new Set()).has(opt.value);
+        } else {
+            isSelected = idx === selectEl.selectedIndex;
+        }
+        card.className = 'custom-select-card' + (isSelected ? ' selected' : '');
+
+        let imageUrl = null;
+        let itemDescription = '';
+        
+        // Custom lookup for saved worlds selector
+        if (selectEl.id === 'charWorldImportSelector' || selectEl.id === 'rpWorldImportSelector') {
+            try {
+                const saved = JSON.parse(localStorage.savedWorlds || '[]');
+                const world = saved.find(w => String(w.id) === String(opt.value));
+                if (world) {
+                    if (world.bannerUrl) imageUrl = world.bannerUrl;
+                    let descParts = [];
+                    if (world.setting && world.setting !== 'Any') descParts.push("Setting: " + world.setting.replace(/_/g, ' '));
+                    if (world.tones && world.tones.length > 0 && world.tones[0] !== 'Any') descParts.push("Tones: " + world.tones.join(', ').replace(/_/g, ' '));
+                    if (world.sections && world.sections.worldLore) {
+                        let lore = String(world.sections.worldLore).replace(/<[^>]*>/g, '').trim();
+                        if (lore) {
+                            if (lore.length > 100) lore = lore.substring(0, 97) + '...';
+                            descParts.push(lore);
+                        }
+                    }
+                    itemDescription = descParts.join(' | ');
+                }
+            } catch(e) {}
+        }
+
+        const listName = selectToListNameMap[selectEl.id];
+        if (listName && !imageUrl && !itemDescription) {
+            try {
+                let listObj = null;
+                try {
+                    listObj = eval(listName);
+                } catch (e) {
+                    listObj = window[listName];
+                }
+
+                let itemObj = null;
+                if (listObj) {
+                    if (listObj.selectAll) {
+                        itemObj = listObj.selectAll.find(item => item.getName === opt.value);
+                    } else {
+                        itemObj = listObj[opt.value];
+                    }
+                }
+
+                if (itemObj) {
+                    if (typeof itemObj === 'object') {
+                        let rawImg = String(itemObj.image ?? '').trim();
+                        if (rawImg && rawImg !== 'undefined') {
+                            imageUrl = rawImg;
+                            if (imageUrl.startsWith('assets/images/')) {
+                                imageUrl = imageUrl.replace('assets/images/', 'assets/Images/');
+                            }
+                        }
+                        let rawDesc = String(itemObj.description ?? '').trim();
+                        if (rawDesc && rawDesc !== 'undefined') {
+                            itemDescription = rawDesc;
+                        }
+                    } else if (typeof itemObj === 'string') {
+                        itemDescription = itemObj.trim();
+                    }
+                }
+            } catch (e) { /* silent */ }
+        }
+
+        // Thumbnail
+        const imgWrapper = document.createElement('div');
+        imgWrapper.className = 'card-image-wrapper';
+        const fallback = document.createElement('div');
+        fallback.className = 'card-image-fallback';
+        fallback.style.background = getGradientForString(opt.textContent);
+        fallback.textContent = extractEmoji(opt.textContent);
+
+        const img = document.createElement('img');
+        img.className = 'card-image';
+        img.alt = opt.textContent;
+
+        let hasTriedListUrl = false;
+        let hasTriedFallbackUrl = false;
+
+        img.onload = () => {
+            img.style.display = 'block';
+            fallback.style.display = 'none';
+        };
+
+        img.onerror = () => {
+            if (imageUrl && !hasTriedListUrl) {
+                hasTriedListUrl = true;
+            }
+            if (!hasTriedFallbackUrl) {
+                hasTriedFallbackUrl = true;
+                let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
+                if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
+                let keyword = cleanPromptName.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-');
+                img.src = 'https://loremflickr.com/800/600/' + keyword;
+            } else {
+                img.style.display = 'none';
+                fallback.style.display = 'flex';
+            }
+        };
+
+        if (imageUrl) {
+            img.src = imageUrl;
+        } else {
+            hasTriedFallbackUrl = true;
+            let cleanPromptName = opt.textContent.replace(/[\p{Emoji_Presentation}|\p{Emoji}\uFE0F]\s*/gu, '').trim();
+            if (!cleanPromptName) cleanPromptName = opt.textContent.trim();
+            let keyword = cleanPromptName.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-');
+            img.src = 'https://loremflickr.com/800/600/' + keyword;
+        }
+
+        imgWrapper.appendChild(img);
+        imgWrapper.appendChild(fallback);
+
+        // Content
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'card-content';
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = opt.textContent;
+        contentWrapper.appendChild(title);
+
+        if (itemDescription) {
+            const desc = document.createElement('div');
+            desc.className = 'card-description';
+            desc.textContent = itemDescription;
+            contentWrapper.appendChild(desc);
+        }
+
+        // Checkmark circle
+        const check = document.createElement('div');
+        check.className = 'card-check';
+        check.innerHTML = '<i class="bi bi-check-lg"></i>';
+        card.appendChild(check);
+
+        card.appendChild(imgWrapper);
+        card.appendChild(contentWrapper);
+
+        // Click handler
+        card.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            if (isMulti) {
+                const sel = multiSelectState[selectEl.id] || new Set();
+                if (opt.value === 'none') {
+                    if (sel.has('none')) {
+                        sel.delete('none');
+                        card.classList.remove('selected');
+                    } else {
+                        sel.clear();
+                        sel.add('none');
+                        scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+                            c.classList.toggle('selected', c.dataset.value === 'none');
+                        });
+                    }
+                } else {
+                    if (sel.has(opt.value)) {
+                        sel.delete(opt.value);
+                        card.classList.remove('selected');
+                    } else {
+                        if (sel.has('none')) {
+                            sel.delete('none');
+                            const noneCard = scrollBox.querySelector('.custom-select-card[data-value="none"]');
+                            if (noneCard) noneCard.classList.remove('selected');
+                        }
+                        sel.add(opt.value);
+                        card.classList.add('selected');
+                    }
+                }
+                multiSelectState[selectEl.id] = sel;
+                updateMultiSelectLabel(selectEl, wrapper);
+            } else {
+                selectEl.value = opt.value;
+                selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                if (typeof selectEl.onchange === 'function') selectEl.onchange();
+                const labelSpan = wrapper.querySelector('.custom-select-label');
+                if (labelSpan) labelSpan.textContent = opt.textContent;
+                scrollBox.querySelectorAll('.custom-select-card').forEach(c => {
+                    c.classList.toggle('selected', parseInt(c.dataset.index) === idx);
+                });
+                window.closeDrawer();
+            }
+        });
+
+        return card;
+    }
+
+    function setupDrawerContent(selectEl, wrapper, scrollBox, drawer) {
+        currentActiveSelectEl = selectEl;
+        currentActiveWrapper = wrapper;
+        wrapper.classList.add('open');
+
+        const headerTitleEl = document.getElementById('drawerHeaderTitle');
+        if (headerTitleEl) {
+            headerTitleEl.textContent = drawerHeaders[selectEl.id] || selectEl.id.toUpperCase();
+        }
+
+        const isMulti = multiSelectIds.has(selectEl.id);
+
+        const headerBadgeEl = document.getElementById('drawerHeaderBadge');
+        if (headerBadgeEl) {
+            if (isMulti) {
+                headerBadgeEl.textContent = 'Multi-Select';
+                headerBadgeEl.className = 'badge rounded-pill fw-semibold text-uppercase bg-primary-subtle text-primary border border-primary-subtle';
+            } else {
+                headerBadgeEl.textContent = 'Single-Select';
+                headerBadgeEl.className = 'badge rounded-pill fw-semibold text-uppercase bg-secondary-subtle text-secondary border border-secondary-subtle';
+            }
+            headerBadgeEl.style.display = 'inline-block';
+        }
+
+        const originalOptions = Array.from(selectEl.options);
+        const itemsCount = originalOptions.length;
+        scrollBox.innerHTML = '';
+
+        if (itemsCount === 0) { drawer.classList.remove('open', 'expanded'); return; }
+
+        const searchInput = document.getElementById('customDropdownSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            const clearBtn = document.getElementById('customDropdownSearchClear');
+            if (clearBtn) clearBtn.style.display = 'none';
+        }
+
+        const selectAllBtn = document.getElementById('drawerSelectAllBtn');
+        if (selectAllBtn) {
+            selectAllBtn.style.display = isMulti ? 'inline-block' : 'none';
+        }
+
+        const sortedOptions = originalOptions.map((opt, idx) => ({ opt, idx }));
+        sortedOptions.sort((a, b) => {
+            let aSelected = false;
+            let bSelected = false;
+            if (isMulti) {
+                const sel = multiSelectState[selectEl.id] || new Set();
+                const isAImplicit = sel.size === 0 && a.opt.value === 'none';
+                const isBImplicit = sel.size === 0 && b.opt.value === 'none';
+                aSelected = sel.has(a.opt.value) || isAImplicit;
+                bSelected = sel.has(b.opt.value) || isBImplicit;
+            } else {
+                aSelected = a.idx === selectEl.selectedIndex;
+                bSelected = b.idx === selectEl.selectedIndex;
+            }
+            
+            if (aSelected && !bSelected) return -1;
+            if (!aSelected && bSelected) return 1;
+            return a.idx - b.idx;
+        });
+
+        sortedOptions.forEach(({ opt, idx }, sortedIdx) => {
+            const card = buildCard(opt, idx, selectEl, wrapper, isMulti, scrollBox);
+            card.style.animationDelay = `${sortedIdx * 20}ms`;
+            scrollBox.appendChild(card);
+        });
+
+        drawer.classList.add('open', 'expanded');
+
+        setTimeout(() => {
+            let targetIdx;
+            if (isMulti) {
+                const sel = multiSelectState[selectEl.id];
+                if (sel && sel.size > 0) {
+                    const firstVal = Array.from(sel)[0];
+                    targetIdx = originalOptions.findIndex(o => o.value === firstVal);
+                }
+            } else {
+                targetIdx = selectEl.selectedIndex;
+            }
+            if (targetIdx != null && targetIdx >= 0) {
+                const targetCard = scrollBox.querySelector(`.custom-select-card[data-index="${targetIdx}"]`);
+                if (targetCard) {
+                    scrollBox.scrollTop = targetCard.offsetTop - (scrollBox.clientHeight / 2) + (targetCard.clientHeight / 2);
+                }
+            }
+        }, 20);
+    }
+
+    function toggleSelectDrawer(selectEl, wrapper) {
+        const drawer = document.getElementById('customDropdownDrawer');
+        const scrollBox = document.getElementById('customDropdownDrawerContent');
+        if (!drawer || !scrollBox) return;
+
+        if (currentActiveSelectEl === selectEl && drawer.classList.contains('open')) {
+            window.closeDrawer();
+            return;
+        }
+
+        if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
+
+        const isAlreadyOpen = drawer.classList.contains('open');
+
+        if (isAlreadyOpen) {
+            scrollBox.classList.add('fade-out');
+            setTimeout(() => {
+                setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+                setTimeout(() => {
+                    scrollBox.classList.remove('fade-out');
+                }, 50);
+            }, 150);
+        } else {
+            setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+        }
+    }
+
+    window.initializeCustomSelect = function (selectEl) {
+        if (!selectEl || selectEl.classList.contains('custom-select-hidden')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        wrapper.id = 'custom-select-' + selectEl.id;
+
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'custom-select-trigger';
+
+        let iconClass = selectEl.dataset.dropdownIcon;
+        if (iconClass) {
+            let iconEl = document.createElement("i");
+            iconEl.className = iconClass;
+            iconEl.style.marginRight = "0.4rem";
+            iconEl.style.flexShrink = "0";
+            trigger.appendChild(iconEl);
+        }
+
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'custom-select-label';
+        const arrowSpan = document.createElement('span');
+        arrowSpan.className = 'custom-select-arrow';
+        arrowSpan.innerHTML = '<i class="bi bi-chevron-down"></i>';
+        trigger.appendChild(labelSpan);
+        trigger.appendChild(arrowSpan);
+
+        selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+        wrapper.appendChild(trigger);
+        selectEl.classList.add('custom-select-hidden');
+
+        function updateTriggerText() {
+            if (multiSelectIds.has(selectEl.id)) {
+                updateMultiSelectLabel(selectEl, wrapper);
+            } else {
+                const sel = selectEl.options[selectEl.selectedIndex];
+                labelSpan.textContent = sel ? sel.textContent : '';
+            }
+        }
+
+        updateTriggerText();
+
+        new MutationObserver(updateTriggerText)
+            .observe(selectEl, { childList: true, attributes: true, subtree: true });
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSelectDrawer(selectEl, wrapper);
+        });
+    };
+
+    window.filterDrawerCards = function (query) {
+        const clearBtn = document.getElementById('customDropdownSearchClear');
+        const scrollBox = document.getElementById('customDropdownDrawerContent');
+        if (!scrollBox) return;
+        query = query.toLowerCase().trim();
+        if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+        
+        let visibleCount = 0;
+        scrollBox.querySelectorAll('.custom-select-card').forEach(card => {
+            const title = (card.querySelector('.card-title')?.textContent || '').toLowerCase();
+            const desc = (card.querySelector('.card-description')?.textContent || '').toLowerCase();
+            const matches = title.includes(query) || desc.includes(query);
+            card.style.display = matches ? 'flex' : 'none';
+            if (matches) visibleCount++;
+        });
+
+        let noResultsEl = document.getElementById('customDropdownNoResults');
+        if (visibleCount === 0) {
+            if (!noResultsEl) {
+                noResultsEl = document.createElement('div');
+                noResultsEl.id = 'customDropdownNoResults';
+                noResultsEl.className = 'w-100 py-4 text-center text-muted d-flex flex-column align-items-center justify-content-center';
+                noResultsEl.innerHTML = `
+                    <i class="bi bi-search mb-2 opacity-50" style="font-size: 1.5rem;"></i>
+                    <span class="small fw-medium">No matching options found</span>
+                    <button class="btn btn-sm btn-link text-decoration-none p-0 mt-1" style="font-size: 80%; color: var(--accent-color);" onclick="clearDrawerSearch()">Reset search</button>
+                `;
+                scrollBox.appendChild(noResultsEl);
+            } else {
+                noResultsEl.style.display = 'flex';
+            }
+        } else {
+            if (noResultsEl) noResultsEl.style.display = 'none';
+        }
+    };
+
+    window.clearDrawerSearch = function () {
+        const inp = document.getElementById('customDropdownSearchInput');
+        if (inp) { inp.value = ''; filterDrawerCards(''); inp.focus(); }
+    };
+
+    // Close drawer when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!currentActiveSelectEl) return;
+        if (e.target.closest('.custom-select-trigger') || e.target.closest('#customDropdownDrawer')) return;
+        window.closeDrawer();
+    });
+
     window.initCustomLengthDropdowns = function () {
         let selects = document.querySelectorAll("select.length-select");
         selects.forEach(selectEl => {
             if (selectEl.dataset.customDropdownInitialized) return;
             selectEl.dataset.customDropdownInitialized = "true";
 
-            // Hide original select
-            selectEl.style.display = "none";
-            selectEl.classList.remove("length-select");
-            selectEl.classList.add("hidden-length-select");
-
-            // Create wrapper
-            let wrapper = document.createElement("div");
-            wrapper.className = "custom-dropdown";
-            wrapper.style.display = "inline-block";
-            wrapper.style.fontSize = "85%";
-
-            let menuId = selectEl.id + "Menu";
-
-            // Create trigger button
-            let trigger = document.createElement("button");
-            trigger.className = "dropdown-trigger length-select";
-            trigger.style.minWidth = "120px";
-            trigger.style.padding = "0.35rem 0.6rem";
-            trigger.style.height = "31px";
-            trigger.style.fontSize = "85%";
-            trigger.style.display = "flex";
-            trigger.style.alignItems = "center";
-            trigger.style.justifyContent = "space-between";
-            trigger.style.gap = "0.4rem";
-            trigger.style.backgroundImage = "none"; // Avoid inheriting double chevron arrows from CSS .length-select
-
-            let valSpan = document.createElement("span");
-            valSpan.className = "dropdown-value";
-            valSpan.style.marginRight = "0.25rem";
-            
-            let iconClass = selectEl.dataset.dropdownIcon;
-            if (iconClass) {
-                let iconEl = document.createElement("i");
-                iconEl.className = iconClass;
-                iconEl.style.marginRight = "0.4rem";
-                iconEl.style.flexShrink = "0";
-                trigger.appendChild(iconEl);
-            }
-
-            let activeOption = selectEl.options[selectEl.selectedIndex];
-            valSpan.textContent = activeOption ? activeOption.text : selectEl.value;
-            trigger.appendChild(valSpan);
-
-            let arrow = document.createElement("i");
-            arrow.className = "bi bi-chevron-down dropdown-arrow";
-            arrow.style.fontSize = "70%";
-            arrow.style.marginLeft = "auto";
-            trigger.appendChild(arrow);
-
-            trigger.onclick = function (e) {
-                toggleCustomDropdown(menuId, e);
-            };
-
-            wrapper.appendChild(trigger);
-
-            // Create menu
-            let menu = document.createElement("div");
-            menu.className = "dropdown-menu-custom";
-            menu.id = menuId;
-            menu.style.display = "none";
-            menu.style.width = "150px";
-            menu.onclick = function(e) { e.stopPropagation(); };
-
-            let optionsContainer = document.createElement("div");
-            optionsContainer.className = "dropdown-options";
-
-            Array.from(selectEl.options).forEach(opt => {
-                let optDiv = document.createElement("div");
-                optDiv.className = "dropdown-option-item";
-                optDiv.dataset.value = opt.value;
-                
-                let textSpan = document.createElement("span");
-                textSpan.textContent = opt.text;
-                optDiv.appendChild(textSpan);
-
-                let checkIcon = document.createElement("i");
-                checkIcon.className = "bi bi-check-lg";
-                checkIcon.style.color = "#fff"; // White checkmark on selected purple background
-                optDiv.appendChild(checkIcon);
-
-                optDiv.onclick = function() {
-                    selectEl.value = opt.value;
-                    selectEl.dispatchEvent(new Event('change'));
-                    menu.style.display = "none";
-                    wrapper.classList.remove("open");
-                };
-
-                optionsContainer.appendChild(optDiv);
-            });
-
-            menu.appendChild(optionsContainer);
-            wrapper.appendChild(menu);
-
-            // Insert wrapper after selectEl
-            selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
-
-            function updateUI(val) {
-                let selectedOpt = Array.from(selectEl.options).find(o => o.value === val);
-                valSpan.textContent = selectedOpt ? selectedOpt.text : val;
-
-                let items = optionsContainer.querySelectorAll(".dropdown-option-item");
-                items.forEach(item => {
-                    if (item.dataset.value === val) {
-                        item.classList.add("selected");
-                    } else {
-                        item.classList.remove("selected");
-                    }
-                });
-            }
-
-            let descriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
-            Object.defineProperty(selectEl, 'value', {
-                get: function() {
-                    return descriptor.get.call(selectEl);
-                },
-                set: function(val) {
-                    descriptor.set.call(selectEl, val);
-                    updateUI(val);
-                }
-            });
-
-            updateUI(selectEl.value);
+            window.initializeCustomSelect(selectEl);
         });
     };
 
