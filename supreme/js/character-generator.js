@@ -958,8 +958,24 @@
         if (typeof root !== 'undefined' && root.lengthSpecifiers) {
             spec = root.lengthSpecifiers[key] || root.lengthSpecifiers[lengthVal];
         }
+        let val = "";
         if (spec) {
-            return "IMPORTANT Length Constraint: " + spec.evaluateItem;
+            val = (typeof spec === 'object' && spec && spec.evaluateItem) ? spec.evaluateItem : String(spec);
+        }
+        if (!val) {
+            const fallbackMap = {
+                "super_short": "1 line maximum for each section",
+                "super-short": "1 line maximum for each section",
+                "short": "2 lines maximum for each section",
+                "medium": "4 lines minimum for each section",
+                "long": "6 lines minimum for each section",
+                "super_long": "8 Lines minimum for each section",
+                "super-long": "8 Lines minimum for each section"
+            };
+            val = fallbackMap[key] || fallbackMap[lengthVal] || "";
+        }
+        if (val) {
+            return "IMPORTANT Length Constraint: " + val;
         }
         return "";
     };
