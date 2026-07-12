@@ -138,7 +138,11 @@
                 : null;
             
             if (spec) {
-                val = typeof spec.evaluateItem === "function" ? spec.evaluateItem() : String(spec);
+                if (typeof spec === 'object' && spec && 'evaluateItem' in spec) {
+                    val = (typeof spec.evaluateItem === "function") ? spec.evaluateItem() : String(spec.evaluateItem);
+                } else {
+                    val = String(spec);
+                }
             } else {
                 const fallback = {
                     "super_short": "Ultra concise. Target 1 sentence per field.",

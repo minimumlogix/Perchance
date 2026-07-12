@@ -834,7 +834,11 @@
         }
         let val = "";
         if (spec) {
-            val = (typeof spec === 'object' && spec && spec.evaluateItem) ? spec.evaluateItem : String(spec);
+            if (typeof spec === 'object' && spec && 'evaluateItem' in spec) {
+                val = (typeof spec.evaluateItem === "function") ? spec.evaluateItem() : String(spec.evaluateItem);
+            } else {
+                val = String(spec);
+            }
         }
         if (!val) {
             const fallbackMap = {
@@ -4568,6 +4572,11 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let galleryContentEl = document.getElementById('galleryContentEl');
         if (galleryContentEl && typeof root !== 'undefined' && root.image) {
             galleryContentEl.innerHTML = root.image(root.galleryOptions).evaluateItem;
+        }
+
+        // Initialize global length UI state on page load
+        if (typeof setGlobalLength === "function") {
+            setGlobalLength(localStorage.globalLength || "custom", true);
         }
     } catch(err) {
         console.warn("Error running DOM value restorations:", err);
