@@ -1421,32 +1421,60 @@
 
 .sidebar-toggle-btn {
     position: absolute;
-    top: 0.75rem;
     right: 100%;
     left: auto;
     border-radius: 8px 0 0 8px;
     border-right: none;
-    padding: 0.4rem 0.7rem;
-    font-size: 85%;
-    white-space: nowrap;
+    width: 50px !important;
+    height: 50px !important;
+    display: inline-flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2px !important;
+    padding: 0 !important;
     z-index: 1101;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
     background: var(--sidebar-bg);
     color: var(--text-main);
     box-shadow: -4px 0 12px rgba(0,0,0,0.15);
-    transition: opacity 0.25s ease, background 0.2s, transform 0.2s;
+    transition: opacity 0.25s ease, background 0.2s, transform 0.2s, color 0.2s;
+}
+
+.sidebar-toggle-btn i {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.sidebar-toggle-btn span.toggle-label {
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sidebar-toggle-btn.active {
+    background: var(--accent-color) !important;
+    color: #fff !important;
+    border-color: var(--accent-color) !important;
 }
 
 .sidebar-badge {
-    display: none;
+    position: absolute;
+    top: 3px;
+    right: 3px;
     background: var(--accent-color);
     color: white;
-    border-radius: 10px;
-    padding: 0 5px;
-    font-size: 90%;
-    margin-left: 2px;
+    border-radius: 8px;
+    padding: 0px 4px;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.2;
+    display: none;
+}
+
+.sidebar-toggle-btn.active .sidebar-badge {
+    background: white !important;
+    color: var(--accent-color) !important;
 }
 
 .sidebar-header {
@@ -1493,6 +1521,16 @@
     align-items: center;
     opacity: 0.65;
     cursor: pointer;
+}
+
+.sidebar-group-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-color);
+    padding: 0.6rem 0.6rem 0.25rem;
+    opacity: 0.9;
 }
 
 .sidebar-info-bar {

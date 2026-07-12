@@ -737,35 +737,80 @@
             saved = JSON.parse(localStorage.savedWorlds || "[]");
         } catch (e) {}
 
-        let query = searchQuery.toLowerCase().trim();
-        let filtered = saved.filter(w => w.name.toLowerCase().includes(query));
+        let history = [];
+        try {
+            history = JSON.parse(localStorage.worldLoreHistory || "[]");
+        } catch (e) {}
 
-        if (filtered.length === 0) {
-            listEl.innerHTML = `<div class="sidebar-empty-state"><i class="bi bi-globe"></i>No saved worlds found.</div>`;
+        let query = searchQuery.toLowerCase().trim();
+        let filteredSaved = saved.filter(w => w.name.toLowerCase().includes(query));
+        let filteredHistory = history.filter(h => {
+            let worldName = typeof h === 'object' ? (h.worldName || "") : "";
+            let text = typeof h === 'string' ? h : h.text;
+            return worldName.toLowerCase().includes(query) || text.toLowerCase().includes(query);
+        });
+
+        if (filteredSaved.length === 0 && filteredHistory.length === 0) {
+            listEl.innerHTML = `<div class="sidebar-empty-state"><i class="bi bi-globe"></i>No saved worlds or history found.</div>`;
             return;
         }
 
-        listEl.innerHTML = filtered.map(w => {
-            let isActive = (w.id === window.worldState.activeWorldId) ? " active-save" : "";
-            let cardBg = w.bannerUrl ? `background-image: url(${w.bannerUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
-            let settingLabel = w.setting ? w.setting.replace(/_/g, " ") : "Any Setting";
+        let html = "";
 
-            return `
-                <div class="sidebar-save-item${isActive}" onclick="loadWorld(${w.id})">
-                    <div class="sidebar-save-banner" style="${cardBg}">
-                        <div class="sidebar-save-banner-overlay"></div>
-                    </div>
-                    <div class="sidebar-save-header">
-                        <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" title="Double-click to rename">${w.name}</b>
-                        <div class="sidebar-save-actions" onclick="event.stopPropagation()">
-                            <button class="btn btn-ghost btn-sm sidebar-save-action-btn" onclick="duplicateWorld(${w.id})" title="Duplicate"><i class="bi bi-copy"></i></button>
-                            <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorld(${w.id})" title="Delete"><i class="bi bi-trash"></i></button>
+        if (filteredSaved.length > 0) {
+            html += `<div class="sidebar-group-header">Saved Worlds (${filteredSaved.length})</div>`;
+            html += filteredSaved.map(w => {
+                let isActive = (w.id === window.worldState.activeWorldId) ? " active-save" : "";
+                let cardBg = w.bannerUrl ? `background-image: url(${w.bannerUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
+                let settingLabel = w.setting ? w.setting.replace(/_/g, " ") : "Any Setting";
+
+                return `
+                    <div class="sidebar-save-item${isActive}" onclick="loadWorld(${w.id})">
+                        <div class="sidebar-save-banner" style="${cardBg}">
+                            <div class="sidebar-save-banner-overlay"></div>
                         </div>
+                        <div class="sidebar-save-header">
+                            <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" title="Double-click to rename">${w.name}</b>
+                            <div class="sidebar-save-actions" onclick="event.stopPropagation()">
+                                <button class="btn btn-ghost btn-sm sidebar-save-action-btn" onclick="duplicateWorld(${w.id})" title="Duplicate"><i class="bi bi-copy"></i></button>
+                                <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorld(${w.id})" title="Delete"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                        <span class="sidebar-save-meta">Setting: ${settingLabel}</span>
                     </div>
-                    <span class="sidebar-save-meta">Setting: ${settingLabel}</span>
-                </div>
-            `;
-        }).join("");
+                `;
+            }).join("");
+        }
+
+        if (filteredHistory.length > 0) {
+            html += `<div class="sidebar-group-header" style="margin-top:0.75rem;">World Lore History (${filteredHistory.length})</div>`;
+            html += filteredHistory.map(h => {
+                let rawIndex = history.indexOf(h);
+                let text = typeof h === 'string' ? h : h.text;
+                let imageUrl = typeof h === 'object' ? h.imageUrl : null;
+                let worldName = typeof h === 'object' ? (h.worldName || "") : "";
+                let cardBg = imageUrl ? `background-image: url(${imageUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
+                let displayName = worldName ? `🌍 ${worldName}` : `🌍 Lore History ${rawIndex + 1}`;
+                let snippet = text.length > 120 ? text.substring(0, 120) + "..." : text;
+
+                return `
+                    <div class="sidebar-save-item" onclick="restoreWorldLore(${rawIndex})">
+                        <div class="sidebar-save-banner" style="${cardBg}">
+                            <div class="sidebar-save-banner-overlay"></div>
+                        </div>
+                        <div class="sidebar-save-header">
+                            <b class="sidebar-save-label" title="Click to load lore summary">${displayName}</b>
+                            <div class="sidebar-save-actions" onclick="event.stopPropagation()">
+                                <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorldLoreHistoryItem(${rawIndex})" title="Delete"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                        <span class="sidebar-save-meta" style="white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3; font-size:11px; opacity:0.8;">${snippet.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        listEl.innerHTML = html;
     };
 
     // Synchronize select menus inside character and roleplay tabs

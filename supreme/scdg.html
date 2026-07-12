@@ -2466,8 +2466,14 @@
 
 <!-- SIDEBAR -->
 <div id="sidebarEl" class="sidebar-container">
-    <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn">
-        <i class="bi bi-floppy"></i> saved <span id="savedCountBadgeEl" class="sidebar-badge"></span>
+    <button onclick="window.toggleSidebarTab('characters')" id="sidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn" style="top: 0.75rem;">
+        <i class="bi bi-people"></i>
+        <span class="toggle-label">chars</span>
+        <span id="savedCountBadgeEl" class="sidebar-badge"></span>
+    </button>
+    <button onclick="window.toggleSidebarTab('worlds')" id="worldSidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn" style="top: 4.25rem;">
+        <i class="bi bi-globe"></i>
+        <span class="toggle-label">worlds</span>
     </button>
     <div class="sidebar-header">
         <b id="sidebarHeaderTitleEl" class="sidebar-header-title"><i
@@ -2483,9 +2489,6 @@
         </button>
         <button id="sidebarTabBtn-worlds" class="sidebar-tab-btn sidebar-tab-btn-worlds" onclick="switchSidebarTab('worlds')">
             <i class="bi bi-globe"></i> Worlds
-            <span onclick="event.stopPropagation(); showWorldLoreHistoryModal();" class="sidebar-tab-history-icon" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.65;" title="World Lore History">
-                <i class="bi bi-clock-history"></i>
-            </span>
         </button>
     </div>
 
@@ -2582,8 +2585,9 @@
 
 <!-- Side Brain Context Sidebar -->
 <div id="brainSidebarEl" class="sidebar-container">
-    <button onclick="window.toggleBrainDrawer()" id="brainSidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn" style="top: 3.25rem;">
-        <i class="bi bi-brain"></i> context
+    <button onclick="window.toggleBrainDrawer()" id="brainSidebarToggleBtn" class="btn btn-secondary sidebar-toggle-btn" style="top: 7.75rem;">
+        <i class="bi bi-brain"></i>
+        <span class="toggle-label">context</span>
     </button>
     <div class="sidebar-header">
         <b class="sidebar-header-title"><i class="bi bi-brain" style="color:var(--accent-color);"></i> AI Context</b>

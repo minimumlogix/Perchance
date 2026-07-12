@@ -1834,6 +1834,30 @@
         }
     };
 
+    window.toggleSidebarTab = function (tabName) {
+        let sidebar = document.getElementById("sidebarEl");
+        let brainSidebar = document.getElementById("brainSidebarEl");
+        if (!sidebar) return;
+        
+        if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
+            brainSidebar.style.transform = "translateX(100%)";
+        }
+        
+        let isSidebarOpen = sidebar.style.transform === "translateX(0%)";
+        let activeTab = window.sidebarActiveTab || 'characters';
+        
+        if (isSidebarOpen && activeTab === tabName) {
+            sidebar.style.transform = "translateX(100%)";
+        } else {
+            sidebar.style.transform = "translateX(0%)";
+            window.switchSidebarTab(tabName);
+        }
+        
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
+        }
+    };
+
     window.toggleSidebar = function () {
         let sidebar = document.getElementById("sidebarEl");
         let brainSidebar = document.getElementById("brainSidebarEl");
@@ -2099,6 +2123,7 @@
 
     // ─── SIDEBAR TAB NAVIGATION ───
     window.switchSidebarTab = function (tabName) {
+        window.sidebarActiveTab = tabName;
         let charTab = document.getElementById('sidebarCharacterSection');
         let worldTab = document.getElementById('sidebarWorldSection');
         let charBtn = document.getElementById('sidebarTabBtn-characters');
@@ -2120,6 +2145,10 @@
             if (typeof renderSidebarWorlds === 'function') {
                 renderSidebarWorlds();
             }
+        }
+        
+        if (typeof window.syncSidebarToggleButtons === 'function') {
+            window.syncSidebarToggleButtons();
         }
     };
 /* ==========================================================================
@@ -2303,26 +2332,55 @@
         let sidebar = document.getElementById("sidebarEl");
         let brainSidebar = document.getElementById("brainSidebarEl");
         let sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+        let worldSidebarToggleBtn = document.getElementById("worldSidebarToggleBtn");
         let brainSidebarToggleBtn = document.getElementById("brainSidebarToggleBtn");
         
         if (!sidebar || !brainSidebar || !sidebarToggleBtn || !brainSidebarToggleBtn) return;
         
         let isSavedOpen = sidebar.style.transform === "translateX(0%)";
         let isBrainOpen = brainSidebar.style.transform === "translateX(0%)";
+        let activeTab = window.sidebarActiveTab || 'characters';
+        
+        // Reset active classes
+        sidebarToggleBtn.classList.remove('active');
+        if (worldSidebarToggleBtn) worldSidebarToggleBtn.classList.remove('active');
+        brainSidebarToggleBtn.classList.remove('active');
         
         if (isSavedOpen) {
             brainSidebarToggleBtn.style.opacity = "0";
             brainSidebarToggleBtn.style.pointerEvents = "none";
+            
             sidebarToggleBtn.style.opacity = "1";
             sidebarToggleBtn.style.pointerEvents = "auto";
+            if (worldSidebarToggleBtn) {
+                worldSidebarToggleBtn.style.opacity = "1";
+                worldSidebarToggleBtn.style.pointerEvents = "auto";
+            }
+            
+            // Set active class based on open tab
+            if (activeTab === 'characters') {
+                sidebarToggleBtn.classList.add('active');
+            } else {
+                if (worldSidebarToggleBtn) worldSidebarToggleBtn.classList.add('active');
+            }
         } else if (isBrainOpen) {
             sidebarToggleBtn.style.opacity = "0";
             sidebarToggleBtn.style.pointerEvents = "none";
+            if (worldSidebarToggleBtn) {
+                worldSidebarToggleBtn.style.opacity = "0";
+                worldSidebarToggleBtn.style.pointerEvents = "none";
+            }
+            
             brainSidebarToggleBtn.style.opacity = "1";
             brainSidebarToggleBtn.style.pointerEvents = "auto";
+            brainSidebarToggleBtn.classList.add('active');
         } else {
             sidebarToggleBtn.style.opacity = "1";
             sidebarToggleBtn.style.pointerEvents = "auto";
+            if (worldSidebarToggleBtn) {
+                worldSidebarToggleBtn.style.opacity = "1";
+                worldSidebarToggleBtn.style.pointerEvents = "auto";
+            }
             brainSidebarToggleBtn.style.opacity = "1";
             brainSidebarToggleBtn.style.pointerEvents = "auto";
         }

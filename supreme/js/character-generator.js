@@ -575,55 +575,26 @@
             if (imageUrl) history[0].imageUrl = imageUrl;
             if (worldName) history[0].worldName = worldName;
             localStorage.worldLoreHistory = JSON.stringify(history);
+            if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
             return;
         }
         history.unshift({ text, imageUrl: imageUrl || null, worldName: worldName || "" });
         if (history.length > 10) history = history.slice(0, 10);
         localStorage.worldLoreHistory = JSON.stringify(history);
+        if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
     };
 
-    window.showWorldLoreHistoryModal = function () {
-        let history = JSON.parse(localStorage.worldLoreHistory || "[]");
-        if (history.length === 0) {
-            prompt2({ content: { type: "none", html: `<div style="padding:1rem; text-align:center; opacity:0.6; font-size:90%;"><i class="bi bi-globe" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>No world lore history yet.</div>` } }, { cancelButtonText: "close", submitButtonText: null });
-            return;
-        }
-
-        let cardsHtml = history.map((h, i) => {
-            let text = typeof h === 'string' ? h : h.text;
-            let imageUrl = typeof h === 'object' ? h.imageUrl : null;
-            let worldName = typeof h === 'object' ? (h.worldName || "") : "";
-            let truncated = text.length > 150 ? text.substring(0, 150) + "..." : text;
-            let cardBg = imageUrl ? `background-image: url(${imageUrl}); background-size: cover; background-position: center;` : `background: var(--input-bg);`;
-            return `
-            <div style="border-radius:10px; border:1px solid var(--panel-border); overflow:hidden; background:var(--panel-bg); box-shadow:0 2px 8px rgba(0,0,0,0.18); display:flex; flex-direction:column;">
-                <div style="height:90px; position:relative; ${cardBg} flex-shrink:0;">
-                    <div style="position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.65) 100%);"></div>
-                    <div style="position:absolute; bottom:0.4rem; left:0.6rem; right:0.4rem; display:flex; align-items:flex-end; justify-content:space-between; gap:0.3rem;">
-                        <span style="font-size:85%; font-weight:700; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.9); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${worldName ? `🌍 ${worldName}` : `🌍 World ${i + 1}`}</span>
-                    </div>
-                </div>
-                <div style="padding:0.6rem 0.7rem 0.5rem; display:flex; flex-direction:column; gap:0.4rem; flex:1;">
-                    <div style="font-size:79%; opacity:0.72; line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${truncated.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-                    <button class="btn btn-primary btn-sm" onclick="restoreWorldLore(${i})" style="align-self:stretch; font-size:80%; padding:0.3rem 0.6rem; margin-top:auto;"><i class="bi bi-box-arrow-in-down"></i> Load World</button>
-                </div>
-            </div>
-            `;
-        }).join("");
-
-        let html = `
-        <div style="min-width:min(520px, 92vw); max-width:600px;">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
-                <i class="bi bi-globe" style="color:var(--accent-color); font-size:1.15rem;"></i>
-                <b style="font-size:105%;">World Lore History</b>
-                <span style="font-size:78%; opacity:0.5; margin-left:auto;">${history.length} saved world${history.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:0.75rem; max-height:460px; overflow-y:auto; padding-bottom:0.25rem;">
-                ${cardsHtml}
-            </div>
-        </div>`;
-
-        prompt2({ content: { type: "none", html } }, { cancelButtonText: "close", submitButtonText: null });
+    window.deleteWorldLoreHistoryItem = function (index) {
+        window.showConfirmDialog(
+            "Are you sure you want to delete this World Lore history item?",
+            "warnOnDelete",
+            () => {
+                let history = JSON.parse(localStorage.worldLoreHistory || "[]");
+                history.splice(index, 1);
+                localStorage.worldLoreHistory = JSON.stringify(history);
+                if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
+            }
+        );
     };
 
     window.restoreWorldLore = function (index) {
