@@ -94,7 +94,7 @@
 
     window.prompts.introScenario = {
         instruction: makeInstruction(() => "You are writing the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start."),
-        format: "Write a single short paragraph that introduces the scene, characters, {{user}}'s role, etc. Start by clearly describing the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."
+        format: "Write a single short paragraph that introduces the world, scene, characters, {{user}}'s role. Start by clearly describing the world, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph."
     };
 
     window.prompts.introStart = {
@@ -109,10 +109,10 @@
     window.prompts.getLengthInstruction = function (lengthVal, type) {
         if (!lengthVal || lengthVal === "custom") return "";
         let key = lengthVal.replace("-", "_");
-        
+
         type = type || 'section';
         let val = "";
-        
+
         if (type === 'scenario') {
             const scenarioSpecs = {
                 "super_short": "Ultra concise paragraph. Target 1 to 2 sentences.",
@@ -136,7 +136,7 @@
             let spec = (window.root && window.root.lengthSpecifiers)
                 ? (window.root.lengthSpecifiers[key] || window.root.lengthSpecifiers[lengthVal])
                 : null;
-            
+
             if (spec) {
                 if (typeof spec === 'object' && spec && 'evaluateItem' in spec) {
                     val = (typeof spec.evaluateItem === "function") ? spec.evaluateItem() : String(spec.evaluateItem);
@@ -154,7 +154,7 @@
                 val = fallback[key] || fallback[lengthVal] || "";
             }
         }
-        
+
         if (val) return "IMPORTANT Length Constraint: " + val;
         return "";
     };
@@ -163,11 +163,11 @@
         let p = window.prompts[sectionName];
         if (!p) return "";
         let parts = [p.instruction.toString()];
-        
+
         let type = 'section';
         if (sectionName === 'introScenario') type = 'scenario';
         if (sectionName === 'introStart') type = 'starter';
-        
+
         let lenInstr = window.prompts.getLengthInstruction(lengthVal, type);
         if (lenInstr) parts.push(lenInstr);
         parts.push(p.format);
@@ -176,16 +176,16 @@
         if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
         if (overview) parts.push("\nGeneral character overview: " + overview);
         if (notes) parts.push("\nSection-specific notes: " + notes);
-        
+
         let refCtx = window.getReferencedCharactersContext ? window.getReferencedCharactersContext() : "";
         if (refCtx) parts.push("\n" + refCtx);
-        
+
         let setTone = window.getSettingAndToneContext ? window.getSettingAndToneContext() : "";
         if (setTone) parts.push("\n" + setTone);
-        
+
         if (p.footer) parts.push(p.footer);
         if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
-        
+
         return parts.join("\n\n");
     };
 
