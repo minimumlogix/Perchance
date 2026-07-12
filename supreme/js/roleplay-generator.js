@@ -758,10 +758,12 @@
 
         // Starters length instructions
         let lengthVal = window.roleplayState.activeLength || "medium";
-        let lengthInstruction = "";
-        if (lengthVal === "short") lengthInstruction = "Write a short, engaging starter message (1-2 paragraphs).";
-        else if (lengthVal === "long") lengthInstruction = "Write an extremely rich, slow-paced, detailed starter message (5+ paragraphs) setting up the atmosphere, sensory environment, and character positions.";
-        else lengthInstruction = "Write a medium-length, descriptive starter message (3-4 paragraphs).";
+        let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal, 'starter') : "";
+        if (!lengthInstruction) {
+            if (lengthVal === "short") lengthInstruction = "Write a short, engaging starter message (1-2 paragraphs).";
+            else if (lengthVal === "long") lengthInstruction = "Write an extremely rich, slow-paced, detailed starter message (5+ paragraphs) setting up the atmosphere, sensory environment, and character positions.";
+            else lengthInstruction = "Write a medium-length, descriptive starter message (3-4 paragraphs).";
+        }
 
         let worldName = window.roleplayState.worldName || "an unnamed realm";
         let worldLore = window.roleplayState.worldLore || "a mysterious world of unknown dangers";

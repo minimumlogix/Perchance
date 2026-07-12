@@ -922,7 +922,10 @@
         if (ruleParts.length === 0) return "";
         return "STRICT FORMATTING RULE: " + ruleParts.join(" ");
     };
-    window.getLengthInstruction = function (lengthVal) {
+    window.getLengthInstruction = function (lengthVal, type) {
+        if (window.prompts && typeof window.prompts.getLengthInstruction === "function") {
+            return window.prompts.getLengthInstruction(lengthVal, type);
+        }
         if (!lengthVal || lengthVal === "custom") return "";
         let key = lengthVal.replace("-", "_");
         let spec = null;
@@ -935,13 +938,13 @@
         }
         if (!val) {
             const fallbackMap = {
-                "super_short": "1 line maximum for each section",
-                "super-short": "1 line maximum for each section",
-                "short": "2 lines maximum for each section",
-                "medium": "4 lines minimum for each section",
-                "long": "6 lines minimum for each section",
-                "super_long": "8 Lines minimum for each section",
-                "super-long": "8 Lines minimum for each section"
+                "super_short": "Ultra concise. Target 1 sentence per field.",
+                "super-short": "Ultra concise. Target 1 sentence per field.",
+                "short": "Concise. Target 2 to 3 sentences per field.",
+                "medium": "Standard detail. Target 4 to 5 sentences per field.",
+                "long": "Detailed. Target 6 to 8 sentences per field.",
+                "super_long": "Comprehensive. Target 9 to 12 sentences per field.",
+                "super-long": "Comprehensive. Target 9 to 12 sentences per field."
             };
             val = fallbackMap[key] || fallbackMap[lengthVal] || "";
         }

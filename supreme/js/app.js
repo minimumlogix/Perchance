@@ -2663,7 +2663,7 @@
                     }).join("\n\n") : "";
                     let scenarioNotes = window.roleplayState.scenarioNotes || "";
                     let lengthVal = document.getElementById("rpLengthEl")?.value || "medium";
-                    let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal) : "";
+                    let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal, 'starter') : "";
                     return root.prompts.roleplayPage.roleplayScenario.compile(
                         worldName,
                         worldLore,

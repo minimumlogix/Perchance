@@ -283,11 +283,11 @@ dynamicPrompts
 ////////////////////////////////////////
 
 lengthSpecifiers
-  super_short = 1 line maximum for each section
-  short = 2 lines maximum for each section
-  medium = 4 lines minimum for each section
-  long = 6 lines minimum for each section
-  super_long = 8 Lines minimum for each section
+  super_short = Ultra concise. Target 1 sentence per field.
+  short = Concise. Target 2 to 3 sentences per field.
+  medium = Standard detail. Target 4 to 5 sentences per field.
+  long = Detailed. Target 6 to 8 sentences per field.
+  super_long = Comprehensive. Target 9 to 12 sentences per field.
 
 galleryOptions
   gallery = true

@@ -106,25 +106,49 @@
     // GLOBAL COMPILATION HELPERS
     // ==========================================
 
-    window.prompts.getLengthInstruction = function (lengthVal) {
+    window.prompts.getLengthInstruction = function (lengthVal, type) {
         if (!lengthVal || lengthVal === "custom") return "";
         let key = lengthVal.replace("-", "_");
-        let spec = (window.root && window.root.lengthSpecifiers)
-            ? (window.root.lengthSpecifiers[key] || window.root.lengthSpecifiers[lengthVal])
-            : null;
         
+        type = type || 'section';
         let val = "";
-        if (spec) {
-            val = typeof spec.evaluateItem === "function" ? spec.evaluateItem() : String(spec);
-        } else {
-            const fallback = {
-                "super_short": "1 line each",
-                "short": "2-3 lines each",
-                "medium": "4-5 lines each",
-                "long": "6-7 lines each",
-                "super_long": "8+ lines each"
+        
+        if (type === 'scenario') {
+            const scenarioSpecs = {
+                "super_short": "Ultra concise paragraph. Target 1 to 2 sentences.",
+                "short": "Concise paragraph. Target 3 to 4 sentences.",
+                "medium": "Standard paragraph. Target 5 to 6 sentences.",
+                "long": "Detailed paragraph. Target 7 to 8 sentences.",
+                "super_long": "Comprehensive paragraph. Target 9 to 12 sentences."
             };
-            val = fallback[key] || "";
+            val = scenarioSpecs[key] || scenarioSpecs[lengthVal] || "";
+        } else if (type === 'starter') {
+            const starterSpecs = {
+                "super_short": "Ultra concise starter. Target 1 paragraph with 1-2 sentences of dialogue and action description.",
+                "short": "Concise starter. Target 1-2 paragraphs setting the scene and dialogue.",
+                "medium": "Standard starter. Target 3-4 paragraphs setting the scene and dialogue.",
+                "long": "Detailed starter. Target 5+ paragraphs setting the scene, sensory atmosphere, and dialogue.",
+                "super_long": "Comprehensive starter. Target 6+ detailed paragraphs setting the scene, sensory atmosphere, and dialogue."
+            };
+            val = starterSpecs[key] || starterSpecs[lengthVal] || "";
+        } else {
+            // Default: 'section' or general
+            let spec = (window.root && window.root.lengthSpecifiers)
+                ? (window.root.lengthSpecifiers[key] || window.root.lengthSpecifiers[lengthVal])
+                : null;
+            
+            if (spec) {
+                val = typeof spec.evaluateItem === "function" ? spec.evaluateItem() : String(spec);
+            } else {
+                const fallback = {
+                    "super_short": "Ultra concise. Target 1 sentence per field.",
+                    "short": "Concise. Target 2 to 3 sentences per field.",
+                    "medium": "Standard detail. Target 4 to 5 sentences per field.",
+                    "long": "Detailed. Target 6 to 8 sentences per field.",
+                    "super_long": "Comprehensive. Target 9 to 12 sentences per field."
+                };
+                val = fallback[key] || fallback[lengthVal] || "";
+            }
         }
         
         if (val) return "IMPORTANT Length Constraint: " + val;
@@ -135,7 +159,12 @@
         let p = window.prompts[sectionName];
         if (!p) return "";
         let parts = [p.instruction.toString()];
-        let lenInstr = window.prompts.getLengthInstruction(lengthVal);
+        
+        let type = 'section';
+        if (sectionName === 'introScenario') type = 'scenario';
+        if (sectionName === 'introStart') type = 'starter';
+        
+        let lenInstr = window.prompts.getLengthInstruction(lengthVal, type);
         if (lenInstr) parts.push(lenInstr);
         parts.push(p.format);
         if (p.notes) parts.push(p.notes);
