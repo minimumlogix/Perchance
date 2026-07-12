@@ -2328,10 +2328,140 @@
         }
     };
     
+    window.formatPromptForDisplay = function(text) {
+        if (!text) return "";
+        let escaped = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        
+        let formatted = escaped;
+        
+        // 1. Length Constraint Highlight
+        formatted = formatted.replace(
+            /(IMPORTANT Length Constraint: [^\n]+)/g,
+            '<span style="display:inline-block; background:rgba(255,165,0,0.15); color:#ffd07b; padding:2px 6px; border-radius:4px; border:1px solid rgba(255,165,0,0.3); font-weight:600; margin: 2px 0;">$1</span>'
+        );
+        
+        // 2. Section highlights
+        const sectionsToHighlight = [
+            { regex: /(Existing character context:)\n---\n([\s\S]*?)\n---/g, label: "Character Context", color: "#7ee787", bg: "rgba(40,167,69,0.08)" },
+            { regex: /(World Lore:)\n([\s\S]*?)(?=\n\n|\n[A-Z]|$)/g, label: "World Lore", color: "#86edfb", bg: "rgba(23,162,184,0.08)" },
+            { regex: /(General character overview: [^\n]+)/g, label: "Overview", color: "#79c0ff", bg: "rgba(0,123,255,0.08)" },
+            { regex: /(Section-specific notes: [^\n]+)/g, label: "Section Notes", color: "#ffd07b", bg: "rgba(224,153,36,0.08)" },
+            { regex: /(Format your response EXACTLY as follows:[\s\S]*?)(?=\n\n|\n[A-Z]|$)/g, label: "Format Instructions", color: "#d1b3ff", bg: "rgba(111,66,193,0.08)" },
+            { regex: /(SCENARIO INSTRUCTIONS:[\s\S]*?)(?=\n\n|\n[A-Z]|$)/g, label: "Scenario Rules", color: "#86edfb", bg: "rgba(23,162,184,0.08)" },
+            { regex: /(STRICT RULES:[\s\S]*?)(?=\n\n|\n[A-Z]|$)/g, label: "Strict Rules", color: "#ff7b72", bg: "rgba(220,53,69,0.12)" }
+        ];
+        
+        sectionsToHighlight.forEach(sec => {
+            formatted = formatted.replace(sec.regex, (match, header, content) => {
+                let innerContent = content || "";
+                return `<div style="background:${sec.bg}; border-left: 3px solid ${sec.color}; padding:6px 10px; margin: 8px 0; border-radius: 0 6px 6px 0; box-sizing:border-box;">` +
+                       `<span style="color:${sec.color}; font-weight:bold; font-size:75%; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">${sec.label}</span>` +
+                       (header.includes('\n') ? `<div style="font-size: 11px;">${innerContent}</div>` : `<div style="font-size: 11px;">${match}</div>`) +
+                       `</div>`;
+            });
+        });
+        
+        return formatted;
+    };
+
+    window.setBrainViewMode = function(mode) {
+        localStorage.brainViewMode = mode;
+        const textarea = document.getElementById('brainContextTextarea');
+        const formattedDiv = document.getElementById('brainContextFormatted');
+        const rawBtn = document.getElementById('brainViewRawBtn');
+        const formattedBtn = document.getElementById('brainViewFormattedBtn');
+        
+        if (mode === 'formatted') {
+            if (textarea) textarea.style.display = 'none';
+            if (formattedDiv) formattedDiv.style.display = 'block';
+            if (rawBtn) {
+                rawBtn.classList.remove('btn-primary');
+                rawBtn.classList.add('btn-ghost');
+            }
+            if (formattedBtn) {
+                formattedBtn.classList.remove('btn-ghost');
+                formattedBtn.classList.add('btn-primary');
+            }
+        } else {
+            if (textarea) textarea.style.display = 'block';
+            if (formattedDiv) formattedDiv.style.display = 'none';
+            if (rawBtn) {
+                rawBtn.classList.remove('btn-ghost');
+                rawBtn.classList.add('btn-primary');
+            }
+            if (formattedBtn) {
+                formattedBtn.classList.remove('btn-primary');
+                formattedBtn.classList.add('btn-ghost');
+            }
+        }
+    };
+
+    window.filterBrainContext = function() {
+        const searchInput = document.getElementById('brainContextSearch');
+        if (!searchInput) return;
+        const query = searchInput.value.trim();
+        
+        // Refresh values first
+        const textarea = document.getElementById('brainContextTextarea');
+        const formattedDiv = document.getElementById('brainContextFormatted');
+        const rawText = window.getCurrentAIContextPrompt ? window.getCurrentAIContextPrompt() : "";
+        
+        if (textarea) textarea.value = rawText;
+        if (formattedDiv) formattedDiv.innerHTML = window.formatPromptForDisplay(rawText);
+        
+        if (!query) return;
+        
+        if (formattedDiv) {
+            let html = formattedDiv.innerHTML;
+            const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            
+            let parts = html.split(/(<[^>]*>)/);
+            for (let i = 0; i < parts.length; i++) {
+                if (parts[i] && !parts[i].startsWith('<')) {
+                    parts[i] = parts[i].replace(regex, '<mark style="background:#ffeb3b; color:#000; padding:1px 2px; border-radius:2px;">$1</mark>');
+                }
+            }
+            formattedDiv.innerHTML = parts.join('');
+        }
+    };
+
     window.updateBrainContextView = function() {
         const textarea = document.getElementById('brainContextTextarea');
+        const formattedDiv = document.getElementById('brainContextFormatted');
         if (!textarea) return;
-        textarea.value = window.getCurrentAIContextPrompt ? window.getCurrentAIContextPrompt() : "";
+        
+        const rawText = window.getCurrentAIContextPrompt ? window.getCurrentAIContextPrompt() : "";
+        
+        // Update raw textarea
+        textarea.value = rawText;
+        
+        // Update formatted view
+        if (formattedDiv) {
+            formattedDiv.innerHTML = window.formatPromptForDisplay(rawText);
+        }
+        
+        // Highlight if there is an active search query
+        const searchInput = document.getElementById('brainContextSearch');
+        if (searchInput && searchInput.value.trim()) {
+            window.filterBrainContext();
+        }
+        
+        // Update stats
+        const charCount = rawText.length;
+        const wordCount = rawText.trim() ? rawText.trim().split(/\s+/).length : 0;
+        const tokenCount = Math.round(charCount / 3.8); // standard char-to-token approximation
+        
+        const charCountEl = document.getElementById('brainCharCount');
+        const wordCountEl = document.getElementById('brainWordCount');
+        const tokenCountEl = document.getElementById('brainTokenCount');
+        
+        if (charCountEl) charCountEl.textContent = charCount.toLocaleString();
+        if (wordCountEl) wordCountEl.textContent = wordCount.toLocaleString();
+        if (tokenCountEl) tokenCountEl.textContent = tokenCount.toLocaleString();
     };
     
     window.copyBrainContext = function() {
@@ -2690,3 +2820,11 @@
             window.updateBrainContextView();
         }
     });
+
+    // Initialize view mode on load
+    setTimeout(() => {
+        let savedMode = localStorage.brainViewMode || 'raw';
+        if (window.setBrainViewMode) {
+            window.setBrainViewMode(savedMode);
+        }
+    }, 100);

@@ -2597,15 +2597,34 @@
         <select id="contextPromptSelect" onchange="window.updateBrainContextView()" class="select-input" style="width:100%; box-sizing:border-box;">
             <!-- Options populated dynamically -->
         </select>
+        <!-- Search and View Mode Toggle -->
+        <div style="display: flex; gap: 0.35rem; width: 100%; box-sizing: border-box; align-items: center;">
+            <div style="position:relative; flex: 1; min-width: 0;">
+                <input type="text" id="brainContextSearch" oninput="window.filterBrainContext()" placeholder="🔍 Find in prompt..." class="text-input" style="width:100%; font-size:11px; padding:0.3rem 1.6rem 0.3rem 0.5rem; box-sizing:border-box; border-radius:6px; background:var(--input-bg); border:1px solid var(--panel-border); color:var(--text-main); height: 28px;">
+                <button onclick="document.getElementById('brainContextSearch').value = ''; window.filterBrainContext();" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; padding:0;"><i class="bi bi-x-lg" style="font-size:10px;"></i></button>
+            </div>
+            <div style="display: flex; background: rgba(0,0,0,0.18); padding: 2px; border-radius: 6px; border: 1px solid var(--panel-border); height: 28px; box-sizing: border-box; align-items: center;">
+                <button id="brainViewRawBtn" class="btn btn-sm btn-primary" style="font-size: 9px; padding: 0.15rem 0.4rem; border-radius: 4px; height: 22px; display: inline-flex; align-items: center; border: none; font-weight: 500;" onclick="window.setBrainViewMode('raw')">Raw</button>
+                <button id="brainViewFormattedBtn" class="btn btn-sm btn-ghost" style="font-size: 9px; padding: 0.15rem 0.4rem; border-radius: 4px; height: 22px; display: inline-flex; align-items: center; border: none; font-weight: 500;" onclick="window.setBrainViewMode('formatted')">Color</button>
+            </div>
+        </div>
         
         <div style="position:relative; flex:1; min-height:0; display:flex; flex-direction:column;">
             <textarea id="brainContextTextarea" readonly 
                 style="width:100%; flex:1; font-size: 11px; background: rgba(0, 0, 0, 0.15); color: var(--text-main); border:1px solid var(--panel-border); resize: none; border-radius: 8px; font-family: monospace; white-space: pre-wrap; outline:none; box-sizing:border-box; padding:0.5rem;"></textarea>
             
+            <div id="brainContextFormatted" style="display:none; width:100%; flex:1; font-size: 11px; background: rgba(0, 0, 0, 0.15); color: var(--text-main); border:1px solid var(--panel-border); border-radius: 8px; font-family: monospace; white-space: pre-wrap; overflow-y:auto; box-sizing:border-box; padding:0.5rem; line-height:1.4;"></div>
+            
             <button id="copyBrainContextBtn" class="btn btn-sm btn-secondary" 
                 style="position:absolute; top: 6px; right: 6px; font-size: 10px; opacity: 0.85; z-index: 10; padding:0.2rem 0.4rem;" onclick="window.copyBrainContext()">
                 <i class="bi bi-clipboard"></i> Copy
             </button>
+        </div>
+
+        <div id="brainContextStats" style="font-size: 70%; display: flex; justify-content: space-around; color: var(--text-muted); padding: 0.25rem 0.4rem; background: rgba(0,0,0,0.12); border-radius: 6px; border: 1px solid var(--panel-border); font-family: monospace;">
+            <span>Chars: <strong id="brainCharCount" style="color: var(--text-main);">0</strong></span>
+            <span>Words: <strong id="brainWordCount" style="color: var(--text-main);">0</strong></span>
+            <span>Tokens: <strong id="brainTokenCount" style="color: var(--accent-color);">0</strong></span>
         </div>
         
         <div style="font-size: 70%; text-align:center; color:var(--text-muted); opacity:0.8;">
