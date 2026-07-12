@@ -2360,6 +2360,7 @@
         if (tab === 'characters') {
             options = [
                 { value: 'worldLore', text: 'World Lore Summary' },
+                { value: 'worldLoreImage', text: 'World Lore Landscape Image Prompt' },
                 { value: 'identityDetails', text: 'Core Identity Details' },
                 { value: 'overview', text: 'General Overview / Concept' },
                 { value: 'shortDescription', text: 'Short Description' },
@@ -2535,7 +2536,7 @@
                     return root.prompts.characterPage.chatStyleGuide.compile();
                 }
                 
-                const sections = ["shortDescription", "appearance", "role", "personality", "beliefs", "preferences", "abilities", "relations", "timeline", "lore", "roleplay", "introScenario", "introStart"];
+                const sections = ["shortDescription", "appearance", "role", "personality", "beliefs", "preferences", "abilities", "relations", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"];
                 if (sections.includes(val)) {
                     let context = window.buildCharacterContext ? window.buildCharacterContext(val) : "";
                     let notes = (document.getElementById(val + "NotesEl") || {}).value || "";

@@ -362,7 +362,7 @@ prompts
   getLengthInstruction(lengthVal) =>
     if (!lengthVal || lengthVal === "custom") return "";
     let key = lengthVal.replace("-", "_");
-    let spec = lengthSpecifiers[key] || lengthSpecifiers[lengthVal];
+    let spec = root.lengthSpecifiers[key] || root.lengthSpecifiers[lengthVal];
     if (spec) return "IMPORTANT Length Constraint: " + spec;
     return "";
 
