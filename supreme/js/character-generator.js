@@ -448,8 +448,7 @@
                 finalText = finalText.replace(/\nWORLD_NAME:.*$/im, "").trim();
                 let nameEl = document.getElementById("worldNameEl");
                 if (nameEl && !nameEl.value.trim()) {
-                    nameEl.value = generatedName;
-                    localStorage.worldName = generatedName;
+                    window.syncWorldName(generatedName);
                 }
             }
         }
@@ -458,15 +457,14 @@
         await typewriter.completionPromise;
 
         setSectionGenerating("worldLore", false);
-        worldLoreEl.value = finalText;
-        localStorage.worldLore = worldLoreEl.value;
+        let worldNameForHistory = (document.getElementById("worldNameEl") || {}).value || "";
+        window.syncWorldName(worldNameForHistory);
+        window.syncWorldLore(finalText);
         setSectionStatus("worldLore", "");
         setGenerationStatus("");
-        let worldNameForHistory = (document.getElementById("worldNameEl") || {}).value || "";
-        pushWorldLoreHistory(worldLoreEl.value, null, worldNameForHistory);
-        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        if (window.saveWorldState) window.saveWorldState();
 
-        await generateWorldLoreImage(worldLoreEl.value);
+        await generateWorldLoreImage(finalText);
         return true;
     };
 
@@ -491,8 +489,11 @@
         let result = await img;
         if (result.dataUrl) {
             updateWorldLoreVisuals(result.dataUrl);
-            let worldNameForHistory = (document.getElementById("worldNameEl") || {}).value || "";
-            pushWorldLoreHistory(text, result.dataUrl, worldNameForHistory);
+            window.worldState.bannerUrl = result.dataUrl;
+            if (typeof window.updateWorldBannerUI === 'function') {
+                window.updateWorldBannerUI(result.dataUrl);
+            }
+            if (window.saveWorldState) window.saveWorldState();
         }
         setSectionStatus("worldLore", "");
         setGenerationStatus("");
@@ -533,138 +534,37 @@
         } else {
             textarea.style.border = "1px solid var(--panel-border)";
             btn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
-            localStorage.worldLore = textarea.value;
+            window.syncWorldLore(textarea.value);
+            if (window.saveWorldState) window.saveWorldState();
         }
     };
 
     window.clearWorldLore = function () {
-        let textarea = document.getElementById("worldLoreEl");
-        if (textarea) { textarea.value = ""; }
-        let nameEl = document.getElementById("worldNameEl");
-        if (nameEl) { nameEl.value = ""; }
-        localStorage.removeItem("worldLore");
-        localStorage.removeItem("worldLoreImageUrl");
-        localStorage.removeItem("worldName");
+        window.syncWorldName("");
+        window.syncWorldLore("");
+        window.worldState.bannerUrl = "";
         let container = document.getElementById("worldLoreImgContainer");
         if (container) { container.style.display = "none"; }
         if (typeof worldLoreBgEl !== 'undefined') { worldLoreBgEl.style.backgroundImage = "none"; }
+        localStorage.removeItem("worldLoreImageUrl");
+        if (typeof window.updateWorldBannerUI === 'function') window.updateWorldBannerUI("");
         setSectionStatus("worldLore", "");
-        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
-    };
-
-    window.copyWorldLoreText = function () {
-        let textarea = document.getElementById("worldLoreEl");
-        if (!textarea || !textarea.value.trim()) return;
-        navigator.clipboard.writeText(textarea.value.trim()).then(() => {
-            let btn = document.getElementById("worldLoreCopyBtnEl");
-            if (btn) {
-                let origHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
-                setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
-            }
-        }).catch(err => {
-            console.warn("Clipboard write failed:", err);
-        });
-    };
-
-    window.pushWorldLoreHistory = function (text, imageUrl, worldName) {
-        if (!text || text.trim().length < 10) return;
-        let history = JSON.parse(localStorage.worldLoreHistory || "[]");
-        // Update if it's the same text but now has an image or name
-        if (history.length > 0 && history[0].text === text) {
-            if (imageUrl) history[0].imageUrl = imageUrl;
-            if (worldName) history[0].worldName = worldName;
-            localStorage.worldLoreHistory = JSON.stringify(history);
-            if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
-            return;
-        }
-        history.unshift({ text, imageUrl: imageUrl || null, worldName: worldName || "" });
-        if (history.length > 10) history = history.slice(0, 10);
-        localStorage.worldLoreHistory = JSON.stringify(history);
+        window.worldState.activeWorldId = null;
+        if (window.saveWorldState) window.saveWorldState();
         if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
     };
 
-    window.deleteWorldLoreHistoryItem = function (index) {
-        window.showConfirmDialog(
-            "Are you sure you want to delete this World Lore history item?",
-            "warnOnDelete",
-            () => {
-                let history = JSON.parse(localStorage.worldLoreHistory || "[]");
-                history.splice(index, 1);
-                localStorage.worldLoreHistory = JSON.stringify(history);
-                if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
+    window.copyWorldLoreText = function () {
+        let text = worldLoreEl.value;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            let btn = document.getElementById("worldLoreCopyBtnEl");
+            if (btn) {
+                let orig = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check"></i> copied!';
+                setTimeout(() => btn.innerHTML = orig, 2000);
             }
-        );
-    };
-
-    window.restoreWorldLore = function (index) {
-        let history = JSON.parse(localStorage.worldLoreHistory || "[]");
-        let h = history[index];
-        if (h) {
-            let text = typeof h === 'string' ? h : h.text;
-            let url = typeof h === 'object' ? h.imageUrl : null;
-            let worldName = typeof h === 'object' ? (h.worldName || "") : "";
-
-            worldLoreEl.value = text;
-            localStorage.worldLore = text;
-
-            // Restore world name
-            let nameEl = document.getElementById("worldNameEl");
-            if (nameEl) { nameEl.value = worldName; localStorage.worldName = worldName; }
-
-            if (url) updateWorldLoreVisuals(url);
-            else {
-                // Clear visuals if no image in history
-                let container = document.getElementById("worldLoreImgContainer");
-                if (container) container.style.display = "none";
-                if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = "none";
-                localStorage.removeItem("worldLoreImageUrl");
-            }
-
-            // Sync with Worlds tab/editor activeWorldState
-            if (window.worldState) {
-                window.worldState.name = worldName;
-                window.worldState.sections.overview = text;
-                window.worldState.bannerUrl = url || "";
-                
-                let wNameEl = document.getElementById("wNameEl");
-                if (wNameEl) wNameEl.value = worldName;
-
-                let wOverviewOutputEl = document.getElementById("w-overviewOutputEl");
-                if (wOverviewOutputEl) {
-                    if (text) {
-                        wOverviewOutputEl.innerHTML = window.formatSectionText(text);
-                        wOverviewOutputEl.style.display = "block";
-                        let edit = document.getElementById("w-overviewEditBtnEl");
-                        let copy = document.getElementById("w-overviewCopyBtnEl");
-                        if (edit) edit.style.display = "inline-block";
-                        if (copy) copy.style.display = "inline-block";
-                    } else {
-                        wOverviewOutputEl.innerHTML = "";
-                        wOverviewOutputEl.style.display = "none";
-                        let edit = document.getElementById("w-overviewEditBtnEl");
-                        let copy = document.getElementById("w-overviewCopyBtnEl");
-                        if (edit) edit.style.display = "none";
-                        if (copy) copy.style.display = "none";
-                    }
-                }
-
-                if (typeof window.updateWorldBannerUI === 'function') {
-                    window.updateWorldBannerUI(url || "");
-                }
-
-                if (typeof window.saveWorldState === 'function') window.saveWorldState();
-                if (typeof window.saveActiveWorldState === 'function') window.saveActiveWorldState();
-                if (typeof updateWorldTopBarSaveButtons === 'function') updateWorldTopBarSaveButtons();
-                if (typeof renderSidebarWorlds === 'function') renderSidebarWorlds();
-                if (typeof triggerWorldSelectorSync === 'function') triggerWorldSelectorSync();
-            }
-
-            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
-
-            document.querySelectorAll(".prompt2-modal").forEach(el => el.remove());
-            document.querySelectorAll(".prompt2-overlay").forEach(el => el.remove());
-        }
+        });
     };
 
     // ─── DETAILS ─────────────────────────────────────────────────────
@@ -2708,12 +2608,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.assembleFullCharacterText = function () {
         let d = getDetailsContext();
         let lines = [];
-        if (d.name) lines.push("Name: " + d.name);
-        if (d.age) lines.push("Age: " + d.age);
-        if (d.gender) lines.push("Gender: " + d.gender);
-        if (d.orientation) lines.push("Orientation: " + d.orientation);
-        if (d.species) lines.push("Species: " + d.species);
-        if (d.ethnicity) lines.push("Ethnicity: " + d.ethnicity);
+        if (d.name) lines.push("Name = " + d.name);
+        if (d.age) lines.push("Age = " + d.age);
+        if (d.gender) lines.push("Gender = " + d.gender);
+        if (d.orientation) lines.push("Orientation = " + d.orientation);
+        if (d.species) lines.push("Race = " + d.species);
+        if (d.ethnicity) lines.push("Ethnicity = " + d.ethnicity);
 
         let shortDescription = getSectionText("shortDescription");
         let appearance = getSectionText("appearance");

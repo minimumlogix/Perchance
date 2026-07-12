@@ -67,94 +67,19 @@
     // Load a saved world into Roleplay inputs
     window.loadSavedWorldIntoRoleplay = function (id) {
         if (!id) return;
-        id = isNaN(Number(id)) ? id : Number(id);
-        
-        let saved = [];
-        try {
-            saved = JSON.parse(localStorage.savedWorlds || "[]");
-        } catch (e) {}
-
-        let w = saved.find(x => x.id === id);
-        if (w) {
-            let nameEl = document.getElementById("rpWorldNameEl");
-            let loreEl = document.getElementById("rpWorldLoreEl");
-            let themesEl = document.getElementById("rpThemesEl");
-            if (nameEl) nameEl.value = w.name;
-            if (loreEl) loreEl.value = w.sections.overview || "";
-            if (themesEl) themesEl.value = w.themes || "";
-
-            window.roleplayState.worldName = w.name;
-            window.roleplayState.worldLore = w.sections.overview || "";
-            window.roleplayState.themes = w.themes || "";
-
-            window.roleplayState.setting = w.setting || "Any";
-            window.selectRoleplaySetting(w.setting || "Any", false);
-
-            window.roleplayState.tones = w.tones || ["Any"];
-            document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
-                cb.checked = (w.tones || ["Any"]).includes(cb.value);
-            });
-            let anyBox = document.getElementById("rpToneAnyCheckbox");
-            if (anyBox) anyBox.checked = (w.tones || ["Any"]).includes("Any") || (w.tones || []).length === 0;
-            window.updateRoleplayToneLabel();
-
-            window.saveRoleplayState();
-
-            // Notify status
-            let statusEl = document.getElementById("rpStatusEl");
-            let outputSec = document.getElementById("rpOutputSectionEl");
-            if (outputSec) outputSec.style.display = "block";
-            if (statusEl) {
-                statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Loaded world details from saved world "${w.name}".</span>`;
-                setTimeout(() => { statusEl.textContent = ""; }, 3000);
-            }
-        }
+        window.loadWorld(id);
     };
 
     // Sync World Name & Lore from Character Generator World Panel
     window.syncWorldFromCharGen = function () {
-        let name = document.getElementById("worldNameEl")?.value || "";
-        let lore = document.getElementById("worldLoreEl")?.value || "";
-        let themes = document.getElementById("wThemesEl")?.value || document.getElementById("overviewNotesEl")?.value || "";
-
-        let nameEl = document.getElementById("rpWorldNameEl");
-        let loreEl = document.getElementById("rpWorldLoreEl");
-        let themesEl = document.getElementById("rpThemesEl");
-
-        if (nameEl) nameEl.value = name;
-        if (loreEl) loreEl.value = lore;
-        if (themesEl) themesEl.value = themes;
-
-        window.roleplayState.worldName = name;
-        window.roleplayState.worldLore = lore;
-        window.roleplayState.themes = themes;
-
-        // Sync setting and tones too!
-        if (localStorage.setting) {
-            window.roleplayState.setting = localStorage.setting;
-            window.selectRoleplaySetting(localStorage.setting, false);
-        }
-        try {
-            if (localStorage.tones) {
-                let parsed = JSON.parse(localStorage.tones);
-                window.roleplayState.tones = parsed;
-                document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
-                    cb.checked = parsed.includes(cb.value);
-                });
-                let anyBox = document.getElementById("rpToneAnyCheckbox");
-                if (anyBox) anyBox.checked = parsed.includes("Any") || parsed.length === 0;
-                window.updateRoleplayToneLabel();
-            }
-        } catch(e) {}
-        
-        window.saveRoleplayState();
+        window.applyWorldToWorkspace(window.worldState);
         
         // Show status feedback
         let statusEl = document.getElementById("rpStatusEl");
         let outputSec = document.getElementById("rpOutputSectionEl");
         if (outputSec) outputSec.style.display = "block";
         if (statusEl) {
-            statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Synced world details from Character Generator tab.</span>`;
+            statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Synced active world across workspace.</span>`;
             setTimeout(() => { statusEl.textContent = ""; }, 3000);
         }
     };

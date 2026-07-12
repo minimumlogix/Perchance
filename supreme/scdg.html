@@ -420,7 +420,7 @@
                                             World Name</label>
                                         <input type="text" id="worldNameEl" class="detail-input" style="flex:1; font-size:1rem; font-weight:500;"
                                             placeholder="leave blank to auto-generate"
-                                            oninput="localStorage.worldName=this.value">
+                                            oninput="window.syncWorldName(this.value); window.saveWorldState();">
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:180px;">
                                         <select id="charWorldImportSelector"
@@ -458,7 +458,7 @@
                                 <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Generated world context. This
                                     informs all character sections generated below.</p>
                                 <textarea id="worldLoreEl" class="section-notes" style="min-height:6rem;" readonly
-                                    oninput="localStorage.worldLore=this.value"
+                                    oninput="window.syncWorldLore(this.value); window.saveWorldState();"
                                     placeholder="e.g. A decaying futuristic city where magic has begun to leak back into reality through the digital network..."></textarea>
                                 <div
                                     style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
@@ -1447,10 +1447,6 @@
                             class="bi bi-sparkles"></i> Generate All Sections</button>
                     <button id="wClearAllBtn" onclick="clearWorldState()" class="btn btn-ghost"><i class="bi bi-trash"></i>
                         Clear World</button>
-                    <div id="saveWorldButtonsContainer"
-                        style="display: inline-flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                        <!-- Save buttons populated dynamically -->
-                    </div>
                 </div>
 
                 <!-- MAGIC IMPORT -->
@@ -1578,7 +1574,7 @@
                                 <div class="detail-field">
                                     <label class="detail-label" style="min-width: 90px;">World Name</label>
                                     <input type="text" id="wNameEl" class="detail-input"
-                                        placeholder="e.g. Neo-Genoa, The Sinking Isles" oninput="saveWorldState()">
+                                        placeholder="e.g. Neo-Genoa, The Sinking Isles" oninput="window.syncWorldName(this.value); window.saveWorldState();">
                                 </div>
                                 <div style="display:flex; flex-direction:column; gap:0.25rem;">
                                     <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Core
@@ -1905,7 +1901,7 @@
                                 style="font-size: 82%; font-weight: 600; color: var(--accent-color); white-space: nowrap; flex-shrink: 0;">🌍
                                 World Name</label>
                             <input type="text" id="rpWorldNameEl" class="detail-input" style="flex: 1;"
-                                placeholder="Name of your roleplay world" oninput="saveRoleplayState()">
+                                placeholder="Name of your roleplay world" oninput="window.syncWorldName(this.value); window.saveWorldState(); saveRoleplayState();">
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1919,7 +1915,7 @@
                             <textarea id="rpWorldLoreEl" class="section-notes"
                                 style="min-height: 5.5rem; font-size: 86%;"
                                 placeholder="Describe the world rules, atmosphere, tech/magic level, major factions or recent history..."
-                                oninput="saveRoleplayState()"></textarea>
+                                oninput="window.syncWorldLore(this.value); window.saveWorldState(); saveRoleplayState();"></textarea>
                         </div>
                     </div>
                 </div>

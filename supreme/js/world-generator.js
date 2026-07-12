@@ -40,6 +40,176 @@
         activeWorldId: null
     };
 
+    // Helper to check if the active world has any input content
+    function hasWorldContent() {
+        if ((window.worldState.name || "").trim()) return true;
+        if ((window.worldState.themes || "").trim()) return true;
+        if (window.worldState.bannerUrl) return true;
+        if (window.worldState.setting !== "Any") return true;
+        if (window.worldState.tones && window.worldState.tones.length > 0 && window.worldState.tones[0] !== "Any") return true;
+        
+        let sections = window.worldState.sections || {};
+        for (let key in sections) {
+            if ((sections[key] || "").trim()) return true;
+        }
+        let notes = window.worldState.sectionNotes || {};
+        for (let key in notes) {
+            if ((notes[key] || "").trim()) return true;
+        }
+        return false;
+    }
+
+    // Synchronize world name inputs across all tabs
+    window.syncWorldName = function (name) {
+        window.worldState.name = name;
+        localStorage.worldName = name;
+        
+        let nameEl = document.getElementById("worldNameEl");
+        let wNameEl = document.getElementById("wNameEl");
+        let rpWorldNameEl = document.getElementById("rpWorldNameEl");
+        
+        if (nameEl && nameEl.value !== name) nameEl.value = name;
+        if (wNameEl && wNameEl.value !== name) wNameEl.value = name;
+        if (rpWorldNameEl && rpWorldNameEl.value !== name) rpWorldNameEl.value = name;
+    };
+
+    // Synchronize world lore / overview output across all tabs
+    window.syncWorldLore = function (loreText) {
+        window.worldState.sections.overview = loreText;
+        localStorage.worldLore = loreText;
+        
+        let loreEl = document.getElementById("worldLoreEl");
+        let wOverviewOutputEl = document.getElementById("w-overviewOutputEl");
+        let rpWorldLoreEl = document.getElementById("rpWorldLoreEl");
+        
+        if (loreEl && loreEl.value !== loreText) loreEl.value = loreText;
+        if (rpWorldLoreEl && rpWorldLoreEl.value !== loreText) rpWorldLoreEl.value = loreText;
+        
+        if (wOverviewOutputEl) {
+            if (loreText) {
+                wOverviewOutputEl.innerHTML = window.formatSectionText(loreText);
+                wOverviewOutputEl.style.display = "block";
+                let edit = document.getElementById("w-overviewEditBtnEl");
+                let copy = document.getElementById("w-overviewCopyBtnEl");
+                if (edit) edit.style.display = "inline-block";
+                if (copy) copy.style.display = "inline-block";
+            } else {
+                wOverviewOutputEl.innerHTML = "";
+                wOverviewOutputEl.style.display = "none";
+                let edit = document.getElementById("w-overviewEditBtnEl");
+                let copy = document.getElementById("w-overviewCopyBtnEl");
+                if (edit) edit.style.display = "none";
+                if (copy) copy.style.display = "none";
+            }
+        }
+    };
+
+    // Synchronize dropdown load selectors on Characters and Roleplay tabs
+    window.syncWorldSelectors = function (id) {
+        let charDropdown = document.getElementById("charWorldImportSelector");
+        let rpDropdown = document.getElementById("rpWorldImportSelector");
+        if (charDropdown) charDropdown.value = id || "";
+        if (rpDropdown) rpDropdown.value = id || "";
+    };
+
+    // Apply world state to all DOM elements in the workspace
+    window.applyWorldToWorkspace = function (w) {
+        if (!w) return;
+        
+        // 1. Sync Name
+        window.syncWorldName(w.name || "");
+        
+        // 2. Sync Lore
+        window.syncWorldLore(w.sections?.overview || "");
+        
+        // 3. Sync Setting
+        if (typeof selectWorldSetting === "function") selectWorldSetting(w.setting || "Any", false);
+        if (typeof selectSetting === "function") selectSetting(w.setting || "Any", false);
+        if (typeof selectRoleplaySetting === "function") selectRoleplaySetting(w.setting || "Any", false);
+        
+        // 4. Sync Tones
+        window.worldState.tones = w.tones || ["Any"];
+        localStorage.tones = JSON.stringify(w.tones || ["Any"]);
+        if (typeof loadWorldTones === "function") loadWorldTones();
+        if (typeof loadTones === "function") loadTones();
+        if (typeof updateRoleplayToneLabel === "function") {
+            document.querySelectorAll(".rpToneCheckbox").forEach(cb => {
+                cb.checked = (w.tones || ["Any"]).includes(cb.value);
+            });
+            let anyBox = document.getElementById("rpToneAnyCheckbox");
+            if (anyBox) anyBox.checked = (w.tones || ["Any"]).includes("Any") || (w.tones || []).length === 0;
+            updateRoleplayToneLabel();
+        }
+        
+        // 5. Sync Themes
+        window.worldState.themes = w.themes || "";
+        let wThemesEl = document.getElementById("wThemesEl");
+        let rpThemesEl = document.getElementById("rpThemesEl");
+        if (wThemesEl) wThemesEl.value = w.themes || "";
+        if (rpThemesEl) rpThemesEl.value = w.themes || "";
+        
+        // 6. Sync Banner/Visuals
+        window.worldState.bannerUrl = w.bannerUrl || "";
+        if (w.bannerUrl) {
+            if (typeof updateWorldLoreVisuals === "function") updateWorldLoreVisuals(w.bannerUrl);
+            if (typeof updateWorldBannerUI === "function") updateWorldBannerUI(w.bannerUrl);
+        } else {
+            let container = document.getElementById("worldLoreImgContainer");
+            if (container) container.style.display = "none";
+            if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = "none";
+            localStorage.removeItem("worldLoreImageUrl");
+            if (typeof updateWorldBannerUI === "function") updateWorldBannerUI("");
+        }
+        
+        // 7. Sync Section Notes and Sections in World tab
+        window.worldState.sectionNotes = Object.assign({
+            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
+        }, w.sectionNotes || {});
+        window.worldState.sections = Object.assign({
+            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
+        }, w.sections || {});
+        
+        let notes = window.worldState.sectionNotes;
+        let overviewNotesEl = document.getElementById("w-overviewNotesEl");
+        let rulesNotesEl = document.getElementById("w-rulesNotesEl");
+        let racesNotesEl = document.getElementById("w-racesNotesEl");
+        let regionsNotesEl = document.getElementById("w-regionsNotesEl");
+        let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+        let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
+        let charactersNotesEl = document.getElementById("w-charactersNotesEl");
+
+        if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
+        if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
+        if (racesNotesEl) racesNotesEl.value = notes.races || "";
+        if (regionsNotesEl) regionsNotesEl.value = notes.regions || "";
+        if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
+        if (bestiaryNotesEl) bestiaryNotesEl.value = notes.bestiary || "";
+        if (charactersNotesEl) charactersNotesEl.value = notes.characters || "";
+
+        let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
+        list.forEach(s => {
+            let text = window.worldState.sections[s] || "";
+            let out = document.getElementById(`w-${s}OutputEl`);
+            let edit = document.getElementById(`w-${s}EditBtnEl`);
+            let copy = document.getElementById(`w-${s}CopyBtnEl`);
+            if (out) {
+                if (text) {
+                    out.innerHTML = window.formatSectionText(text);
+                    out.style.display = "block";
+                    if (edit) edit.style.display = "inline-block";
+                    if (copy) copy.style.display = "inline-block";
+                } else {
+                    out.innerHTML = "";
+                    out.style.display = "none";
+                    if (edit) edit.style.display = "none";
+                    if (copy) copy.style.display = "none";
+                }
+            }
+        });
+        
+        window.syncWorldSelectors(w.id || window.worldState.activeWorldId);
+    };
+
     // Load active world state from localStorage
     window.loadWorldState = function () {
         try {
@@ -55,22 +225,37 @@
     // Save active world state to localStorage
     window.saveWorldState = window.debounce(function () {
         try {
-            // Read basic inputs from DOM
-            window.worldState.name = document.getElementById("wNameEl")?.value || "";
-            window.worldState.themes = document.getElementById("wThemesEl")?.value || "";
-            window.worldState.activeLength = document.getElementById("wLengthEl")?.value || "medium";
-            
-            window.worldState.sectionNotes = {
-                overview: document.getElementById("w-overviewNotesEl")?.value || "",
-                rules: document.getElementById("w-rulesNotesEl")?.value || "",
-                races: document.getElementById("w-racesNotesEl")?.value || "",
-                regions: document.getElementById("w-regionsNotesEl")?.value || "",
-                factions: document.getElementById("w-factionsNotesEl")?.value || "",
-                bestiary: document.getElementById("w-bestiaryNotesEl")?.value || "",
-                characters: document.getElementById("w-charactersNotesEl")?.value || ""
-            };
+            // Read basic inputs from DOM if present
+            let nameEl = document.getElementById("wNameEl");
+            if (nameEl) window.worldState.name = nameEl.value;
 
-            // Dropdowns setting & tones are managed on change
+            let themesEl = document.getElementById("wThemesEl");
+            if (themesEl) window.worldState.themes = themesEl.value;
+
+            let lengthEl = document.getElementById("wLengthEl");
+            if (lengthEl) window.worldState.activeLength = lengthEl.value;
+            
+            let overviewNotesEl = document.getElementById("w-overviewNotesEl");
+            let rulesNotesEl = document.getElementById("w-rulesNotesEl");
+            let racesNotesEl = document.getElementById("w-racesNotesEl");
+            let regionsNotesEl = document.getElementById("w-regionsNotesEl");
+            let factionsNotesEl = document.getElementById("w-factionsNotesEl");
+            let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
+            let charactersNotesEl = document.getElementById("w-charactersNotesEl");
+
+            if (overviewNotesEl || rulesNotesEl) {
+                window.worldState.sectionNotes = {
+                    overview: overviewNotesEl?.value || "",
+                    rules: rulesNotesEl?.value || "",
+                    races: racesNotesEl?.value || "",
+                    regions: regionsNotesEl?.value || "",
+                    factions: factionsNotesEl?.value || "",
+                    bestiary: bestiaryNotesEl?.value || "",
+                    characters: charactersNotesEl?.value || ""
+                };
+            }
+
+            // Save active workspace state
             localStorage.activeWorldState = JSON.stringify({
                 name: window.worldState.name,
                 setting: window.worldState.setting,
@@ -82,6 +267,67 @@
                 activeWorldId: window.worldState.activeWorldId,
                 activeLength: window.worldState.activeLength
             });
+
+            // Autosave to savedWorlds list
+            let saved = [];
+            try {
+                saved = JSON.parse(localStorage.savedWorlds || "[]");
+            } catch (e) {}
+
+            let activeId = window.worldState.activeWorldId;
+            if (activeId !== null) {
+                let idx = saved.findIndex(w => w.id === activeId);
+                if (idx !== -1) {
+                    saved[idx] = {
+                        id: activeId,
+                        name: window.worldState.name || "Unnamed World",
+                        setting: window.worldState.setting,
+                        tones: window.worldState.tones,
+                        themes: window.worldState.themes,
+                        bannerUrl: window.worldState.bannerUrl,
+                        sections: Object.assign({}, window.worldState.sections),
+                        sectionNotes: Object.assign({}, window.worldState.sectionNotes),
+                        timestamp: Date.now()
+                    };
+                    localStorage.savedWorlds = JSON.stringify(saved);
+                    renderSidebarWorlds();
+                    triggerWorldSelectorSync();
+                    window.syncWorldSelectors(activeId);
+                }
+            } else if (hasWorldContent()) {
+                // Auto-create new saved world slot
+                let newId = Date.now();
+                window.worldState.activeWorldId = newId;
+                
+                // Resave active state to update activeWorldId
+                localStorage.activeWorldState = JSON.stringify({
+                    name: window.worldState.name,
+                    setting: window.worldState.setting,
+                    tones: window.worldState.tones,
+                    themes: window.worldState.themes,
+                    bannerUrl: window.worldState.bannerUrl,
+                    sections: window.worldState.sections,
+                    sectionNotes: window.worldState.sectionNotes,
+                    activeWorldId: newId,
+                    activeLength: window.worldState.activeLength
+                });
+
+                saved.push({
+                    id: newId,
+                    name: window.worldState.name || "Unnamed World",
+                    setting: window.worldState.setting,
+                    tones: window.worldState.tones,
+                    themes: window.worldState.themes,
+                    bannerUrl: window.worldState.bannerUrl,
+                    sections: Object.assign({}, window.worldState.sections),
+                    sectionNotes: Object.assign({}, window.worldState.sectionNotes),
+                    timestamp: Date.now()
+                });
+                localStorage.savedWorlds = JSON.stringify(saved);
+                renderSidebarWorlds();
+                triggerWorldSelectorSync();
+                window.syncWorldSelectors(newId);
+            }
         } catch (e) {
             console.warn("Failed to save activeWorldState:", e);
         }
@@ -449,9 +695,8 @@
             "Are you sure you want to clear the active World settings and descriptions? Unsaved work will be lost.",
             'warnOnClear',
             () => {
-                document.getElementById("wNameEl").value = "";
-                document.getElementById("wThemesEl").value = "";
-                document.getElementById("wLengthEl").value = "medium";
+                let lengthEl = document.getElementById("wLengthEl");
+                if (lengthEl) lengthEl.value = "medium";
                 
                 window.worldState.name = "";
                 window.worldState.setting = "Any";
@@ -459,125 +704,70 @@
                 window.worldState.themes = "";
                 window.worldState.bannerUrl = "";
                 window.worldState.activeWorldId = null;
+                window.worldState.sections = {
+                    overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
+                };
                 window.worldState.sectionNotes = {
                     overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
                 };
 
-                // Clear sections
+                // Clear statuses
                 let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
                 list.forEach(s => {
-                    window.worldState.sections[s] = "";
-                    let out = document.getElementById(`w-${s}OutputEl`);
-                    if (out) { out.innerHTML = ""; out.style.display = "none"; }
-                    let edit = document.getElementById(`w-${s}EditBtnEl`);
-                    if (edit) edit.style.display = "none";
-                    let copy = document.getElementById(`w-${s}CopyBtnEl`);
-                    if (copy) copy.style.display = "none";
                     let stat = document.getElementById(`w-${s}StatusEl`);
                     if (stat) stat.textContent = "";
-                    let note = document.getElementById(`w-${s}NotesEl`);
-                    if (note) note.value = "";
                 });
 
-                selectWorldSetting("Any", false);
-                document.getElementById("wToneAnyCheckbox").checked = true;
-                handleWorldToneAnyToggle({ checked: true });
-                updateWorldBannerUI("");
+                // Apply clear state globally across all tabs
+                window.applyWorldToWorkspace(window.worldState);
                 
                 window.saveWorldState();
-                if (window.saveActiveWorldState) window.saveActiveWorldState();
-                updateWorldTopBarSaveButtons();
+                renderSidebarWorlds();
             }
         );
     };
 /* ==========================================================================
    LOCAL DATABASE AND FILE SAVE SLOTS MANAGEMENT
    ========================================================================== */
-    window.saveWorldButtonClickHandler = function (btn) {
-        window.saveWorldState();
-        let name = window.worldState.name.trim();
-        if (!name) {
-            alert("Please enter a World Name before saving.");
-            return;
-        }
+    // Stub function since manual save buttons are removed (autosaved)
+    window.updateWorldTopBarSaveButtons = function () {};
 
+    window.updateWorld = function (id) {
+        id = isNaN(Number(id)) ? id : Number(id);
         let saved = [];
         try {
             saved = JSON.parse(localStorage.savedWorlds || "[]");
         } catch (e) {}
-
-        let activeId = window.worldState.activeWorldId;
-        let isUpdate = activeId !== null && saved.some(w => w.id === activeId);
-
-        if (isUpdate) {
-            // Overwrite existing save
-            window.showConfirmDialog(
-                `Are you sure you want to update <b>${name}</b> with active changes? This will overwrite the saved file.`,
-                'warnOnUpdate',
-                () => {
-                    let idx = saved.findIndex(w => w.id === activeId);
-                    saved[idx] = {
-                        id: activeId,
-                        name: name,
-                        setting: window.worldState.setting,
-                        tones: window.worldState.tones,
-                        themes: window.worldState.themes,
-                        bannerUrl: window.worldState.bannerUrl,
-                        sections: Object.assign({}, window.worldState.sections),
-                        sectionNotes: Object.assign({}, window.worldState.sectionNotes),
-                        timestamp: Date.now()
-                    };
-                    localStorage.savedWorlds = JSON.stringify(saved);
-                    renderSidebarWorlds();
-                    triggerWorldSelectorSync();
-                    alert(`World "${name}" updated successfully.`);
-                }
-            );
-        } else {
-            // Create new save
-            let newId = Date.now();
-            saved.push({
-                id: newId,
-                name: name,
-                setting: window.worldState.setting,
-                tones: window.worldState.tones,
-                themes: window.worldState.themes,
-                bannerUrl: window.worldState.bannerUrl,
-                sections: Object.assign({}, window.worldState.sections),
-                sectionNotes: Object.assign({}, window.worldState.sectionNotes),
-                timestamp: Date.now()
-            });
-            localStorage.savedWorlds = JSON.stringify(saved);
-            window.worldState.activeWorldId = newId;
-            window.saveWorldState();
-            renderSidebarWorlds();
-            triggerWorldSelectorSync();
-            updateWorldTopBarSaveButtons();
-            alert(`World "${name}" saved as a new slot.`);
-        }
-    };
-
-    window.updateWorldTopBarSaveButtons = function () {
-        let container = document.getElementById("saveWorldButtonsContainer");
-        if (!container) return;
-
-        let activeId = window.worldState.activeWorldId;
-        if (activeId) {
-            container.innerHTML = `
-                <button onclick="saveWorldButtonClickHandler(this)" class="btn btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy-fill"></i> Update Save</button>
-                <button onclick="saveWorldAsNew()" class="btn btn-ghost" style="font-size:85%; padding:0.45rem 0.7rem; height:fit-content;" title="Save as a separate world slot"><i class="bi bi-plus-square"></i> Save As New</button>
-            `;
-        } else {
-            container.innerHTML = `
-                <button onclick="saveWorldButtonClickHandler(this)" class="btn btn-secondary" style="font-size:90%; padding:0.45rem 0.8rem; height:fit-content;"><i class="bi bi-floppy"></i> Save World</button>
-            `;
-        }
-    };
-
-    window.saveWorldAsNew = function () {
-        window.worldState.activeWorldId = null;
-        window.saveWorldState();
-        saveWorldButtonClickHandler();
+        
+        let idx = saved.findIndex(x => x.id === id);
+        if (idx === -1) return;
+        
+        let worldName = saved[idx].name;
+        
+        window.showConfirmDialog(
+            `Are you sure you want to update <b>${worldName}</b> with the current active world edits on the screen? This will permanently overwrite the saved world file.`,
+            'warnOnUpdate',
+            () => {
+                saved[idx] = {
+                    id: id,
+                    name: window.worldState.name || "Unnamed World",
+                    setting: window.worldState.setting,
+                    tones: window.worldState.tones,
+                    themes: window.worldState.themes,
+                    bannerUrl: window.worldState.bannerUrl,
+                    sections: Object.assign({}, window.worldState.sections),
+                    sectionNotes: Object.assign({}, window.worldState.sectionNotes),
+                    timestamp: Date.now()
+                };
+                localStorage.savedWorlds = JSON.stringify(saved);
+                window.worldState.activeWorldId = id;
+                window.saveWorldState();
+                renderSidebarWorlds();
+                triggerWorldSelectorSync();
+                window.syncWorldSelectors(id);
+                alert(`World "${worldName}" updated successfully.`);
+            }
+        );
     };
 
     window.loadWorld = function (id) {
@@ -595,70 +785,8 @@
             'warnOnLoad',
             () => {
                 window.worldState.activeWorldId = id;
-                window.worldState.name = w.name;
-                window.worldState.setting = w.setting || "Any";
-                window.worldState.tones = w.tones || ["Any"];
-                window.worldState.themes = w.themes || "";
-                window.worldState.bannerUrl = w.bannerUrl || "";
-                window.worldState.sections = Object.assign({}, w.sections);
-                window.worldState.sectionNotes = Object.assign({
-                    overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
-                }, w.sectionNotes || {});
-
-                // Populate DOM
-                let nameEl = document.getElementById("wNameEl");
-                let themesEl = document.getElementById("wThemesEl");
-                if (nameEl) nameEl.value = w.name;
-                if (themesEl) themesEl.value = w.themes || "";
-
-                let notes = window.worldState.sectionNotes;
-                let overviewNotesEl = document.getElementById("w-overviewNotesEl");
-                let rulesNotesEl = document.getElementById("w-rulesNotesEl");
-                let racesNotesEl = document.getElementById("w-racesNotesEl");
-                let regionsNotesEl = document.getElementById("w-regionsNotesEl");
-                let factionsNotesEl = document.getElementById("w-factionsNotesEl");
-                let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
-                let charactersNotesEl = document.getElementById("w-charactersNotesEl");
-
-                if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
-                if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
-                if (racesNotesEl) racesNotesEl.value = notes.races || "";
-                if (regionsNotesEl) regionsNotesEl.value = notes.regions || "";
-                if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
-                if (bestiaryNotesEl) bestiaryNotesEl.value = notes.bestiary || "";
-                if (charactersNotesEl) charactersNotesEl.value = notes.characters || "";
-
-                selectWorldSetting(w.setting, false);
-                loadWorldTones();
-                updateWorldBannerUI(w.bannerUrl);
-
-                // Populate sections
-                let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
-                list.forEach(s => {
-                    let text = w.sections[s] || "";
-                    let out = document.getElementById(`w-${s}OutputEl`);
-                    let edit = document.getElementById(`w-${s}EditBtnEl`);
-                    let copy = document.getElementById(`w-${s}CopyBtnEl`);
-                    if (out) {
-                        if (text) {
-                            out.innerHTML = formatSectionText(text);
-                            out.style.display = "block";
-                            if (edit) edit.style.display = "inline-block";
-                            if (copy) copy.style.display = "inline-block";
-                        } else {
-                            out.innerHTML = "";
-                            out.style.display = "none";
-                            if (edit) edit.style.display = "none";
-                            if (copy) copy.style.display = "none";
-                        }
-                    }
-                });
-
+                window.applyWorldToWorkspace(w);
                 window.saveWorldState();
-                if (window.saveActiveWorldState) window.saveActiveWorldState();
-                updateWorldTopBarSaveButtons();
-                
-                // Switch sidebar tab to active slot highlighting
                 renderSidebarWorlds();
             }
         );
@@ -737,78 +865,38 @@
             saved = JSON.parse(localStorage.savedWorlds || "[]");
         } catch (e) {}
 
-        let history = [];
-        try {
-            history = JSON.parse(localStorage.worldLoreHistory || "[]");
-        } catch (e) {}
-
         let query = searchQuery.toLowerCase().trim();
         let filteredSaved = saved.filter(w => w.name.toLowerCase().includes(query));
-        let filteredHistory = history.filter(h => {
-            let worldName = typeof h === 'object' ? (h.worldName || "") : "";
-            let text = typeof h === 'string' ? h : h.text;
-            return worldName.toLowerCase().includes(query) || text.toLowerCase().includes(query);
-        });
 
-        if (filteredSaved.length === 0 && filteredHistory.length === 0) {
-            listEl.innerHTML = `<div class="sidebar-empty-state"><i class="bi bi-globe"></i>No saved worlds or history found.</div>`;
+        if (filteredSaved.length === 0) {
+            listEl.innerHTML = `<div class="sidebar-empty-state"><i class="bi bi-globe"></i>No saved worlds found.</div>`;
             return;
         }
 
-        let html = "";
+        let html = `<div class="sidebar-group-header">Saved Worlds (${filteredSaved.length})</div>`;
+        html += filteredSaved.map(w => {
+            let isActive = (w.id === window.worldState.activeWorldId) ? " active-save" : "";
+            let cardBg = w.bannerUrl ? `background-image: url(${w.bannerUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
+            let settingLabel = w.setting ? w.setting.replace(/_/g, " ") : "Any Setting";
 
-        if (filteredSaved.length > 0) {
-            html += `<div class="sidebar-group-header">Saved Worlds (${filteredSaved.length})</div>`;
-            html += filteredSaved.map(w => {
-                let isActive = (w.id === window.worldState.activeWorldId) ? " active-save" : "";
-                let cardBg = w.bannerUrl ? `background-image: url(${w.bannerUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
-                let settingLabel = w.setting ? w.setting.replace(/_/g, " ") : "Any Setting";
-
-                return `
-                    <div class="sidebar-save-item${isActive}" onclick="loadWorld(${w.id})">
-                        <div class="sidebar-save-banner" style="${cardBg}">
-                            <div class="sidebar-save-banner-overlay"></div>
-                        </div>
-                        <div class="sidebar-save-header">
-                            <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" title="Double-click to rename">${w.name}</b>
-                            <div class="sidebar-save-actions" onclick="event.stopPropagation()">
-                                <button class="btn btn-ghost btn-sm sidebar-save-action-btn" onclick="duplicateWorld(${w.id})" title="Duplicate"><i class="bi bi-copy"></i></button>
-                                <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorld(${w.id})" title="Delete"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </div>
-                        <span class="sidebar-save-meta">Setting: ${settingLabel}</span>
+            return `
+                <div class="sidebar-save-item${isActive}">
+                    <div class="sidebar-save-banner" style="${cardBg}">
+                        <div class="sidebar-save-banner-overlay"></div>
                     </div>
-                `;
-            }).join("");
-        }
-
-        if (filteredHistory.length > 0) {
-            html += `<div class="sidebar-group-header" style="margin-top:0.75rem;">World Lore History (${filteredHistory.length})</div>`;
-            html += filteredHistory.map(h => {
-                let rawIndex = history.indexOf(h);
-                let text = typeof h === 'string' ? h : h.text;
-                let imageUrl = typeof h === 'object' ? h.imageUrl : null;
-                let worldName = typeof h === 'object' ? (h.worldName || "") : "";
-                let cardBg = imageUrl ? `background-image: url(${imageUrl}); background-size: cover; background-position: center;` : `background: rgba(255, 255, 255, 0.02);`;
-                let displayName = worldName ? `🌍 ${worldName}` : `🌍 Lore History ${rawIndex + 1}`;
-                let snippet = text.length > 120 ? text.substring(0, 120) + "..." : text;
-
-                return `
-                    <div class="sidebar-save-item" onclick="restoreWorldLore(${rawIndex})">
-                        <div class="sidebar-save-banner" style="${cardBg}">
-                            <div class="sidebar-save-banner-overlay"></div>
-                        </div>
-                        <div class="sidebar-save-header">
-                            <b class="sidebar-save-label" title="Click to load lore summary">${displayName}</b>
-                            <div class="sidebar-save-actions" onclick="event.stopPropagation()">
-                                <button class="btn btn-danger btn-sm sidebar-save-action-btn" onclick="deleteWorldLoreHistoryItem(${rawIndex})" title="Delete"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </div>
-                        <span class="sidebar-save-meta" style="white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3; font-size:11px; opacity:0.8;">${snippet.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+                    <div class="sidebar-save-header">
+                        <b class="sidebar-save-label" ondblclick="renameSavedWorld(${w.id}, this)" title="Double-click to rename">${w.name}</b>
                     </div>
-                `;
-            }).join("");
-        }
+                    <span class="sidebar-save-meta">Setting: ${settingLabel}</span>
+                    <div class="sidebar-char-actions" style="margin-top:0.4rem;">
+                        <button onclick="loadWorld(${w.id})" class="btn btn-secondary btn-sm sidebar-char-btn-load" title="Load world"><i class="bi bi-folder-open"></i> load</button>
+                        <button onclick="updateWorld(${w.id})" class="btn btn-secondary btn-sm sidebar-char-btn-update" title="Update slot with screen edits"><i class="bi bi-floppy"></i> update</button>
+                        <button onclick="duplicateWorld(${w.id})" class="btn btn-secondary btn-sm sidebar-char-btn-dupe" title="Duplicate"><i class="bi bi-copy"></i> dupe</button>
+                        <button onclick="deleteWorld(${w.id})" class="btn btn-danger btn-sm sidebar-char-btn-delete" title="Delete"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        }).join("");
 
         listEl.innerHTML = html;
     };
@@ -900,57 +988,7 @@
     // Sync World into Character Generator
     window.loadSavedWorldIntoCharGen = function (id) {
         if (!id) return;
-        id = isNaN(Number(id)) ? id : Number(id);
-        let saved = JSON.parse(localStorage.savedWorlds || "[]");
-        let w = saved.find(x => x.id === id);
-        if (!w) return;
-
-        window.showConfirmDialog(
-            `Import settings from world <b>${w.name}</b> into the Character Generator? This will overwrite the current active settings and World Lore text.`,
-            'warnOnLoad',
-            () => {
-                // Populate name, lore, and visual images
-                let nameEl = document.getElementById("worldNameEl");
-                let loreEl = document.getElementById("worldLoreEl");
-                if (nameEl) { nameEl.value = w.name; localStorage.worldName = w.name; }
-                
-                // Formulate lore text from Overview section
-                let loreText = w.sections.overview || "";
-                if (loreEl) { loreEl.value = loreText; localStorage.worldLore = loreText; }
-
-                // Restore setting dropdown
-                selectSetting(w.setting || "Any", false);
-
-                // Restore tones
-                localStorage.tones = JSON.stringify(w.tones || ["Any"]);
-                loadTones();
-
-                // Restore image URL
-                if (w.bannerUrl) {
-                    updateWorldLoreVisuals(w.bannerUrl);
-                } else {
-                    let container = document.getElementById("worldLoreImgContainer");
-                    if (container) container.style.display = "none";
-                    if (typeof worldLoreBgEl !== 'undefined') worldLoreBgEl.style.backgroundImage = "none";
-                    localStorage.removeItem("worldLoreImageUrl");
-                }
-
-                if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
-
-                // Display status feedback
-                let bannerEl = document.getElementById("referencedCharactersBannerEl");
-                if (bannerEl) {
-                    let countEl = document.getElementById("referencedCharactersCountEl");
-                    let origDisplay = bannerEl.style.display;
-                    bannerEl.style.display = "block";
-                    if (countEl) countEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Loaded details from world "${w.name}".</span>`;
-                    setTimeout(() => {
-                        bannerEl.style.display = origDisplay;
-                        updateReferencesBanner();
-                    }, 3000);
-                }
-            }
-        );
+        window.loadWorld(id);
     };
 
     window.importWorldFromWikiUrl = async function (url) {
@@ -1085,61 +1123,20 @@
     setTimeout(() => {
         window.loadWorldState();
         
-        // Restore name and themes textarea values if present
-        let nameEl = document.getElementById("wNameEl");
-        let themesEl = document.getElementById("wThemesEl");
-        let lengthEl = document.getElementById("wLengthEl");
-
-        if (nameEl) nameEl.value = window.worldState.name || "";
-        if (themesEl) themesEl.value = window.worldState.themes || "";
-        if (lengthEl) lengthEl.value = window.worldState.activeLength || "medium";
-
-        let notes = window.worldState.sectionNotes || {};
-        let overviewNotesEl = document.getElementById("w-overviewNotesEl");
-        let rulesNotesEl = document.getElementById("w-rulesNotesEl");
-        let racesNotesEl = document.getElementById("w-racesNotesEl");
-        let regionsNotesEl = document.getElementById("w-regionsNotesEl");
-        let factionsNotesEl = document.getElementById("w-factionsNotesEl");
-        let bestiaryNotesEl = document.getElementById("w-bestiaryNotesEl");
-        let charactersNotesEl = document.getElementById("w-charactersNotesEl");
-
-        if (overviewNotesEl) overviewNotesEl.value = notes.overview || "";
-        if (rulesNotesEl) rulesNotesEl.value = notes.rules || "";
-        if (racesNotesEl) racesNotesEl.value = notes.races || "";
-        if (regionsNotesEl) regionsNotesEl.value = notes.regions || "";
-        if (factionsNotesEl) factionsNotesEl.value = notes.factions || "";
-        if (bestiaryNotesEl) bestiaryNotesEl.value = notes.bestiary || "";
-        if (charactersNotesEl) charactersNotesEl.value = notes.characters || "";
-
         // Custom setting and tones dropdown configurations
         initCustomWorldSettingDropdown();
         initCustomWorldToneDropdown();
-        loadWorldTones();
         if (typeof window.sortDropdownList === "function") {
             window.sortDropdownList("wSettingOptionsList");
             window.sortDropdownList("wToneOptionsList");
         }
-        updateWorldBannerUI(window.worldState.bannerUrl);
-
-        // Populate dynamic section text outputs
-        let list = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
-        list.forEach(s => {
-            let text = window.worldState.sections[s] || "";
-            let out = document.getElementById(`w-${s}OutputEl`);
-            let edit = document.getElementById(`w-${s}EditBtnEl`);
-            let copy = document.getElementById(`w-${s}CopyBtnEl`);
-            if (out && text) {
-                out.innerHTML = formatSectionText(text);
-                out.style.display = "block";
-                if (edit) edit.style.display = "inline-block";
-                if (copy) copy.style.display = "inline-block";
-            }
-        });
+        
+        // Apply loaded world state to workspace
+        window.applyWorldToWorkspace(window.worldState);
 
         // Initialize sidebar lists
         renderSidebarWorlds();
         triggerWorldSelectorSync();
-        updateWorldTopBarSaveButtons();
     }, 100);
 
 })();
