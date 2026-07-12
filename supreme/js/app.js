@@ -51,137 +51,7 @@
                 Forced_Cohabitation: { evaluateItem: "The relationship dynamic is forced cohabitation." },
                 Fake_Relationship: { evaluateItem: "The relationship dynamic is a fake relationship." }
             },
-            prompts: {
-                compile: function(sectionName, context, notes, lengthVal, overview, worldLore) {
-                    let p = this[sectionName];
-                    if (!p) return "";
-                    let parts = [p.instruction ? p.instruction.evaluateItem : ""];
-                    let lenInstr = window.getLengthInstruction ? window.getLengthInstruction(lengthVal) : "";
-                    if (lenInstr) parts.push(lenInstr);
-                    parts.push(p.format ? p.format.evaluateItem : "");
-                    if (p.notes && p.notes.evaluateItem) parts.push(p.notes.evaluateItem);
-                    if (context) parts.push("\nExisting character context:\n---\n" + context + "\n---");
-                    if (worldLore) parts.push("\nWorld Lore:\n" + worldLore);
-                    if (overview) parts.push("\nGeneral character overview: " + overview);
-                    if (notes) parts.push("\nSection-specific notes: " + notes);
-                    let refCtx = window.getReferencedCharactersContext ? window.getReferencedCharactersContext() : "";
-                    if (refCtx) parts.push("\n" + refCtx);
-                    let setTone = window.getSettingAndToneContext ? window.getSettingAndToneContext() : "";
-                    if (setTone) parts.push("\n" + setTone);
-                    if (p.footer && p.footer.evaluateItem) parts.push(p.footer.evaluateItem);
-                    if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
-                    return parts.join("\n\n");
-                },
-                role: { instruction: { evaluateItem: "You are writing the ROLE and RULES section." }, format: { evaluateItem: "Format: Role: ... Rules: ..." } },
-                appearance: { instruction: { evaluateItem: "You are writing the APPEARANCE, ATTIRE, and ITEMS section." }, format: { evaluateItem: "Format: Appearance: ... Attire: ..." }, notes: { evaluateItem: "Be specific and visual." } },
-                background: { instruction: { evaluateItem: "You are writing the BACKSTORY, OCCUPATION, RESIDENCE, SECRETS, SHORT-TERM GOALS, LONG-TERM GOALS, and SKILLS section." }, format: { evaluateItem: "Format: Backstory: ... Occupation: ..." } },
-                personality: { instruction: { evaluateItem: "You are writing the PERSONALITY, SPEECH, BEHAVIOR, EMOTIONS, and INTERNAL CONFLICTS section." }, format: { evaluateItem: "Format: Personality: ... Speech: ..." } },
-                beliefs: { instruction: { evaluateItem: "You are writing the MENTALITY, WORLD VIEW, BELIEFS, and MORALS section." }, format: { evaluateItem: "Format: Mentality: ... World View: ..." } },
-                preferences: { instruction: { evaluateItem: "You are writing the LIKES, HATES, HOBBIES, VALUES, and ROMANCE section." }, format: { evaluateItem: "Format: Likes: ... Hates: ..." } },
-                abilities: { instruction: { evaluateItem: "You are writing the ABILITIES section." }, format: { evaluateItem: "Format: - Ability: ..." } },
-                relations: { instruction: { evaluateItem: "You are writing the RELATIONS section." }, format: { evaluateItem: "Format: - user: ..." } },
-                timeline: { instruction: { evaluateItem: "You are writing the TIMELINE section." }, format: { evaluateItem: "Format: - Age: ..." } },
-                lore: {
-                    instruction: { evaluateItem: "You are writing the LORE KEYWORDS and LORE CONTENT section for a character profile." },
-                    format: { evaluateItem: "You MUST generate a strict JSON object containing between 4 and 5 lore entries." },
-                    notes: { evaluateItem: "LORE Note..." },
-                    footer: { evaluateItem: "Output ONLY the raw JSON object." }
-                },
-                roleplay: { instruction: { evaluateItem: "You are writing the ROLEPLAY EXAMPLES section." }, format: { evaluateItem: "Format: <user>: ... CharacterName: ..." } },
-                introScenario: { instruction: { evaluateItem: "You are writing the SCENE CONTEXT / SCENARIO CONTEXT section." }, format: { evaluateItem: "Format: Scene Context: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } },
-                introStart: { instruction: { evaluateItem: "You are writing the ROLEPLAY START (Dialogue & Narration) section." }, format: { evaluateItem: "Format: Intro Script: ..." }, notes: { evaluateItem: "Focusing on Physical Reactions." } },
-                characterPage: {
-                    worldLore: {
-                        compile: function(settingValue, toneStr, userNotes, existingWorldName, needsName) {
-                            return "You are writing a concise, factual \"World Lore\" summary.\nSetting: " + settingValue + "\nTones: " + toneStr;
-                        }
-                    },
-                    worldLoreImage: {
-                        compile: function(text) { return "Extract environment visual keyphrases from:\n" + text; }
-                    },
-                    identityDetails: {
-                        compile: function(existingContext, worldLoreVal, allUserNotes, settingAndTone, blankFields) {
-                            return "Fill missing identity fields: " + blankFields;
-                        }
-                    },
-                    overview: {
-                        compile: function(settingValue, toneStr, worldLoreVal, detailsStr) {
-                            return "Generate one single character concept paragraph.\nSetting: " + settingValue;
-                        }
-                    },
-                    imageCaption: {
-                        compile: function(settingValue, toneStr, appearanceText) {
-                            return "Extract purely VISUAL elements from:\n" + appearanceText;
-                        }
-                    },
-                    backgroundImage: {
-                        compile: function(scenario) { return "Extract background environment from:\n" + scenario; }
-                    },
-                    wikiImport: {
-                        compile: function(content, wikiOverride) { return "Extract character info from text."; }
-                    },
-                    chatCss: {
-                        compile: function(generatedText, settingValue, toneValues) { return "Generate bubble CSS."; }
-                    },
-                    chatLore: {
-                        compile: function() { return "Prepare for AI chat system."; }
-                    },
-                    chatStyleGuide: {
-                        compile: function() { return "Write concise style guide."; }
-                    }
-                },
-                worldPage: {
-                    sectionGeneration: {
-                        compile: function(section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction) {
-                            return "Expert world-builder writing " + section + ".\nWorld Name: " + wName;
-                        }
-                    },
-                    bannerImage: {
-                        compile: function(wName, wSetting, wTones, overviewText) {
-                            return "Extract environment visual keyphrases for " + wName;
-                        }
-                    },
-                    wikiImport: {
-                        compile: function(content, override) { return "Extract world-building details."; }
-                    }
-                },
-                roleplayPage: {
-                    wikiImport: {
-                        compile: function(content, override) { return "Extract roleplay details."; }
-                    },
-                    worldLore: {
-                        compile: function(name, setting, tonesStr) { return "Write concise world overview."; }
-                    },
-                    npcGeneration: {
-                        compile: function(worldName, worldLore, setting) { return "Generate single NPC profile."; }
-                    },
-                    scenarioNotes: {
-                        compile: function(worldName, worldLore, npcsText, userRole) { return "Generate creative plot hook."; }
-                    },
-                    roleplayScenario: {
-                        compile: function(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction) {
-                            return "Create roleplay scenario sheet.\nWorld Name: " + worldName;
-                        }
-                    }
-                },
-                                assistantPage: {
-                    assessIntention: {
-                        compile: function(text) { return "Assess intent for " + text; }
-                    },
-                    methodology: {
-                        compile: function(assistantPersonality, context, text) { return "Generate methodology."; }
-                    },
-                    finalOutputThinking: {
-                        compile: function(assistantPersonality, context, methodology, text) { return "Fulfill request based on methodology."; }
-                    },
-                    finalOutputNoThinking: {
-                        compile: function(assistantPersonality, context, text) { return "Fulfill request."; }
-                    },
-                    imagePrompt: {
-                        compile: function(context, text) { return "Write image prompt."; }
-                    }
-                }
-            },
+
             visualStyles: {
                 selectAll: [
                     { getName: "Anime Portrait", "meta:tags": { basicAnime: 1 } },
@@ -214,56 +84,33 @@
             galleryOptions: {}
         };
 
-        // Dynamically define getters for prompts that use compile() via instruction.evaluateItem
-        const categories = ['characterPage', 'worldPage', 'roleplayPage', 'assistantPage'];
-        categories.forEach(cat => {
-            let prompts = window.root.prompts[cat];
-            if (!prompts) return;
-            Object.keys(prompts).forEach(key => {
-                let prompt = prompts[key];
-                if (prompt && typeof prompt.compile === 'function') {
-                    Object.defineProperty(prompt, 'instruction', {
-                        get: function() {
-                            return {
-                                get evaluateItem() {
-                                    if (cat === 'characterPage') {
-                                        if (key === 'worldLore') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.userNotes, window.root.existingWorldName, window.root.needsName);
-                                        if (key === 'worldLoreImage') return prompt.compile(window.root.text);
-                                        if (key === 'identityDetails') return prompt.compile(window.root.existingContext, window.root.worldLoreVal, window.root.allUserNotes, window.root.settingAndTone, window.root.blankFields);
-                                        if (key === 'overview') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.worldLoreVal, window.root.detailsStr);
-                                        if (key === 'imageCaption') return prompt.compile(window.root.settingValue, window.root.toneStr, window.root.appearanceText);
-                                        if (key === 'backgroundImage') return prompt.compile(window.root.scenario);
-                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.wikiOverride);
-                                        if (key === 'chatCss') return prompt.compile(window.root.generatedText, window.root.settingValue, window.root.toneValues);
-                                        if (key === 'chatLore') return prompt.compile();
-                                        if (key === 'chatStyleGuide') return prompt.compile();
-                                    }
-                                    if (cat === 'worldPage') {
-                                        if (key === 'bannerImage') return prompt.compile(window.root.wName, window.root.wSetting, window.root.wTones, window.root.overviewText);
-                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.override);
-                                    }
-                                    if (cat === 'roleplayPage') {
-                                        if (key === 'wikiImport') return prompt.compile(window.root.content, window.root.override);
-                                        if (key === 'worldLore') return prompt.compile(window.root.name, window.root.setting, window.root.tonesStr);
-                                        if (key === 'npcGeneration') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.setting);
-                                        if (key === 'scenarioNotes') return prompt.compile(window.root.worldName, window.root.worldLore, window.root.npcsText, window.root.userRole);
-                                    }
-                                    if (cat === 'assistantPage') {
-                                        if (key === 'assessIntention') return prompt.compile(window.root.text);
-                                        if (key === 'methodology') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.text);
-                                        if (key === 'finalOutputThinking') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.methodology, window.root.text);
-                                        if (key === 'finalOutputNoThinking') return prompt.compile(window.root.assistantPersonality, window.root.context, window.root.text);
-                                        if (key === 'imagePrompt') return prompt.compile(window.root.context, window.root.text);
-                                    }
-                                    return "";
-                                }
-                            };
+        // Bind prompt modules to root objects
+        (function () {
+            if (typeof root !== 'undefined') {
+                try {
+                    Object.defineProperty(root, 'prompts', {
+                        get: function () {
+                            return window.prompts;
                         },
                         configurable: true
                     });
+                } catch (e) {
+                    root.prompts = window.prompts;
                 }
-            });
-        });
+            }
+            if (window.root) {
+                try {
+                    Object.defineProperty(window.root, 'prompts', {
+                        get: function () {
+                            return window.prompts;
+                        },
+                        configurable: true
+                    });
+                } catch (e) {
+                    window.root.prompts = window.prompts;
+                }
+            }
+        })();
         
         // Setup missing plugin functions so generator preview works locally
         if (typeof window.ai === "undefined") {
