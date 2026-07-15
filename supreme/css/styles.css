@@ -729,6 +729,7 @@
 
     /* ── PANELS ── */
     .panel {
+        position: relative;
         width: 100%;
         border: 1px solid var(--panel-border);
         border-radius: 8px;
@@ -1811,32 +1812,38 @@
 
 /* ─── CUSTOM DROPDOWN DRAWER ─── */
 .custom-dropdown-drawer {
-    width: 100%;
-    height: 0;
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: 100%;
     overflow: hidden;
-    position: relative;
-    background: rgba(21, 23, 32, 0.75); /* Default dark glassmorphism */
+    background: rgba(21, 23, 32, 0.95); /* Default dark glassmorphism */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
+    border-radius: 8px;
     margin: 0;
-    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+    transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    border: 0 solid transparent;
+    border: 1.5px solid transparent;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
 }
 
 :root.light .custom-dropdown-drawer {
-    background: rgba(255, 255, 255, 0.75); /* Light glassmorphism */
+    background: rgba(255, 255, 255, 0.95); /* Light glassmorphism */
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02), 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 .custom-dropdown-drawer.open.expanded {
-    margin: 0.75rem 0;
-    height: 480px; /* has-search open expanded height */
-    border: 1.5px solid rgba(var(--accent-color-rgb), 0.45);
+    bottom: -1px;
+    opacity: 1;
+    pointer-events: auto;
+    border-color: rgba(var(--accent-color-rgb), 0.45);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(var(--accent-color-rgb), 0.15);
 }
 

@@ -1415,16 +1415,43 @@
         if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
 
         const isAlreadyOpen = drawer.classList.contains('open');
+        const targetPanel = selectEl.closest('.panel');
+        const currentPanel = drawer.parentNode;
 
         if (isAlreadyOpen) {
-            scrollBox.classList.add('fade-out');
-            setTimeout(() => {
+            if (targetPanel && currentPanel !== targetPanel) {
+                // Instantly close/reset the drawer, move to the new panel, then trigger slide down
+                drawer.classList.remove('open', 'expanded');
+                drawer.style.transition = 'none';
+                if (targetPanel.classList.contains('collapsed')) {
+                    window.togglePanel(targetPanel.id);
+                }
+                targetPanel.appendChild(drawer);
+                drawer.offsetHeight; // Force reflow
+                drawer.style.transition = '';
                 setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+            } else {
+                scrollBox.classList.add('fade-out');
                 setTimeout(() => {
-                    scrollBox.classList.remove('fade-out');
-                }, 50);
-            }, 150);
+                    setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
+                    setTimeout(() => {
+                        scrollBox.classList.remove('fade-out');
+                    }, 50);
+                }, 150);
+            }
         } else {
+            if (targetPanel) {
+                if (targetPanel.classList.contains('collapsed')) {
+                    window.togglePanel(targetPanel.id);
+                }
+                if (currentPanel !== targetPanel) {
+                    targetPanel.appendChild(drawer);
+                }
+            } else {
+                if (currentPanel !== document.body) {
+                    document.body.appendChild(drawer);
+                }
+            }
             setupDrawerContent(selectEl, wrapper, scrollBox, drawer);
         }
     }
