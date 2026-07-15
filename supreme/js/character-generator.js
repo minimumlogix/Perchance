@@ -385,14 +385,15 @@
         let existingWorldName = (document.getElementById("worldNameEl") || {}).value || "";
         let needsName = !existingWorldName.trim();
 
+        let lengthVal = (document.getElementById("worldLoreLengthEl") || {}).value || "medium";
         root.settingValue = settingValue;
         root.toneStr = toneStr;
         root.userNotes = window.literal(userNotes);
         root.existingWorldName = window.literal(existingWorldName);
         root.needsName = needsName;
+        root.worldLoreLengthVal = lengthVal;
         let instruction = root.prompts.characterPage.worldLore.instruction.evaluateItem;
 
-        let lengthVal = (document.getElementById("worldLoreLengthEl") || {}).value || "medium";
         let lengthInstruction = getLengthInstruction(lengthVal);
         if (lengthInstruction) {
             instruction += "\n\n" + lengthInstruction;
@@ -1468,7 +1469,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             }
 
             // 4. Generate other sections sequentially
-            for (let section of ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"]) {
+            for (let section of ["shortDescription", "appearance", "role", "personality", "beliefs", "preferences", "abilities", "relations", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"]) {
                 if (!window.generateAllRunning) break;
                 let success = await generateSection(section);
                 if (!success) break;
@@ -1500,7 +1501,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         setSectionStatus("worldLore", "⛔ Stopped.");
 
         // Stop sections
-        ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"].forEach(s => stopSection(s));
+        ["shortDescription", "appearance", "role", "personality", "beliefs", "preferences", "abilities", "relations", "background", "timeline", "lore", "roleplay", "introScenario", "introStart"].forEach(s => stopSection(s));
         
         let btn = document.getElementById("generateAllBtn");
         let stopBtn = document.getElementById("stopAllBtn");

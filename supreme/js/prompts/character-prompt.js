@@ -201,12 +201,42 @@
                 let userNotes = (window.root && window.root.userNotes) || "";
                 let existingWorldName = (window.root && window.root.existingWorldName) || "";
                 let needsName = (window.root && window.root.needsName) || false;
-                return window.prompts.characterPage.worldLore.compile(settingValue, toneStr, userNotes, existingWorldName, needsName);
+                let lengthVal = (window.root && window.root.worldLoreLengthVal) || "medium";
+                return window.prompts.characterPage.worldLore.compile(settingValue, toneStr, userNotes, existingWorldName, needsName, lengthVal);
             }),
-            compile: function (settingValue, toneStr, userNotes, existingWorldName, needsName) {
-                let parts = ["You are writing a concise, factual \"World Lore\" summary for a character generator. This text will be used by AI to generate consistent characters, so it must contain actionable facts - NOT atmospheric prose."];
+            compile: function (settingValue, toneStr, userNotes, existingWorldName, needsName, lengthVal) {
+                lengthVal = lengthVal || "medium";
+                let lengthKey = lengthVal.replace("-", "_");
+                
+                let detailLevel = "Write a concise, factual \"World Lore\" summary";
+                let bulletRule = "Write 3-5 SHORT bullet points or brief sentences. Each one is a concrete, specific fact.";
+                let wordLimitRule = "Aim for 90-150 words maximum.";
+                
+                if (lengthKey === "super_short") {
+                    detailLevel = "Write an ultra-concise, factual \"World Lore\" summary";
+                    bulletRule = "Write 1-2 brief sentences or bullet points. Each one is a concrete fact.";
+                    wordLimitRule = "Aim for 30-50 words maximum.";
+                } else if (lengthKey === "short") {
+                    detailLevel = "Write a brief, factual \"World Lore\" summary";
+                    bulletRule = "Write 2-3 brief sentences or bullet points. Each one is a concrete fact.";
+                    wordLimitRule = "Aim for 50-80 words maximum.";
+                } else if (lengthKey === "medium") {
+                    detailLevel = "Write a standard, factual \"World Lore\" summary";
+                    bulletRule = "Write 4-5 sentences or bullet points. Each one is a concrete, specific fact.";
+                    wordLimitRule = "Aim for 90-150 words maximum.";
+                } else if (lengthKey === "long") {
+                    detailLevel = "Write a detailed, factual \"World Lore\" summary";
+                    bulletRule = "Write 6-8 detailed sentences or bullet points. Provide substantial context, history, and specifics for each fact.";
+                    wordLimitRule = "Aim for 180-280 words maximum.";
+                } else if (lengthKey === "super_long") {
+                    detailLevel = "Write a comprehensive, highly detailed \"World Lore\" study";
+                    bulletRule = "Write 9-12 detailed, multi-sentence paragraphs or extensive bullet points. Provide rich detail, history, deep context, and exact specifics for each aspect of the world.";
+                    wordLimitRule = "Aim for 300-500 words maximum.";
+                }
+
+                let parts = ["You are writing a " + detailLevel + " for a character generator. This text will be used by AI to generate consistent characters, so it must contain actionable facts - NOT atmospheric prose."];
                 parts.push("Setting: " + settingValue + "\nTones: " + toneStr + (userNotes ? "\nUser Hints / Notes: " + userNotes : "") + (existingWorldName ? "\nWorld Name: " + existingWorldName : ""));
-                parts.push("Rules (STRICTLY FOLLOW):\n1. Write 3-5 SHORT bullet points or brief sentences. Each one is a concrete, specific fact.\n2. Cover: time period & location, technology/magic level, society/political structure, daily life tone, and one major ongoing conflict or theme.\n3. DO NOT write flowery prose, metaphors, poetic imagery, or literary descriptions.\n4. DO NOT write vague statements like \"magic exists\" - be specific: what kind, how it works, who has it.\n5. Format: plain sentences or short bullet points. No headers. No intro/outro.\n6. Aim for 60-120 words maximum." + (needsName ? "\n7. At the very end, on its own line, output exactly: WORLD_NAME: [A short, creative 1-4 word name for this world, fitting the setting]" : ""));
+                parts.push("Rules (STRICTLY FOLLOW):\n1. " + bulletRule + "\n2. Cover: time period & location, technology/magic level, society/political structure, daily life tone, and one major ongoing conflict or theme.\n3. DO NOT write flowery prose, metaphors, poetic imagery, or literary descriptions.\n4. DO NOT write vague statements like \"magic exists\" - be specific: what kind, how it works, who has it.\n5. Format: plain sentences or short bullet points. No headers. No intro/outro.\n6. " + wordLimitRule + (needsName ? "\n7. At the very end, on its own line, output exactly: WORLD_NAME: [A short, creative 1-4 word name for this world, fitting the setting]" : ""));
                 parts.push("Respond with ONLY the world lore facts (and WORLD_NAME line if requested). No heading, no intro, no prose filler.");
                 if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
                 return parts.join("\n\n");
