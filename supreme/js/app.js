@@ -609,91 +609,167 @@
         });
     };
 
-    window.initCustomSettingDropdown = function () {
-        window.initializeDropdownOptions({
-            listElId: "settingOptionsList",
-            fallbackKeys: window.SETTING_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.settingPrompts : null,
-            selectedValue: localStorage.setting || "Any",
-            onSelect: "selectSetting",
-            isMultiSelect: false
-        });
-        selectSetting(localStorage.setting || "Any", false);
-    };
-
-    window.filterSettings = function (query) {
-        window.filterDropdownOptions("settingOptionsList", query);
-    };
-
-    window.selectSetting = function (value, closeMenu = true) {
-        localStorage.setting = value;
-        let labelEl = document.getElementById("settingLabel");
-        if (labelEl) {
-            labelEl.textContent = value.replace(/_/g, " ");
+    window.populateParameterSelects = function () {
+        // Helper to get sorted keys
+        function getKeys(perchanceSource, fallbackKeys) {
+            let keys = [];
+            const isPerchance = window.location.hostname.includes("perchance.org");
+            if (isPerchance && typeof root !== "undefined" && perchanceSource) {
+                keys = window.getPerchanceListKeys(perchanceSource);
+            }
+            if (!keys || keys.length === 0) {
+                keys = fallbackKeys;
+            }
+            keys = keys.filter(k => k !== "Any" && k !== "none");
+            keys.sort((a, b) => a.localeCompare(b));
+            return keys;
         }
 
-        // Update active checkmarks
-        let items = document.querySelectorAll("#settingOptionsList .dropdown-option-item");
-        items.forEach(item => {
-            let check = item.querySelector("i");
-            if (item.getAttribute("data-value") === value) {
-                item.classList.add("active");
-                if (check) check.style.display = "inline-block";
-            } else {
-                item.classList.remove("active");
-                if (check) check.style.display = "none";
+        // 1. Populate Setting
+        const settingEl = document.getElementById("settingEl");
+        if (settingEl) {
+            let settingKeys = [];
+            const isPerchance = window.location.hostname.includes("perchance.org");
+            if (isPerchance && typeof root !== "undefined" && root.settingPrompts) {
+                settingKeys = window.getPerchanceListKeys(root.settingPrompts);
             }
-        });
+            if (!settingKeys || settingKeys.length === 0) {
+                settingKeys = window.SETTING_KEYS;
+            }
+            settingKeys = settingKeys.filter(k => k !== "Any" && k !== "none");
+            settingKeys.sort((a, b) => a.localeCompare(b));
+            settingKeys.unshift("Any");
+            settingEl.innerHTML = settingKeys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            settingEl.value = localStorage.setting || "Any";
+        }
 
-        if (closeMenu) {
-            let menu = document.getElementById("settingDropdownMenu");
-            if (menu) menu.style.display = "none";
+        // 2. Populate Tone
+        const toneEl = document.getElementById("toneEl");
+        if (toneEl) {
+            let keys = getKeys(typeof root !== "undefined" ? root.tonePrompts : null, window.TONE_KEYS);
+            let html = `<option value="none">Any</option>`;
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            toneEl.innerHTML = html;
+        }
+
+        // 3. Populate Archetypes
+        const archetypeEl = document.getElementById("archetypeEl");
+        if (archetypeEl) {
+            let keys = getKeys(typeof root !== "undefined" ? root.archetypePrompts : null, window.ARCHETYPE_KEYS);
+            let html = `<option value="none">Any</option>`;
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            archetypeEl.innerHTML = html;
+        }
+
+        // 4. Populate Dynamics
+        const dynamicEl = document.getElementById("dynamicEl");
+        if (dynamicEl) {
+            let keys = getKeys(typeof root !== "undefined" ? root.relationshipDynamics : null, window.DYNAMIC_KEYS);
+            let html = `<option value="none">Any</option>`;
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            dynamicEl.innerHTML = html;
+        }
+
+        // 5. Populate World Setting
+        const wSettingEl = document.getElementById("wSettingEl");
+        if (wSettingEl) {
+            let settingKeys = [];
+            const isPerchance = window.location.hostname.includes("perchance.org");
+            if (isPerchance && typeof root !== "undefined" && root.settingPrompts) {
+                settingKeys = window.getPerchanceListKeys(root.settingPrompts);
+            }
+            if (!settingKeys || settingKeys.length === 0) {
+                settingKeys = window.SETTING_KEYS;
+            }
+            settingKeys = settingKeys.filter(k => k !== "Any" && k !== "none");
+            settingKeys.sort((a, b) => a.localeCompare(b));
+            settingKeys.unshift("Any");
+            wSettingEl.innerHTML = settingKeys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            wSettingEl.value = (window.worldState && window.worldState.setting) || "Any";
+        }
+
+        // 6. Populate World Tone
+        const wToneEl = document.getElementById("wToneEl");
+        if (wToneEl) {
+            let keys = getKeys(typeof root !== "undefined" ? root.tonePrompts : null, window.TONE_KEYS);
+            let html = `<option value="none">Any</option>`;
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            wToneEl.innerHTML = html;
+        }
+
+        // 7. Populate Roleplay Setting
+        const rpSettingEl = document.getElementById("rpSettingEl");
+        if (rpSettingEl) {
+            let settingKeys = [];
+            const isPerchance = window.location.hostname.includes("perchance.org");
+            if (isPerchance && typeof root !== "undefined" && root.settingPrompts) {
+                settingKeys = window.getPerchanceListKeys(root.settingPrompts);
+            }
+            if (!settingKeys || settingKeys.length === 0) {
+                settingKeys = window.SETTING_KEYS;
+            }
+            settingKeys = settingKeys.filter(k => k !== "Any" && k !== "none");
+            settingKeys.sort((a, b) => a.localeCompare(b));
+            settingKeys.unshift("Any");
+            rpSettingEl.innerHTML = settingKeys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            rpSettingEl.value = (window.roleplayState && window.roleplayState.setting) || "Any";
+        }
+
+        // 8. Populate Roleplay Tone
+        const rpToneEl = document.getElementById("rpToneEl");
+        if (rpToneEl) {
+            let keys = getKeys(typeof root !== "undefined" ? root.tonePrompts : null, window.TONE_KEYS);
+            let html = `<option value="none">Any</option>`;
+            html += keys.map(k => {
+                let label = window.getDropdownDisplayLabel ? window.getDropdownDisplayLabel(k) : k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            rpToneEl.innerHTML = html;
+        }
+    };
+
+    window.selectSetting = function (value) {
+        localStorage.setting = value;
+        const settingEl = document.getElementById("settingEl");
+        if (settingEl) {
+            settingEl.value = value;
+            window.syncCustomSelectLabel(settingEl);
         }
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
-    // Define virtual settingEl for backwards compatibility
-    Object.defineProperty(window, 'settingEl', {
-        get: () => ({
-            get value() { return localStorage.setting || "Any"; },
-            set value(val) {
-                localStorage.setting = val;
-                selectSetting(val, false);
-            }
-        }),
-        configurable: true
-    });
-
     // Tone Dropdown functions
     window.getSelectedTones = function () {
-        let checked = [...document.querySelectorAll(".toneCheckbox:checked")].map(c => c.value);
-        return checked.length > 0 ? checked : ["Any"];
-    };
-
-    window.handleToneChange = function () {
-        let checked = [...document.querySelectorAll(".toneCheckbox:checked")];
-        let anyBox = document.getElementById("toneAnyCheckbox");
-        if (checked.length > 0 && anyBox) anyBox.checked = false;
-        updateToneLabel();
-        saveTones();
-    };
-
-    window.handleToneAnyToggle = function (checkbox) {
-        if (checkbox.checked) {
-            document.querySelectorAll(".toneCheckbox").forEach(c => c.checked = false);
+        const sel = multiSelectState["toneEl"];
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
         }
-        updateToneLabel();
-        saveTones();
+        return Array.from(sel).filter(v => v !== "none");
     };
 
     window.updateToneLabel = function () {
-        let tones = getSelectedTones();
-        let label = document.getElementById("toneDropdownLabel");
-        if (label) {
-            if (tones[0] === "Any") label.textContent = "Any";
-            else if (tones.length === 1) label.textContent = tones[0].replace(/_/g, " ");
-            else label.textContent = tones[0].replace(/_/g, " ") + " +" + (tones.length - 1);
-        }
+        window.syncCustomSelectLabel("toneEl");
     };
 
     window.saveTones = function () {
@@ -704,54 +780,32 @@
     window.loadTones = function () {
         try {
             let saved = JSON.parse(localStorage.tones || '["Any"]');
-            let anyBox = document.getElementById("toneAnyCheckbox");
-            if (!saved || saved.length === 0 || saved[0] === "Any") {
-                if (anyBox) anyBox.checked = true;
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
             } else {
-                if (anyBox) anyBox.checked = false;
                 saved.forEach(t => {
-                    let box = document.querySelector(`.toneCheckbox[value="${t}"]`);
-                    if (box) box.checked = true;
+                    if (t !== "Any") sel.add(t);
                 });
             }
-            updateToneLabel();
+            multiSelectState["toneEl"] = sel;
         } catch (e) {
-            let anyBox = document.getElementById("toneAnyCheckbox");
-            if (anyBox) anyBox.checked = true;
-            updateToneLabel();
+            multiSelectState["toneEl"] = new Set(["none"]);
         }
+        window.syncCustomSelectLabel("toneEl");
     };
 
     // Archetype Dropdown functions
     window.getSelectedArchetypes = function () {
-        let checked = [...document.querySelectorAll(".archetypeCheckbox:checked")].map(c => c.value);
-        return checked.length > 0 ? checked : ["Any"];
-    };
-
-    window.handleArchetypeChange = function () {
-        let checked = [...document.querySelectorAll(".archetypeCheckbox:checked")];
-        let anyBox = document.getElementById("archetypeAnyCheckbox");
-        if (checked.length > 0 && anyBox) anyBox.checked = false;
-        updateArchetypeLabel();
-        saveArchetypes();
-    };
-
-    window.handleArchetypeAnyToggle = function (checkbox) {
-        if (checkbox.checked) {
-            document.querySelectorAll(".archetypeCheckbox").forEach(c => c.checked = false);
+        const sel = multiSelectState["archetypeEl"];
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
         }
-        updateArchetypeLabel();
-        saveArchetypes();
+        return Array.from(sel).filter(v => v !== "none");
     };
 
     window.updateArchetypeLabel = function () {
-        let archs = getSelectedArchetypes();
-        let label = document.getElementById("archetypeDropdownLabel");
-        if (label) {
-            if (archs[0] === "Any") label.textContent = "Any";
-            else if (archs.length === 1) label.textContent = archs[0].replace(/_/g, " ");
-            else label.textContent = archs[0].replace(/_/g, " ") + " +" + (archs.length - 1);
-        }
+        window.syncCustomSelectLabel("archetypeEl");
     };
 
     window.saveArchetypes = function () {
@@ -762,96 +816,32 @@
     window.loadArchetypes = function () {
         try {
             let saved = JSON.parse(localStorage.archetypes || '["Any"]');
-            let anyBox = document.getElementById("archetypeAnyCheckbox");
-            if (!saved || saved.length === 0 || saved[0] === "Any") {
-                if (anyBox) anyBox.checked = true;
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
             } else {
-                if (anyBox) anyBox.checked = false;
                 saved.forEach(t => {
-                    let box = document.querySelector(`.archetypeCheckbox[value="${t}"]`);
-                    if (box) box.checked = true;
+                    if (t !== "Any") sel.add(t);
                 });
             }
-            updateArchetypeLabel();
+            multiSelectState["archetypeEl"] = sel;
         } catch (e) {
-            let anyBox = document.getElementById("archetypeAnyCheckbox");
-            if (anyBox) anyBox.checked = true;
-            updateArchetypeLabel();
+            multiSelectState["archetypeEl"] = new Set(["none"]);
         }
-    };
-
-    window.initCustomToneDropdown = function () {
-        let saved = ["Any"];
-        try {
-            if (localStorage.tones) saved = JSON.parse(localStorage.tones);
-        } catch (e) {}
-        window.initializeDropdownOptions({
-            listElId: "toneOptionsList",
-            fallbackKeys: window.TONE_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.tonePrompts : null,
-            selectedValue: saved,
-            onSelect: "handleTone",
-            isMultiSelect: true,
-            inputName: "tone"
-        });
-        loadTones();
-    };
-
-    window.initCustomArchetypeDropdown = function () {
-        let saved = ["Any"];
-        try {
-            if (localStorage.archetypes) saved = JSON.parse(localStorage.archetypes);
-        } catch (e) {}
-        window.initializeDropdownOptions({
-            listElId: "archetypeOptionsList",
-            fallbackKeys: window.ARCHETYPE_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.archetypePrompts : null,
-            selectedValue: saved,
-            onSelect: "handleArchetype",
-            isMultiSelect: true,
-            inputName: "archetype"
-        });
-        loadArchetypes();
-    };
-
-    window.filterTones = function (query) {
-        window.filterDropdownOptions("toneOptionsList", query);
-    };
-
-    window.filterArchetypes = function (query) {
-        window.filterDropdownOptions("archetypeOptionsList", query);
+        window.syncCustomSelectLabel("archetypeEl");
     };
 
     // Dynamic Dropdown functions
     window.getSelectedDynamics = function () {
-        let checked = [...document.querySelectorAll(".dynamicCheckbox:checked")].map(c => c.value);
-        return checked.length > 0 ? checked : ["Any"];
-    };
-
-    window.handleDynamicChange = function () {
-        let checked = [...document.querySelectorAll(".dynamicCheckbox:checked")];
-        let anyBox = document.getElementById("dynamicAnyCheckbox");
-        if (checked.length > 0 && anyBox) anyBox.checked = false;
-        updateDynamicLabel();
-        saveDynamics();
-    };
-
-    window.handleDynamicAnyToggle = function (checkbox) {
-        if (checkbox.checked) {
-            document.querySelectorAll(".dynamicCheckbox").forEach(c => c.checked = false);
+        const sel = multiSelectState["dynamicEl"];
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
         }
-        updateDynamicLabel();
-        saveDynamics();
+        return Array.from(sel).filter(v => v !== "none");
     };
 
     window.updateDynamicLabel = function () {
-        let dynamics = getSelectedDynamics();
-        let label = document.getElementById("dynamicDropdownLabel");
-        if (label) {
-            if (dynamics[0] === "Any") label.textContent = "Any";
-            else if (dynamics.length === 1) label.textContent = dynamics[0].replace(/_/g, " ");
-            else label.textContent = dynamics[0].replace(/_/g, " ") + " +" + (dynamics.length - 1);
-        }
+        window.syncCustomSelectLabel("dynamicEl");
     };
 
     window.saveDynamics = function () {
@@ -862,91 +852,59 @@
     window.loadDynamics = function () {
         try {
             let saved = JSON.parse(localStorage.dynamics || '["Any"]');
-            let anyBox = document.getElementById("dynamicAnyCheckbox");
-            if (!saved || saved.length === 0 || saved[0] === "Any") {
-                if (anyBox) anyBox.checked = true;
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
             } else {
-                if (anyBox) anyBox.checked = false;
                 saved.forEach(t => {
-                    let box = document.querySelector(`.dynamicCheckbox[value="${t}"]`);
-                    if (box) box.checked = true;
+                    if (t !== "Any") sel.add(t);
                 });
             }
-            updateDynamicLabel();
+            multiSelectState["dynamicEl"] = sel;
         } catch (e) {
-            let anyBox = document.getElementById("dynamicAnyCheckbox");
-            if (anyBox) anyBox.checked = true;
-            updateDynamicLabel();
+            multiSelectState["dynamicEl"] = new Set(["none"]);
         }
-    };
-
-    window.initCustomDynamicDropdown = function () {
-        let saved = ["Any"];
-        try {
-            if (localStorage.dynamics) saved = JSON.parse(localStorage.dynamics);
-        } catch (e) {}
-        window.initializeDropdownOptions({
-            listElId: "dynamicOptionsList",
-            fallbackKeys: window.DYNAMIC_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.dynamicPrompts : null,
-            selectedValue: saved,
-            onSelect: "handleDynamic",
-            isMultiSelect: true,
-            inputName: "dynamic"
-        });
-        loadDynamics();
-    };
-
-    window.filterDynamics = function (query) {
-        window.filterDropdownOptions("dynamicOptionsList", query);
+        window.syncCustomSelectLabel("dynamicEl");
     };
 
     // Perspective Dropdown functions
     window.getSelectedPerspective = function () {
-        return localStorage.perspective || "Third_Person";
+        const perspectiveEl = document.getElementById("perspectiveEl");
+        return perspectiveEl ? perspectiveEl.value : (localStorage.perspective || "Third_Person");
     };
 
-    window.selectPerspective = function (value, closeMenu = true) {
+    window.selectPerspective = function (value) {
         localStorage.perspective = value;
-        let labelEl = document.getElementById("perspectiveLabel");
-        if (labelEl) {
-            labelEl.textContent = value.replace(/_/g, " ");
-        }
-
-        // Update active checkmarks
-        let items = document.querySelectorAll("#perspectiveDropdownMenu .dropdown-option-item");
-        items.forEach(item => {
-            let check = item.querySelector("i");
-            if (item.getAttribute("data-value") === value) {
-                item.classList.add("active");
-                if (check) check.style.display = "inline-block";
-            } else {
-                item.classList.remove("active");
-                if (check) check.style.display = "none";
-            }
-        });
-
-        if (closeMenu) {
-            let menu = document.getElementById("perspectiveDropdownMenu");
-            if (menu) menu.style.display = "none";
+        const perspectiveEl = document.getElementById("perspectiveEl");
+        if (perspectiveEl) {
+            perspectiveEl.value = value;
+            window.syncCustomSelectLabel(perspectiveEl);
         }
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
     window.loadPerspective = function () {
         let val = localStorage.perspective || "Third_Person";
-        selectPerspective(val, false);
+        window.selectPerspective(val);
     };
 /* ==========================================================================
    MOBILE-FIRST SELECT DROPDOWN DRAWER INTEGRATION
    ========================================================================== */
     let currentActiveSelectEl = null;
     let currentActiveWrapper = null;
-    const multiSelectIds = new Set();
+    const multiSelectIds = new Set(['toneEl', 'archetypeEl', 'dynamicEl', 'wToneEl', 'rpToneEl']);
     const multiSelectState = {};
 
     const selectToListNameMap = {
-        'visualStyleEl': 'visualStyles'
+        'visualStyleEl': 'visualStyles',
+        'settingEl': 'settingPrompts',
+        'toneEl': 'tonePrompts',
+        'archetypeEl': 'archetypePrompts',
+        'dynamicEl': 'relationshipDynamics',
+        'wSettingEl': 'settingPrompts',
+        'wToneEl': 'tonePrompts',
+        'rpSettingEl': 'settingPrompts',
+        'rpToneEl': 'tonePrompts'
     };
 
     const drawerHeaders = {
@@ -968,7 +926,17 @@
         'introLengthEl': 'INTRO LENGTH',
         'wLengthEl': 'WORLD LORE LENGTH',
         'rpLengthEl': 'STARTER LENGTH',
-        'rpWorldImportSelector': 'LOAD SAVED WORLD'
+        'rpWorldImportSelector': 'LOAD SAVED WORLD',
+        'settingEl': 'WORLD SETTING',
+        'toneEl': 'ATMOSPHERIC TONES',
+        'archetypeEl': 'CHARACTER ARCHETYPES',
+        'dynamicEl': 'RELATIONSHIP DYNAMICS',
+        'globalLengthEl': 'GLOBAL TEXT LENGTH',
+        'perspectiveEl': 'NARRATION PERSPECTIVE',
+        'wSettingEl': 'WORLD SETTING',
+        'wToneEl': 'ATMOSPHERIC TONES',
+        'rpSettingEl': 'ROLEPLAY SETTING',
+        'rpToneEl': 'ATMOSPHERIC TONES'
     };
 
     const gradients = [
@@ -1007,6 +975,21 @@
         if (!drawer) return;
         drawer.classList.remove('open', 'expanded');
         if (currentActiveWrapper) currentActiveWrapper.classList.remove('open');
+        
+        if (currentActiveSelectEl) {
+            const id = currentActiveSelectEl.id;
+            if (id === 'toneEl') saveTones();
+            else if (id === 'archetypeEl') saveArchetypes();
+            else if (id === 'dynamicEl') saveDynamics();
+            else if (id === 'wToneEl' && typeof saveWorldTones === 'function') saveWorldTones();
+            else if (id === 'rpToneEl' && typeof saveRoleplayTones === 'function') saveRoleplayTones();
+            
+            currentActiveSelectEl.dispatchEvent(new Event('change', { bubbles: true }));
+            if (typeof currentActiveSelectEl.onchange === 'function') {
+                currentActiveSelectEl.onchange();
+            }
+        }
+        
         currentActiveSelectEl = null;
         currentActiveWrapper = null;
     };
@@ -1488,24 +1471,31 @@
         wrapper.appendChild(trigger);
         selectEl.classList.add('custom-select-hidden');
 
-        function updateTriggerText() {
+        selectEl.updateCustomSelectLabel = function () {
             if (multiSelectIds.has(selectEl.id)) {
                 updateMultiSelectLabel(selectEl, wrapper);
             } else {
                 const sel = selectEl.options[selectEl.selectedIndex];
                 labelSpan.textContent = sel ? sel.textContent : '';
             }
-        }
+        };
 
-        updateTriggerText();
+        selectEl.updateCustomSelectLabel();
 
-        new MutationObserver(updateTriggerText)
+        new MutationObserver(() => selectEl.updateCustomSelectLabel())
             .observe(selectEl, { childList: true, attributes: true, subtree: true });
 
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
             toggleSelectDrawer(selectEl, wrapper);
         });
+    };
+
+    window.syncCustomSelectLabel = function (selectEl) {
+        if (typeof selectEl === 'string') selectEl = document.getElementById(selectEl);
+        if (selectEl && typeof selectEl.updateCustomSelectLabel === 'function') {
+            selectEl.updateCustomSelectLabel();
+        }
     };
 
     window.filterDrawerCards = function (query) {
@@ -1568,23 +1558,12 @@
 
     // Initialize custom dropdowns on load
     setTimeout(() => {
-        initCustomSettingDropdown();
-        initCustomToneDropdown();
-        initCustomArchetypeDropdown();
-        initCustomDynamicDropdown();
+        populateParameterSelects();
+        initCustomLengthDropdowns();
         loadTones();
         loadArchetypes();
         loadDynamics();
         loadPerspective();
-        initCustomLengthDropdowns();
-        
-        // Sort custom dropdowns under Core identity & Parameters
-        if (typeof sortDropdownList === "function") {
-            sortDropdownList("settingOptionsList");
-            sortDropdownList("toneOptionsList");
-            sortDropdownList("archetypeOptionsList");
-            sortDropdownList("dynamicOptionsList");
-        }
     }, 20);
 
     window.setAccentTheme = function (themeName) {
@@ -2660,14 +2639,14 @@
             if (tab === 'roleplay' && window.roleplayState) {
                 if (val === 'rpWorldLore') {
                     let name = window.roleplayState.worldName || "Unnamed World";
-                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    let setting = document.getElementById("rpSettingEl")?.value || "Any";
                     let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
                     return root.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr);
                 }
                 if (val === 'npcGeneration') {
                     let worldName = window.roleplayState.worldName || "Unnamed World";
                     let worldLore = window.roleplayState.worldLore || "";
-                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    let setting = document.getElementById("rpSettingEl")?.value || "Any";
                     return root.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting);
                 }
                 if (val === 'scenarioNotes') {
@@ -2680,7 +2659,7 @@
                 if (val === 'roleplayScenario') {
                     let worldName = window.roleplayState.worldName || "Unnamed World";
                     let worldLore = window.roleplayState.worldLore || "";
-                    let setting = document.getElementById("rpSettingLabel")?.textContent || "Any setting";
+                    let setting = document.getElementById("rpSettingEl")?.value || "Any";
                     let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
                     let themes = window.roleplayState.themes || "";
                     let pName = window.roleplayState.userName || "Player";

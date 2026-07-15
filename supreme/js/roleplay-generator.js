@@ -217,122 +217,49 @@
 /* ==========================================================================
    CUSTOM DROPDOWN CONFIGURATION
    ========================================================================== */
-    window.selectRoleplaySetting = function (value, closeMenu = true) {
+    window.selectRoleplaySetting = function (value) {
         window.roleplayState.setting = value;
-        let labelEl = document.getElementById("rpSettingLabel");
-        if (labelEl) {
-            labelEl.textContent = value.replace(/_/g, " ");
-        }
-
-        // Update active checkmarks in settings options list
-        let items = document.querySelectorAll("#rpSettingOptionsList .dropdown-option-item");
-        items.forEach(item => {
-            let check = item.querySelector("i");
-            if (item.getAttribute("data-value") === value) {
-                item.classList.add("active");
-                if (check) check.style.display = "inline-block";
-            } else {
-                item.classList.remove("active");
-                if (check) check.style.display = "none";
-            }
-        });
-
-        if (closeMenu) {
-            let menu = document.getElementById("rpSettingDropdownMenu");
-            if (menu) menu.style.display = "none";
+        const rpSettingEl = document.getElementById("rpSettingEl");
+        if (rpSettingEl) {
+            rpSettingEl.value = value;
+            window.syncCustomSelectLabel(rpSettingEl);
         }
         window.saveRoleplayState();
     };
 
-    window.initCustomRoleplaySettingDropdown = function () {
-        window.initializeDropdownOptions({
-            listElId: "rpSettingOptionsList",
-            fallbackKeys: window.SETTING_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.settingPrompts : null,
-            selectedValue: window.roleplayState.setting || "Any",
-            onSelect: "selectRoleplaySetting",
-            isMultiSelect: false
-        });
-        selectRoleplaySetting(window.roleplayState.setting || "Any", false);
-    };
-
-    window.initCustomRoleplayToneDropdown = function () {
-        window.initializeDropdownOptions({
-            listElId: "rpToneOptionsList",
-            fallbackKeys: window.TONE_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.tonePrompts : null,
-            selectedValue: window.roleplayState.tones || ["Any"],
-            onSelect: "handleRoleplayTone",
-            isMultiSelect: true,
-            inputName: "rpTone"
-        });
-        loadRoleplayTones();
-    };
-
-    window.filterRoleplayTones = function (query) {
-        window.filterDropdownOptions("rpToneOptionsList", query);
-    };
-
-    window.filterRoleplaySettings = function (query) {
-        window.filterDropdownOptions("rpSettingOptionsList", query);
-    };
-
-    // Tones management specifically for Roleplay Generator
     window.getSelectedRoleplayTones = function () {
-        let checked = [...document.querySelectorAll(".rpToneCheckbox:checked")].map(c => c.value);
-        return checked.length > 0 ? checked : ["Any"];
-    };
-
-    window.handleRoleplayToneChange = function () {
-        let checked = [...document.querySelectorAll(".rpToneCheckbox:checked")];
-        let anyBox = document.getElementById("rpToneAnyCheckbox");
-        if (anyBox && checked.length > 0) anyBox.checked = false;
-        
-        window.roleplayState.tones = getSelectedRoleplayTones();
-        updateRoleplayToneLabel();
-        window.saveRoleplayState();
-    };
-
-    window.handleRoleplayToneAnyToggle = function (checkbox) {
-        if (checkbox.checked) {
-            document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
+        const sel = multiSelectState["rpToneEl"];
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
         }
-        window.roleplayState.tones = ["Any"];
-        updateRoleplayToneLabel();
+        return Array.from(sel).filter(v => v !== "none");
+    };
+
+    window.saveRoleplayTones = function () {
+        window.roleplayState.tones = getSelectedRoleplayTones();
         window.saveRoleplayState();
     };
 
     window.updateRoleplayToneLabel = function () {
-        let tones = window.roleplayState.tones || ["Any"];
-        let label = document.getElementById("rpToneDropdownLabel");
-        if (label) {
-            if (tones[0] === "Any") label.textContent = "Any";
-            else if (tones.length === 1) label.textContent = tones[0].replace(/_/g, " ");
-            else label.textContent = tones[0].replace(/_/g, " ") + " +" + (tones.length - 1);
-        }
+        window.syncCustomSelectLabel("rpToneEl");
     };
 
     window.loadRoleplayTones = function () {
         try {
             let saved = window.roleplayState.tones || ["Any"];
-            let anyBox = document.getElementById("rpToneAnyCheckbox");
-            if (!saved || saved.length === 0 || saved[0] === "Any") {
-                if (anyBox) anyBox.checked = true;
-                document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
             } else {
-                if (anyBox) anyBox.checked = false;
-                document.querySelectorAll(".rpToneCheckbox").forEach(c => c.checked = false);
                 saved.forEach(t => {
-                    let box = document.querySelector(`.rpToneCheckbox[value="${t}"]`);
-                    if (box) box.checked = true;
+                    if (t !== "Any") sel.add(t);
                 });
             }
-            updateRoleplayToneLabel();
+            multiSelectState["rpToneEl"] = sel;
         } catch (e) {
-            let anyBox = document.getElementById("rpToneAnyCheckbox");
-            if (anyBox) anyBox.checked = true;
-            updateRoleplayToneLabel();
+            multiSelectState["rpToneEl"] = new Set(["none"]);
         }
+        window.syncCustomSelectLabel("rpToneEl");
     };
 
     // Magic wiki import for Roleplay Generator
@@ -473,7 +400,7 @@
     window.generateRoleplayWorldLore = async function (btn) {
         window.saveRoleplayState();
         let name = window.roleplayState.worldName.trim() || "Unnamed World";
-        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any setting";
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
 
         let origText = btn.innerHTML;
@@ -511,7 +438,7 @@
         window.saveRoleplayState();
         let worldName = window.roleplayState.worldName || "Unnamed World";
         let worldLore = window.roleplayState.worldLore || "Generic setting";
-        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any Setting";
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
 
         let origText = btn.innerHTML;
         btn.disabled = true;
@@ -696,7 +623,7 @@
         let pRole = window.roleplayState.userRole || "a protagonist";
         let scenarioNotes = window.roleplayState.scenarioNotes || "The characters are meeting for the first time or embarking on a mutual task.";
 
-        let setting = document.getElementById("rpSettingLabel")?.textContent.trim() || "Any setting";
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
 
@@ -947,13 +874,8 @@
         if (themesEl) themesEl.value = window.roleplayState.themes || "";
 
         // Restore setting and tone custom elements
-        initCustomRoleplaySettingDropdown();
-        initCustomRoleplayToneDropdown();
-        loadRoleplayTones();
-        if (typeof window.sortDropdownList === "function") {
-            window.sortDropdownList("rpSettingOptionsList");
-            window.sortDropdownList("rpToneOptionsList");
-        }
+        window.selectRoleplaySetting(window.roleplayState.setting || "Any");
+        window.loadRoleplayTones();
 
         // Restore dynamic NPC list
         window.renderNPCGrid();

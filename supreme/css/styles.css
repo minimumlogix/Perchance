@@ -2312,5 +2312,12 @@
     display: none !important;
 }
 
+.parameter-dropdown-row .custom-select-wrapper {
+    display: block;
+    width: 100%;
+}
 
-
+.parameter-dropdown-row .custom-select-trigger {
+    width: 100%;
+    box-sizing: border-box;
+}

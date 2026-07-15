@@ -335,122 +335,49 @@
 /* ==========================================================================
    CUSTOM DROPDOWN CONFIGURATION
    ========================================================================== */
-    window.selectWorldSetting = function (value, closeMenu = true) {
+    window.selectWorldSetting = function (value) {
         window.worldState.setting = value;
-        let labelEl = document.getElementById("wSettingLabel");
-        if (labelEl) {
-            labelEl.textContent = value.replace(/_/g, " ");
-        }
-
-        // Update active checkmarks in settings options list
-        let items = document.querySelectorAll("#wSettingOptionsList .dropdown-option-item");
-        items.forEach(item => {
-            let check = item.querySelector("i");
-            if (item.getAttribute("data-value") === value) {
-                item.classList.add("active");
-                if (check) check.style.display = "inline-block";
-            } else {
-                item.classList.remove("active");
-                if (check) check.style.display = "none";
-            }
-        });
-
-        if (closeMenu) {
-            let menu = document.getElementById("wSettingDropdownMenu");
-            if (menu) menu.style.display = "none";
+        const wSettingEl = document.getElementById("wSettingEl");
+        if (wSettingEl) {
+            wSettingEl.value = value;
+            window.syncCustomSelectLabel(wSettingEl);
         }
         window.saveWorldState();
     };
 
-    window.initCustomWorldSettingDropdown = function () {
-        window.initializeDropdownOptions({
-            listElId: "wSettingOptionsList",
-            fallbackKeys: window.SETTING_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.settingPrompts : null,
-            selectedValue: window.worldState.setting || "Any",
-            onSelect: "selectWorldSetting",
-            isMultiSelect: false
-        });
-        selectWorldSetting(window.worldState.setting || "Any", false);
-    };
-
-    window.initCustomWorldToneDropdown = function () {
-        window.initializeDropdownOptions({
-            listElId: "wToneOptionsList",
-            fallbackKeys: window.TONE_KEYS,
-            perchanceSource: typeof root !== "undefined" ? root.tonePrompts : null,
-            selectedValue: window.worldState.tones || ["Any"],
-            onSelect: "handleWorldTone",
-            isMultiSelect: true,
-            inputName: "wTone"
-        });
-        loadWorldTones();
-    };
-
-    window.filterWorldTones = function (query) {
-        window.filterDropdownOptions("wToneOptionsList", query);
-    };
-
-    window.filterWorldSettings = function (query) {
-        window.filterDropdownOptions("wSettingOptionsList", query);
-    };
-
-    // Tones management specifically for World Generator
     window.getSelectedWorldTones = function () {
-        let checked = [...document.querySelectorAll(".wToneCheckbox:checked")].map(c => c.value);
-        return checked.length > 0 ? checked : ["Any"];
-    };
-
-    window.handleWorldToneChange = function () {
-        let checked = [...document.querySelectorAll(".wToneCheckbox:checked")];
-        let anyBox = document.getElementById("wToneAnyCheckbox");
-        if (anyBox && checked.length > 0) anyBox.checked = false;
-        
-        window.worldState.tones = getSelectedWorldTones();
-        updateWorldToneLabel();
-        window.saveWorldState();
-    };
-
-    window.handleWorldToneAnyToggle = function (checkbox) {
-        if (checkbox.checked) {
-            document.querySelectorAll(".wToneCheckbox").forEach(c => c.checked = false);
+        const sel = multiSelectState["wToneEl"];
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
         }
-        window.worldState.tones = ["Any"];
-        updateWorldToneLabel();
+        return Array.from(sel).filter(v => v !== "none");
+    };
+
+    window.saveWorldTones = function () {
+        window.worldState.tones = getSelectedWorldTones();
         window.saveWorldState();
     };
 
     window.updateWorldToneLabel = function () {
-        let tones = window.worldState.tones;
-        let label = document.getElementById("wToneDropdownLabel");
-        if (label) {
-            if (tones[0] === "Any") label.textContent = "Any";
-            else if (tones.length === 1) label.textContent = tones[0].replace(/_/g, " ");
-            else label.textContent = tones[0].replace(/_/g, " ") + " +" + (tones.length - 1);
-        }
+        window.syncCustomSelectLabel("wToneEl");
     };
 
     window.loadWorldTones = function () {
         try {
             let saved = window.worldState.tones || ["Any"];
-            let anyBox = document.getElementById("wToneAnyCheckbox");
-            if (!saved || saved.length === 0 || saved[0] === "Any") {
-                if (anyBox) anyBox.checked = true;
-                document.querySelectorAll(".wToneCheckbox").forEach(c => c.checked = false);
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
             } else {
-                if (anyBox) anyBox.checked = false;
-                document.querySelectorAll(".wToneCheckbox").forEach(c => c.checked = false);
                 saved.forEach(t => {
-                    let box = document.querySelector(`.wToneCheckbox[value="${t}"]`);
-                    if (box) box.checked = true;
+                    if (t !== "Any") sel.add(t);
                 });
             }
-            updateWorldToneLabel();
+            multiSelectState["wToneEl"] = sel;
         } catch (e) {
-            let anyBox = document.getElementById("wToneAnyCheckbox");
-            if (anyBox) anyBox.checked = true;
-            updateWorldToneLabel();
+            multiSelectState["wToneEl"] = new Set(["none"]);
         }
+        window.syncCustomSelectLabel("wToneEl");
     };
 /* ==========================================================================
    AI GENERATION ENGINE FOR WORLD SECTIONS
@@ -1123,13 +1050,9 @@
     setTimeout(() => {
         window.loadWorldState();
         
-        // Custom setting and tones dropdown configurations
-        initCustomWorldSettingDropdown();
-        initCustomWorldToneDropdown();
-        if (typeof window.sortDropdownList === "function") {
-            window.sortDropdownList("wSettingOptionsList");
-            window.sortDropdownList("wToneOptionsList");
-        }
+        // Sync Setting and Tones custom select labels
+        window.selectWorldSetting(window.worldState.setting || "Any");
+        window.loadWorldTones();
         
         // Apply loaded world state to workspace
         window.applyWorldToWorkspace(window.worldState);

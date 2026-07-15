@@ -1816,7 +1816,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
     window.updateGlobalLengthUI = function (val) {
         let isCustom = !val || val === 'custom';
-        let selects = document.querySelectorAll("select[id$='LengthEl']");
+        let selects = document.querySelectorAll("select[id$='LengthEl']:not(#globalLengthEl)");
         selects.forEach(sel => {
             let wrapper = document.getElementById("custom-select-" + sel.id);
             let target = wrapper || sel;
@@ -2937,57 +2937,55 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 };
                 window.overwrittenVisualKeyphrasesText = cActive.overwrittenVisualKeyphrasesText || null;
                 window.overwrittenStylePrompt = cActive.overwrittenStylePrompt || null;
-                if (cActive.visualStyleName) visualStyleEl.value = cActive.visualStyleName;
+                if (cActive.visualStyleName) {
+                    visualStyleEl.value = cActive.visualStyleName;
+                    window.syncCustomSelectLabel(visualStyleEl);
+                }
                 if (cActive.setting) {
                     settingEl.value = cActive.setting;
+                    window.syncCustomSelectLabel(settingEl);
                 }
                 
                 // Restore selected tones
                 if (cActive.tone) {
-                    document.querySelectorAll(".toneCheckbox").forEach(box => box.checked = false);
-                    let anyBox = document.getElementById("toneAnyCheckbox");
+                    const sel = new Set();
                     if (cActive.tone.includes("Any") || cActive.tone.length === 0) {
-                        if (anyBox) anyBox.checked = true;
+                        sel.add("none");
                     } else {
-                        if (anyBox) anyBox.checked = false;
-                        cActive.tone.forEach(t => {
-                            let box = document.querySelector(`.toneCheckbox[value="${t}"]`);
-                            if (box) box.checked = true;
-                        });
+                        cActive.tone.forEach(t => sel.add(t));
+                    }
+                    if (typeof multiSelectState !== "undefined") {
+                        multiSelectState["toneEl"] = sel;
                     }
                     updateToneLabel();
                     saveTones();
                 }
 
                 // Restore selected archetypes
-                if (typeof updateArchetypeLabel === "function") {
-                    document.querySelectorAll(".archetypeCheckbox").forEach(box => box.checked = false);
-                    let anyArchetypeBox = document.getElementById("archetypeAnyCheckbox");
-                    if (cActive.archetype && cActive.archetype.length > 0 && !cActive.archetype.includes("Any")) {
-                        if (anyArchetypeBox) anyArchetypeBox.checked = false;
-                        cActive.archetype.forEach(a => {
-                            let box = document.querySelector(`.archetypeCheckbox[value="${a}"]`);
-                            if (box) box.checked = true;
-                        });
+                if (cActive.archetype) {
+                    const sel = new Set();
+                    if (cActive.archetype.includes("Any") || cActive.archetype.length === 0) {
+                        sel.add("none");
                     } else {
-                        if (anyArchetypeBox) anyArchetypeBox.checked = true;
+                        cActive.archetype.forEach(a => sel.add(a));
+                    }
+                    if (typeof multiSelectState !== "undefined") {
+                        multiSelectState["archetypeEl"] = sel;
                     }
                     updateArchetypeLabel();
                     saveArchetypes();
                 }
 
                 // Restore selected dynamics
-                if (typeof updateDynamicLabel === "function") {
-                    document.querySelectorAll(".dynamicCheckbox").forEach(box => box.checked = false);
-                    let anyDynamicBox = document.getElementById("dynamicAnyCheckbox");
-                    if (cActive.dynamic && cActive.dynamic.length > 0 && !cActive.dynamic.includes("Any")) {
-                        if (anyDynamicBox) anyDynamicBox.checked = false;
-                        cActive.dynamic.forEach(d => {
-                            let box = document.querySelector(`.dynamicCheckbox[value="${d}"]`);
-                            if (box) box.checked = true;
-                        });
+                if (cActive.dynamic) {
+                    const sel = new Set();
+                    if (cActive.dynamic.includes("Any") || cActive.dynamic.length === 0) {
+                        sel.add("none");
                     } else {
-                        if (anyDynamicBox) anyDynamicBox.checked = true;
+                        cActive.dynamic.forEach(d => sel.add(d));
+                    }
+                    if (typeof multiSelectState !== "undefined") {
+                        multiSelectState["dynamicEl"] = sel;
                     }
                     updateDynamicLabel();
                     saveDynamics();

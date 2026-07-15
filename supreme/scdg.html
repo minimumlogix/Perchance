@@ -222,147 +222,64 @@
 
                         <!-- GLOBAL PARAMETERS (SETTING, TONE, LENGTH) -->
                         <div class="parameter-dropdown-row">
-                            <!-- SETTING DROPDOWN -->
-                            <div class="custom-dropdown" id="settingDropdown">
-                                <button class="dropdown-trigger"
-                                    onclick="toggleCustomDropdown('settingDropdownMenu', event)">
-                                    <i class="bi bi-globe dropdown-icon"></i>
-                                    <span class="dropdown-label">Setting:</span>
-                                    <span class="dropdown-value" id="settingLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="settingDropdownMenu" style="display:none;">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search setting..."
-                                            oninput="filterSettings(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="settingOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
+                            <!-- SETTING -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-globe"></i> Setting</label>
+                                <select id="settingEl" class="select-input length-select" data-dropdown-icon="bi bi-globe"
+                                    onchange="window.selectSetting(this.value);">
+                                    <!-- Options populated dynamically -->
+                                </select>
                             </div>
 
-                            <!-- TONE DROPDOWN -->
-                            <div class="custom-dropdown" id="toneDropdown">
-                                <button class="dropdown-trigger" id="toneDropdownBtn"
-                                    onclick="toggleCustomDropdown('toneDropdownMenu', event)">
-                                    <i class="bi bi-mask dropdown-icon"></i>
-                                    <span class="dropdown-label">Tone:</span>
-                                    <span class="dropdown-value" id="toneDropdownLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="toneDropdownMenu"
-                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;"
-                                    onclick="event.stopPropagation()">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search tone..."
-                                            oninput="filterTones(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="toneOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
+                            <!-- TONE -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-mask"></i> Tone</label>
+                                <select id="toneEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-mask"
+                                    onchange="window.saveTones();">
+                                    <!-- Options populated dynamically -->
+                                </select>
                             </div>
 
-                            <!-- ARCHETYPE DROPDOWN -->
-                            <div class="custom-dropdown" id="archetypeDropdown" title="Add archetype tags to streamline character generation">
-                                <button class="dropdown-trigger" id="archetypeDropdownBtn"
-                                    onclick="toggleCustomDropdown('archetypeDropdownMenu', event)">
-                                    <i class="bi bi-tags dropdown-icon"></i>
-                                    <span class="dropdown-label">Archetypes:</span>
-                                    <span class="dropdown-value" id="archetypeDropdownLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="archetypeDropdownMenu"
-                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:240px;"
-                                    onclick="event.stopPropagation()">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search archetype..."
-                                            oninput="filterArchetypes(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="archetypeOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
+                            <!-- ARCHETYPES -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Add archetype tags to streamline character generation">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-tags"></i> Archetypes</label>
+                                <select id="archetypeEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-tags"
+                                    onchange="window.saveArchetypes();">
+                                    <!-- Options populated dynamically -->
+                                </select>
                             </div>
 
-                            <!-- DYNAMIC DROPDOWN -->
-                            <div class="custom-dropdown" id="dynamicDropdown" title="Add relationship chemistry dynamics to streamline character generation">
-                                <button class="dropdown-trigger" id="dynamicDropdownBtn"
-                                    onclick="toggleCustomDropdown('dynamicDropdownMenu', event)">
-                                    <i class="bi bi-heart-half dropdown-icon"></i>
-                                    <span class="dropdown-label">Dynamics:</span>
-                                    <span class="dropdown-value" id="dynamicDropdownLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="dynamicDropdownMenu"
-                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:240px;"
-                                    onclick="event.stopPropagation()">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search dynamic..."
-                                            oninput="filterDynamics(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="dynamicOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
+                            <!-- DYNAMICS -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Add relationship chemistry dynamics to streamline character generation">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-heart-half"></i> Dynamics</label>
+                                <select id="dynamicEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-heart-half"
+                                    onchange="window.saveDynamics();">
+                                    <!-- Options populated dynamically -->
+                                </select>
                             </div>
 
-                            <!-- GLOBAL LENGTH DROPDOWN -->
-                            <div class="custom-dropdown" id="globalLengthDropdown"
-                                title="Override text length for all sections">
-                                <button class="dropdown-trigger"
-                                    onclick="toggleCustomDropdown('globalLengthDropdownMenu', event)">
-                                    <i class="bi bi-text-left dropdown-icon"></i>
-                                    <span class="dropdown-label">Length:</span>
-                                    <span class="dropdown-value" id="globalLengthLabel">Custom</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="globalLengthDropdownMenu"
-                                    style="display:none; width:175px;" onclick="event.stopPropagation()">
-                                    <div class="dropdown-options">
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('super-short')">Super
-                                            Short</div>
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('short')">Short</div>
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('medium')">Medium
-                                        </div>
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('long')">Long</div>
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('super-long')">Super
-                                            Long</div>
-                                        <hr style="margin:0.25rem 0; border-color:var(--panel-border);">
-                                        <div class="dropdown-option-item" onclick="setGlobalLength('custom')"
-                                            style="font-style:italic;">Custom (per section)</div>
-                                    </div>
-                                </div>
+                            <!-- GLOBAL LENGTH -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Override text length for all sections">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-text-left"></i> Global Length</label>
+                                <select id="globalLengthEl" class="select-input length-select" data-dropdown-icon="bi bi-text-left"
+                                    onchange="window.setGlobalLength(this.value);">
+                                    <option value="custom" selected>Custom (Individual)</option>
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
                             </div>
 
-                            <!-- NARRATION PERSPECTIVE DROPDOWN -->
-                            <div class="custom-dropdown" id="perspectiveDropdown"
-                                title="Change the narration perspective in roleplay intro and roleplay example">
-                                <button class="dropdown-trigger"
-                                    onclick="toggleCustomDropdown('perspectiveDropdownMenu', event)">
-                                    <i class="bi bi-person-bounding-box dropdown-icon"></i>
-                                    <span class="dropdown-label">Perspective:</span>
-                                    <span class="dropdown-value" id="perspectiveLabel">Third Person</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="perspectiveDropdownMenu"
-                                    style="display:none; width:175px;" onclick="event.stopPropagation()">
-                                    <div class="dropdown-options">
-                                        <div class="dropdown-option-item" data-value="Third_Person" onclick="selectPerspective('Third_Person')">
-                                            <span>Third Person</span>
-                                            <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
-                                        </div>
-                                        <div class="dropdown-option-item" data-value="First_Person" onclick="selectPerspective('First_Person')">
-                                            <span>First Person</span>
-                                            <i class="bi bi-check-lg" style="display: none; color: var(--accent-color);"></i>
-                                        </div>
-                                    </div>
-                                </div>
+                            <!-- NARRATION PERSPECTIVE -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Change the narration perspective in roleplay intro and roleplay example">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-person-bounding-box"></i> Perspective</label>
+                                <select id="perspectiveEl" class="select-input length-select" data-dropdown-icon="bi bi-person-bounding-box"
+                                    onchange="window.selectPerspective(this.value);">
+                                    <option value="Third_Person" selected>Third Person</option>
+                                    <option value="First_Person">First Person</option>
+                                </select>
                             </div>
                         </div>
 
@@ -1486,49 +1403,17 @@
                         <!-- GLOBAL PARAMETERS (SETTING, TONE, LENGTH) -->
                         <div
                             style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
-                            <!-- SETTING DROPDOWN -->
-                            <div class="custom-dropdown" id="wSettingDropdown">
-                                <button class="dropdown-trigger"
-                                    onclick="toggleCustomDropdown('wSettingDropdownMenu', event)">
-                                    <i class="bi bi-globe dropdown-icon"></i>
-                                    <span class="dropdown-label">Setting:</span>
-                                    <span class="dropdown-value" id="wSettingLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="wSettingDropdownMenu" style="display:none;">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search setting..."
-                                            oninput="filterWorldSettings(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="wSettingOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- SETTING -->
+                            <select id="wSettingEl" class="select-input length-select" data-dropdown-icon="bi bi-globe"
+                                onchange="window.selectWorldSetting(this.value);">
+                                <!-- Options populated dynamically -->
+                            </select>
 
-                            <!-- TONE DROPDOWN -->
-                            <div class="custom-dropdown" id="wToneDropdown">
-                                <button class="dropdown-trigger" id="wToneDropdownBtn"
-                                    onclick="toggleCustomDropdown('wToneDropdownMenu', event)">
-                                    <i class="bi bi-mask dropdown-icon"></i>
-                                    <span class="dropdown-label">Tone:</span>
-                                    <span class="dropdown-value" id="wToneDropdownLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="wToneDropdownMenu"
-                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;"
-                                    onclick="event.stopPropagation()">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search tone..."
-                                            oninput="filterWorldTones(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="wToneOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- TONE -->
+                            <select id="wToneEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-mask"
+                                onchange="window.saveWorldTones();">
+                                <!-- Options populated dynamically -->
+                            </select>
 
                             <!-- LENGTH DROPDOWN -->
                             <div
@@ -1934,50 +1819,17 @@
                         <!-- GLOBAL PARAMETERS (SETTING, TONE) -->
                         <div
                             style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
-                            <!-- SETTING DROPDOWN -->
-                            <div class="custom-dropdown" id="rpSettingDropdown">
-                                <button class="dropdown-trigger"
-                                    onclick="toggleCustomDropdown('rpSettingDropdownMenu', event)">
-                                    <i class="bi bi-globe dropdown-icon"></i>
-                                    <span class="dropdown-label">Setting:</span>
-                                    <span class="dropdown-value" id="rpSettingLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="rpSettingDropdownMenu" style="display:none;">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search setting..."
-                                            oninput="filterRoleplaySettings(this.value)"
-                                            onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="rpSettingOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- SETTING -->
+                            <select id="rpSettingEl" class="select-input length-select" data-dropdown-icon="bi bi-globe"
+                                onchange="window.selectRoleplaySetting(this.value);">
+                                <!-- Options populated dynamically -->
+                            </select>
 
-                            <!-- TONE DROPDOWN -->
-                            <div class="custom-dropdown" id="rpToneDropdown">
-                                <button class="dropdown-trigger" id="rpToneDropdownBtn"
-                                    onclick="toggleCustomDropdown('rpToneDropdownMenu', event)">
-                                    <i class="bi bi-mask dropdown-icon"></i>
-                                    <span class="dropdown-label">Tone:</span>
-                                    <span class="dropdown-value" id="rpToneDropdownLabel">Any</span>
-                                    <i class="bi bi-chevron-down dropdown-arrow"></i>
-                                </button>
-                                <div class="dropdown-menu-custom" id="rpToneDropdownMenu"
-                                    style="display:none; padding:0.25rem; max-height:350px; overflow-y:auto; width:220px;"
-                                    onclick="event.stopPropagation()">
-                                    <div class="dropdown-search-wrapper">
-                                        <i class="bi bi-search"></i>
-                                        <input type="text" class="dropdown-search-input" placeholder="Search tone..."
-                                            oninput="filterRoleplayTones(this.value)" onclick="event.stopPropagation()">
-                                    </div>
-                                    <div class="dropdown-options" id="rpToneOptionsList">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- TONE -->
+                            <select id="rpToneEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-mask"
+                                onchange="window.saveRoleplayTones();">
+                                <!-- Options populated dynamically -->
+                            </select>
 
                             <!-- SAVED WORLDS SELECTOR DROPDOWN & SYNC -->
                             <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
