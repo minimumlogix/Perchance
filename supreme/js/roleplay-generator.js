@@ -621,8 +621,9 @@
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
 
-        let origText = btn ? btn.innerHTML : "";
-        if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`; }
+        let origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
         root.name = window.literal(name);
         root.setting = setting;
@@ -646,7 +647,8 @@
         } catch (e) {
             console.error("Failed to generate Roleplay World Lore:", e);
         } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = origText; }
+            btn.disabled = false;
+            btn.innerHTML = origText;
         }
     };
 
@@ -656,8 +658,9 @@
         let worldLore = window.roleplayState.worldLore || "Generic setting";
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
 
-        let origText = btn ? btn.innerHTML : "";
-        if (btn) { btn.disabled = true; btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`; }
+        let origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
 
         root.worldName = window.literal(worldName);
         root.worldLore = window.literal(worldLore);
@@ -696,9 +699,9 @@
                     if (input) input.value = data[f] || "";
                 });
 
-                // Trigger Text-to-Image for character (only when a btn is available to show progress)
+                // Trigger Text-to-Image for character
                 let imgFn = typeof window.image !== 'undefined' ? window.image : (typeof image !== 'undefined' ? image : null);
-                if (imgFn && btn) {
+                if (imgFn) {
                     try {
                         btn.innerHTML = `<i class="bi bi-image spin-icon"></i>`;
                         let imgPrompt = `portrait of ${data.name || "character"}, ${data.gender || ""} ${data.age || ""} ${data.race || ""}. ${data.appearance || ""}. Artstyle: anime cel shading, manhwa style, semi-realistic, mature, artstation quality. composition: upper-body portrait, centered, looking at the camera, pure solid white background.`;
@@ -725,9 +728,10 @@
             }
         } catch (e) {
             console.error("Failed to generate Roleplay NPC:", e);
-            if (btn) alert("AI failed to return valid JSON for NPC. Try again.");
+            alert("AI failed to return valid JSON for NPC. Try again.");
         } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = origText; }
+            btn.disabled = false;
+            btn.innerHTML = origText;
         }
     };
 
@@ -1172,367 +1176,4 @@
         }
     }, 100);
 
-/* ==========================================================================
-   ROLEPLAY PANEL SECTION GENERATION ENGINE
-   ========================================================================== */
-
-    /**
-     * Builds a reusable roleplay context object from current roleplayState and DOM values.
-     * @returns {Object} Structured context object.
-     */
-    window.buildRoleplayContext = function () {
-        let worldName = window.roleplayState.worldName || document.getElementById("rpWorldNameEl")?.value || "an unnamed world";
-        let worldLore = window.roleplayState.worldLore || document.getElementById("rpWorldLoreEl")?.value || "a mysterious world";
-        let userName = window.roleplayState.userName || document.getElementById("rpUserNameEl")?.value || "{{user}}";
-        let userRole = window.roleplayState.userRole || document.getElementById("rpUserRoleEl")?.value || "the protagonist";
-        let setting = window.roleplayState.setting || document.getElementById("rpSettingEl")?.value || "Any";
-        let tonesStr = (window.roleplayState.tones || []).join(", ") || "Any";
-        let rpDynamicsStr = (window.roleplayState.rpDynamics || []).join(", ") || "Any";
-
-        // Compile NPC text summary
-        let npcsText = (window.roleplayState.npcs || []).map((npc, idx) => {
-            if (!npc.name) return "";
-            let lines = [`NPC #${idx + 1}:`, `- Name: ${npc.name}`];
-            if (npc.age)        lines.push(`- Age: ${npc.age}`);
-            if (npc.gender)     lines.push(`- Gender: ${npc.gender}`);
-            let raceVal = npc.race || npc.species;
-            if (raceVal)        lines.push(`- Race/Species: ${raceVal}`);
-            if (npc.role)       lines.push(`- Narrative Role: ${npc.role}`);
-            if (npc.appearance) lines.push(`- Appearance: ${npc.appearance}`);
-            if (npc.personality)lines.push(`- Personality: ${npc.personality}`);
-            if (npc.beliefs)    lines.push(`- Beliefs/Worldview: ${npc.beliefs}`);
-            if (npc.likes)      lines.push(`- Likes: ${npc.likes}`);
-            if (npc.dislikes)   lines.push(`- Dislikes: ${npc.dislikes}`);
-            if (npc.abilities)  lines.push(`- Abilities/Skills: ${npc.abilities}`);
-            if (npc.biography)  lines.push(`- Biography: ${npc.biography}`);
-            return lines.join("\n");
-        }).filter(Boolean).join("\n\n") || "No NPCs defined yet.";
-
-        return { worldName, worldLore, userName, userRole, setting, tonesStr, rpDynamicsStr, npcsText };
-    };
-
-    /**
-     * Generic roleplay panel section generator. Streams AI output directly into the
-     * rpTab section output element using roleplay world/NPC context.
-     * @param {string} section - Section key: 'timeline', 'lore', 'roleplay', 'introScenario', 'introStart'
-     * @returns {Promise<boolean>} True on success, false on stop/failure.
-     */
-    window.generateRoleplaySection = async function (section) {
-        if (!window.rpSectionStreams) window.rpSectionStreams = {};
-        if (window.rpSectionStreams[section]) {
-            window.rpSectionStreams[section].stop();
-        }
-
-        let genBtn   = document.getElementById("rpTab-" + section + "GenBtnEl");
-        let stopBtn  = document.getElementById("rpTab-" + section + "StopBtnEl");
-        let statusEl = document.getElementById("rpTab-" + section + "StatusEl");
-        let outputEl = document.getElementById("rpTab-" + section + "OutputEl");
-        let notesEl  = document.getElementById("rpTab-" + section + "NotesEl");
-        let lengthEl = document.getElementById("rpTab-" + section + "LengthEl");
-
-        // For introScenario and introStart the notes textarea is shared (rpTab-introNotesEl)
-        if (!notesEl && (section === "introScenario" || section === "introStart")) {
-            notesEl = document.getElementById("rpTab-introNotesEl");
-        }
-
-        let notes    = notesEl?.value?.trim() || "";
-        let lengthVal = lengthEl?.value || localStorage[section + "Length"] || "medium";
-
-        // Resolve length instruction
-        let lengthInstruction = "";
-        if (window.getLengthInstruction) {
-            lengthInstruction = window.getLengthInstruction(lengthVal, section) || "";
-        }
-
-        // UI: start state
-        if (genBtn)   genBtn.disabled = true;
-        if (stopBtn)  stopBtn.style.display = "inline-flex";
-        if (statusEl) statusEl.textContent = "⏳ Generating...";
-        if (outputEl) { outputEl.innerHTML = ""; outputEl.style.display = "block"; outputEl.classList.add("generating-pulse"); }
-
-        setGenerationStatus("Generating roleplay " + section + "...");
-
-        // Build context
-        let ctx = window.buildRoleplayContext();
-        let rp  = root.prompts.roleplayPage;
-
-        // Build section-specific prompt
-        let instruction = "";
-        if (section === "timeline") {
-            instruction = rp.rpTimeline.compile(
-                window.literal(ctx.worldName), window.literal(ctx.worldLore),
-                ctx.setting, ctx.tonesStr,
-                window.literal(ctx.npcsText), window.literal(notes)
-            );
-        } else if (section === "lore") {
-            instruction = rp.rpLore.compile(
-                window.literal(ctx.worldName), window.literal(ctx.worldLore),
-                ctx.setting, ctx.tonesStr,
-                window.literal(ctx.npcsText), window.literal(notes)
-            );
-        } else if (section === "roleplay") {
-            instruction = rp.rpExamples.compile(
-                window.literal(ctx.worldName), window.literal(ctx.worldLore),
-                ctx.setting, ctx.tonesStr,
-                window.literal(ctx.npcsText),
-                window.literal(ctx.userName), window.literal(ctx.userRole),
-                window.literal(notes)
-            );
-        } else if (section === "introScenario") {
-            instruction = rp.rpIntroScenario.compile(
-                window.literal(ctx.worldName), window.literal(ctx.worldLore),
-                ctx.setting, ctx.tonesStr,
-                window.literal(ctx.npcsText),
-                window.literal(ctx.userName), window.literal(ctx.userRole),
-                window.literal(notes), window.literal(lengthInstruction)
-            );
-        } else if (section === "introStart") {
-            // Pass scenario context generated so far
-            let scenarioText = document.getElementById("rpTab-introScenarioOutputEl")?.innerText?.trim() || "";
-            instruction = rp.rpIntroStart.compile(
-                window.literal(ctx.worldName),
-                window.literal(ctx.npcsText),
-                window.literal(ctx.userName), window.literal(ctx.userRole),
-                window.literal(scenarioText),
-                ctx.tonesStr,
-                window.literal(notes), window.literal(lengthInstruction)
-            );
-        } else {
-            console.warn("generateRoleplaySection: Unknown section:", section);
-            if (genBtn)   genBtn.disabled = false;
-            if (stopBtn)  stopBtn.style.display = "none";
-            if (statusEl) statusEl.textContent = "";
-            if (outputEl) outputEl.classList.remove("generating-pulse");
-            return false;
-        }
-
-        let typewriter = new TypewriterStreamer(outputEl, { speed: 10 });
-
-        let stream = ai({
-            instruction,
-            onChunk: (data) => {
-                typewriter.appendTargetText(data.fullTextSoFar);
-            }
-        });
-        window.rpSectionStreams[section] = stream;
-
-        let success = false;
-        try {
-            let result = await stream;
-            typewriter.destroy();
-
-            if (result.stopReason === "user") {
-                if (statusEl) statusEl.textContent = "⛔ Stopped.";
-                // For lore, attempt partial parse
-                if (section === "lore" && outputEl) {
-                    window.loadLoreToUI(outputEl.innerText);
-                    outputEl.style.display = "none";
-                }
-                return false;
-            }
-
-            let sanitized = sanitizeOutput(result.text);
-
-            if (section === "lore") {
-                // Parse JSON lore into the grid fields
-                window.loadLoreToUI(sanitized);
-                // Hide raw streaming output (lore shows in fields, not raw output)
-                if (outputEl) outputEl.style.display = "none";
-                if (statusEl) statusEl.textContent = "";
-                let exportBtn = document.getElementById("rpTab-loreExportJsonBtnEl");
-                if (exportBtn) exportBtn.style.display = "inline-block";
-                let copyBtn = document.getElementById("rpTab-loreCopyBtnEl");
-                if (copyBtn) copyBtn.style.display = "inline-block";
-            } else {
-                if (outputEl) {
-                    outputEl.innerHTML = formatSectionText(sanitized);
-                }
-                if (statusEl) statusEl.textContent = "";
-                // Show edit/copy buttons
-                let editBtn = document.getElementById("rpTab-" + section + "EditBtnEl");
-                if (editBtn) editBtn.style.display = "inline-block";
-                let copyBtn = document.getElementById("rpTab-" + section + "CopyBtnEl");
-                if (copyBtn) copyBtn.style.display = "inline-block";
-            }
-
-            success = true;
-        } catch (e) {
-            console.error("generateRoleplaySection failed for section:", section, e);
-            if (statusEl) statusEl.textContent = "❌ Failed.";
-            success = false;
-        } finally {
-            if (genBtn)   genBtn.disabled = false;
-            if (stopBtn)  stopBtn.style.display = "none";
-            if (outputEl) outputEl.classList.remove("generating-pulse");
-            window.rpSectionStreams[section] = null;
-            setGenerationStatus("");
-        }
-
-        return success;
-    };
-
-    /**
-     * Stops an in-progress roleplay section generation.
-     * @param {string} section - Section key.
-     */
-    window.stopRoleplaySection = function (section) {
-        if (window.rpSectionStreams && window.rpSectionStreams[section]) {
-            window.rpSectionStreams[section].stop();
-        }
-    };
-
-    /**
-     * Sequences roleplay intro generation: Scenario Context first, then Opening Message.
-     * Uses the NPC cast and world context from roleplayState.
-     */
-    window.generateRoleplayIntro = async function () {
-        let genBtn  = document.getElementById("rpTab-introGenBtnEl");
-        let stopBtn = document.getElementById("rpTab-introStopBtnEl");
-
-        if (genBtn)  genBtn.disabled = true;
-        if (stopBtn) stopBtn.style.display = "inline-flex";
-
-        try {
-            // Step 1: Scenario Context
-            let scenarioOk = await window.generateRoleplaySection("introScenario");
-
-            // Step 2: Opening Message (uses scenario from step 1)
-            await window.generateRoleplaySection("introStart");
-        } finally {
-            if (genBtn)  genBtn.disabled = false;
-            if (stopBtn) stopBtn.style.display = "none";
-        }
-    };
-
-    /**
-     * Stops both intro sub-section streams.
-     */
-    window.stopRoleplayIntro = function () {
-        window.stopRoleplaySection("introScenario");
-        window.stopRoleplaySection("introStart");
-    };
-
-    /**
-     * Generates all NPCs in the cast that have empty names.
-     * Each NPC is generated sequentially using generateNPC().
-     * @param {HTMLElement} [btn] - The trigger button (for spinner feedback).
-     */
-    window.generateAllRoleplayNPCs = async function (btn) {
-        if (btn) btn.disabled = true;
-        let npcs = window.roleplayState.npcs || [];
-        for (let i = 0; i < npcs.length; i++) {
-            if (!npcs[i].name?.trim()) {
-                await window.generateRoleplayNPC(i, null);
-            }
-        }
-        if (btn) btn.disabled = false;
-    };
-
-
-    /**
-     * Master "Generate All Roleplay" function. Generates all panels in order,
-     * intelligently skipping any section that already has content.
-     */
-    window.generateAllRoleplay = async function () {
-        if (window.rpGenerateAllRunning) return;
-        window.rpGenerateAllRunning = true;
-
-        let genBtn  = document.getElementById("rpGenerateAllBtnEl");
-        let stopBtn = document.getElementById("rpGenerateAllStopBtnEl");
-
-        if (genBtn)  genBtn.disabled = true;
-        if (stopBtn) stopBtn.style.display = "inline-flex";
-
-        setGenerationStatus("Generating full roleplay scenario...");
-
-        // Helper: check if output element has meaningful content
-        const hasContent = (id) => {
-            let el = document.getElementById(id);
-            return el && el.innerText?.trim().length > 20;
-        };
-
-        // Helper: check if lore fields are populated
-        const hasLoreContent = () => {
-            for (let i = 1; i <= 5; i++) {
-                let keyEl     = document.getElementById("rpTab-loreKey" + i + "El");
-                let contentEl = document.getElementById("rpTab-loreContent" + i + "El");
-                if (keyEl?.value?.trim() || contentEl?.value?.trim()) return true;
-            }
-            return false;
-        };
-
-        try {
-            // 1. World Lore
-            let worldLoreEl = document.getElementById("rpWorldLoreEl");
-            if (!worldLoreEl?.value?.trim()) {
-                setGenerationStatus("Generating world lore...");
-                if (window.generateRoleplayWorldLore) {
-                    await window.generateRoleplayWorldLore(null);
-                }
-            }
-            if (!window.rpGenerateAllRunning) return;
-
-            // 2. NPCs (generate only the empty ones)
-            let npcs = window.roleplayState.npcs || [];
-            let hasEmptyNPCs = npcs.some(n => !n.name?.trim());
-            if (hasEmptyNPCs) {
-                setGenerationStatus("Generating NPC cast...");
-                await window.generateAllRoleplayNPCs(null);
-            }
-            if (!window.rpGenerateAllRunning) return;
-
-            // 3. Timeline
-            if (!hasContent("rpTab-timelineOutputEl")) {
-                setGenerationStatus("Generating world timeline...");
-                await window.generateRoleplaySection("timeline");
-            }
-            if (!window.rpGenerateAllRunning) return;
-
-            // 4. Lore Entries
-            if (!hasLoreContent()) {
-                setGenerationStatus("Generating lore entries...");
-                await window.generateRoleplaySection("lore");
-            }
-            if (!window.rpGenerateAllRunning) return;
-
-            // 5. Roleplay Examples
-            if (!hasContent("rpTab-roleplayOutputEl")) {
-                setGenerationStatus("Generating roleplay examples...");
-                await window.generateRoleplaySection("roleplay");
-            }
-            if (!window.rpGenerateAllRunning) return;
-
-            // 6. Roleplay Intro (Scenario Context + Opening Message)
-            let hasScenario = hasContent("rpTab-introScenarioOutputEl");
-            let hasStart    = hasContent("rpTab-introStartOutputEl");
-            if (!hasScenario || !hasStart) {
-                setGenerationStatus("Generating roleplay intro...");
-                await window.generateRoleplayIntro();
-            }
-
-            setGenerationStatus("✅ Roleplay generation complete!");
-            setTimeout(() => setGenerationStatus(""), 3000);
-        } finally {
-            window.rpGenerateAllRunning = false;
-            if (genBtn)  genBtn.disabled = false;
-            if (stopBtn) stopBtn.style.display = "none";
-        }
-    };
-
-    /**
-     * Stops the Generate All Roleplay sequence and all active section streams.
-     */
-    window.stopAllRoleplay = function () {
-        window.rpGenerateAllRunning = false;
-        ["timeline", "lore", "roleplay", "introScenario", "introStart"].forEach(s => {
-            window.stopRoleplaySection(s);
-        });
-        // Also stop the world lore stream if running
-        if (window.activeRpWorldLoreStream) window.activeRpWorldLoreStream.stop();
-        // Also stop NPC streams
-        if (window.stopAllNPCGenerations) window.stopAllNPCGenerations();
-        setGenerationStatus("");
-    };
-
 })();
-
