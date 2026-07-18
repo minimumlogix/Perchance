@@ -67,7 +67,29 @@
                 return window.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting);
             }),
             compile: function (worldName, worldLore, setting) {
-                return "Generate a single creative NPC profile fitting the world described below.\nWorld Name: " + worldName + "\nLore: " + worldLore + "\nSetting Genre: " + setting + "\n\nYou MUST respond with exactly a JSON object containing keys: \"name\", \"species\", \"personality\", \"role\".\nExample response:\n{\n  \"name\": \"Kaito\",\n  \"species\": \"Cyborg\",\n  \"personality\": \"Quiet, tactical, distrustful.\",\n  \"role\": \"Infiltrator and guide.\"\n}\n\nOutput ONLY the valid raw JSON object. Do not wrap in markdown ```json blocks. Do not use em-dashes.";
+                return `Generate a single creative NPC profile fitting the world described below.
+World Name: ${worldName}
+Lore: ${worldLore}
+Setting Genre: ${setting}
+
+You MUST respond with exactly a JSON object matching this schema:
+{
+  "name": "Full name and nickname if any.",
+  "age": "Current age.",
+  "gender": "Gender identity.",
+  "race": "Race, species, sub-race, ethnicity, or origin if applicable.",
+  "role": "The character's role in the story, occupation, social status, responsibilities, place in the world, and relationship to {{user}}.",
+  "appearance": "Describe physical appearance, body type, facial features, hairstyle, clothing, accessories worn, posture, mannerisms, notable scars, tattoos, or other distinguishing features.",
+  "personality": "Core personality, temperament, communication style, behavior, emotional tendencies, strengths, flaws, habits, and quirks.",
+  "beliefs": "Worldview, philosophy, morals, ideals, values, personal code, religious or political beliefs, and principles that guide their decisions.",
+  "likes": "Things the character enjoys, hobbies, interests, comforts, guilty pleasures, favorite activities, and preferences.",
+  "dislikes": "Things the character hates, fears, avoids, despises, or finds uncomfortable.",
+  "abilities": "List of skills, talents, powers, combat abilities, magic, knowledge, professions, or unique capabilities.",
+  "biography": "Complete life history including family, upbringing, important relationships, past events, trauma, education, residence, secrets, current circumstances, short-term goals, long-term goals, motivations, and any important lore explaining why the character is who they are.",
+  "rules": "Important rules, limitations, boundaries, or facts that must never be violated when writing this character."
+}
+
+Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks. Do not use em-dashes.`;
             }
         },
 
@@ -96,11 +118,17 @@
                 let npcsText = (window.root && window.root.npcsText) || "";
                 let scenarioNotes = (window.root && window.root.scenarioNotes) || "";
                 let lengthInstruction = (window.root && window.root.lengthInstruction) || "";
-                return window.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction);
+                let rpDynamicsStr = (window.root && window.root.rpDynamicsStr) || "";
+                return window.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr);
             }),
-            compile: function (worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction) {
+            compile: function (worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr) {
                 let parts = ["You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The {{user}} is the player of this roleplay."];
-                parts.push("WORLD DATA:\n- World Name: " + worldName + "\n- World Lore/Setting: " + worldLore + "\n- Setting Genre: " + setting + "\n- Atmospheric Tones: " + tonesStr + "\n- Themes/Keywords: " + themes);
+                
+                let worldData = "WORLD DATA:\n- World Name: " + worldName + "\n- World Lore/Setting: " + worldLore + "\n- Setting Genre: " + setting + "\n- Atmospheric Tones: " + tonesStr;
+                if (themes) worldData += "\n- Themes/Keywords: " + themes;
+                if (rpDynamicsStr && rpDynamicsStr !== "Any" && rpDynamicsStr !== "none") worldData += "\n- Group/Roleplay Dynamics: " + rpDynamicsStr;
+                parts.push(worldData);
+
                 parts.push("PLAYER DATA (The User):\n- Player Name: " + pName + "\n- Player Role/Background: " + pRole);
                 parts.push("NPC CAST SHEET:\n" + npcsText);
                 parts.push("SCENARIO INSTRUCTIONS:\n- Plot Hook / Situation: " + scenarioNotes + "\n\n" + lengthInstruction);

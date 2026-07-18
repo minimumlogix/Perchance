@@ -655,12 +655,21 @@
                     let contentEl = document.getElementById("loreContent" + i + "El");
                     if (keyEl) keyEl.value = keysVal;
                     if (contentEl) contentEl.value = contentVal;
+
+                    let rpKeyEl = document.getElementById("rpTab-loreKey" + i + "El");
+                    let rpContentEl = document.getElementById("rpTab-loreContent" + i + "El");
+                    if (rpKeyEl) rpKeyEl.value = keysVal;
+                    if (rpContentEl) rpContentEl.value = contentVal;
                 }
             }
         } else {
             let content1El = document.getElementById("loreContent1El");
             if (content1El) {
                 content1El.value = String(loreData).trim();
+            }
+            let rpContent1El = document.getElementById("rpTab-loreContent1El");
+            if (rpContent1El) {
+                rpContent1El.value = String(loreData).trim();
             }
         }
         saveLoreToLocalStorage();
@@ -672,6 +681,11 @@
             let contentEl = document.getElementById("loreContent" + i + "El");
             if (keyEl) keyEl.value = "";
             if (contentEl) contentEl.value = "";
+
+            let rpKeyEl = document.getElementById("rpTab-loreKey" + i + "El");
+            let rpContentEl = document.getElementById("rpTab-loreContent" + i + "El");
+            if (rpKeyEl) rpKeyEl.value = "";
+            if (rpContentEl) rpContentEl.value = "";
         }
     };
 
@@ -1528,11 +1542,15 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
 
     window.setGlobalLength = function (val, silent) {
         localStorage.globalLength = val;
-        // Update label
-        let label = document.getElementById("globalLengthLabel");
-        if (label) {
-            let names = { 'super-short': 'Super Short', 'short': 'Short', 'medium': 'Medium', 'long': 'Long', 'super-long': 'Super Long', 'custom': 'Custom' };
-            label.textContent = names[val] || 'Custom';
+        let el1 = document.getElementById("globalLengthEl");
+        if (el1) {
+            el1.value = val;
+            window.syncCustomSelectLabel(el1);
+        }
+        let el2 = document.getElementById("rpGlobalLengthEl");
+        if (el2) {
+            el2.value = val;
+            window.syncCustomSelectLabel(el2);
         }
         // Close dropdown
         let menu = document.getElementById("globalLengthDropdownMenu");
@@ -1559,14 +1577,23 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.generateRoleplayImages = async function() {
         let container = document.getElementById("introImageContainer");
         if (container) container.style.display = "flex";
+        let rpTabContainer = document.getElementById("rpTab-introImageContainer");
+        if (rpTabContainer) rpTabContainer.style.display = "flex";
         
         let d = getDetailsContext();
         let nameTag = document.getElementById("introImageNameTag");
+        let rpTabNameTag = document.getElementById("rpTab-introImageNameTag");
         if (nameTag && d.name) {
             nameTag.textContent = d.name;
             nameTag.style.display = "block";
         } else if (nameTag) {
             nameTag.style.display = "none";
+        }
+        if (rpTabNameTag && d.name) {
+            rpTabNameTag.textContent = d.name;
+            rpTabNameTag.style.display = "block";
+        } else if (rpTabNameTag) {
+            rpTabNameTag.style.display = "none";
         }
         
         await Promise.all([
@@ -1589,24 +1616,39 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         localStorage.removeItem("introCharImageUrl");
         
         let introBgPromptEl = document.getElementById("introBgPromptEl");
+        let rpTabIntroBgPromptEl = document.getElementById("rpTab-introBgPromptEl");
         let introCharPromptEl = document.getElementById("introCharPromptEl");
+        let rpTabIntroCharPromptEl = document.getElementById("rpTab-introCharPromptEl");
         if (introBgPromptEl) introBgPromptEl.value = "";
+        if (rpTabIntroBgPromptEl) rpTabIntroBgPromptEl.value = "";
         if (introCharPromptEl) introCharPromptEl.value = "";
+        if (rpTabIntroCharPromptEl) rpTabIntroCharPromptEl.value = "";
         
         let introBg = document.getElementById("introImageBg");
         if (introBg) introBg.style.backgroundImage = "";
+        let rpTabIntroBg = document.getElementById("rpTab-introImageBg");
+        if (rpTabIntroBg) rpTabIntroBg.style.backgroundImage = "";
         
         let introCanvas = document.getElementById("introImageCharCanvas");
         if (introCanvas) {
             let ctx = introCanvas.getContext("2d");
             if (ctx) ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
         }
+        let rpTabIntroCanvas = document.getElementById("rpTab-introImageCharCanvas");
+        if (rpTabIntroCanvas) {
+            let ctx = rpTabIntroCanvas.getContext("2d");
+            if (ctx) ctx.clearRect(0, 0, rpTabIntroCanvas.width, rpTabIntroCanvas.height);
+        }
         
         let nameTag = document.getElementById("introImageNameTag");
         if (nameTag) nameTag.style.display = "none";
+        let rpTabNameTag = document.getElementById("rpTab-introImageNameTag");
+        if (rpTabNameTag) rpTabNameTag.style.display = "none";
         
         let placeholder = document.getElementById("introImagePlaceholder");
         if (placeholder) placeholder.style.display = "flex";
+        let rpTabPlaceholder = document.getElementById("rpTab-introImagePlaceholder");
+        if (rpTabPlaceholder) rpTabPlaceholder.style.display = "flex";
     };
 
     window.clearAppearanceImages = function() {
@@ -1638,16 +1680,28 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
    ========================================================================== */
     window.generateRoleplayImageBg = async function() {
         let statusEl = document.getElementById("introImageStatus");
+        let rpTabStatusEl = document.getElementById("rpTab-introImageStatus");
         let bgEl = document.getElementById("introImageBg");
+        let rpTabBgEl = document.getElementById("rpTab-introImageBg");
         let promptEl = document.getElementById("introBgPromptEl");
         let btn = document.getElementById("introImageBgGenBtn");
+        let rpTabBtn = document.getElementById("rpTab-introImageBgGenBtn");
         let stopBtn = document.getElementById("introImageBgStopBtn");
+        let rpTabStopBtn = document.getElementById("rpTab-introImageBgStopBtn");
         
         if (btn) btn.style.display = "none";
+        if (rpTabBtn) rpTabBtn.style.display = "none";
         if (stopBtn) stopBtn.style.display = "inline-flex";
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "inline-flex";
+        
+        let statusMessage = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background...</div>`;
         if (statusEl) {
             statusEl.style.display = "flex";
-            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background...</div>`;
+            statusEl.innerHTML = statusMessage;
+        }
+        if (rpTabStatusEl) {
+            rpTabStatusEl.style.display = "flex";
+            rpTabStatusEl.innerHTML = statusMessage;
         }
         
         window.introBgGenRunning = true;
@@ -1662,9 +1716,9 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 
                 if (scenario && scenario.length > 15 && typeof window.ai !== "undefined") {
                     try {
-                        if (statusEl) {
-                            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Analyzing Scene...</div>`;
-                        }
+                        let analyzeMsg = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Analyzing Scene...</div>`;
+                        if (statusEl) statusEl.innerHTML = analyzeMsg;
+                        if (rpTabStatusEl) rpTabStatusEl.innerHTML = analyzeMsg;
                         root.scenario = scenario;
                         let extractPrompt = root.prompts.characterPage.backgroundImage.instruction.evaluateItem;
                         let aiResult = await window.ai(extractPrompt);
@@ -1681,13 +1735,15 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 
                 prompt = sanitizeImagePrompt(`Scenery only, empty background, no characters, empty environment. ${bgDescription}. Artstyle: ${artstyle}.`);
                 if (promptEl) promptEl.value = prompt;
+                let rpTabPromptEl = document.getElementById("rpTab-introBgPromptEl");
+                if (rpTabPromptEl) rpTabPromptEl.value = prompt;
                 window.overwrittenIntroBgPrompt = prompt;
             }
             
             if (!window.introBgGenRunning) return;
-            if (statusEl) {
-                statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background Image...</div>`;
-            }
+            let genMsg = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Background Image...</div>`;
+            if (statusEl) statusEl.innerHTML = genMsg;
+            if (rpTabStatusEl) rpTabStatusEl.innerHTML = genMsg;
             
             let result = await image({
                 prompt: prompt,
@@ -1697,23 +1753,30 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             
             if (!window.introBgGenRunning) return;
             
-            if (bgEl && result && result.dataUrl) {
+            if (result && result.dataUrl) {
                 let virtualUrl = "https://scdg-local-cache/characters/active/intro-bg";
                 await window.writeImageToCache(virtualUrl, result.dataUrl);
                 let resolved = await window.resolveCacheUrl(virtualUrl);
-                bgEl.style.backgroundImage = `url(${resolved})`;
+                if (bgEl) bgEl.style.backgroundImage = `url(${resolved})`;
+                if (rpTabBgEl) rpTabBgEl.style.backgroundImage = `url(${resolved})`;
                 localStorage.introBgImageUrl = virtualUrl;
+                
                 let placeholder = document.getElementById("introImagePlaceholder");
                 if (placeholder) placeholder.style.display = "none";
+                let rpTabPlaceholder = document.getElementById("rpTab-introImagePlaceholder");
+                if (rpTabPlaceholder) rpTabPlaceholder.style.display = "none";
             }
         } catch (e) {
             console.error("Error generating bg image:", e);
         } finally {
             window.introBgGenRunning = false;
             if (btn) btn.style.display = "inline-flex";
+            if (rpTabBtn) rpTabBtn.style.display = "inline-flex";
             if (stopBtn) stopBtn.style.display = "none";
+            if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
             if (!window.introBgGenRunning && !window.introCharGenRunning) {
                 if (statusEl) statusEl.style.display = "none";
+                if (rpTabStatusEl) rpTabStatusEl.style.display = "none";
             }
             if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
         }
@@ -1722,27 +1785,46 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.stopRoleplayImageBgGen = function() {
         window.introBgGenRunning = false;
         let btn = document.getElementById("introImageBgGenBtn");
+        let rpTabBtn = document.getElementById("rpTab-introImageBgGenBtn");
         let stopBtn = document.getElementById("introImageBgStopBtn");
+        let rpTabStopBtn = document.getElementById("rpTab-introImageBgStopBtn");
         let statusEl = document.getElementById("introImageStatus");
+        let rpTabStatusEl = document.getElementById("rpTab-introImageStatus");
+        
         if (btn) btn.style.display = "inline-flex";
+        if (rpTabBtn) rpTabBtn.style.display = "inline-flex";
         if (stopBtn) stopBtn.style.display = "none";
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
         if (!window.introBgGenRunning && !window.introCharGenRunning) {
             if (statusEl) statusEl.style.display = "none";
+            if (rpTabStatusEl) rpTabStatusEl.style.display = "none";
         }
     };
 
     window.generateRoleplayImageChar = async function() {
         let statusEl = document.getElementById("introImageStatus");
+        let rpTabStatusEl = document.getElementById("rpTab-introImageStatus");
         let charCanvas = document.getElementById("introImageCharCanvas");
+        let rpTabCharCanvas = document.getElementById("rpTab-introImageCharCanvas");
         let promptEl = document.getElementById("introCharPromptEl");
         let btn = document.getElementById("introImageCharGenBtn");
+        let rpTabBtn = document.getElementById("rpTab-introImageCharGenBtn");
         let stopBtn = document.getElementById("introImageCharStopBtn");
+        let rpTabStopBtn = document.getElementById("rpTab-introImageCharStopBtn");
         
         if (btn) btn.style.display = "none";
+        if (rpTabBtn) rpTabBtn.style.display = "none";
         if (stopBtn) stopBtn.style.display = "inline-flex";
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "inline-flex";
+        
+        let statusMessage = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite...</div>`;
         if (statusEl) {
             statusEl.style.display = "flex";
-            statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite...</div>`;
+            statusEl.innerHTML = statusMessage;
+        }
+        if (rpTabStatusEl) {
+            rpTabStatusEl.style.display = "flex";
+            rpTabStatusEl.innerHTML = statusMessage;
         }
         
         window.introCharGenRunning = true;
@@ -1758,13 +1840,15 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 
                 prompt = sanitizeImagePrompt(`Create an upper-body sprite image, pure solid white background. 1:1 ratio. Semi-realistic face, cel-shaded. Appearance: ${appearanceText}. Attire: ${attireText}. Items: ${itemsText}. Artstyle: ${artstyle}. composition: upper-body portrait, centered composition, waist-up framing, slight head tilt, looking at the camera, upper body from the waist up; ignore details below the waist for character appearance data.`);
                 if (promptEl) promptEl.value = prompt;
+                let rpTabPromptEl = document.getElementById("rpTab-introCharPromptEl");
+                if (rpTabPromptEl) rpTabPromptEl.value = prompt;
                 window.overwrittenIntroCharPrompt = prompt;
             }
             
             if (!window.introCharGenRunning) return;
-            if (statusEl) {
-                statusEl.innerHTML = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite Image...</div>`;
-            }
+            let genMsg = `<i class="bi bi-arrow-repeat spin-icon" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;"></i><div>Generating Character Sprite Image...</div>`;
+            if (statusEl) statusEl.innerHTML = genMsg;
+            if (rpTabStatusEl) rpTabStatusEl.innerHTML = genMsg;
             
             let result = await image({
                 prompt: prompt,
@@ -1774,29 +1858,38 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             
             if (!window.introCharGenRunning) return;
             
-            if (charCanvas && result && result.canvas) {
-                charCanvas.width = result.canvas.width;
-                charCanvas.height = result.canvas.height;
-                let ctx = charCanvas.getContext("2d");
-                ctx.drawImage(result.canvas, 0, 0);
-                removeWhiteBackground(charCanvas, 240);
+            if (result && result.canvas) {
+                let canvases = [charCanvas, rpTabCharCanvas].filter(Boolean);
+                canvases.forEach(c => {
+                    c.width = result.canvas.width;
+                    c.height = result.canvas.height;
+                    let ctx = c.getContext("2d");
+                    ctx.drawImage(result.canvas, 0, 0);
+                    removeWhiteBackground(c, 240);
+                });
                 
-                let dataUrl = charCanvas.toDataURL("image/png");
+                let activeCanvas = charCanvas || rpTabCharCanvas;
+                let dataUrl = activeCanvas.toDataURL("image/png");
                 let virtualUrl = "https://scdg-local-cache/characters/active/intro-char";
                 await window.writeImageToCache(virtualUrl, dataUrl);
                 localStorage.introCharImageUrl = virtualUrl;
                 
                 let placeholder = document.getElementById("introImagePlaceholder");
                 if (placeholder) placeholder.style.display = "none";
+                let rpTabPlaceholder = document.getElementById("rpTab-introImagePlaceholder");
+                if (rpTabPlaceholder) rpTabPlaceholder.style.display = "none";
             }
         } catch (e) {
             console.error("Error generating char image:", e);
         } finally {
             window.introCharGenRunning = false;
             if (btn) btn.style.display = "inline-flex";
+            if (rpTabBtn) rpTabBtn.style.display = "inline-flex";
             if (stopBtn) stopBtn.style.display = "none";
+            if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
             if (!window.introBgGenRunning && !window.introCharGenRunning) {
                 if (statusEl) statusEl.style.display = "none";
+                if (rpTabStatusEl) rpTabStatusEl.style.display = "none";
             }
             if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
         }
@@ -1805,18 +1898,24 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.stopRoleplayImageCharGen = function() {
         window.introCharGenRunning = false;
         let btn = document.getElementById("introImageCharGenBtn");
+        let rpTabBtn = document.getElementById("rpTab-introImageCharGenBtn");
         let stopBtn = document.getElementById("introImageCharStopBtn");
+        let rpTabStopBtn = document.getElementById("rpTab-introImageCharStopBtn");
         let statusEl = document.getElementById("introImageStatus");
+        let rpTabStatusEl = document.getElementById("rpTab-introImageStatus");
         if (btn) btn.style.display = "inline-flex";
+        if (rpTabBtn) rpTabBtn.style.display = "inline-flex";
         if (stopBtn) stopBtn.style.display = "none";
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
         if (!window.introBgGenRunning && !window.introCharGenRunning) {
             if (statusEl) statusEl.style.display = "none";
+            if (rpTabStatusEl) rpTabStatusEl.style.display = "none";
         }
     };
 
     window.updateGlobalLengthUI = function (val) {
         let isCustom = !val || val === 'custom';
-        let selects = document.querySelectorAll("select[id$='LengthEl']:not(#globalLengthEl)");
+        let selects = document.querySelectorAll("select[id$='LengthEl']:not(#globalLengthEl):not(#rpGlobalLengthEl):not(#rpTab-globalLengthEl)");
         selects.forEach(sel => {
             let wrapper = document.getElementById("custom-select-" + sel.id);
             let target = wrapper || sel;
@@ -3069,53 +3168,65 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 localStorage.overwrittenIntroCharPrompt = window.overwrittenIntroCharPrompt;
                 
                 let introBgPromptEl = document.getElementById("introBgPromptEl");
+                let rpTabIntroBgPromptEl = document.getElementById("rpTab-introBgPromptEl");
                 let introCharPromptEl = document.getElementById("introCharPromptEl");
+                let rpTabIntroCharPromptEl = document.getElementById("rpTab-introCharPromptEl");
                 if (introBgPromptEl) introBgPromptEl.value = window.overwrittenIntroBgPrompt;
+                if (rpTabIntroBgPromptEl) rpTabIntroBgPromptEl.value = window.overwrittenIntroBgPrompt;
                 if (introCharPromptEl) introCharPromptEl.value = window.overwrittenIntroCharPrompt;
+                if (rpTabIntroCharPromptEl) rpTabIntroCharPromptEl.value = window.overwrittenIntroCharPrompt;
                 
                 localStorage.introBgImageUrl = cActive.introBgImageUrl || "";
                 localStorage.introCharImageUrl = cActive.introCharImageUrl || "";
                 
                 let introBg = document.getElementById("introImageBg");
+                let rpTabIntroBg = document.getElementById("rpTab-introImageBg");
                 let introCanvas = document.getElementById("introImageCharCanvas");
+                let rpTabIntroCanvas = document.getElementById("rpTab-introImageCharCanvas");
                 let hasPreview = false;
                 
                 if (localStorage.introBgImageUrl) {
-                    if (introBg) {
-                        let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
-                        introBg.style.backgroundImage = `url(${resolved})`;
-                    }
+                    let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
+                    if (introBg) introBg.style.backgroundImage = `url(${resolved})`;
+                    if (rpTabIntroBg) rpTabIntroBg.style.backgroundImage = `url(${resolved})`;
                     hasPreview = true;
                 } else {
                     if (introBg) introBg.style.backgroundImage = "";
+                    if (rpTabIntroBg) rpTabIntroBg.style.backgroundImage = "";
                 }
                 
                 if (localStorage.introCharImageUrl) {
                     let resolved = await window.resolveCacheUrl(localStorage.introCharImageUrl);
                     let img = new Image();
                     img.onload = function() {
-                        if (introCanvas) {
-                            introCanvas.width = img.width;
-                            introCanvas.height = img.height;
-                            let ctx = introCanvas.getContext("2d");
+                        let canvases = [introCanvas, rpTabIntroCanvas].filter(Boolean);
+                        canvases.forEach(c => {
+                            c.width = img.width;
+                            c.height = img.height;
+                            let ctx = c.getContext("2d");
                             if (ctx) {
-                                ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                                ctx.clearRect(0, 0, c.width, c.height);
                                 ctx.drawImage(img, 0, 0);
                             }
-                        }
+                        });
                     };
                     img.src = resolved;
                     hasPreview = true;
                 } else {
-                    if (introCanvas) {
-                        let ctx = introCanvas.getContext("2d");
-                        if (ctx) ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
-                    }
+                    let canvases = [introCanvas, rpTabIntroCanvas].filter(Boolean);
+                    canvases.forEach(c => {
+                        let ctx = c.getContext("2d");
+                        if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+                    });
                 }
                 
                 let placeholder = document.getElementById("introImagePlaceholder");
                 if (placeholder) {
                     placeholder.style.display = hasPreview ? "none" : "flex";
+                }
+                let rpTabPlaceholder = document.getElementById("rpTab-introImagePlaceholder");
+                if (rpTabPlaceholder) {
+                    rpTabPlaceholder.style.display = hasPreview ? "none" : "flex";
                 }
                 
                 window.sheetsState = cActive.sheetData || null;
@@ -4354,29 +4465,31 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     // Restore active character prompts & images
     (async () => {
         let introBg = document.getElementById("introImageBg");
+        let rpTabIntroBg = document.getElementById("rpTab-introImageBg");
         let introCanvas = document.getElementById("introImageCharCanvas");
+        let rpTabIntroCanvas = document.getElementById("rpTab-introImageCharCanvas");
         let hasPreview = false;
         
         if (localStorage.introBgImageUrl) {
-            if (introBg) {
-                let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
-                introBg.style.backgroundImage = `url(${resolved})`;
-            }
+            let resolved = await window.resolveCacheUrl(localStorage.introBgImageUrl);
+            if (introBg) introBg.style.backgroundImage = `url(${resolved})`;
+            if (rpTabIntroBg) rpTabIntroBg.style.backgroundImage = `url(${resolved})`;
             hasPreview = true;
         }
         if (localStorage.introCharImageUrl) {
             let resolved = await window.resolveCacheUrl(localStorage.introCharImageUrl);
             let img = new Image();
             img.onload = function() {
-                if (introCanvas) {
-                    introCanvas.width = img.width;
-                    introCanvas.height = img.height;
-                    let ctx = introCanvas.getContext("2d");
+                let canvases = [introCanvas, rpTabIntroCanvas].filter(Boolean);
+                canvases.forEach(c => {
+                    c.width = img.width;
+                    c.height = img.height;
+                    let ctx = c.getContext("2d");
                     if (ctx) {
-                        ctx.clearRect(0, 0, introCanvas.width, introCanvas.height);
+                        ctx.clearRect(0, 0, c.width, c.height);
                         ctx.drawImage(img, 0, 0);
                     }
-                }
+                });
             };
             img.src = resolved;
             hasPreview = true;
@@ -4384,6 +4497,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let placeholder = document.getElementById("introImagePlaceholder");
         if (placeholder) {
             placeholder.style.display = hasPreview ? "none" : "flex";
+        }
+        let rpTabPlaceholder = document.getElementById("rpTab-introImagePlaceholder");
+        if (rpTabPlaceholder) {
+            rpTabPlaceholder.style.display = hasPreview ? "none" : "flex";
         }
 
         // Restore generated images

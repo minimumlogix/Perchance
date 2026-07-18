@@ -530,6 +530,34 @@
         "Master_And_Servant", "Creator_And_Creation"
     ];
 
+    window.RP_DYNAMIC_KEYS = [
+        "Any", "Best_friends", "Bullies", "Party_members", "Betrayers", "Harem",
+        "Enemies_To_Lovers", "Forbidden_Love", "Mutual_Obsession", "Forced_Cohabitation",
+        "Fake_Relationship", "Protector_And_Protected", "Rivals_With_Tension",
+        "Toxic_Codependency", "Captor_And_Captive", "Sun_And_Moon", "Brain_And_Brawn", "Master_And_Servant"
+    ];
+
+    window.roleplayDynamics = {
+        "Best_friends": "Close, loyal, and supportive bond with inside jokes and mutual trust.",
+        "Bullies": "Hostile, teasing, or domineering relationships where characters pick on each other.",
+        "Party_members": "Teammates working towards a common goal or adventuring together.",
+        "Betrayers": "Hidden agendas, distrust, or a past/looming backstab.",
+        "Harem": "Multiple characters vying for or sharing affection with the protagonist.",
+        "Enemies_To_Lovers": "Deep-seated hostility that slowly transforms into romantic connection.",
+        "Forbidden_Love": "Secretive, high-tension romance blocked by factions or rules.",
+        "Mutual_Obsession": "Consuming focus and intense devotion to one another.",
+        "Forced_Cohabitation": "Forced to share a small space, leading to friction and adaptation.",
+        "Fake_Relationship": "Pretending to be together for a mission, hiding real feelings.",
+        "Protector_And_Protected": "Strong protective instincts, dependency, and duty-bound closeness.",
+        "Rivals_With_Tension": "Constant competition, playful teasing, and friction.",
+        "Toxic_Codependency": "Spurred by destructive reliance on each other to survive.",
+        "Captor_And_Captive": "Power imbalance, forced custody, and psychological adaptation.",
+        "Sun_And_Moon": "Contrasting personalities (bright/warm vs quiet/cold) that complete each other.",
+        "Brain_And_Brawn": "Intellect and planning paired with physical power and execution.",
+        "Master_And_Servant": "Service, duty, and the complex boundaries of class and connection."
+    };
+
+
     /**
      * Dynamically populates custom select dropdown element.
      */
@@ -747,6 +775,18 @@
             }).join("");
             rpToneEl.innerHTML = html;
         }
+
+        // 9. Populate rpDynamicEl
+        const rpDynamicEl = document.getElementById("rpDynamicEl");
+        if (rpDynamicEl) {
+            let keys = window.RP_DYNAMIC_KEYS || [];
+            let html = `<option value="none">Any</option>`;
+            html += keys.filter(k => k !== "Any").map(k => {
+                let label = k.replace(/_/g, " ");
+                return `<option value="${k}">${label}</option>`;
+            }).join("");
+            rpDynamicEl.innerHTML = html;
+        }
     };
 
     window.selectSetting = function (value) {
@@ -755,6 +795,15 @@
         if (settingEl) {
             settingEl.value = value;
             window.syncCustomSelectLabel(settingEl);
+        }
+        const rpSettingEl = document.getElementById("rpSettingEl");
+        if (rpSettingEl) {
+            rpSettingEl.value = value;
+            window.syncCustomSelectLabel(rpSettingEl);
+        }
+        if (window.roleplayState) {
+            window.roleplayState.setting = value;
+            window.saveRoleplayState();
         }
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
@@ -770,10 +819,24 @@
 
     window.updateToneLabel = function () {
         window.syncCustomSelectLabel("toneEl");
+        window.syncCustomSelectLabel("rpToneEl");
     };
 
     window.saveTones = function () {
-        localStorage.tones = JSON.stringify(getSelectedTones());
+        let activeId = currentActiveSelectEl ? currentActiveSelectEl.id : "toneEl";
+        if (activeId === "toneEl" || activeId === "rpToneEl") {
+            let activeSel = multiSelectState[activeId];
+            multiSelectState["toneEl"] = new Set(activeSel);
+            multiSelectState["rpToneEl"] = new Set(activeSel);
+            window.syncCustomSelectLabel("toneEl");
+            window.syncCustomSelectLabel("rpToneEl");
+        }
+        let tones = getSelectedTones();
+        localStorage.tones = JSON.stringify(tones);
+        if (window.roleplayState) {
+            window.roleplayState.tones = tones;
+            window.saveRoleplayState();
+        }
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
@@ -788,11 +851,14 @@
                     if (t !== "Any") sel.add(t);
                 });
             }
-            multiSelectState["toneEl"] = sel;
+            multiSelectState["toneEl"] = new Set(sel);
+            multiSelectState["rpToneEl"] = new Set(sel);
         } catch (e) {
             multiSelectState["toneEl"] = new Set(["none"]);
+            multiSelectState["rpToneEl"] = new Set(["none"]);
         }
         window.syncCustomSelectLabel("toneEl");
+        window.syncCustomSelectLabel("rpToneEl");
     };
 
     // Archetype Dropdown functions
@@ -809,6 +875,12 @@
     };
 
     window.saveArchetypes = function () {
+        let activeId = currentActiveSelectEl ? currentActiveSelectEl.id : "archetypeEl";
+        if (activeId === "archetypeEl") {
+            let activeSel = multiSelectState[activeId];
+            multiSelectState["archetypeEl"] = new Set(activeSel);
+            window.syncCustomSelectLabel("archetypeEl");
+        }
         localStorage.archetypes = JSON.stringify(getSelectedArchetypes());
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
@@ -824,7 +896,7 @@
                     if (t !== "Any") sel.add(t);
                 });
             }
-            multiSelectState["archetypeEl"] = sel;
+            multiSelectState["archetypeEl"] = new Set(sel);
         } catch (e) {
             multiSelectState["archetypeEl"] = new Set(["none"]);
         }
@@ -845,6 +917,12 @@
     };
 
     window.saveDynamics = function () {
+        let activeId = currentActiveSelectEl ? currentActiveSelectEl.id : "dynamicEl";
+        if (activeId === "dynamicEl") {
+            let activeSel = multiSelectState[activeId];
+            multiSelectState["dynamicEl"] = new Set(activeSel);
+            window.syncCustomSelectLabel("dynamicEl");
+        }
         localStorage.dynamics = JSON.stringify(getSelectedDynamics());
         if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
@@ -860,7 +938,7 @@
                     if (t !== "Any") sel.add(t);
                 });
             }
-            multiSelectState["dynamicEl"] = sel;
+            multiSelectState["dynamicEl"] = new Set(sel);
         } catch (e) {
             multiSelectState["dynamicEl"] = new Set(["none"]);
         }
@@ -892,8 +970,9 @@
    ========================================================================== */
     let currentActiveSelectEl = null;
     let currentActiveWrapper = null;
-    const multiSelectIds = new Set(['toneEl', 'archetypeEl', 'dynamicEl', 'wToneEl', 'rpToneEl']);
+    const multiSelectIds = new Set(['toneEl', 'archetypeEl', 'dynamicEl', 'wToneEl', 'rpToneEl', 'rpDynamicEl']);
     const multiSelectState = {};
+    window.multiSelectState = multiSelectState;
 
     const selectToListNameMap = {
         'visualStyleEl': 'visualStyles',
@@ -904,7 +983,8 @@
         'wSettingEl': 'settingPrompts',
         'wToneEl': 'tonePrompts',
         'rpSettingEl': 'settingPrompts',
-        'rpToneEl': 'tonePrompts'
+        'rpToneEl': 'tonePrompts',
+        'rpDynamicEl': 'roleplayDynamics'
     };
 
     const drawerHeaders = {
@@ -936,7 +1016,13 @@
         'wSettingEl': 'WORLD SETTING',
         'wToneEl': 'ATMOSPHERIC TONES',
         'rpSettingEl': 'ROLEPLAY SETTING',
-        'rpToneEl': 'ATMOSPHERIC TONES'
+        'rpToneEl': 'ATMOSPHERIC TONES',
+        'rpDynamicEl': 'ROLEPLAY DYNAMICS',
+        'rpGlobalLengthEl': 'GLOBAL TEXT LENGTH',
+        'rpNPCCastCountEl': 'NPC CAST COUNT',
+        'rpTab-timelineLengthEl': 'TIMELINE LENGTH',
+        'rpTab-roleplayLengthEl': 'ROLEPLAY LENGTH',
+        'rpTab-introLengthEl': 'INTRO LENGTH'
     };
 
     const gradients = [
@@ -1730,19 +1816,39 @@
 
     window.toggleSectionEdit = function (section) {
         let outputEl = document.getElementById(section + "OutputEl");
+        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
         let editBtn = document.getElementById(section + "EditBtnEl");
+        let rpTabEditBtn = document.getElementById("rpTab-" + section + "EditBtnEl");
+        
         if (!outputEl || !editBtn) return;
         let isEditing = outputEl.contentEditable === "true";
-        outputEl.contentEditable = !isEditing;
-        if (!isEditing) {
-            outputEl.style.border = "1px solid var(--accent-color)";
-            outputEl.style.padding = "0.4rem";
+        let nextEditing = !isEditing;
+
+        let outputs = [outputEl, rpTabOutputEl].filter(Boolean);
+        let btns = [editBtn, rpTabEditBtn].filter(Boolean);
+
+        outputs.forEach(el => {
+            el.contentEditable = nextEditing ? "true" : "false";
+            if (nextEditing) {
+                el.style.border = "1px solid var(--accent-color)";
+                el.style.padding = "0.4rem";
+            } else {
+                el.style.border = "none";
+                el.style.padding = "0.4rem 0";
+            }
+        });
+
+        btns.forEach(btn => {
+            if (nextEditing) {
+                btn.innerHTML = '<i class="bi bi-floppy"></i> save';
+            } else {
+                btn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
+            }
+        });
+
+        if (nextEditing) {
             outputEl.focus();
-            editBtn.innerHTML = '<i class="bi bi-floppy"></i> save';
         } else {
-            outputEl.style.border = "none";
-            outputEl.style.padding = "0.4rem 0";
-            editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
             // Update the internal cache
             if (!window.characterSections) window.characterSections = {};
             window.characterSections[section] = outputEl.innerText;
@@ -1752,20 +1858,29 @@
 
     window.clearSection = function (section) {
         let outputEl = document.getElementById(section + "OutputEl");
+        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
         let notesEl = document.getElementById(section + "NotesEl");
-        let editBtn = document.getElementById(section + "EditBtnEl");
-        let copyBtn = document.getElementById(section + "CopyBtnEl");
+        let rpTabNotesEl = document.getElementById("rpTab-" + section + "NotesEl");
         let statusEl = document.getElementById(section + "StatusEl");
+        let rpTabStatusEl = document.getElementById("rpTab-" + section + "StatusEl");
 
         if (outputEl) {
             outputEl.innerHTML = "";
             outputEl.style.display = "block";
         }
+        if (rpTabOutputEl) {
+            rpTabOutputEl.innerHTML = "";
+            rpTabOutputEl.style.display = "block";
+        }
         if (notesEl) {
             notesEl.value = "";
             localStorage.removeItem(section + "Notes");
         }
+        if (rpTabNotesEl) {
+            rpTabNotesEl.value = "";
+        }
         if (statusEl) statusEl.textContent = "";
+        if (rpTabStatusEl) rpTabStatusEl.textContent = "";
 
         if (section === "lore") {
             clearLoreFields();
@@ -1808,6 +1923,12 @@
                 btn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
                 setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
             }
+            let rpTabBtn = document.getElementById("rpTab-" + section + "CopyBtnEl");
+            if (rpTabBtn) {
+                let origHtml = rpTabBtn.innerHTML;
+                rpTabBtn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
+                setTimeout(() => { rpTabBtn.innerHTML = origHtml; }, 1500);
+            }
         }).catch(err => {
             console.warn("Clipboard write failed:", err);
             // Fallback for older browsers
@@ -1825,6 +1946,8 @@
     window.setSectionStatus = function (section, message) {
         let el = document.getElementById(section + "StatusEl");
         if (el) el.textContent = message;
+        let el2 = document.getElementById("rpTab-" + section + "StatusEl");
+        if (el2) el2.textContent = message;
     };
 
     window.setSectionOutput = function (section, html) {
@@ -1833,10 +1956,19 @@
             el.innerHTML = html;
             el.style.display = "block";
         }
+        let el2 = document.getElementById("rpTab-" + section + "OutputEl");
+        if (el2) {
+            el2.innerHTML = html;
+            el2.style.display = "block";
+        }
         let editBtn = document.getElementById(section + "EditBtnEl");
         if (editBtn) editBtn.style.display = "inline-block";
+        let rpTabEditBtn = document.getElementById("rpTab-" + section + "EditBtnEl");
+        if (rpTabEditBtn) rpTabEditBtn.style.display = "inline-block";
         let copyBtn = document.getElementById(section + "CopyBtnEl");
         if (copyBtn) copyBtn.style.display = "inline-block";
+        let rpTabCopyBtn = document.getElementById("rpTab-" + section + "CopyBtnEl");
+        if (rpTabCopyBtn) rpTabCopyBtn.style.display = "inline-block";
     };
 
     window.setSectionGenerating = function (section, isGenerating) {
@@ -1845,6 +1977,11 @@
         if (genBtn) genBtn.disabled = isGenerating;
         if (stopBtn) stopBtn.style.display = isGenerating ? "inline-block" : "none";
         
+        let rpTabGenBtn = document.getElementById("rpTab-" + section + "GenBtnEl");
+        let rpTabStopBtn = document.getElementById("rpTab-" + section + "StopBtnEl");
+        if (rpTabGenBtn) rpTabGenBtn.disabled = isGenerating;
+        if (rpTabStopBtn) rpTabStopBtn.style.display = isGenerating ? "inline-block" : "none";
+        
         let outputEl = document.getElementById(section + "OutputEl");
         if (outputEl) {
             if (isGenerating) {
@@ -1852,6 +1989,15 @@
                 outputEl.style.display = "block";
             } else {
                 outputEl.classList.remove("generating-pulse");
+            }
+        }
+        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
+        if (rpTabOutputEl) {
+            if (isGenerating) {
+                rpTabOutputEl.classList.add("generating-pulse");
+                rpTabOutputEl.style.display = "block";
+            } else {
+                rpTabOutputEl.classList.remove("generating-pulse");
             }
         }
     };
@@ -2718,17 +2864,55 @@
     };
 
     // Real-time updates when inputs or settings change
-    document.addEventListener('input', function() {
+    document.addEventListener('input', function(e) {
         let brainSidebar = document.getElementById('brainSidebarEl');
         if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
             window.updateBrainContextView();
         }
+
+        // Bidirectional input synchronization between Characters tab and Roleplay tab
+        if (e && e.target && e.target.id) {
+            let id = e.target.id;
+            let counterpartId = null;
+            if (id.startsWith("rpTab-")) {
+                counterpartId = id.replace("rpTab-", "");
+            } else {
+                counterpartId = "rpTab-" + id;
+            }
+            let counterpart = document.getElementById(counterpartId);
+            if (counterpart) {
+                if (counterpart.value !== e.target.value) {
+                    counterpart.value = e.target.value;
+                }
+            }
+        }
     });
     
-    document.addEventListener('change', function() {
+    document.addEventListener('change', function(e) {
         let brainSidebar = document.getElementById('brainSidebarEl');
         if (brainSidebar && brainSidebar.style.transform === "translateX(0%)") {
             window.updateBrainContextView();
+        }
+
+        // Bidirectional change synchronization between Characters tab and Roleplay tab
+        if (e && e.target && e.target.id) {
+            let id = e.target.id;
+            let counterpartId = null;
+            if (id.startsWith("rpTab-")) {
+                counterpartId = id.replace("rpTab-", "");
+            } else {
+                counterpartId = "rpTab-" + id;
+            }
+            let counterpart = document.getElementById(counterpartId);
+            if (counterpart) {
+                if (counterpart.value !== e.target.value) {
+                    counterpart.value = e.target.value;
+                    // For custom select dropdowns, update label
+                    if (counterpart.classList.contains('custom-select-hidden')) {
+                        window.syncCustomSelectLabel(counterpart);
+                    }
+                }
+            }
         }
     });
 

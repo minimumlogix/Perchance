@@ -10,9 +10,19 @@
         userRole: "",
         setting: "Any",
         tones: ["Any"],
+        rpDynamics: ["Any"],
         themes: "",
         npcs: [
-            { name: "", species: "", personality: "", role: "" }
+            {
+                name: "", age: "", gender: "", race: "", role: "",
+                appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+                abilities: "", biography: "", rules: "", image: ""
+            },
+            {
+                name: "", age: "", gender: "", race: "", role: "",
+                appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+                abilities: "", biography: "", rules: "", image: ""
+            }
         ],
         scenarioNotes: "",
         outputScenario: "",
@@ -26,6 +36,13 @@
         try {
             if (localStorage.rpState) {
                 let saved = JSON.parse(localStorage.rpState);
+                if (saved.npcs && Array.isArray(saved.npcs)) {
+                    saved.npcs = saved.npcs.map(n => Object.assign({
+                        name: "", age: "", gender: "", race: "", role: "",
+                        appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+                        abilities: "", biography: "", rules: "", image: ""
+                    }, n));
+                }
                 window.roleplayState = Object.assign(window.roleplayState, saved);
             }
         } catch (e) {
@@ -52,6 +69,7 @@
                 userRole: window.roleplayState.userRole,
                 setting: window.roleplayState.setting,
                 tones: window.roleplayState.tones,
+                rpDynamics: window.roleplayState.rpDynamics,
                 themes: window.roleplayState.themes,
                 npcs: window.roleplayState.npcs,
                 scenarioNotes: window.roleplayState.scenarioNotes,
@@ -87,7 +105,11 @@
    DYNAMIC NPC GRID AND CAST LIST MANAGEMENT
    ========================================================================== */
     window.addNPC = function () {
-        window.roleplayState.npcs.push({ name: "", species: "", personality: "", role: "" });
+        window.roleplayState.npcs.push({
+            name: "", age: "", gender: "", race: "", role: "",
+            appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+            abilities: "", biography: "", rules: "", image: ""
+        });
         window.renderNPCGrid();
         window.saveRoleplayState();
     };
@@ -95,7 +117,11 @@
     window.removeNPC = function (index) {
         if (window.roleplayState.npcs.length <= 1) {
             // Keep at least one NPC card but clear its contents
-            window.roleplayState.npcs[0] = { name: "", species: "", personality: "", role: "" };
+            window.roleplayState.npcs[0] = {
+                name: "", age: "", gender: "", race: "", role: "",
+                appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+                abilities: "", biography: "", rules: "", image: ""
+            };
         } else {
             window.roleplayState.npcs.splice(index, 1);
         }
@@ -124,33 +150,21 @@
                 let sections = character.characterSections || {};
 
                 // Map traits
-                let npcName = d.name || character.name || "";
-                let npcSpecies = d.species || d.race || "";
-                
-                // Formulate a short personality/role summary
-                let pSummary = "";
-                if (sections.personality) {
-                    // Extract first paragraph or short snippet of personality
-                    pSummary += sections.personality.split("\n")[0].replace(/Personality:\s*/i, "").trim();
-                }
-                if (sections.beliefs && pSummary.length < 150) {
-                    let b = sections.beliefs.split("\n")[0].replace(/Mentality:\s*/i, "").trim();
-                    if (b) pSummary += (pSummary ? " " : "") + "Mentality: " + b;
-                }
-
-                let npcRole = "";
-                if (sections.role) {
-                    npcRole += sections.role.split("\n")[0].replace(/Role:\s*/i, "").trim();
-                } else if (d.gender || d.age) {
-                    npcRole = `${d.gender || ""} ${d.age || ""}`.trim();
-                }
-
-                // Update state
                 window.roleplayState.npcs[index] = {
-                    name: npcName,
-                    species: npcSpecies,
-                    personality: pSummary,
-                    role: npcRole
+                    name: d.name || character.name || "",
+                    age: d.age || "",
+                    gender: d.gender || "",
+                    race: d.race || d.species || "",
+                    role: sections.role || d.role || "",
+                    appearance: sections.appearance || d.appearance || "",
+                    personality: sections.personality || d.personality || "",
+                    beliefs: sections.beliefs || d.beliefs || "",
+                    likes: d.likes || "",
+                    dislikes: d.dislikes || "",
+                    abilities: sections.abilities || d.abilities || "",
+                    biography: sections.background || d.biography || "",
+                    rules: d.rules || "",
+                    image: character.introCharImageUrl || character.avatarUrl || ""
                 };
 
                 window.renderNPCGrid();
@@ -190,29 +204,137 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                        <div class="detail-field">
-                            <label class="detail-label" style="font-size: 72%; min-width: 45px;">Name</label>
-                            <input type="text" id="rpNPC-${index}-name" class="detail-input" style="font-size: 82%; padding: 0.35rem 0.5rem;" value="${npc.name || ""}" placeholder="NPC Name" oninput="updateNPCField(${index}, 'name', this.value)">
+                    <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                        <!-- Image Column -->
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+                            <div id="rpNPC-${index}-imgContainer" style="width: 80px; height: 80px; border-radius: 6px; border: 1px solid var(--panel-border); background: ${npc.image ? `url(${npc.image})` : 'rgba(255,255,255,0.02)'}; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                                ${npc.image ? '' : '<i class="bi bi-person" style="font-size: 2rem; opacity: 0.3;"></i>'}
+                            </div>
+                            <button class="btn btn-ghost btn-sm" onclick="generateNPCImage(${index}, this)" style="font-size: 70%; padding: 0.1rem 0.3rem; height: 18px;" title="Regenerate Image"><i class="bi bi-image"></i> Gen</button>
                         </div>
-                        <div class="detail-field">
-                            <label class="detail-label" style="font-size: 72%; min-width: 55px;">Species</label>
-                            <input type="text" id="rpNPC-${index}-species" class="detail-input" style="font-size: 82%; padding: 0.35rem 0.5rem;" value="${npc.species || ""}" placeholder="e.g. Elf, Cyborg" oninput="updateNPCField(${index}, 'species', this.value)">
+
+                        <!-- 2x2 Grid for core details -->
+                        <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+                            <div class="detail-field">
+                                <label class="detail-label" style="font-size: 70%; min-width: 35px;">Name</label>
+                                <input type="text" id="rpNPC-${index}-name" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem;" value="${npc.name || ""}" placeholder="Name" oninput="updateNPCField(${index}, 'name', this.value)">
+                            </div>
+                            <div class="detail-field">
+                                <label class="detail-label" style="font-size: 70%; min-width: 35px;">Age</label>
+                                <input type="text" id="rpNPC-${index}-age" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem;" value="${npc.age || ""}" placeholder="Age" oninput="updateNPCField(${index}, 'age', this.value)">
+                            </div>
+                            <div class="detail-field">
+                                <label class="detail-label" style="font-size: 70%; min-width: 45px;">Gender</label>
+                                <input type="text" id="rpNPC-${index}-gender" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem;" value="${npc.gender || ""}" placeholder="Gender" oninput="updateNPCField(${index}, 'gender', this.value)">
+                            </div>
+                            <div class="detail-field">
+                                <label class="detail-label" style="font-size: 70%; min-width: 45px;">Race</label>
+                                <input type="text" id="rpNPC-${index}-race" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem;" value="${npc.race || npc.species || ""}" placeholder="Race" oninput="updateNPCField(${index}, 'race', this.value)">
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="detail-field">
-                        <label class="detail-label" style="font-size: 72%; min-width: 70px;">Personality</label>
-                        <input type="text" id="rpNPC-${index}-personality" class="detail-input" style="font-size: 82%; padding: 0.35rem 0.5rem;" value="${npc.personality || ""}" placeholder="e.g. Gruff, secretly soft, loyal" oninput="updateNPCField(${index}, 'personality', this.value)">
-                    </div>
-                    
-                    <div class="detail-field">
-                        <label class="detail-label" style="font-size: 72%; min-width: 70px;">Narrative Role</label>
-                        <input type="text" id="rpNPC-${index}-role" class="detail-input" style="font-size: 82%; padding: 0.35rem 0.5rem;" value="${npc.role || ""}" placeholder="e.g. Companion, guide, sheriff" oninput="updateNPCField(${index}, 'role', this.value)">
+
+                    <!-- Collapsible Trigger -->
+                    <button class="btn btn-ghost btn-sm" id="rpNPC-${index}-toggleBtn" onclick="toggleNPCDetails(${index})" style="width: 100%; font-size: 76%; display: flex; align-items: center; justify-content: center; gap: 0.25rem; background: rgba(255,255,255,0.01); border: 1px solid var(--panel-border); border-radius: 4px; padding: 0.2rem 0;">
+                        <i class="bi bi-chevron-down"></i> Expand Full Profile
+                    </button>
+
+                    <!-- Collapsible Details drawer -->
+                    <div id="rpNPC-${index}-details" style="display: none; flex-direction: column; gap: 0.5rem; margin-top: 0.2rem; border-top: 1px dashed var(--panel-border); padding-top: 0.5rem;">
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Narrative Role</label>
+                            <textarea id="rpNPC-${index}-role" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Role, story place, and relationship to {{user}}" oninput="updateNPCField(${index}, 'role', this.value)">${npc.role || ""}</textarea>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Appearance</label>
+                            <textarea id="rpNPC-${index}-appearance" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Hairstyle, clothing, notable features..." oninput="updateNPCField(${index}, 'appearance', this.value)">${npc.appearance || ""}</textarea>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Personality</label>
+                            <textarea id="rpNPC-${index}-personality" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Temperament, speech style, habits..." oninput="updateNPCField(${index}, 'personality', this.value)">${npc.personality || ""}</textarea>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Beliefs</label>
+                            <textarea id="rpNPC-${index}-beliefs" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Worldview, morals, code..." oninput="updateNPCField(${index}, 'beliefs', this.value)">${npc.beliefs || ""}</textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+                            <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                                <label class="detail-label" style="font-size: 74%; font-weight: 600;">Likes</label>
+                                <input type="text" id="rpNPC-${index}-likes" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" value="${npc.likes || ""}" placeholder="Hobbies, preferences..." oninput="updateNPCField(${index}, 'likes', this.value)">
+                            </div>
+                            <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                                <label class="detail-label" style="font-size: 74%; font-weight: 600;">Dislikes</label>
+                                <input type="text" id="rpNPC-${index}-dislikes" class="detail-input" style="font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" value="${npc.dislikes || ""}" placeholder="Fears, distastes..." oninput="updateNPCField(${index}, 'dislikes', this.value)">
+                            </div>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Abilities</label>
+                            <textarea id="rpNPC-${index}-abilities" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Skills, combat, powers, magic..." oninput="updateNPCField(${index}, 'abilities', this.value)">${npc.abilities || ""}</textarea>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Biography</label>
+                            <textarea id="rpNPC-${index}-biography" class="section-notes" style="min-height: 2.5rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Life history, trauma, secrets, motivation..." oninput="updateNPCField(${index}, 'biography', this.value)">${npc.biography || ""}</textarea>
+                        </div>
+                        <div class="detail-field" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+                            <label class="detail-label" style="font-size: 74%; font-weight: 600;">Rules / Limitations</label>
+                            <textarea id="rpNPC-${index}-rules" class="section-notes" style="min-height: 2.2rem; font-size: 80%; padding: 0.25rem 0.4rem; width: 100%; box-sizing: border-box;" placeholder="Important facts / boundaries that must never be violated" oninput="updateNPCField(${index}, 'rules', this.value)">${npc.rules || ""}</textarea>
+                        </div>
                     </div>
                 </div>
             `;
         }).join("");
+    };
+
+    window.toggleNPCDetails = function (index) {
+        let detailsDiv = document.getElementById(`rpNPC-${index}-details`);
+        let toggleBtn = document.getElementById(`rpNPC-${index}-toggleBtn`);
+        if (detailsDiv && toggleBtn) {
+            let isHidden = detailsDiv.style.display === "none";
+            detailsDiv.style.display = isHidden ? "flex" : "none";
+            toggleBtn.innerHTML = isHidden 
+                ? `<i class="bi bi-chevron-up"></i> Collapse Full Profile` 
+                : `<i class="bi bi-chevron-down"></i> Expand Full Profile`;
+        }
+    };
+
+    window.generateNPCImage = async function (index, btn) {
+        let npc = window.roleplayState.npcs[index];
+        if (!npc) return;
+        
+        let imgFn = typeof window.image !== 'undefined' ? window.image : (typeof image !== 'undefined' ? image : null);
+        if (!imgFn) {
+            alert("Image generation plugin is not available.");
+            return;
+        }
+
+        let origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
+
+        try {
+            let imgPrompt = `portrait of ${npc.name || "character"}, ${npc.gender || ""} ${npc.age || ""} ${npc.race || ""}. ${npc.appearance || ""}. Artstyle: anime cel shading, manhwa style, semi-realistic, mature, artstation quality. composition: upper-body portrait, centered, looking at the camera, pure solid white background.`;
+            let imgRes = await imgFn({
+                prompt: imgPrompt,
+                resolution: "512x512"
+            });
+            if (imgRes && imgRes.dataUrl) {
+                npc.image = imgRes.dataUrl;
+                window.saveRoleplayState();
+                
+                // Update DOM directly
+                let imgContainer = document.getElementById(`rpNPC-${index}-imgContainer`);
+                if (imgContainer) {
+                    imgContainer.style.backgroundImage = `url(${imgRes.dataUrl})`;
+                    imgContainer.innerHTML = "";
+                }
+            }
+        } catch (err) {
+            console.error("Failed to generate NPC image:", err);
+            alert("Image generation failed. Try again.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origText;
+        }
     };
 /* ==========================================================================
    CUSTOM DROPDOWN CONFIGURATION
@@ -224,11 +346,19 @@
             rpSettingEl.value = value;
             window.syncCustomSelectLabel(rpSettingEl);
         }
+        // Bidirectional sync to Characters tab settingEl
+        const settingEl = document.getElementById("settingEl");
+        if (settingEl) {
+            settingEl.value = value;
+            window.syncCustomSelectLabel(settingEl);
+            localStorage.setting = value;
+        }
         window.saveRoleplayState();
+        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
     window.getSelectedRoleplayTones = function () {
-        const sel = multiSelectState["rpToneEl"];
+        const sel = window.multiSelectState ? window.multiSelectState["rpToneEl"] : null;
         if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
             return ["Any"];
         }
@@ -236,8 +366,22 @@
     };
 
     window.saveRoleplayTones = function () {
-        window.roleplayState.tones = getSelectedRoleplayTones();
+        const tones = getSelectedRoleplayTones();
+        window.roleplayState.tones = tones;
         window.saveRoleplayState();
+        
+        // Bidirectional sync to Characters tab toneEl
+        localStorage.tones = JSON.stringify(tones);
+        if (window.multiSelectState && window.multiSelectState["toneEl"]) {
+            const sel = new Set();
+            tones.forEach(t => {
+                if (t !== "Any" && t !== "none") sel.add(t);
+            });
+            if (sel.size === 0) sel.add("none");
+            window.multiSelectState["toneEl"] = sel;
+            window.syncCustomSelectLabel("toneEl");
+        }
+        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
     window.updateRoleplayToneLabel = function () {
@@ -255,11 +399,75 @@
                     if (t !== "Any") sel.add(t);
                 });
             }
-            multiSelectState["rpToneEl"] = sel;
+            if (window.multiSelectState) {
+                window.multiSelectState["rpToneEl"] = sel;
+            }
         } catch (e) {
-            multiSelectState["rpToneEl"] = new Set(["none"]);
+            if (window.multiSelectState) {
+                window.multiSelectState["rpToneEl"] = new Set(["none"]);
+            }
         }
         window.syncCustomSelectLabel("rpToneEl");
+    };
+
+    window.changeNPCCastCount = function (count) {
+        count = parseInt(count, 10);
+        if (isNaN(count) || count < 1) count = 1;
+        if (count > 10) count = 10;
+
+        let currentNpcs = window.roleplayState.npcs || [];
+        if (currentNpcs.length < count) {
+            // Add new empty NPCs
+            while (currentNpcs.length < count) {
+                currentNpcs.push({
+                    name: "", age: "", gender: "", race: "", role: "",
+                    appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+                    abilities: "", biography: "", rules: "", image: ""
+                });
+            }
+        } else if (currentNpcs.length > count) {
+            // Truncate NPCs list
+            currentNpcs.length = count;
+        }
+
+        window.roleplayState.npcs = currentNpcs;
+        window.saveRoleplayState();
+        window.renderNPCGrid();
+    };
+
+    window.saveRoleplayDynamics = function () {
+        window.roleplayState.rpDynamics = window.getSelectedRoleplayDynamics();
+        window.saveRoleplayState();
+    };
+
+    window.getSelectedRoleplayDynamics = function () {
+        const sel = window.multiSelectState ? window.multiSelectState["rpDynamicEl"] : null;
+        if (!sel || sel.size === 0 || (sel.size === 1 && sel.has("none"))) {
+            return ["Any"];
+        }
+        return Array.from(sel).filter(v => v !== "none");
+    };
+
+    window.loadRoleplayDynamics = function () {
+        try {
+            let saved = window.roleplayState.rpDynamics || ["Any"];
+            const sel = new Set();
+            if (!saved || saved.length === 0 || saved[0] === "Any" || saved[0] === "none") {
+                sel.add("none");
+            } else {
+                saved.forEach(t => {
+                    if (t !== "Any") sel.add(t);
+                });
+            }
+            if (window.multiSelectState) {
+                window.multiSelectState["rpDynamicEl"] = sel;
+            }
+        } catch (e) {
+            if (window.multiSelectState) {
+                window.multiSelectState["rpDynamicEl"] = new Set(["none"]);
+            }
+        }
+        window.syncCustomSelectLabel("rpDynamicEl");
     };
 
     // Magic wiki import for Roleplay Generator
@@ -369,9 +577,19 @@
             if (json.npcs && Array.isArray(json.npcs)) {
                 window.roleplayState.npcs = json.npcs.map(n => ({
                     name: n.name || "",
-                    species: n.species || "",
+                    age: n.age || "",
+                    gender: n.gender || "",
+                    race: n.race || n.species || "",
+                    role: n.role || "",
+                    appearance: n.appearance || "",
                     personality: n.personality || "",
-                    role: n.role || ""
+                    beliefs: n.beliefs || "",
+                    likes: n.likes || "",
+                    dislikes: n.dislikes || "",
+                    abilities: n.abilities || "",
+                    biography: n.biography || "",
+                    rules: n.rules || "",
+                    image: n.image || ""
                 }));
                 window.renderNPCGrid();
             }
@@ -459,22 +677,54 @@
             if (data && data.name) {
                 window.roleplayState.npcs[index] = {
                     name: data.name || "",
-                    species: data.species || "",
+                    age: data.age || "",
+                    gender: data.gender || "",
+                    race: data.race || data.species || "",
+                    role: data.role || "",
+                    appearance: data.appearance || "",
                     personality: data.personality || "",
-                    role: data.role || ""
+                    beliefs: data.beliefs || "",
+                    likes: data.likes || "",
+                    dislikes: data.dislikes || "",
+                    abilities: data.abilities || "",
+                    biography: data.biography || "",
+                    rules: data.rules || "",
+                    image: ""
                 };
-                window.saveRoleplayState();
-                
-                // Populate DOM fields directly
-                let nameInput = document.getElementById(`rpNPC-${index}-name`);
-                let speciesInput = document.getElementById(`rpNPC-${index}-species`);
-                let persInput = document.getElementById(`rpNPC-${index}-personality`);
-                let roleInput = document.getElementById(`rpNPC-${index}-role`);
 
-                if (nameInput) nameInput.value = data.name;
-                if (speciesInput) speciesInput.value = data.species;
-                if (persInput) persInput.value = data.personality;
-                if (roleInput) roleInput.value = data.role;
+                // Let's populate DOM fields directly to avoid layout disruption before image finishes
+                let fields = ["name", "age", "gender", "race", "role", "appearance", "personality", "beliefs", "likes", "dislikes", "abilities", "biography", "rules"];
+                fields.forEach(f => {
+                    let input = document.getElementById(`rpNPC-${index}-${f}`);
+                    if (input) input.value = data[f] || "";
+                });
+
+                // Trigger Text-to-Image for character
+                let imgFn = typeof window.image !== 'undefined' ? window.image : (typeof image !== 'undefined' ? image : null);
+                if (imgFn) {
+                    try {
+                        btn.innerHTML = `<i class="bi bi-image spin-icon"></i>`;
+                        let imgPrompt = `portrait of ${data.name || "character"}, ${data.gender || ""} ${data.age || ""} ${data.race || ""}. ${data.appearance || ""}. Artstyle: anime cel shading, manhwa style, semi-realistic, mature, artstation quality. composition: upper-body portrait, centered, looking at the camera, pure solid white background.`;
+                        let imgRes = await imgFn({
+                            prompt: imgPrompt,
+                            resolution: "512x512"
+                        });
+                        if (imgRes && imgRes.dataUrl) {
+                            window.roleplayState.npcs[index].image = imgRes.dataUrl;
+                            
+                            let imgContainer = document.getElementById(`rpNPC-${index}-imgContainer`);
+                            if (imgContainer) {
+                                imgContainer.style.backgroundImage = `url(${imgRes.dataUrl})`;
+                                imgContainer.innerHTML = "";
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Failed to generate NPC image:", err);
+                    }
+                }
+
+                window.saveRoleplayState();
+                window.renderNPCGrid();
             }
         } catch (e) {
             console.error("Failed to generate Roleplay NPC:", e);
@@ -597,11 +847,21 @@
         // Build NPC prompt block
         let npcsText = window.roleplayState.npcs.map((npc, idx) => {
             if (!npc.name) return "";
-            return `NPC #${idx + 1}:
-- Name: ${npc.name}
-- Species/Race: ${npc.species || "Unspecified"}
-- Personality: ${npc.personality || "Unspecified"}
-- Narrative Role: ${npc.role || "Unspecified"}`;
+            let lines = [`NPC #${idx + 1}:`, `- Name: ${npc.name}`];
+            if (npc.age) lines.push(`- Age: ${npc.age}`);
+            if (npc.gender) lines.push(`- Gender: ${npc.gender}`);
+            let raceVal = npc.race || npc.species;
+            if (raceVal) lines.push(`- Species/Race: ${raceVal}`);
+            if (npc.role) lines.push(`- Narrative Role: ${npc.role}`);
+            if (npc.appearance) lines.push(`- Appearance: ${npc.appearance}`);
+            if (npc.personality) lines.push(`- Personality: ${npc.personality}`);
+            if (npc.beliefs) lines.push(`- Beliefs/Worldview: ${npc.beliefs}`);
+            if (npc.likes) lines.push(`- Likes: ${npc.likes}`);
+            if (npc.dislikes) lines.push(`- Dislikes: ${npc.dislikes}`);
+            if (npc.abilities) lines.push(`- Abilities/Skills: ${npc.abilities}`);
+            if (npc.biography) lines.push(`- Biography/Background: ${npc.biography}`);
+            if (npc.rules) lines.push(`- Constraints/Rules: ${npc.rules}`);
+            return lines.join("\n");
         }).filter(Boolean).join("\n\n");
 
         if (!npcsText) {
@@ -626,6 +886,7 @@
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
         let themes = window.roleplayState.themes || "";
+        let rpDynamicsStr = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
 
         let prompt = root.prompts.roleplayPage.roleplayScenario.compile(
             window.literal(worldName), 
@@ -637,7 +898,8 @@
             window.literal(pRole), 
             window.literal(npcsText), 
             window.literal(scenarioNotes), 
-            lengthInstruction
+            lengthInstruction,
+            rpDynamicsStr
         );
 
         if (tabScenario) {
@@ -873,9 +1135,22 @@
         if (lengthEl) lengthEl.value = window.roleplayState.activeLength || "medium";
         if (themesEl) themesEl.value = window.roleplayState.themes || "";
 
-        // Restore setting and tone custom elements
+        // Restore setting, tone, dynamic, length custom elements
         window.selectRoleplaySetting(window.roleplayState.setting || "Any");
         window.loadRoleplayTones();
+        window.loadRoleplayDynamics();
+
+        let castCountEl = document.getElementById("rpNPCCastCountEl");
+        if (castCountEl) {
+            castCountEl.value = (window.roleplayState.npcs && window.roleplayState.npcs.length) || 2;
+            window.syncCustomSelectLabel(castCountEl);
+        }
+
+        let globalLengthEl = document.getElementById("rpGlobalLengthEl");
+        if (globalLengthEl) {
+            globalLengthEl.value = localStorage.globalLength || "custom";
+            window.syncCustomSelectLabel(globalLengthEl);
+        }
 
         // Restore dynamic NPC list
         window.renderNPCGrid();

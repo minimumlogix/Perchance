@@ -1748,6 +1748,91 @@
                         Clear All</button>
                 </div>
 
+                <!-- PANEL 1: CORE IDENTITY & PARAMETERS -->
+                <div class="panel" id="rpCoreParamsPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpCoreParamsPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-gear"></i></div>
+                            <span>Core Identity & Parameters</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+
+                        <!-- GLOBAL PARAMETERS (SETTING, TONE, NPC COUNT, LENGTH, DYNAMICS) -->
+                        <div
+                            style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
+                            <!-- SETTING -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-globe"></i> Setting</label>
+                                <select id="rpSettingEl" class="select-input length-select" data-dropdown-icon="bi bi-globe"
+                                    onchange="window.selectRoleplaySetting(this.value);">
+                                    <!-- Options populated dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- TONE -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-mask"></i> Tone</label>
+                                <select id="rpToneEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-mask"
+                                    onchange="window.saveRoleplayTones();">
+                                    <!-- Options populated dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- NPC CAST COUNT -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Choose the number of NPCs in the scene">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-people"></i> NPC Cast Count</label>
+                                <select id="rpNPCCastCountEl" class="select-input length-select" data-dropdown-icon="bi bi-people"
+                                    onchange="window.changeNPCCastCount(this.value);">
+                                    <option value="1">1 NPC</option>
+                                    <option value="2" selected>2 NPCs</option>
+                                    <option value="3">3 NPCs</option>
+                                    <option value="4">4 NPCs</option>
+                                    <option value="5">5 NPCs</option>
+                                    <option value="6">6 NPCs</option>
+                                    <option value="7">7 NPCs</option>
+                                    <option value="8">8 NPCs</option>
+                                    <option value="9">9 NPCs</option>
+                                    <option value="10">10 NPCs</option>
+                                </select>
+                            </div>
+
+                            <!-- GLOBAL LENGTH -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Override text length for all sections">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-text-left"></i> Global Length</label>
+                                <select id="rpGlobalLengthEl" class="select-input length-select" data-dropdown-icon="bi bi-text-left"
+                                    onchange="window.setGlobalLength(this.value);">
+                                    <option value="custom" selected>Custom (Individual)</option>
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                            </div>
+
+                            <!-- ROLEPLAY DYNAMICS -->
+                            <div style="display: flex; flex-direction: column; gap: 0.35rem;" title="Choose the dynamics among the roleplay characters">
+                                <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-heart-half"></i> Roleplay Dynamics</label>
+                                <select id="rpDynamicEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-heart-half"
+                                    onchange="window.saveRoleplayDynamics();">
+                                    <!-- Options populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- CORE THEMES -->
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Core Themes &
+                                Keywords</label>
+                            <textarea id="rpThemesEl" class="section-notes" style="min-height: 4rem; font-size: 86%;"
+                                placeholder="e.g. cyberpunk, political intrigue, high magic, dark atmosphere..."
+                                oninput="saveRoleplayState()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- MAGIC IMPORT -->
                 <div class="panel collapsed" id="rpMagicImportPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpMagicImportPanelEl')">
@@ -1805,56 +1890,6 @@
                     </div>
                 </div>
 
-                <!-- PANEL 1: CORE IDENTITY & PARAMETERS -->
-                <div class="panel" id="rpCoreParamsPanelEl">
-                    <div class="panel-header" onclick="togglePanel('rpCoreParamsPanelEl')">
-                        <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-gear"></i></div>
-                            <span>Core Identity & Parameters</span>
-                        </div>
-                        <span class="panel-chevron bi bi-chevron-down"></span>
-                    </div>
-                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
-
-                        <!-- GLOBAL PARAMETERS (SETTING, TONE) -->
-                        <div
-                            style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
-                            <!-- SETTING -->
-                            <select id="rpSettingEl" class="select-input length-select" data-dropdown-icon="bi bi-globe"
-                                onchange="window.selectRoleplaySetting(this.value);">
-                                <!-- Options populated dynamically -->
-                            </select>
-
-                            <!-- TONE -->
-                            <select id="rpToneEl" class="select-input length-select" multiple data-dropdown-icon="bi bi-mask"
-                                onchange="window.saveRoleplayTones();">
-                                <!-- Options populated dynamically -->
-                            </select>
-
-                            <!-- SAVED WORLDS SELECTOR DROPDOWN & SYNC -->
-                            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-                                <select id="rpWorldImportSelector" onchange="loadSavedWorldIntoRoleplay(this.value)"
-                                    class="select-input length-select"
-                                    style="font-size: 75%; height: 28px; cursor: pointer;">
-                                    <option value="">-- Load Saved World --</option>
-                                </select>
-                                <button class="btn btn-secondary btn-sm" onclick="syncWorldFromCharGen()"
-                                    style="font-size: 75%; padding: 0.25rem 0.5rem; height: 28px;"
-                                    title="Import active World Name & World Lore from the Characters tab"><i
-                                        class="bi bi-arrow-down-up"></i> Sync Active World</button>
-                            </div>
-                        </div>
-
-                        <!-- CORE THEMES -->
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Core Themes &
-                                Keywords</label>
-                            <textarea id="rpThemesEl" class="section-notes" style="min-height: 4rem; font-size: 86%;"
-                                placeholder="e.g. cyberpunk, political intrigue, high magic, dark atmosphere..."
-                                oninput="saveRoleplayState()"></textarea>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- PANEL 3: PLAYER / USER DETAILED PROFILE -->
                 <div class="panel" id="rpPlayerPanelEl">
@@ -1948,6 +1983,380 @@
                                 style="min-height: 4.5rem; font-size: 86%;"
                                 placeholder="e.g., The characters have just broken into a high-security vault, but the alarms start blaring. They must decide who takes the loot and how to escape..."
                                 oninput="saveRoleplayState()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE SECTION -->
+                <div class="panel" id="rpTab-timelinePanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpTab-timelinePanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-hourglass-split"></i></div>
+                            <span>Timeline</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="rpTab-timelineLengthEl"
+                                    onchange="localStorage.timelineLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="rpTab-timelineGenBtnEl"
+                                    onclick="generateSection('timeline')"><i class="bi bi-sparkles"></i>
+                                    Generate</button>
+                                <button class="btn btn-danger btn-sm" id="rpTab-timelineClearBtnEl"
+                                    onclick="clearSection('timeline')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="rpTab-timelineNotesEl" class="section-notes"
+                            oninput="localStorage.timelineNotes=this.value"
+                            placeholder="Notes for timeline  -  e.g. joined syndicate at 24, became rogue at 30..."></textarea>
+                        <div id="rpTab-timelineStatusEl" class="section-status"></div>
+                        <div id="rpTab-timelineOutputEl" class="section-output" contenteditable="false"></div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="rpTab-timelineEditBtnEl" onclick="toggleSectionEdit('timeline')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-timelineCopyBtnEl" onclick="copySectionText('timeline')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-timelineStopBtnEl" onclick="stopSection('timeline')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LORE SECTION -->
+                <div class="panel" id="rpTab-lorePanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpTab-lorePanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-scroll"></i></div>
+                            <span>Lore Entries</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <button class="btn btn-primary" id="rpTab-loreGenBtnEl" onclick="generateSection('lore')"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-danger btn-sm" id="rpTab-loreClearBtnEl"
+                                    onclick="clearSection('lore')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="rpTab-loreNotesEl" class="section-notes" oninput="localStorage.loreNotes=this.value"
+                            placeholder="Notes for lore  -  e.g. born in the forest, has a secret map..."></textarea>
+                        <div id="rpTab-loreStatusEl" class="section-status"></div>
+
+                        <!-- Grid of 5 Lore Entries -->
+                        <div id="rpTab-loreFieldsContainer"
+                            style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+                            <!-- Entry 1 -->
+                            <div class="lore-entry-row"
+                                style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                                <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 1</div>
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                                    <div class="detail-field">
+                                        <label class="detail-label">Keys (separated by semicolons)</label>
+                                        <input type="text" id="rpTab-loreKey1El" class="detail-input"
+                                            placeholder="e.g. leg; high school; hurt"
+                                            oninput="saveLoreToLocalStorage()">
+                                    </div>
+                                    <div class="detail-field">
+                                        <label class="detail-label">Content</label>
+                                        <textarea id="rpTab-loreContent1El" class="detail-input"
+                                            style="min-height: 2.2rem; resize: vertical;"
+                                            placeholder="e.g. Coco broke his leg in high school."
+                                            oninput="saveLoreToLocalStorage()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Entry 2 -->
+                            <div class="lore-entry-row"
+                                style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                                <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 2</div>
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                                    <div class="detail-field">
+                                        <label class="detail-label">Keys (separated by semicolons)</label>
+                                        <input type="text" id="rpTab-loreKey2El" class="detail-input"
+                                            placeholder="e.g. joyland; internet; website"
+                                            oninput="saveLoreToLocalStorage()">
+                                    </div>
+                                    <div class="detail-field">
+                                        <label class="detail-label">Content</label>
+                                        <textarea id="rpTab-loreContent2El" class="detail-input"
+                                            style="min-height: 2.2rem; resize: vertical;"
+                                            placeholder="e.g. Joyland is Coco's favorite website."
+                                            oninput="saveLoreToLocalStorage()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Entry 3 -->
+                            <div class="lore-entry-row"
+                                style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                                <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 3</div>
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                                    <div class="detail-field">
+                                        <label class="detail-label">Keys (separated by semicolons)</label>
+                                        <input type="text" id="rpTab-loreKey3El" class="detail-input" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()">
+                                    </div>
+                                    <div class="detail-field">
+                                        <label class="detail-label">Content</label>
+                                        <textarea id="rpTab-loreContent3El" class="detail-input"
+                                            style="min-height: 2.2rem; resize: vertical;" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Entry 4 -->
+                            <div class="lore-entry-row"
+                                style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                                <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 4</div>
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                                    <div class="detail-field">
+                                        <label class="detail-label">Keys (separated by semicolons)</label>
+                                        <input type="text" id="rpTab-loreKey4El" class="detail-input" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()">
+                                    </div>
+                                    <div class="detail-field">
+                                        <label class="detail-label">Content</label>
+                                        <textarea id="rpTab-loreContent4El" class="detail-input"
+                                            style="min-height: 2.2rem; resize: vertical;" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Entry 5 -->
+                            <div class="lore-entry-row"
+                                style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 8px;">
+                                <div style="font-size: 80%; font-weight: 600; color: var(--accent-color);">Entry 5</div>
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                                    <div class="detail-field">
+                                        <label class="detail-label">Keys (separated by semicolons)</label>
+                                        <input type="text" id="rpTab-loreKey5El" class="detail-input" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()">
+                                    </div>
+                                    <div class="detail-field">
+                                        <label class="detail-label">Content</label>
+                                        <textarea id="rpTab-loreContent5El" class="detail-input"
+                                            style="min-height: 2.2rem; resize: vertical;" placeholder="..."
+                                            oninput="saveLoreToLocalStorage()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Raw Output for streaming -->
+                        <div id="rpTab-loreOutputEl" class="section-output" contenteditable="false"
+                            style="max-height:120px; overflow-y:auto; margin-top:0.5rem; font-family:monospace; font-size:85%;">
+                        </div>
+
+                        <div style="margin-top:0.75rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="rpTab-loreExportJsonBtnEl" onclick="exportLoreAsJson()"><i
+                                    class="bi bi-file-earmark-arrow-down"></i> Export as JSON</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-loreCopyBtnEl" onclick="copySectionText('lore')"><i class="bi bi-clipboard"></i> Copy JSON</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-loreStopBtnEl" onclick="stopSection('lore')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROLEPLAY EXAMPLE SECTION -->
+                <div class="panel" id="rpTab-roleplayPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpTab-roleplayPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-controller"></i></div>
+                            <span>Roleplay Examples</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="rpTab-roleplayLengthEl"
+                                    onchange="localStorage.roleplayLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="rpTab-roleplayGenBtnEl" onclick="generateSection('roleplay')"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-danger btn-sm" id="rpTab-roleplayClearBtnEl"
+                                    onclick="clearSection('roleplay')"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="rpTab-roleplayNotesEl" class="section-notes"
+                            oninput="localStorage.roleplayNotes=this.value"
+                            placeholder="Notes for examples  -  e.g. focus on their sarcasm, show them in a fight..."></textarea>
+                        <div id="rpTab-roleplayStatusEl" class="section-status"></div>
+                        <div id="rpTab-roleplayOutputEl" class="section-output" contenteditable="false">
+                        </div>
+                        <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" id="rpTab-roleplayEditBtnEl" onclick="toggleSectionEdit('roleplay')"><i class="bi bi-pencil-square"></i> edit</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-roleplayCopyBtnEl" onclick="copySectionText('roleplay')"><i class="bi bi-clipboard"></i> copy</button>
+                            <button class="btn btn-secondary btn-sm" id="rpTab-roleplayStopBtnEl" onclick="stopSection('roleplay')"
+                                style="display:none;"><i class="bi bi-stop-circle"></i> stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INTRO SECTION -->
+                <div class="panel" id="rpTab-introPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpTab-introPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-chat-dots"></i></div>
+                            <span>Roleplay Intro</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;"
+                                onclick="event.stopPropagation()">
+                                <select class="select-input length-select" id="rpTab-introLengthEl"
+                                    onchange="localStorage.introLength=this.value">
+                                    <option value="super-short">Super Short</option>
+                                    <option value="short">Short</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="long">Long</option>
+                                    <option value="super-long">Super Long</option>
+                                </select>
+                                <button class="btn btn-primary" id="rpTab-introGenBtnEl" onclick="generateIntro()"><i
+                                        class="bi bi-sparkles"></i> Generate</button>
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introStopBtnEl" onclick="stopIntroGeneration()"
+                                    style="display:none;"><i class="bi bi-stop-fill"></i> Stop</button>
+                                <button class="btn btn-danger btn-sm" id="rpTab-introClearBtnEl"
+                                    onclick="clearIntro()"><i class="bi bi-trash"></i> Clear</button>
+                            </div>
+                            <span class="panel-chevron bi bi-chevron-down"></span>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <textarea id="rpTab-introNotesEl" class="section-notes" oninput="localStorage.introNotes=this.value"
+                            placeholder="Notes for intro  -  e.g. focus on physical reactions, uncensored, describe setting..."></textarea>
+                        
+                        <!-- Scenario Context Subsection -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="bi bi-compass" style="color:var(--accent-color);"></i>
+                                    Scenario Context
+                                    <label style="margin-left: 0.5rem; font-size: 80%; font-weight: normal; display: flex; align-items: center; gap: 0.2rem; cursor: pointer;" title="If checked, the scenario context will be written without any first-person or third-person constraints, reading like a general introduction.">
+                                        <input type="checkbox" id="rpTab-ignorePerspectiveToggle" checked onchange="localStorage.ignorePerspective=this.checked" style="accent-color:var(--accent-color);">
+                                        Ignore Perspective
+                                    </label>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introScenarioGenBtnEl" onclick="generateSection('introScenario')"
+                                        title="Regenerate Scenario Context" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introScenarioStopBtnEl" onclick="stopSection('introScenario')"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introScenario')"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear Scenario Context"><i
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
+                                </div>
+                            </div>
+                            <div id="rpTab-introScenarioStatusEl" class="section-status"></div>
+                            <div id="rpTab-introScenarioOutputEl" class="section-output" contenteditable="false"></div>
+                            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introScenarioEditBtnEl" onclick="toggleSectionEdit('introScenario')"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introScenarioCopyBtnEl" onclick="copySectionText('introScenario')"><i class="bi bi-clipboard"></i> copy</button>
+                            </div>
+                        </div>
+
+                        <!-- Roleplay Start Subsection -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px dashed var(--panel-border); padding-top: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="bi bi-chat-left-text" style="color:var(--accent-color);"></i>
+                                    Roleplay Start (Dialogue & Narration)
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.3rem;">
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introStartGenBtnEl" onclick="generateSection('introStart')"
+                                        title="Regenerate Roleplay Start" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
+                                            class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introStartStopBtnEl" onclick="stopSection('introStart')"
+                                        style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
+                                            class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introStart')"
+                                        style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;" title="Clear Roleplay Start"><i
+                                            class="bi bi-trash" style="font-size: 1.1rem;"></i></button>
+                                </div>
+                            </div>
+                            <div id="rpTab-introStartStatusEl" class="section-status"></div>
+                            <div id="rpTab-introStartOutputEl" class="section-output" contenteditable="false"></div>
+                            <div style="margin-top:0.4rem; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introStartEditBtnEl" onclick="toggleSectionEdit('introStart')"><i class="bi bi-pencil-square"></i> edit</button>
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introStartCopyBtnEl" onclick="copySectionText('introStart')"><i class="bi bi-clipboard"></i> copy</button>
+                            </div>
+                        </div>
+
+                        <!-- Roleplay Intro Images Subsection -->
+                        <div id="rpTab-introImageContainer" class="image-tools-section" style="margin-top: 1.25rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-main);">
+                                    <i class="bi bi-image" style="color:var(--accent-color);"></i>
+                                    Roleplay Scene Preview
+                                </div>
+                                <div style="display:flex; align-items:center; gap:0.4rem;">
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introImageBgGenBtn" onclick="generateRoleplayImageBg()" title="Generate/Regenerate Background" style="padding: 0.25rem 0.5rem; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-image"></i> BG</button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introImageBgStopBtn" onclick="stopRoleplayImageBgGen()" title="Stop Background Generation" style="display: none; padding: 0.25rem 0.5rem; height: 30px; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-stop-circle"></i> Stop BG</button>
+                                    
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introImageCharGenBtn" onclick="generateRoleplayImageChar()" title="Generate/Regenerate Character Sprite" style="padding: 0.25rem 0.5rem; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-person"></i> Char</button>
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introImageCharStopBtn" onclick="stopRoleplayImageCharGen()" title="Stop Character Generation" style="display: none; padding: 0.25rem 0.5rem; height: 30px; align-items: center; justify-content: center; gap: 0.25rem;"><i class="bi bi-stop-circle"></i> Stop Char</button>
+                                </div>
+                            </div>
+                            
+                            <div id="rpTab-introImageStage" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #0f111a; overflow: hidden; border-radius: 12px; border: 1px solid var(--panel-border); display: flex; justify-content: center; align-items: flex-end; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                                <!-- Stage Placeholder -->
+                                <div id="rpTab-introImagePlaceholder" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text-muted); pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(124,58,237,0.05) 0%, rgba(15,17,26,0.85) 100%); text-align: center;">
+                                    <i class="bi bi-image" style="font-size: 2.5rem; color: var(--accent-color); opacity: 0.6; filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb), 0.35));"></i>
+                                    <span style="font-size: 85%; font-weight: 500; opacity: 0.8;">No Scene Preview Generated Yet</span>
+                                    <span style="font-size: 75%; opacity: 0.5;">Use the controls above to generate BG and Character sprite.</span>
+                                </div>
+
+                                <!-- Name tag -->
+                                <div id="rpTab-introImageNameTag" style="position: absolute; top: 12px; left: 12px; background: rgba(15, 17, 26, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 4px 12px; border-radius: 6px; font-weight: 600; font-family: inherit; z-index: 10; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none;">Name</div>
+                                
+                                <!-- Background Image -->
+                                <div id="rpTab-introImageBg" style="position: absolute; inset: 0; width: 100%; height: 100%; filter: brightness(0.5); background-size: cover; background-position: center; transition: opacity 0.3s ease;"></div>
+                                
+                                <!-- Character Image -->
+                                <canvas id="rpTab-introImageCharCanvas" style="position: relative; z-index: 5; max-height: 100%; filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb), 0.6)); transition: opacity 0.3s ease;"></canvas>
+
+                                <!-- Loading Status -->
+                                <div id="rpTab-introImageStatus" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,17,26,0.85); backdrop-filter: blur(6px); color: white; z-index: 20; gap: 0.5rem; font-weight: 500; font-size: 0.9rem; text-align: center; padding: 1rem; display: none;"></div>
+                            </div>
+
+                            <div style="font-size: 80%; color: var(--text-muted); margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--panel-border); padding-top: 0.75rem;">
+                                <div style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.35rem;">
+                                    <i class="bi bi-pencil-fill" style="color: var(--accent-color);"></i>
+                                    <span>Scene Prompts (Editable)</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem;">
+                                    <div style="display: flex; gap: 0.35rem; flex-direction: column; text-align: left;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 85%; font-weight: 500; color: var(--text-main);">Background Prompt</span>
+                                            <button class="btn btn-ghost btn-sm" onclick="copyText(document.getElementById('rpTab-introBgPromptEl').value, this)" style="padding: 0.1rem 0.3rem;" title="Copy Background Prompt"><i class="bi bi-clipboard"></i></button>
+                                        </div>
+                                        <textarea id="rpTab-introBgPromptEl" class="image-tools-textarea" style="min-height: 4rem;" oninput="window.overwrittenIntroBgPrompt=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" placeholder="No background prompt generated. Click 'BG' above to generate."></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 0.35rem; flex-direction: column; text-align: left;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 85%; font-weight: 500; color: var(--text-main);">Character Sprite Prompt</span>
+                                            <button class="btn btn-ghost btn-sm" onclick="copyText(document.getElementById('rpTab-introCharPromptEl').value, this)" style="padding: 0.1rem 0.3rem;" title="Copy Character Prompt"><i class="bi bi-clipboard"></i></button>
+                                        </div>
+                                        <textarea id="rpTab-introCharPromptEl" class="image-tools-textarea" style="min-height: 4rem;" oninput="window.overwrittenIntroCharPrompt=this.value; if(window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();" placeholder="No character prompt generated. Click 'Char' above to generate."></textarea>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

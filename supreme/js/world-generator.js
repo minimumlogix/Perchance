@@ -108,8 +108,10 @@
     window.syncWorldSelectors = function (id) {
         let charDropdown = document.getElementById("charWorldImportSelector");
         let rpDropdown = document.getElementById("rpWorldImportSelector");
+        let rpWorldImportBtnSelect = document.getElementById("rpWorldImportBtnSelect");
         if (charDropdown) charDropdown.value = id || "";
         if (rpDropdown) rpDropdown.value = id || "";
+        if (rpWorldImportBtnSelect) rpWorldImportBtnSelect.value = id || "";
     };
 
     // Apply world state to all DOM elements in the workspace
@@ -837,12 +839,19 @@
 
         let charDropdown = document.getElementById("charWorldImportSelector");
         let rpDropdown = document.getElementById("rpWorldImportSelector");
+        let rpWorldImportBtnSelect = document.getElementById("rpWorldImportBtnSelect");
 
         let optionsHtml = `<option value="">-- Load Saved World --</option>`;
         optionsHtml += saved.map(w => `<option value="${w.id}">${w.name}</option>`).join("");
 
         if (charDropdown) charDropdown.innerHTML = optionsHtml;
         if (rpDropdown) rpDropdown.innerHTML = optionsHtml;
+        
+        if (rpWorldImportBtnSelect) {
+            let importBtnOptions = `<option value="">-- Select Saved World --</option>`;
+            importBtnOptions += saved.map(w => `<option value="${w.id}">${w.name}</option>`).join("");
+            rpWorldImportBtnSelect.innerHTML = importBtnOptions;
+        }
     };
 
     // Exports and imports saved worlds lists
