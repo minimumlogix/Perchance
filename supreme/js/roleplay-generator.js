@@ -55,7 +55,7 @@
         try {
             // Read current DOM values
             window.roleplayState.worldName = document.getElementById("rpWorldNameEl")?.value || "";
-            window.roleplayState.worldLore = document.getElementById("rpWorldLoreEl")?.value || "";
+            window.roleplayState.worldLoreNotes = document.getElementById("rpWorldLoreNotesEl")?.value || "";
             window.roleplayState.userName = document.getElementById("rpUserNameEl")?.value || "";
             window.roleplayState.userRole = document.getElementById("rpUserRoleEl")?.value || "";
             window.roleplayState.scenarioNotes = document.getElementById("rpScenarioNotesEl")?.value || "";
@@ -65,6 +65,7 @@
             localStorage.rpState = JSON.stringify({
                 worldName: window.roleplayState.worldName,
                 worldLore: window.roleplayState.worldLore,
+                worldLoreNotes: window.roleplayState.worldLoreNotes,
                 userName: window.roleplayState.userName,
                 userRole: window.roleplayState.userRole,
                 setting: window.roleplayState.setting,
@@ -615,41 +616,134 @@
     };
 
     // AI generating buttons for Roleplay
-    window.generateRoleplayWorldLore = async function (btn) {
-        window.saveRoleplayState();
-        let name = window.roleplayState.worldName.trim() || "Unnamed World";
+    window.generateRoleplayWorldLore = async function () {
+        if (window.roleplayWorldLoreGenerating) return false;
+        
+        window.roleplayWorldLoreGenerating = true;
+        let genBtn = document.getElementById("rpWorldGenBtnEl");
+        let stopBtn = document.getElementById("rpWorldStopBtnEl");
+        if (genBtn) genBtn.disabled = true;
+        if (stopBtn) stopBtn.style.display = "inline-block";
+
+        let statusEl = document.getElementById("rpWorldStatusEl");
+        if (statusEl) statusEl.innerHTML = `<span><i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> Chronicling world lore...</span>`;
+
+        let outputEl = document.getElementById("rpWorldOutputEl");
+        if (outputEl) {
+            outputEl.innerHTML = "";
+            outputEl.style.display = "block";
+        }
+
+        let name = (document.getElementById("rpWorldNameEl")?.value || "").trim() || "Unnamed World";
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
-
-        let origText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
+        let notes = document.getElementById("rpWorldLoreNotesEl")?.value || "";
 
         root.name = window.literal(name);
         root.setting = setting;
         root.tonesStr = tonesStr;
-        let instruction = root.prompts.roleplayPage.worldLore.instruction.evaluateItem;
+        root.notes = window.literal(notes);
 
-        let loreEl = document.getElementById("rpWorldLoreEl");
-        if (loreEl) {
-            loreEl.value = "";
-            loreEl.placeholder = "Chronicling world lore...";
-        }
+        // Compile prompt
+        let instruction = window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, notes);
+
+        let typewriter = new TypewriterStreamer(outputEl, { speed: 12 });
+        window.rpWorldLoreTypewriter = typewriter;
+
+        let stream = ai({
+            instruction,
+            onChunk: (data) => {
+                typewriter.appendTargetText(data.fullTextSoFar);
+            }
+        });
+        window.rpWorldLoreStream = stream;
 
         try {
-            let res = await ai({ instruction });
-            let text = res.text.trim().replace(/\u2014/g, " - ");
-            if (loreEl) {
-                loreEl.value = text;
+            let res = await stream;
+            typewriter.destroy();
+
+            if (res.stopReason === "user") {
+                if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444;"><i class="bi bi-stop-circle-fill"></i> Stopped.</span>`;
+                return false;
             }
+
+            let text = res.text.trim().replace(/\u2014/g, " - ");
+            if (outputEl) outputEl.innerHTML = formatSectionText(text);
+            
             window.roleplayState.worldLore = text;
+            if (window.syncWorldLore) {
+                window.syncWorldLore(text);
+                window.saveWorldState();
+            }
+
             window.saveRoleplayState();
+            if (statusEl) statusEl.innerHTML = "";
+            return true;
         } catch (e) {
             console.error("Failed to generate Roleplay World Lore:", e);
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444;"><i class="bi bi-exclamation-triangle-fill"></i> Failed.</span>`;
+            return false;
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = origText;
+            window.roleplayWorldLoreGenerating = false;
+            if (genBtn) genBtn.disabled = false;
+            if (stopBtn) stopBtn.style.display = "none";
         }
+    };
+
+    window.stopRoleplayWorldLore = function () {
+        if (window.rpWorldLoreStream) {
+            window.rpWorldLoreStream.stop();
+        }
+        if (window.rpWorldLoreTypewriter) {
+            window.rpWorldLoreTypewriter.destroy();
+        }
+        window.roleplayWorldLoreGenerating = false;
+    };
+
+    window.clearRoleplayWorldLore = function () {
+        if (!confirm("Are you sure you want to clear World Lore?")) return;
+        let outputEl = document.getElementById("rpWorldOutputEl");
+        if (outputEl) outputEl.innerHTML = "";
+        let notesEl = document.getElementById("rpWorldLoreNotesEl");
+        if (notesEl) notesEl.value = "";
+        window.roleplayState.worldLore = "";
+        window.saveRoleplayState();
+    };
+
+    window.toggleRoleplayWorldLoreEdit = function () {
+        let outputEl = document.getElementById("rpWorldOutputEl");
+        let editBtn = document.getElementById("rpWorldEditBtnEl");
+        if (!outputEl || !editBtn) return;
+        let isEditing = outputEl.contentEditable === "true";
+        let nextEditing = !isEditing;
+
+        outputEl.contentEditable = nextEditing ? "true" : "false";
+        if (nextEditing) {
+            outputEl.style.border = "1px solid var(--accent-color)";
+            outputEl.style.padding = "0.4rem";
+            editBtn.innerHTML = '<i class="bi bi-floppy"></i> save';
+            outputEl.focus();
+        } else {
+            outputEl.style.border = "none";
+            outputEl.style.padding = "0.4rem 0";
+            editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
+            window.roleplayState.worldLore = outputEl.innerText;
+            window.saveRoleplayState();
+        }
+    };
+
+    window.copyRoleplayWorldLoreText = function () {
+        let outputEl = document.getElementById("rpWorldOutputEl");
+        if (!outputEl) return;
+        let text = outputEl.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            let copyBtn = document.getElementById("rpWorldCopyBtnEl");
+            if (copyBtn) {
+                let origHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check"></i> copied';
+                setTimeout(() => { copyBtn.innerHTML = origHtml; }, 1500);
+            }
+        });
     };
 
     window.generateRoleplayNPC = async function (index, btn) {
@@ -735,42 +829,97 @@
         }
     };
 
-    window.generateRoleplayScenarioNotes = async function (btn) {
-        window.saveRoleplayState();
-        let worldName = window.roleplayState.worldName || "Unnamed World";
-        let worldLore = window.roleplayState.worldLore || "Generic setting";
-        
-        let npcsText = window.roleplayState.npcs.map(n => n.name).filter(Boolean).join(", ");
-        let userRole = window.roleplayState.userRole || "Player";
+    window.generateRoleplayCast = async function () {
+        let npcs = window.roleplayState.npcs || [];
+        let genBtn = document.getElementById("rpCastGenBtnEl");
+        let stopBtn = document.getElementById("rpCastStopBtnEl");
+        if (genBtn) genBtn.disabled = true;
+        if (stopBtn) stopBtn.style.display = "inline-block";
 
-        let origText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i>`;
-
-        root.worldName = window.literal(worldName);
-        root.worldLore = window.literal(worldLore);
-        root.npcsText = window.literal(npcsText);
-        root.userRole = window.literal(userRole);
-        let instruction = root.prompts.roleplayPage.scenarioNotes.instruction.evaluateItem;
-
-        let notesEl = document.getElementById("rpScenarioNotesEl");
-        if (notesEl) {
-            notesEl.value = "";
-            notesEl.placeholder = "Plotting conflict hook...";
-        }
+        window.roleplayCastGenStopped = false;
 
         try {
-            let res = await ai({ instruction });
-            let text = res.text.trim().replace(/\u2014/g, " - ");
-            if (notesEl) notesEl.value = text;
-            window.roleplayState.scenarioNotes = text;
-            window.saveRoleplayState();
+            for (let i = 0; i < npcs.length; i++) {
+                if (window.roleplayCastGenStopped) break;
+                let npc = npcs[i];
+                // Check if name is empty (indicating empty/unset card)
+                if (!npc.name || !npc.name.trim()) {
+                    let cardBtn = document.querySelector(`#rpNPCsPanelEl button[onclick*="generateRoleplayNPC(${i},"]`);
+                    let tempBtn = cardBtn || { innerHTML: "", disabled: false };
+                    
+                    let statusEl = document.getElementById("rpStatusEl");
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span><i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> Generating Cast Member #${i+1}...</span>`;
+                    }
+                    
+                    await window.generateRoleplayNPC(i, tempBtn);
+                }
+            }
+            return !window.roleplayCastGenStopped;
         } catch (e) {
-            console.error("Failed to generate Roleplay Scenario Notes:", e);
+            console.error("Cast generation failed:", e);
+            return false;
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = origText;
+            if (genBtn) genBtn.disabled = false;
+            if (stopBtn) stopBtn.style.display = "none";
         }
+    };
+
+    window.stopRoleplayCastGen = function () {
+        window.roleplayCastGenStopped = true;
+    };
+
+    window.clearRoleplayCast = function () {
+        if (!confirm("Are you sure you want to clear all cast members?")) return;
+        window.roleplayState.npcs = window.roleplayState.npcs.map(() => ({
+            name: "", age: "", gender: "", race: "", role: "",
+            appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+            abilities: "", biography: "", rules: "", image: ""
+        }));
+        window.saveRoleplayState();
+        window.renderNPCGrid();
+    };
+
+    window.clearRoleplayAll = function () {
+        if (!confirm("Are you sure you want to clear all fields and outputs on the Roleplay tab?")) return;
+        
+        // 1. World Setting & Lore
+        let worldOutput = document.getElementById("rpWorldOutputEl");
+        if (worldOutput) worldOutput.innerHTML = "";
+        let worldNotes = document.getElementById("rpWorldLoreNotesEl");
+        if (worldNotes) worldNotes.value = "";
+        window.roleplayState.worldLore = "";
+
+        // 2. NPC Cast
+        window.roleplayState.npcs = window.roleplayState.npcs.map(() => ({
+            name: "", age: "", gender: "", race: "", role: "",
+            appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+            abilities: "", biography: "", rules: "", image: ""
+        }));
+        window.renderNPCGrid();
+
+        // 3. Timeline, Lore, Examples, Intro
+        window.clearSection("timeline");
+        window.clearSection("lore");
+        window.clearSection("roleplay");
+        window.clearIntro();
+
+        // 4. Output Scenario and Starter
+        window.roleplayState.outputScenario = "";
+        window.roleplayState.outputStarter = "";
+
+        let tabScenario = document.getElementById("rpOutputTabEl-scenario");
+        let tabStarter = document.getElementById("rpOutputTabEl-starter");
+        if (tabScenario) tabScenario.innerHTML = "";
+        if (tabStarter) tabStarter.innerHTML = "";
+
+        let outputSec = document.getElementById("rpOutputSectionEl");
+        if (outputSec) outputSec.style.display = "none";
+
+        let statusEl = document.getElementById("rpStatusEl");
+        if (statusEl) statusEl.innerHTML = "";
+
+        window.saveRoleplayState();
     };
 
     // Toggle Output tabs (Scenario vs Starter)
@@ -838,107 +987,184 @@
         setSectionGenerating("roleplay", true); // Sync CPU loader
         setGenerationStatus("Weaving roleplay scenario...");
 
-        if (statusEl) {
-            statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
-                <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> Weaving roleplay details & cast interactions...
-            </span>`;
-        }
-
-        // Build NPC prompt block
-        let npcsText = window.roleplayState.npcs.map((npc, idx) => {
-            if (!npc.name) return "";
-            let lines = [`NPC #${idx + 1}:`, `- Name: ${npc.name}`];
-            if (npc.age) lines.push(`- Age: ${npc.age}`);
-            if (npc.gender) lines.push(`- Gender: ${npc.gender}`);
-            let raceVal = npc.race || npc.species;
-            if (raceVal) lines.push(`- Species/Race: ${raceVal}`);
-            if (npc.role) lines.push(`- Narrative Role: ${npc.role}`);
-            if (npc.appearance) lines.push(`- Appearance: ${npc.appearance}`);
-            if (npc.personality) lines.push(`- Personality: ${npc.personality}`);
-            if (npc.beliefs) lines.push(`- Beliefs/Worldview: ${npc.beliefs}`);
-            if (npc.likes) lines.push(`- Likes: ${npc.likes}`);
-            if (npc.dislikes) lines.push(`- Dislikes: ${npc.dislikes}`);
-            if (npc.abilities) lines.push(`- Abilities/Skills: ${npc.abilities}`);
-            if (npc.biography) lines.push(`- Biography/Background: ${npc.biography}`);
-            if (npc.rules) lines.push(`- Constraints/Rules: ${npc.rules}`);
-            return lines.join("\n");
-        }).filter(Boolean).join("\n\n");
-
-        if (!npcsText) {
-            npcsText = "None specified (generate 1-2 interesting NPCs fitting the world setting).";
-        }
-
-        // Starters length instructions
-        let lengthVal = window.roleplayState.activeLength || "medium";
-        let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal, 'starter') : "";
-        if (!lengthInstruction) {
-            if (lengthVal === "short") lengthInstruction = "Write a short, engaging starter message (1-2 paragraphs).";
-            else if (lengthVal === "long") lengthInstruction = "Write an extremely rich, slow-paced, detailed starter message (5+ paragraphs) setting up the atmosphere, sensory environment, and character positions.";
-            else lengthInstruction = "Write a medium-length, descriptive starter message (3-4 paragraphs).";
-        }
-
-        let worldName = window.roleplayState.worldName || "an unnamed realm";
-        let worldLore = window.roleplayState.worldLore || "a mysterious world of unknown dangers";
-        let pName = window.roleplayState.userName || "the Player";
-        let pRole = window.roleplayState.userRole || "a protagonist";
-        let scenarioNotes = window.roleplayState.scenarioNotes || "The characters are meeting for the first time or embarking on a mutual task.";
-
-        let setting = document.getElementById("rpSettingEl")?.value || "Any";
-        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
-        let themes = window.roleplayState.themes || "";
-        let rpDynamicsStr = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
-
-        let prompt = root.prompts.roleplayPage.roleplayScenario.compile(
-            window.literal(worldName), 
-            window.literal(worldLore), 
-            setting, 
-            tonesStr, 
-            window.literal(themes), 
-            window.literal(pName), 
-            window.literal(pRole), 
-            window.literal(npcsText), 
-            window.literal(scenarioNotes), 
-            lengthInstruction,
-            rpDynamicsStr
-        );
-
-        if (tabScenario) {
-            tabScenario.innerHTML = "";
-            tabScenario.placeholder = "Weaving scenario...";
-        }
-        if (tabStarter) {
-            tabStarter.innerHTML = "";
-            tabStarter.placeholder = "Preparing intro scene...";
-        }
-
-        let typewriterScenario = new TypewriterStreamer(tabScenario, { speed: 8 });
-        let typewriterStarter = new TypewriterStreamer(tabStarter, { speed: 8 });
-
-        window.roleplayState.outputScenario = "";
-        window.roleplayState.outputStarter = "";
-
-        let stream = ai({
-            instruction: prompt,
-            onChunk: (data) => {
-                let text = data.fullTextSoFar;
-                // Parse separation
-                if (text.includes("=== ROLEPLAY_STARTER_SEPARATOR ===")) {
-                    let parts = text.split("=== ROLEPLAY_STARTER_SEPARATOR ===");
-                    let scenarioPart = parts[0].trim();
-                    let starterPart = parts[1].trim();
-
-                    typewriterScenario.appendTargetText(scenarioPart);
-                    if (starterPart) {
-                        typewriterStarter.appendTargetText(starterPart);
-                    }
-                } else {
-                    typewriterScenario.appendTargetText(text.trim());
-                }
-            }
-        });
-        window.activeRpStream = stream;
-
         try {
+            // Pipeline Step 1: World Setting & Lore
+            let worldOutput = document.getElementById("rpWorldOutputEl");
+            if (worldOutput && !worldOutput.innerText.trim()) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Weaving World Lore...
+                    </span>`;
+                }
+                let success = await window.generateRoleplayWorldLore();
+                if (!success) return;
+            }
+
+            // Pipeline Step 2: NPC Casts
+            let npcs = window.roleplayState.npcs || [];
+            let needsCastGen = npcs.some(npc => !npc.name || !npc.name.trim());
+            if (needsCastGen) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Populating NPC Cast...
+                    </span>`;
+                }
+                let success = await window.generateRoleplayCast();
+                if (!success) return;
+            }
+
+            // Pipeline Step 3: Timeline
+            let timelineOutput = document.getElementById("rpTab-timelineOutputEl");
+            if (timelineOutput && !timelineOutput.innerText.trim()) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Building Scenario Timeline...
+                    </span>`;
+                }
+                let success = await window.generateSection("timeline");
+                if (!success) return;
+            }
+
+            // Pipeline Step 4: Lore Entries
+            let loreOutput = document.getElementById("rpTab-loreContent1El");
+            if (loreOutput && !loreOutput.value.trim()) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Designing Lore Entries...
+                    </span>`;
+                }
+                let success = await window.generateSection("lore");
+                if (!success) return;
+            }
+
+            // Pipeline Step 5: Roleplay Examples
+            let rpOutput = document.getElementById("rpTab-roleplayOutputEl");
+            if (rpOutput && !rpOutput.innerText.trim()) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Writing Roleplay Examples...
+                    </span>`;
+                }
+                let success = await window.generateSection("roleplay");
+                if (!success) return;
+            }
+
+            // Pipeline Step 6: Roleplay Intro
+            let introScenarioOutput = document.getElementById("rpTab-introScenarioOutputEl");
+            let introStartOutput = document.getElementById("rpTab-introStartOutputEl");
+            let introScenarioEmpty = !introScenarioOutput || !introScenarioOutput.innerText.trim();
+            let introStartEmpty = !introStartOutput || !introStartOutput.innerText.trim();
+            if (introScenarioEmpty || introStartEmpty) {
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                        <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> [Pipeline] Formatting Scene Intro...
+                    </span>`;
+                }
+                let success = await window.generateIntro();
+                if (!success) return;
+            }
+
+            // Final Step: Main Roleplay Scenario & Starter Generation
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:var(--text-muted); display:inline-flex; align-items:center; gap:0.4rem;">
+                    <i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> Weaving final roleplay scenario & starter...
+                </span>`;
+            }
+
+            // Build NPC prompt block
+            let npcsText = window.roleplayState.npcs.map((npc, idx) => {
+                if (!npc.name) return "";
+                let lines = [`NPC #${idx + 1}:`, `- Name: ${npc.name}`];
+                if (npc.age) lines.push(`- Age: ${npc.age}`);
+                if (npc.gender) lines.push(`- Gender: ${npc.gender}`);
+                let raceVal = npc.race || npc.species;
+                if (raceVal) lines.push(`- Species/Race: ${raceVal}`);
+                if (npc.role) lines.push(`- Narrative Role: ${npc.role}`);
+                if (npc.appearance) lines.push(`- Appearance: ${npc.appearance}`);
+                if (npc.personality) lines.push(`- Personality: ${npc.personality}`);
+                if (npc.beliefs) lines.push(`- Beliefs/Worldview: ${npc.beliefs}`);
+                if (npc.likes) lines.push(`- Likes: ${npc.likes}`);
+                if (npc.dislikes) lines.push(`- Dislikes: ${npc.dislikes}`);
+                if (npc.abilities) lines.push(`- Abilities/Skills: ${npc.abilities}`);
+                if (npc.biography) lines.push(`- Biography/Background: ${npc.biography}`);
+                if (npc.rules) lines.push(`- Constraints/Rules: ${npc.rules}`);
+                return lines.join("\n");
+            }).filter(Boolean).join("\n\n");
+
+            if (!npcsText) {
+                npcsText = "None specified (generate 1-2 interesting NPCs fitting the world setting).";
+            }
+
+            // Starters length instructions
+            let lengthVal = window.roleplayState.activeLength || "medium";
+            let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal, 'starter') : "";
+            if (!lengthInstruction) {
+                if (lengthVal === "short") lengthInstruction = "Write a short, engaging starter message (1-2 paragraphs).";
+                else if (lengthVal === "long") lengthInstruction = "Write an extremely rich, slow-paced, detailed starter message (5+ paragraphs) setting up the atmosphere, sensory environment, and character positions.";
+                else lengthInstruction = "Write a medium-length, descriptive starter message (3-4 paragraphs).";
+            }
+
+            let worldName = window.roleplayState.worldName || "an unnamed realm";
+            let worldLore = window.roleplayState.worldLore || "a mysterious world of unknown dangers";
+            let pName = window.roleplayState.userName || "the Player";
+            let pRole = window.roleplayState.userRole || "a protagonist";
+            let scenarioNotes = window.roleplayState.scenarioNotes || "The characters are meeting for the first time or embarking on a mutual task.";
+
+            let setting = document.getElementById("rpSettingEl")?.value || "Any";
+            let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+            let themes = window.roleplayState.themes || "";
+            let rpDynamicsStr = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+
+            let prompt = root.prompts.roleplayPage.roleplayScenario.compile(
+                window.literal(worldName), 
+                window.literal(worldLore), 
+                setting, 
+                tonesStr, 
+                window.literal(themes), 
+                window.literal(pName), 
+                window.literal(pRole), 
+                window.literal(npcsText), 
+                window.literal(scenarioNotes), 
+                lengthInstruction,
+                rpDynamicsStr
+            );
+
+            if (tabScenario) {
+                tabScenario.innerHTML = "";
+                tabScenario.placeholder = "Weaving scenario...";
+            }
+            if (tabStarter) {
+                tabStarter.innerHTML = "";
+                tabStarter.placeholder = "Preparing intro scene...";
+            }
+
+            let typewriterScenario = new TypewriterStreamer(tabScenario, { speed: 8 });
+            let typewriterStarter = new TypewriterStreamer(tabStarter, { speed: 8 });
+
+            window.roleplayState.outputScenario = "";
+            window.roleplayState.outputStarter = "";
+
+            let stream = ai({
+                instruction: prompt,
+                onChunk: (data) => {
+                    let text = data.fullTextSoFar;
+                    // Parse separation
+                    if (text.includes("=== ROLEPLAY_STARTER_SEPARATOR ===")) {
+                        let parts = text.split("=== ROLEPLAY_STARTER_SEPARATOR ===");
+                        let scenarioPart = parts[0].trim();
+                        let starterPart = parts[1].trim();
+
+                        typewriterScenario.appendTargetText(scenarioPart);
+                        if (starterPart) {
+                            typewriterStarter.appendTargetText(starterPart);
+                        }
+                    } else {
+                        typewriterScenario.appendTargetText(text.trim());
+                    }
+                }
+            });
+            window.activeRpStream = stream;
+
             let result = await stream;
             typewriterScenario.destroy();
             typewriterStarter.destroy();
@@ -969,7 +1195,7 @@
 
                 if (statusEl) statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Roleplay ready! Check the tabs below.</span>`;
 
-                // If starter is empty, show alert or auto switch
+                // If starter is not empty, show edit button
                 if (starterPart) {
                     let btn = document.getElementById("rpEditBtn");
                     if (btn) btn.style.display = "inline-flex";
@@ -977,8 +1203,6 @@
             }
         } catch (e) {
             console.error("Roleplay generation failed:", e);
-            typewriterScenario.destroy();
-            typewriterStarter.destroy();
             if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444;"><i class="bi bi-x-circle-fill"></i> Failed to generate.</span>`;
         } finally {
             window.roleplayState.isGenerating = false;
@@ -995,43 +1219,54 @@
         if (window.activeRpStream) {
             window.activeRpStream.stop();
         }
+        window.stopRoleplayWorldLore();
+        window.stopRoleplayCastGen();
+        window.stopSection("timeline");
+        window.stopSection("lore");
+        window.stopSection("roleplay");
+        window.stopIntroGeneration();
     };
 
-    // Clear Roleplay Data
     window.clearRoleplayData = function () {
-        window.showConfirmDialog(
-            "Are you sure you want to clear all Roleplay fields and generated sheets? This cannot be undone.",
-            'warnOnClear',
-            () => {
-                document.getElementById("rpWorldNameEl").value = "";
-                document.getElementById("rpWorldLoreEl").value = "";
-                document.getElementById("rpUserNameEl").value = "";
-                document.getElementById("rpUserRoleEl").value = "";
-                document.getElementById("rpScenarioNotesEl").value = "";
-                document.getElementById("rpLengthEl").value = "medium";
+        if (!confirm("Are you sure you want to clear all fields and outputs on the Roleplay tab? This cannot be undone.")) return;
+        
+        // 1. World Setting & Lore
+        let worldOutput = document.getElementById("rpWorldOutputEl");
+        if (worldOutput) worldOutput.innerHTML = "";
+        let worldNotes = document.getElementById("rpWorldLoreNotesEl");
+        if (worldNotes) worldNotes.value = "";
+        window.roleplayState.worldLore = "";
 
-                window.roleplayState.npcs = [{ name: "", species: "", personality: "", role: "" }];
-                window.roleplayState.outputScenario = "";
-                window.roleplayState.outputStarter = "";
+        // 2. NPC Cast
+        window.roleplayState.npcs = window.roleplayState.npcs.map(() => ({
+            name: "", age: "", gender: "", race: "", role: "",
+            appearance: "", personality: "", beliefs: "", likes: "", dislikes: "",
+            abilities: "", biography: "", rules: "", image: ""
+        }));
+        window.renderNPCGrid();
 
-                let tabScenario = document.getElementById("rpOutputTabEl-scenario");
-                let tabStarter = document.getElementById("rpOutputTabEl-starter");
-                if (tabScenario) { tabScenario.innerHTML = ""; tabScenario.contentEditable = "false"; }
-                if (tabStarter) { tabStarter.innerHTML = ""; tabStarter.contentEditable = "false"; }
+        // 3. Timeline, Lore, Examples, Intro
+        window.clearSection("timeline");
+        window.clearSection("lore");
+        window.clearSection("roleplay");
+        window.clearIntro();
 
-                let editBtn = document.getElementById("rpEditBtn");
-                if (editBtn) {
-                    editBtn.style.display = "none";
-                    editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
-                }
+        // 4. Output Scenario and Starter
+        window.roleplayState.outputScenario = "";
+        window.roleplayState.outputStarter = "";
 
-                let outputSec = document.getElementById("rpOutputSectionEl");
-                if (outputSec) outputSec.style.display = "none";
+        let tabScenario = document.getElementById("rpOutputTabEl-scenario");
+        let tabStarter = document.getElementById("rpOutputTabEl-starter");
+        if (tabScenario) tabScenario.innerHTML = "";
+        if (tabStarter) tabStarter.innerHTML = "";
 
-                window.renderNPCGrid();
-                window.saveRoleplayState();
-            }
-        );
+        let outputSec = document.getElementById("rpOutputSectionEl");
+        if (outputSec) outputSec.style.display = "none";
+
+        let statusEl = document.getElementById("rpStatusEl");
+        if (statusEl) statusEl.innerHTML = "";
+
+        window.saveRoleplayState();
     };
 
     // Edit Scenario / Starter Output
@@ -1120,7 +1355,8 @@
         
         // Restore elements value if present
         let nameEl = document.getElementById("rpWorldNameEl");
-        let loreEl = document.getElementById("rpWorldLoreEl");
+        let loreNotesEl = document.getElementById("rpWorldLoreNotesEl");
+        let worldOutputEl = document.getElementById("rpWorldOutputEl");
         let userEl = document.getElementById("rpUserNameEl");
         let userRoleEl = document.getElementById("rpUserRoleEl");
         let notesEl = document.getElementById("rpScenarioNotesEl");
@@ -1128,7 +1364,14 @@
         let themesEl = document.getElementById("rpThemesEl");
 
         if (nameEl) nameEl.value = window.roleplayState.worldName || "";
-        if (loreEl) loreEl.value = window.roleplayState.worldLore || "";
+        if (loreNotesEl) loreNotesEl.value = window.roleplayState.worldLoreNotes || "";
+        if (worldOutputEl && window.roleplayState.worldLore) {
+            worldOutputEl.innerHTML = formatSectionText(sanitizeOutput(window.roleplayState.worldLore));
+            let editBtn = document.getElementById("rpWorldEditBtnEl");
+            if (editBtn) editBtn.style.display = "inline-block";
+            let copyBtn = document.getElementById("rpWorldCopyBtnEl");
+            if (copyBtn) copyBtn.style.display = "inline-block";
+        }
         if (userEl) userEl.value = window.roleplayState.userName || "";
         if (userRoleEl) userRoleEl.value = window.roleplayState.userRole || "";
         if (notesEl) notesEl.value = window.roleplayState.scenarioNotes || "";

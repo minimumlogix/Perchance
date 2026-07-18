@@ -52,10 +52,16 @@
                 let name = (window.root && window.root.name) || "";
                 let setting = (window.root && window.root.setting) || "";
                 let tonesStr = (window.root && window.root.tonesStr) || "";
-                return window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr);
+                let notes = (window.root && window.root.notes) || "";
+                return window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, notes);
             }),
-            compile: function (name, setting, tonesStr) {
-                return "Write a concise world overview (3-4 sentences maximum) for a roleplay setting.\nWorld Name: " + name + "\nSetting: " + setting + "\nTones: " + tonesStr + "\n\nDo not include titles. Write in a factual, evocative style. Do not use the em-dash (—) character. Output only the lore content.";
+            compile: function (name, setting, tonesStr, notes) {
+                let prompt = "Write a concise world overview (3-4 sentences maximum) for a roleplay setting.\nWorld Name: " + name + "\nSetting: " + setting + "\nTones: " + tonesStr;
+                if (notes && notes.trim()) {
+                    prompt += "\nSpecific Notes/Themes: " + notes;
+                }
+                prompt += "\n\nDo not include titles. Write in a factual, evocative style. Do not use the em-dash (—) character. Output only the lore content.";
+                return prompt;
             }
         },
 

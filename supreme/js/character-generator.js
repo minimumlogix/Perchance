@@ -1399,8 +1399,12 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
     window.generateIntro = async function () {
         let btn = document.getElementById("introGenBtnEl");
         let stopBtn = document.getElementById("introStopBtnEl");
+        let rpTabBtn = document.getElementById("rpTab-introGenBtnEl");
+        let rpTabStopBtn = document.getElementById("rpTab-introStopBtnEl");
         if (btn) btn.disabled = true;
         if (stopBtn) stopBtn.style.display = "inline-block";
+        if (rpTabBtn) rpTabBtn.disabled = true;
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "inline-block";
         window.generateIntroRunning = true;
         
         try {
@@ -1417,6 +1421,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             window.generateIntroRunning = false;
             if (btn) btn.disabled = false;
             if (stopBtn) stopBtn.style.display = "none";
+            if (rpTabBtn) rpTabBtn.disabled = false;
+            if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
         }
     };
 
@@ -1424,6 +1430,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         window.generateIntroRunning = false;
         stopSection("introScenario");
         stopSection("introStart");
+        let rpTabStopBtn = document.getElementById("rpTab-introStopBtnEl");
+        if (rpTabStopBtn) rpTabStopBtn.style.display = "none";
     };
 
     window.clearIntro = function () {
@@ -4373,13 +4381,35 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 }
             }
 
+            let counterpartId = null;
+            if (this.element.id) {
+                if (this.element.id.startsWith("rpTab-")) {
+                    counterpartId = this.element.id.replace("rpTab-", "");
+                } else {
+                    counterpartId = "rpTab-" + this.element.id;
+                }
+            }
+            let counterpart = counterpartId ? document.getElementById(counterpartId) : null;
+
             let isTextarea = this.element.tagName === "TEXTAREA" || this.element.tagName === "INPUT";
             if (isTextarea) {
                 this.element.value = this.typedText + (this.queue.length > 0 ? "|" : "");
                 this.element.scrollTop = this.element.scrollHeight;
+                if (counterpart) {
+                    counterpart.value = this.typedText + (this.queue.length > 0 ? "|" : "");
+                    counterpart.scrollTop = counterpart.scrollHeight;
+                }
             } else {
-                this.element.innerHTML = formatSectionText(sanitizeOutput(this.typedText));
+                let html = formatSectionText(sanitizeOutput(this.typedText));
+                this.element.innerHTML = html;
                 this.element.appendChild(this.cursor);
+                if (counterpart) {
+                    counterpart.innerHTML = html;
+                    if (this.queue.length > 0) {
+                        let counterpartCursor = this.cursor.cloneNode(true);
+                        counterpart.appendChild(counterpartCursor);
+                    }
+                }
             }
 
             let mainContent = document.querySelector(".main-content");
