@@ -67,7 +67,259 @@
                 prompt += "\n\nDo not include titles. Write in a factual, evocative style. Do not use the em-dash (—) character. Output only the lore content.";
                 return prompt;
             }
-        },        npcGeneration: {
+        },
+
+        timeline: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                let lengthVal = (window.root && window.root.lengthVal) || "medium";
+                return window.prompts.roleplayPage.timeline.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal) {
+                let lengthRule = "Generate 4 to 6 major timeline events.";
+                if (lengthVal === "super-short") lengthRule = "Generate 2 to 3 major timeline events.";
+                else if (lengthVal === "short") lengthRule = "Generate 3 to 4 major timeline events.";
+                else if (lengthVal === "long") lengthRule = "Generate 6 to 8 major timeline events.";
+                else if (lengthVal === "super-long") lengthRule = "Generate 8 to 12 major timeline events.";
+
+                let prompt = `You are writing a chronological TIMELINE of key historical events, setup milestones, or backstory context leading up to the start of this roleplay session.
+
+World Name: ${worldName}
+Setting: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}
+Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}
+
+NPC Cast in the Scene:
+${npcsText}
+
+Specific Notes/Guidance: ${notes}
+
+Rules:
+1. ${lengthRule}
+2. Events must represent history, recent changes, occurrences, or actions by the NPCs and Player that set up the current scene.
+3. Do NOT make it about a single character's life; it must map out the world/scenario state and the events leading up to the start.
+4. Format: You MUST output exactly in this format (using a literal equals sign \\='):
+- [Time/Era/Year/Event] = [Milestone/Description]
+For example:
+- 10 Years Ago = The first dimensional rift opened in the lower sectors.
+- 3 Months Ago = Kaito was assigned as the lead warden of Sector 7.
+- Yesterday = The security grid was disabled by an unknown hacker.
+
+Do NOT include headers, markdown bolding, or introductions. Output only the list.`;
+                return prompt;
+            }
+        },
+
+        lore: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                return window.prompts.roleplayPage.lore.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes) {
+                let prompt = `You are generating timeless lore entries containing factual details, faction rules, magic mechanics, or world-building facts relevant to this roleplay session.
+
+World Name: ${worldName}
+Setting: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}
+Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}
+
+NPC Cast in the Scene:
+${npcsText}
+
+Specific Notes/Guidance: ${notes}
+
+Rules:
+1. You MUST generate a strict JSON object containing between 4 and 5 lore entries.
+2. The keys of the JSON object must be strings "1", "2", "3", "4", "5".
+3. Each entry must contain a "content" string (the lore details) and a "key" array of strings (lowercase keywords/phrases that trigger this lore during roleplay chat).
+4. Output ONLY the raw JSON object. Do not wrap in markdown \`\`\`json blocks.
+
+JSON format example:
+{
+  "1": {
+    "content": "The Sector 7 security sweep runs on an exact ten-minute loop. Any unregistered energy signatures trigger an automatic lockdown.",
+    "key": ["security", "sweep", "lockdown", "sector 7"]
+  },
+  "2": {
+    "content": "Aether-culls are elite agents trained specifically to neutralize mana-users and dismantle illegal arcane reactors.",
+    "key": ["aether-cull", "mana", "arcane", "illegal reactor"]
+  }
+}`;
+                return prompt;
+            }
+        },
+
+        roleplay: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                let lengthVal = (window.root && window.root.lengthVal) || "medium";
+                return window.prompts.roleplayPage.roleplay.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal) {
+                let lengthRule = "Write exactly 5 back-and-forth interactions.";
+                if (lengthVal === "super-short") lengthRule = "Write 2 back-and-forth interactions.";
+                else if (lengthVal === "short") lengthRule = "Write 3 back-and-forth interactions.";
+                else if (lengthVal === "long") lengthRule = "Write 6 to 8 back-and-forth interactions.";
+                else if (lengthVal === "super-long") lengthRule = "Write 8 to 12 back-and-forth interactions.";
+
+                let prompt = `You are writing a BEHAVIOUR EXAMPLE showing roleplay interaction between the Player (${userName}) and the NPC cast list.
+
+World Name: ${worldName}
+Setting: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}
+Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}
+
+NPC Cast in the Scene:
+${npcsText}
+
+Specific Notes/Guidance: ${notes}
+
+Rules:
+1. ${lengthRule}
+2. Format: Format response EXACTLY as:
+${userName}: "Dialogue" *Action description*
+[NPC Name]: "Dialogue" *Action description*
+3. The interactions should showcase how the NPCs react to the Player, how they speak based on their unique personalities, and the dynamics between the cast.
+4. Use asterisks for actions/narration and double quotes for dialogue.
+
+Do NOT include headers, labels, or introductions.`;
+                return prompt;
+            }
+        },
+
+        introScenario: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                let lengthVal = (window.root && window.root.lengthVal) || "medium";
+                return window.prompts.roleplayPage.introScenario.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal) {
+                let lengthRule = "Write a single cohesive paragraph (4-6 sentences).";
+                if (lengthVal === "super-short") lengthRule = "Write an ultra-concise setup (1-2 sentences).";
+                else if (lengthVal === "short") lengthRule = "Write a short setup (3-4 sentences).";
+                else if (lengthVal === "long") lengthRule = "Write a detailed, atmospheric description (7-8 sentences).";
+                else if (lengthVal === "super-long") lengthRule = "Write a comprehensive setup (9-12 sentences).";
+
+                let prompt = `You are writing the SCENARIO CONTEXT (Starting Scene Context) to establish the beginning of this roleplay session.
+
+World Name: ${worldName}
+Setting: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}
+Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}
+
+NPC Cast in the Scene:
+${npcsText}
+
+Specific Notes/Guidance: ${notes}
+
+Rules:
+1. ${lengthRule}
+2. Set the scene, the atmosphere, and the immediate situation. Explain where the player is, who the NPCs are in the scene, and the initial conflict or plot hook that launches the interaction.
+3. Output ONLY the scene context paragraphs. Do NOT include headers, labels (like 'Scenario Context:'), or dialogue. Focus purely on setup.`;
+                return prompt;
+            }
+        },
+
+        introStart: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                let lengthVal = (window.root && window.root.lengthVal) || "medium";
+                let scenarioContext = (window.root && window.root.scenarioContext) || "";
+                return window.prompts.roleplayPage.introStart.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal, scenarioContext);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, dynamics, userName, userRole, notes, lengthVal, scenarioContext) {
+                let lengthRule = "Write 1 to 2 paragraphs of dialogue and narration.";
+                if (lengthVal === "super-short") lengthRule = "Write a single line of dialogue with brief action description.";
+                else if (lengthVal === "long") lengthRule = "Write 3 to 4 detailed paragraphs of dialogue and sensory atmosphere.";
+                else if (lengthVal === "super-long") lengthRule = "Write 5+ comprehensive paragraphs of dialogue and deep sensory atmosphere.";
+
+                let prompt = `You are writing the first message of the NPC cast to start the roleplay.
+
+World Name: ${worldName}
+Setting: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}
+Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}
+
+NPC Cast in the Scene:
+${npcsText}
+
+Scenario Context:
+${scenarioContext}
+
+Specific Notes/Guidance: ${notes}
+
+Rules:
+1. ${lengthRule}
+2. Format: Output actions/narration inside asterisks and dialogues in double quotes. Include NPC speaker indicators if multiple NPCs speak.
+For example:
+*Kaito paces around the table* "The sweeps are clear, but we don't have much time." *Yvette looks up from her weapon* "Stop worrying. Just get the door open."
+3. Do NOT write from the Player's perspective.
+4. Output ONLY the greeting dialogue and narration. Do NOT include headers.`;
+                return prompt;
+            }
+        },
+
+        npcGeneration: {
             instruction: makeInstruction(() => {
                 let worldName = (window.root && window.root.worldName) || "";
                 let worldLore = (window.root && window.root.worldLore) || "";

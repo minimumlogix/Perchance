@@ -1978,7 +1978,7 @@
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
                                 <select class="select-input length-select" id="rpTab-timelineLengthEl"
-                                    onchange="localStorage.timelineLength=this.value">
+                                    onchange="localStorage.rpTimelineLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
                                     <option value="medium" selected>Medium</option>
@@ -1996,7 +1996,7 @@
                     </div>
                     <div class="panel-body">
                         <textarea id="rpTab-timelineNotesEl" class="section-notes"
-                            oninput="localStorage.timelineNotes=this.value"
+                            oninput="localStorage.rpTimelineNotes=this.value"
                             placeholder="Notes for timeline  -  e.g. joined syndicate at 24, became rogue at 30..."></textarea>
                         <div id="rpTab-timelineStatusEl" class="section-status"></div>
                         <div id="rpTab-timelineOutputEl" class="section-output" contenteditable="false"></div>
@@ -2028,7 +2028,7 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <textarea id="rpTab-loreNotesEl" class="section-notes" oninput="localStorage.loreNotes=this.value"
+                        <textarea id="rpTab-loreNotesEl" class="section-notes" oninput="localStorage.rpLoreNotes=this.value"
                             placeholder="Notes for lore  -  e.g. born in the forest, has a secret map..."></textarea>
                         <div id="rpTab-loreStatusEl" class="section-status"></div>
 
@@ -2157,7 +2157,7 @@
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
                                 <select class="select-input length-select" id="rpTab-roleplayLengthEl"
-                                    onchange="localStorage.roleplayLength=this.value">
+                                    onchange="localStorage.rpRoleplayLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
                                     <option value="medium" selected>Medium</option>
@@ -2174,7 +2174,7 @@
                     </div>
                     <div class="panel-body">
                         <textarea id="rpTab-roleplayNotesEl" class="section-notes"
-                            oninput="localStorage.roleplayNotes=this.value"
+                            oninput="localStorage.rpRoleplayNotes=this.value"
                             placeholder="Notes for examples  -  e.g. focus on their sarcasm, show them in a fight..."></textarea>
                         <div id="rpTab-roleplayStatusEl" class="section-status"></div>
                         <div id="rpTab-roleplayOutputEl" class="section-output" contenteditable="false">
@@ -2199,7 +2199,7 @@
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
                                 <select class="select-input length-select" id="rpTab-introLengthEl"
-                                    onchange="localStorage.introLength=this.value">
+                                    onchange="localStorage.rpIntroLength=this.value">
                                     <option value="super-short">Super Short</option>
                                     <option value="short">Short</option>
                                     <option value="medium" selected>Medium</option>
@@ -2217,7 +2217,7 @@
                         </div>
                     </div>
                     <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <textarea id="rpTab-introNotesEl" class="section-notes" oninput="localStorage.introNotes=this.value"
+                        <textarea id="rpTab-introNotesEl" class="section-notes" oninput="localStorage.rpIntroNotes=this.value"
                             placeholder="Notes for intro  -  e.g. focus on physical reactions, uncensored, describe setting..."></textarea>
                         
                         <!-- Scenario Context Subsection -->

@@ -624,8 +624,11 @@
         return JSON.parse(cleaned);
     };
 
-    window.loadLoreToUI = function(loreData) {
-        clearLoreFields();
+    window.loadLoreToUI = function(loreData, isRpOverride) {
+        let isRp = (isRpOverride !== undefined) ? isRpOverride : (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+        
+        window.clearLoreFields(isRpOverride);
         if (!loreData) return;
         
         let parsed = null;
@@ -651,65 +654,67 @@
                     }
                     let contentVal = entry.content || "";
                     
-                    let keyEl = document.getElementById("loreKey" + i + "El");
-                    let contentEl = document.getElementById("loreContent" + i + "El");
+                    let keyEl = document.getElementById(prefix + "loreKey" + i + "El");
+                    let contentEl = document.getElementById(prefix + "loreContent" + i + "El");
                     if (keyEl) keyEl.value = keysVal;
                     if (contentEl) contentEl.value = contentVal;
-
-                    let rpKeyEl = document.getElementById("rpTab-loreKey" + i + "El");
-                    let rpContentEl = document.getElementById("rpTab-loreContent" + i + "El");
-                    if (rpKeyEl) rpKeyEl.value = keysVal;
-                    if (rpContentEl) rpContentEl.value = contentVal;
                 }
             }
         } else {
-            let content1El = document.getElementById("loreContent1El");
+            let content1El = document.getElementById(prefix + "loreContent1El");
             if (content1El) {
                 content1El.value = String(loreData).trim();
             }
-            let rpContent1El = document.getElementById("rpTab-loreContent1El");
-            if (rpContent1El) {
-                rpContent1El.value = String(loreData).trim();
-            }
         }
-        saveLoreToLocalStorage();
+        if (isRp) {
+            window.saveRoleplayState();
+        } else {
+            saveLoreToLocalStorage();
+        }
     };
 
-    window.clearLoreFields = function() {
+    window.clearLoreFields = function(isRpOverride) {
+        let isRp = (isRpOverride !== undefined) ? isRpOverride : (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
         for (let i = 1; i <= 5; i++) {
-            let keyEl = document.getElementById("loreKey" + i + "El");
-            let contentEl = document.getElementById("loreContent" + i + "El");
+            let keyEl = document.getElementById(prefix + "loreKey" + i + "El");
+            let contentEl = document.getElementById(prefix + "loreContent" + i + "El");
             if (keyEl) keyEl.value = "";
             if (contentEl) contentEl.value = "";
-
-            let rpKeyEl = document.getElementById("rpTab-loreKey" + i + "El");
-            let rpContentEl = document.getElementById("rpTab-loreContent" + i + "El");
-            if (rpKeyEl) rpKeyEl.value = "";
-            if (rpContentEl) rpContentEl.value = "";
         }
     };
 
     window.saveLoreToLocalStorage = function() {
+        let isRp = (window.activeTab === "roleplay");
         let jsonStr = compileLoreFromUI();
-        if (jsonStr) {
-            localStorage.loreText = jsonStr;
-            if (window.characterSections) {
-                window.characterSections.lore = jsonStr;
+        if (isRp) {
+            window.roleplayState.lore = jsonStr;
+            if (typeof window.saveRoleplayState === "function") {
+                window.saveRoleplayState();
             }
         } else {
-            localStorage.removeItem("loreText");
-            if (window.characterSections) {
-                delete window.characterSections.lore;
+            if (jsonStr) {
+                localStorage.loreText = jsonStr;
+                if (window.characterSections) {
+                    window.characterSections.lore = jsonStr;
+                }
+            } else {
+                localStorage.removeItem("loreText");
+                if (window.characterSections) {
+                    delete window.characterSections.lore;
+                }
             }
         }
     };
 
     window.compileLoreFromUI = function() {
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
         let result = {};
         let hasAny = false;
         for (let i = 1; i <= 5; i++) {
-            let keyVal = (document.getElementById("loreKey" + i + "El")?.value || "").trim();
-            let contentVal = (document.getElementById("loreContent" + i + "El")?.value || "").trim();
+            let keyVal = (document.getElementById(prefix + "loreKey" + i + "El")?.value || "").trim();
+            let contentVal = (document.getElementById(prefix + "loreContent" + i + "El")?.value || "").trim();
             if (keyVal || contentVal) {
                 hasAny = true;
                 let keysArray = keyVal ? keyVal.split(";").map(k => k.trim()).filter(Boolean) : [];
@@ -728,9 +733,16 @@
         if (!jsonStr) {
             jsonStr = "{}";
         }
-        let charName = (document.getElementById("detailNameEl")?.value || "character").trim();
-        let safeName = charName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "character";
-        let filename = safeName + "_lore.json";
+        let isRp = (window.activeTab === "roleplay");
+        let name = "roleplay_session";
+        if (!isRp) {
+            let charName = (document.getElementById("detailNameEl")?.value || "character").trim();
+            name = charName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "character";
+        } else {
+            let worldName = window.roleplayState.worldName || "roleplay";
+            name = worldName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "roleplay";
+        }
+        let filename = name + "_lore.json";
         
         let blob = new Blob([jsonStr], { type: "application/json" });
         let url = URL.createObjectURL(blob);
@@ -1271,30 +1283,44 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             .filter(Boolean)
             .join("\n");
 
-        let detailsSuccess = await maybeGenerateDetails(allSectionNotes, overview, worldLore);
-        if (!detailsSuccess) {
-            setSectionGenerating(section, false);
-            setSectionStatus(section, "⛔ Stopped.");
-            setGenerationStatus("");
-            return false;
+        if (!isRp) {
+            let detailsSuccess = await maybeGenerateDetails(allSectionNotes, overview, worldLore);
+            if (!detailsSuccess) {
+                setSectionGenerating(section, false);
+                setSectionStatus(section, "⛔ Stopped.");
+                setGenerationStatus("");
+                return false;
+            }
         }
 
-        let context = buildCharacterContext(section);
         let instruction;
-        if (section === "shortDescription") instruction = buildShortDescriptionPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "role") instruction = buildRolePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "personality") instruction = buildPersonalityPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "beliefs") instruction = buildBeliefsPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "preferences") instruction = buildPreferencesPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "abilities") instruction = buildAbilitiesPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "relations") instruction = buildRelationsPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "appearance") instruction = buildAppearancePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "background") instruction = buildBackgroundPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "timeline") instruction = buildTimelinePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "lore") instruction = buildLorePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "roleplay") instruction = buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "introScenario") instruction = buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
-        if (section === "introStart") instruction = buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
+        if (isRp) {
+            let worldName = window.roleplayState?.worldName || "Unnamed World";
+            if (section === "timeline") instruction = window.buildRPSessionTimelinePrompt(notes, lengthVal, worldName, worldLore);
+            if (section === "lore") instruction = window.buildRPSessionLorePrompt(notes, worldName, worldLore);
+            if (section === "roleplay") instruction = window.buildRPSessionExamplePrompt(notes, lengthVal, worldName, worldLore);
+            if (section === "introScenario") instruction = window.buildRPSessionIntroScenarioPrompt(notes, lengthVal, worldName, worldLore);
+            if (section === "introStart") {
+                let scenarioContext = (document.getElementById("rpTab-introScenarioOutputEl") || {}).innerText || "";
+                instruction = window.buildRPSessionIntroStartPrompt(notes, lengthVal, worldName, worldLore, scenarioContext);
+            }
+        } else {
+            let context = buildCharacterContext(section);
+            if (section === "shortDescription") instruction = buildShortDescriptionPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "role") instruction = buildRolePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "personality") instruction = buildPersonalityPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "beliefs") instruction = buildBeliefsPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "preferences") instruction = buildPreferencesPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "abilities") instruction = buildAbilitiesPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "relations") instruction = buildRelationsPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "appearance") instruction = buildAppearancePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "background") instruction = buildBackgroundPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "timeline") instruction = buildTimelinePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "lore") instruction = buildLorePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "roleplay") instruction = buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "introScenario") instruction = buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "introStart") instruction = buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
+        }
 
         let premiumLabel = {
             shortDescription: "Composing short description",
@@ -1315,13 +1341,14 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         setSectionStatus(section, "⏳ " + premiumLabel + "...");
         setGenerationStatus(premiumLabel + "...");
 
-        let outputEl = document.getElementById(section + "OutputEl");
+        let prefix = isRp ? "rpTab-" : "";
+        let outputEl = document.getElementById(prefix + section + "OutputEl");
         outputEl.style.display = "block";
         outputEl.innerHTML = "";
 
         if (section === "lore") {
             clearLoreFields();
-            let copyBtn = document.getElementById("loreCopyBtnEl");
+            let copyBtn = document.getElementById(prefix + "loreCopyBtnEl");
             if (copyBtn) copyBtn.style.display = "none";
         }
 
@@ -1361,7 +1388,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
                 try {
                     window.loadLoreToUI(outputEl.innerText);
                     outputEl.style.display = "none";
-                    let copyBtn = document.getElementById("loreCopyBtnEl");
+                    let copyBtn = document.getElementById(prefix + "loreCopyBtnEl");
                     if (copyBtn) copyBtn.style.display = "inline-block";
                 } catch (e) {
                     // Keep raw output visible
@@ -1381,23 +1408,32 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (section === "lore") {
             window.loadLoreToUI(sanitized);
             outputEl.style.display = "none";
-            let copyBtn = document.getElementById("loreCopyBtnEl");
+            let copyBtn = document.getElementById(prefix + "loreCopyBtnEl");
             if (copyBtn) copyBtn.style.display = "inline-block";
         } else {
             outputEl.innerHTML = formatSectionText(sanitized);
-            let editBtn = document.getElementById(section + "EditBtnEl");
+            let editBtn = document.getElementById(prefix + section + "EditBtnEl");
             if (editBtn) editBtn.style.display = "inline-block";
-            let copyBtn = document.getElementById(section + "CopyBtnEl");
+            let copyBtn = document.getElementById(prefix + section + "CopyBtnEl");
             if (copyBtn) copyBtn.style.display = "inline-block";
         }
         updateClearAllBtn();
 
-        if (!window.characterSections) window.characterSections = {};
-        window.characterSections[section] = (section === "lore") ? compileLoreFromUI() : sanitized;
-        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        if (isRp) {
+            if (section === "timeline") window.roleplayState.timeline = sanitized;
+            if (section === "lore") window.roleplayState.lore = compileLoreFromUI();
+            if (section === "roleplay") window.roleplayState.roleplay = sanitized;
+            if (section === "introScenario") window.roleplayState.introScenario = sanitized;
+            if (section === "introStart") window.roleplayState.introStart = sanitized;
+            if (typeof window.saveRoleplayState === "function") window.saveRoleplayState();
+        } else {
+            if (!window.characterSections) window.characterSections = {};
+            window.characterSections[section] = (section === "lore") ? compileLoreFromUI() : sanitized;
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+        }
 
         let appearanceText = getSectionText("appearance");
-        if (section === "appearance" && appearanceText) {
+        if (section === "appearance" && appearanceText && !isRp) {
             await triggerImageGeneration(appearanceText);
         }
 
@@ -4396,7 +4432,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             }
 
             let counterpartId = null;
-            if (this.element.id) {
+            let isRoleplayCopiedSection = this.element.id && (this.element.id.startsWith("rpTab-") || document.getElementById("rpTab-" + this.element.id));
+            if (!isRoleplayCopiedSection && this.element.id) {
                 if (this.element.id.startsWith("rpTab-")) {
                     counterpartId = this.element.id.replace("rpTab-", "");
                 } else {

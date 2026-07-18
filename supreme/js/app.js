@@ -1815,81 +1815,78 @@
     };
 
     window.toggleSectionEdit = function (section) {
-        let outputEl = document.getElementById(section + "OutputEl");
-        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
-        let editBtn = document.getElementById(section + "EditBtnEl");
-        let rpTabEditBtn = document.getElementById("rpTab-" + section + "EditBtnEl");
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+        let outputEl = document.getElementById(prefix + section + "OutputEl");
+        let editBtn = document.getElementById(prefix + section + "EditBtnEl");
         
         if (!outputEl || !editBtn) return;
         let isEditing = outputEl.contentEditable === "true";
         let nextEditing = !isEditing;
 
-        let outputs = [outputEl, rpTabOutputEl].filter(Boolean);
-        let btns = [editBtn, rpTabEditBtn].filter(Boolean);
-
-        outputs.forEach(el => {
-            el.contentEditable = nextEditing ? "true" : "false";
-            if (nextEditing) {
-                el.style.border = "1px solid var(--accent-color)";
-                el.style.padding = "0.4rem";
-            } else {
-                el.style.border = "none";
-                el.style.padding = "0.4rem 0";
-            }
-        });
-
-        btns.forEach(btn => {
-            if (nextEditing) {
-                btn.innerHTML = '<i class="bi bi-floppy"></i> save';
-            } else {
-                btn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
-            }
-        });
-
+        outputEl.contentEditable = nextEditing ? "true" : "false";
         if (nextEditing) {
+            outputEl.style.border = "1px solid var(--accent-color)";
+            outputEl.style.padding = "0.4rem";
+            editBtn.innerHTML = '<i class="bi bi-floppy"></i> save';
             outputEl.focus();
         } else {
+            outputEl.style.border = "none";
+            outputEl.style.padding = "0.4rem 0";
+            editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> edit';
+            
             // Update the internal cache
-            if (!window.characterSections) window.characterSections = {};
-            window.characterSections[section] = outputEl.innerText;
-            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+            if (isRp) {
+                if (section === "timeline") window.roleplayState.timeline = outputEl.innerText;
+                if (section === "lore") window.roleplayState.lore = outputEl.innerText;
+                if (section === "roleplay") window.roleplayState.roleplay = outputEl.innerText;
+                if (section === "introScenario") window.roleplayState.introScenario = outputEl.innerText;
+                if (section === "introStart") window.roleplayState.introStart = outputEl.innerText;
+                if (typeof window.saveRoleplayState === "function") window.saveRoleplayState();
+            } else {
+                if (!window.characterSections) window.characterSections = {};
+                window.characterSections[section] = outputEl.innerText;
+                if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
+            }
         }
     };
 
     window.clearSection = function (section) {
-        let outputEl = document.getElementById(section + "OutputEl");
-        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
-        let notesEl = document.getElementById(section + "NotesEl");
-        let rpTabNotesEl = document.getElementById("rpTab-" + section + "NotesEl");
-        let statusEl = document.getElementById(section + "StatusEl");
-        let rpTabStatusEl = document.getElementById("rpTab-" + section + "StatusEl");
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+
+        let outputEl = document.getElementById(prefix + section + "OutputEl");
+        let notesEl = document.getElementById(prefix + section + "NotesEl");
+        let statusEl = document.getElementById(prefix + section + "StatusEl");
 
         if (outputEl) {
             outputEl.innerHTML = "";
             outputEl.style.display = "block";
         }
-        if (rpTabOutputEl) {
-            rpTabOutputEl.innerHTML = "";
-            rpTabOutputEl.style.display = "block";
-        }
         if (notesEl) {
             notesEl.value = "";
-            localStorage.removeItem(section + "Notes");
-        }
-        if (rpTabNotesEl) {
-            rpTabNotesEl.value = "";
+            if (!isRp) {
+                localStorage.removeItem(section + "Notes");
+            }
         }
         if (statusEl) statusEl.textContent = "";
-        if (rpTabStatusEl) rpTabStatusEl.textContent = "";
 
-        if (section === "lore") {
-            clearLoreFields();
-            localStorage.removeItem("loreText");
+        if (isRp) {
+            if (section === "timeline") window.roleplayState.timeline = "";
+            if (section === "lore") window.roleplayState.lore = "";
+            if (section === "roleplay") window.roleplayState.roleplay = "";
+            if (section === "introScenario") window.roleplayState.introScenario = "";
+            if (section === "introStart") window.roleplayState.introStart = "";
+            if (typeof window.saveRoleplayState === "function") window.saveRoleplayState();
+        } else {
+            if (section === "lore") {
+                clearLoreFields();
+                localStorage.removeItem("loreText");
+            }
+            if (window.characterSections) delete window.characterSections[section];
+            updateClearAllBtn();
+            if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
         }
-
-        if (window.characterSections) delete window.characterSections[section];
-        updateClearAllBtn();
-        if (window.saveActiveWorkspaceState) window.saveActiveWorkspaceState();
     };
 
     // ─── COPY HELPERS ──────────────────────────────────────────────────
@@ -1908,26 +1905,23 @@
 
     // ─── COPY SECTION TEXT ────────────────────────────────────────────
     window.copySectionText = function (section) {
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
         let text = "";
-        if (section === "lore") {
+        
+        if (section === "lore" && !isRp) {
             text = compileLoreFromUI();
         } else {
-            let el = document.getElementById(section + "OutputEl");
+            let el = document.getElementById(prefix + section + "OutputEl");
             if (el) text = el.innerText.trim();
         }
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
-            let btn = document.getElementById(section + "CopyBtnEl");
+            let btn = document.getElementById(prefix + section + "CopyBtnEl");
             if (btn) {
                 let origHtml = btn.innerHTML;
                 btn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
                 setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
-            }
-            let rpTabBtn = document.getElementById("rpTab-" + section + "CopyBtnEl");
-            if (rpTabBtn) {
-                let origHtml = rpTabBtn.innerHTML;
-                rpTabBtn.innerHTML = '<i class="bi bi-check-lg"></i> copied!';
-                setTimeout(() => { rpTabBtn.innerHTML = origHtml; }, 1500);
             }
         }).catch(err => {
             console.warn("Clipboard write failed:", err);
@@ -1944,60 +1938,42 @@
     };
 
     window.setSectionStatus = function (section, message) {
-        let el = document.getElementById(section + "StatusEl");
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+        let el = document.getElementById(prefix + section + "StatusEl");
         if (el) el.textContent = message;
-        let el2 = document.getElementById("rpTab-" + section + "StatusEl");
-        if (el2) el2.textContent = message;
     };
 
     window.setSectionOutput = function (section, html) {
-        let el = document.getElementById(section + "OutputEl");
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+        let el = document.getElementById(prefix + section + "OutputEl");
         if (el) {
             el.innerHTML = html;
             el.style.display = "block";
         }
-        let el2 = document.getElementById("rpTab-" + section + "OutputEl");
-        if (el2) {
-            el2.innerHTML = html;
-            el2.style.display = "block";
-        }
-        let editBtn = document.getElementById(section + "EditBtnEl");
+        let editBtn = document.getElementById(prefix + section + "EditBtnEl");
         if (editBtn) editBtn.style.display = "inline-block";
-        let rpTabEditBtn = document.getElementById("rpTab-" + section + "EditBtnEl");
-        if (rpTabEditBtn) rpTabEditBtn.style.display = "inline-block";
-        let copyBtn = document.getElementById(section + "CopyBtnEl");
+        let copyBtn = document.getElementById(prefix + section + "CopyBtnEl");
         if (copyBtn) copyBtn.style.display = "inline-block";
-        let rpTabCopyBtn = document.getElementById("rpTab-" + section + "CopyBtnEl");
-        if (rpTabCopyBtn) rpTabCopyBtn.style.display = "inline-block";
     };
 
     window.setSectionGenerating = function (section, isGenerating) {
-        let genBtn = document.getElementById(section + "GenBtnEl");
-        let stopBtn = document.getElementById(section + "StopBtnEl");
+        let isRp = (window.activeTab === "roleplay");
+        let prefix = isRp ? "rpTab-" : "";
+        
+        let genBtn = document.getElementById(prefix + section + "GenBtnEl");
+        let stopBtn = document.getElementById(prefix + section + "StopBtnEl");
         if (genBtn) genBtn.disabled = isGenerating;
         if (stopBtn) stopBtn.style.display = isGenerating ? "inline-block" : "none";
         
-        let rpTabGenBtn = document.getElementById("rpTab-" + section + "GenBtnEl");
-        let rpTabStopBtn = document.getElementById("rpTab-" + section + "StopBtnEl");
-        if (rpTabGenBtn) rpTabGenBtn.disabled = isGenerating;
-        if (rpTabStopBtn) rpTabStopBtn.style.display = isGenerating ? "inline-block" : "none";
-        
-        let outputEl = document.getElementById(section + "OutputEl");
+        let outputEl = document.getElementById(prefix + section + "OutputEl");
         if (outputEl) {
             if (isGenerating) {
                 outputEl.classList.add("generating-pulse");
                 outputEl.style.display = "block";
             } else {
                 outputEl.classList.remove("generating-pulse");
-            }
-        }
-        let rpTabOutputEl = document.getElementById("rpTab-" + section + "OutputEl");
-        if (rpTabOutputEl) {
-            if (isGenerating) {
-                rpTabOutputEl.classList.add("generating-pulse");
-                rpTabOutputEl.style.display = "block";
-            } else {
-                rpTabOutputEl.classList.remove("generating-pulse");
             }
         }
     };
@@ -2851,7 +2827,6 @@
 
                 const copiedSections = ["timeline", "lore", "roleplay", "introScenario", "introStart"];
                 if (copiedSections.includes(val)) {
-                    let context = window.buildCharacterContext ? window.buildCharacterContext(val) : "";
                     let notes = "";
                     if (val === "introScenario" || val === "introStart") {
                         notes = (document.getElementById("rpTab-introNotesEl") || {}).value || "";
@@ -2863,20 +2838,29 @@
                     if (val !== "introScenario" && val !== "introStart") {
                         lengthVal = (document.getElementById("rpTab-" + val + "LengthEl") || {}).value || "medium";
                     }
+                    let globalVal = localStorage.globalLength || 'custom';
+                    if (globalVal && globalVal !== 'custom') lengthVal = globalVal;
                     
-                    let overview = (document.getElementById("rpThemesEl") || {}).value || "";
-                    let worldLore = window.roleplayState.worldLore || "";
+                    let worldName = window.roleplayState?.worldName || "";
+                    let worldLore = window.roleplayState?.worldLore || "";
                     
-                    if (val === "roleplay" && window.buildRoleplayExamplePrompt) {
-                        return window.buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
+                    if (val === "timeline" && window.buildRPSessionTimelinePrompt) {
+                        return window.buildRPSessionTimelinePrompt(notes, lengthVal, worldName, worldLore);
                     }
-                    if (val === "introScenario" && window.buildIntroScenarioPrompt) {
-                        return window.buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
+                    if (val === "lore" && window.buildRPSessionLorePrompt) {
+                        return window.buildRPSessionLorePrompt(notes, worldName, worldLore);
                     }
-                    if (val === "introStart" && window.buildIntroStartPrompt) {
-                        return window.buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
+                    if (val === "roleplay" && window.buildRPSessionExamplePrompt) {
+                        return window.buildRPSessionExamplePrompt(notes, lengthVal, worldName, worldLore);
                     }
-                    return root.prompts.compile(val, context, notes, lengthVal, overview, worldLore);
+                    if (val === "introScenario" && window.buildRPSessionIntroScenarioPrompt) {
+                        return window.buildRPSessionIntroScenarioPrompt(notes, lengthVal, worldName, worldLore);
+                    }
+                    if (val === "introStart" && window.buildRPSessionIntroStartPrompt) {
+                        let scenarioContext = (document.getElementById("rpTab-introScenarioOutputEl") || {}).innerText || "";
+                        return window.buildRPSessionIntroStartPrompt(notes, lengthVal, worldName, worldLore, scenarioContext);
+                    }
+                    return "Compiler not ready.";
                 }
             }
             
@@ -2918,6 +2902,9 @@
         // Bidirectional input synchronization between Characters tab and Roleplay tab
         if (e && e.target && e.target.id) {
             let id = e.target.id;
+            let isRoleplayCopiedInput = id.startsWith("rpTab-") || document.getElementById("rpTab-" + id);
+            if (isRoleplayCopiedInput) return;
+
             let counterpartId = null;
             if (id === "rpThemesEl") {
                 counterpartId = "wThemesEl";
@@ -2947,6 +2934,9 @@
         // Bidirectional change synchronization between Characters tab and Roleplay tab
         if (e && e.target && e.target.id) {
             let id = e.target.id;
+            let isRoleplayCopiedInput = id.startsWith("rpTab-") || document.getElementById("rpTab-" + id);
+            if (isRoleplayCopiedInput) return;
+
             let counterpartId = null;
             if (id === "rpThemesEl") {
                 counterpartId = "wThemesEl";

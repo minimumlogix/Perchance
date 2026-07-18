@@ -27,6 +27,11 @@
         scenarioNotes: "",
         outputScenario: "",
         outputStarter: "",
+        timeline: "",
+        lore: "",
+        roleplay: "",
+        introScenario: "",
+        introStart: "",
         isGenerating: false,
         activeOutputTab: "scenario" // "scenario" or "starter"
     };
@@ -76,7 +81,12 @@
                 scenarioNotes: window.roleplayState.scenarioNotes,
                 activeLength: window.roleplayState.activeLength,
                 outputScenario: window.roleplayState.outputScenario,
-                outputStarter: window.roleplayState.outputStarter
+                outputStarter: window.roleplayState.outputStarter,
+                timeline: window.roleplayState.timeline,
+                lore: window.roleplayState.lore,
+                roleplay: window.roleplayState.roleplay,
+                introScenario: window.roleplayState.introScenario,
+                introStart: window.roleplayState.introStart
             });
         } catch (e) {
             console.warn("Failed to save roleplayState to localStorage:", e);
@@ -748,6 +758,151 @@
         });
     };
 
+    window.buildRPSessionTimelinePrompt = function (notes, lengthVal, worldName, worldLore) {
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build NPC cast text
+        let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+            if (!n.name || !n.name.trim()) return "";
+            return `NPC #${idx + 1}:\nName: ${n.name}\nRace/Species: ${n.species || "Unknown"}\nRole in Story: ${n.role || "Unknown"}\nPersonality: ${n.personality || "Unknown"}\nAppearance: ${n.appearance || "Unknown"}\nBeliefs: ${n.beliefs || "Unknown"}`;
+        }).filter(Boolean).join("\n\n") : "";
+
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.npcsText = window.literal(npcsText);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.notes = window.literal(notes);
+        root.lengthVal = lengthVal;
+
+        return root.prompts.roleplayPage.timeline.instruction.evaluateItem;
+    };
+
+    window.buildRPSessionLorePrompt = function (notes, worldName, worldLore) {
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build NPC cast text
+        let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+            if (!n.name || !n.name.trim()) return "";
+            return `NPC #${idx + 1}:\nName: ${n.name}\nRace/Species: ${n.species || "Unknown"}\nRole in Story: ${n.role || "Unknown"}\nPersonality: ${n.personality || "Unknown"}\nAppearance: ${n.appearance || "Unknown"}\nBeliefs: ${n.beliefs || "Unknown"}`;
+        }).filter(Boolean).join("\n\n") : "";
+
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.npcsText = window.literal(npcsText);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.notes = window.literal(notes);
+
+        return root.prompts.roleplayPage.lore.instruction.evaluateItem;
+    };
+
+    window.buildRPSessionExamplePrompt = function (notes, lengthVal, worldName, worldLore) {
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build NPC cast text
+        let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+            if (!n.name || !n.name.trim()) return "";
+            return `NPC #${idx + 1}:\nName: ${n.name}\nRace/Species: ${n.species || "Unknown"}\nRole in Story: ${n.role || "Unknown"}\nPersonality: ${n.personality || "Unknown"}\nAppearance: ${n.appearance || "Unknown"}\nBeliefs: ${n.beliefs || "Unknown"}`;
+        }).filter(Boolean).join("\n\n") : "";
+
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.npcsText = window.literal(npcsText);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.notes = window.literal(notes);
+        root.lengthVal = lengthVal;
+
+        return root.prompts.roleplayPage.roleplay.instruction.evaluateItem;
+    };
+
+    window.buildRPSessionIntroScenarioPrompt = function (notes, lengthVal, worldName, worldLore) {
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build NPC cast text
+        let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+            if (!n.name || !n.name.trim()) return "";
+            return `NPC #${idx + 1}:\nName: ${n.name}\nRace/Species: ${n.species || "Unknown"}\nRole in Story: ${n.role || "Unknown"}\nPersonality: ${n.personality || "Unknown"}\nAppearance: ${n.appearance || "Unknown"}\nBeliefs: ${n.beliefs || "Unknown"}`;
+        }).filter(Boolean).join("\n\n") : "";
+
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.npcsText = window.literal(npcsText);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.notes = window.literal(notes);
+        root.lengthVal = lengthVal;
+
+        return root.prompts.roleplayPage.introScenario.instruction.evaluateItem;
+    };
+
+    window.buildRPSessionIntroStartPrompt = function (notes, lengthVal, worldName, worldLore, scenarioContext) {
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build NPC cast text
+        let npcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+            if (!n.name || !n.name.trim()) return "";
+            return `NPC #${idx + 1}:\nName: ${n.name}\nRace/Species: ${n.species || "Unknown"}\nRole in Story: ${n.role || "Unknown"}\nPersonality: ${n.personality || "Unknown"}\nAppearance: ${n.appearance || "Unknown"}\nBeliefs: ${n.beliefs || "Unknown"}`;
+        }).filter(Boolean).join("\n\n") : "";
+
+        root.worldName = window.literal(worldName);
+        root.worldLore = window.literal(worldLore);
+        root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.npcsText = window.literal(npcsText);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.notes = window.literal(notes);
+        root.lengthVal = lengthVal;
+        root.scenarioContext = window.literal(scenarioContext);
+
+        return root.prompts.roleplayPage.introStart.instruction.evaluateItem;
+    };
+
     window.generateRoleplayNPC = async function (index, btn) {
         window.saveRoleplayState();
         let worldName = window.roleplayState.worldName || "Unnamed World";
@@ -1373,6 +1528,34 @@
     setTimeout(() => {
         window.loadRoleplayState();
         
+        // Restore notes and lengths for copied roleplay tab panels
+        let rpTimelineNotesEl = document.getElementById("rpTab-timelineNotesEl");
+        if (rpTimelineNotesEl) rpTimelineNotesEl.value = localStorage.rpTimelineNotes || "";
+        let rpTimelineLengthEl = document.getElementById("rpTab-timelineLengthEl");
+        if (rpTimelineLengthEl) {
+            rpTimelineLengthEl.value = localStorage.rpTimelineLength || "medium";
+            window.syncCustomSelectLabel(rpTimelineLengthEl);
+        }
+
+        let rpLoreNotesEl = document.getElementById("rpTab-loreNotesEl");
+        if (rpLoreNotesEl) rpLoreNotesEl.value = localStorage.rpLoreNotes || "";
+
+        let rpRoleplayNotesEl = document.getElementById("rpTab-roleplayNotesEl");
+        if (rpRoleplayNotesEl) rpRoleplayNotesEl.value = localStorage.rpRoleplayNotes || "";
+        let rpRoleplayLengthEl = document.getElementById("rpTab-roleplayLengthEl");
+        if (rpRoleplayLengthEl) {
+            rpRoleplayLengthEl.value = localStorage.rpRoleplayLength || "medium";
+            window.syncCustomSelectLabel(rpRoleplayLengthEl);
+        }
+
+        let rpIntroNotesEl = document.getElementById("rpTab-introNotesEl");
+        if (rpIntroNotesEl) rpIntroNotesEl.value = localStorage.rpIntroNotes || "";
+        let rpIntroLengthEl = document.getElementById("rpTab-introLengthEl");
+        if (rpIntroLengthEl) {
+            rpIntroLengthEl.value = localStorage.rpIntroLength || "medium";
+            window.syncCustomSelectLabel(rpIntroLengthEl);
+        }
+        
         // Restore elements value if present
         let nameEl = document.getElementById("rpWorldNameEl");
         let loreNotesEl = document.getElementById("rpWorldLoreNotesEl");
@@ -1431,6 +1614,57 @@
 
             let editBtn = document.getElementById("rpEditBtn");
             if (editBtn) editBtn.style.display = "inline-flex";
+        }
+
+        // Restore Timeline, Lore, Examples, Intro Scenario/Start if present
+        if (window.roleplayState.timeline) {
+            let el = document.getElementById("rpTab-timelineOutputEl");
+            if (el) {
+                el.innerHTML = formatSectionText(window.roleplayState.timeline);
+                let editBtn = document.getElementById("rpTab-timelineEditBtnEl");
+                let copyBtn = document.getElementById("rpTab-timelineCopyBtnEl");
+                if (editBtn) editBtn.style.display = "inline-block";
+                if (copyBtn) copyBtn.style.display = "inline-block";
+            }
+        }
+        if (window.roleplayState.lore) {
+            let el = document.getElementById("rpTab-loreOutputEl");
+            if (el) {
+                el.style.display = "none";
+                window.loadLoreToUI(window.roleplayState.lore, true);
+                let copyBtn = document.getElementById("rpTab-loreCopyBtnEl");
+                if (copyBtn) copyBtn.style.display = "inline-block";
+            }
+        }
+        if (window.roleplayState.roleplay) {
+            let el = document.getElementById("rpTab-roleplayOutputEl");
+            if (el) {
+                el.innerHTML = formatSectionText(window.roleplayState.roleplay);
+                let editBtn = document.getElementById("rpTab-roleplayEditBtnEl");
+                let copyBtn = document.getElementById("rpTab-roleplayCopyBtnEl");
+                if (editBtn) editBtn.style.display = "inline-block";
+                if (copyBtn) copyBtn.style.display = "inline-block";
+            }
+        }
+        if (window.roleplayState.introScenario) {
+            let el = document.getElementById("rpTab-introScenarioOutputEl");
+            if (el) {
+                el.innerHTML = formatSectionText(window.roleplayState.introScenario);
+                let editBtn = document.getElementById("rpTab-introScenarioEditBtnEl");
+                let copyBtn = document.getElementById("rpTab-introScenarioCopyBtnEl");
+                if (editBtn) editBtn.style.display = "inline-block";
+                if (copyBtn) copyBtn.style.display = "inline-block";
+            }
+        }
+        if (window.roleplayState.introStart) {
+            let el = document.getElementById("rpTab-introStartOutputEl");
+            if (el) {
+                el.innerHTML = formatSectionText(window.roleplayState.introStart);
+                let editBtn = document.getElementById("rpTab-introStartEditBtnEl");
+                let copyBtn = document.getElementById("rpTab-introStartCopyBtnEl");
+                if (editBtn) editBtn.style.display = "inline-block";
+                if (copyBtn) copyBtn.style.display = "inline-block";
+            }
         }
         
         // Sync the Saved Worlds selector
