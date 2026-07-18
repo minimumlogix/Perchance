@@ -1578,7 +1578,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let container = document.getElementById("introImageContainer");
         if (container) container.style.display = "flex";
         let rpTabContainer = document.getElementById("rpTab-introImageContainer");
-        if (rpTabContainer) rpTabContainer.style.display = "flex";
+        // if (rpTabContainer) rpTabContainer.style.display = "flex";
         
         let d = getDetailsContext();
         let nameTag = document.getElementById("introImageNameTag");

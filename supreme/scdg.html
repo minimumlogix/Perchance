@@ -1947,45 +1947,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL 5: SCENARIO & SETUP -->
-                <div class="panel" id="rpScenarioPanelEl">
-                    <div class="panel-header" onclick="togglePanel('rpScenarioPanelEl')">
-                        <div class="panel-title">
-                            <div class="panel-badge"><i class="bi bi-journal-text"></i></div>
-                            <span>Scenario & Setup</span>
-                        </div>
-                        <span class="panel-chevron bi bi-chevron-down"></span>
-                    </div>
-                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                            <!-- Length dropdown -->
-                            <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                <span style="font-size: 82%; font-weight: 600; color: var(--text-muted);">Starter
-                                    Length:</span>
-                                <select id="rpLengthEl" class="select-input length-select" 
-                                    onchange="saveRoleplayState()">
-                                    <option value="short">Short (1-2 paragraphs)</option>
-                                    <option value="medium" selected>Medium (3-4 paragraphs)</option>
-                                    <option value="long">Long (5+ paragraphs)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Scenario
-                                    Details & Plot Hook Notes</label>
-                                <button class="btn btn-primary" onclick="generateRoleplayScenarioNotes(this)"
-                                    style="font-size: 75%; padding: 0.2rem 0.5rem;"
-                                    title="Generate scenario plot hook via AI"><i class="bi bi-sparkles"></i> Generate
-                                    Plot Hook</button>
-                            </div>
-                            <textarea id="rpScenarioNotesEl" class="section-notes"
-                                style="min-height: 4.5rem; font-size: 86%;"
-                                placeholder="e.g., The characters have just broken into a high-security vault, but the alarms start blaring. They must decide who takes the loot and how to escape..."
-                                oninput="saveRoleplayState()"></textarea>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- TIMELINE SECTION -->
                 <div class="panel" id="rpTab-timelinePanelEl">
@@ -2299,7 +2261,7 @@
                         </div>
 
                         <!-- Roleplay Intro Images Subsection -->
-                        <div id="rpTab-introImageContainer" class="image-tools-section" style="margin-top: 1.25rem;">
+                        <div id="rpTab-introImageContainer" class="image-tools-section" style="margin-top: 1.25rem; display: none;">
                             <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
                                 <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-main);">
                                     <i class="bi bi-image" style="color:var(--accent-color);"></i>
