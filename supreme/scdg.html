@@ -1744,6 +1744,13 @@
                             class="bi bi-sparkles"></i> Generate Roleplay</button>
                     <button id="rpStopBtn" onclick="stopRoleplayGeneration()" class="btn btn-secondary"
                         style="display:none;"><i class="bi bi-stop-circle"></i> Stop</button>
+                    <div style="width:1px; height:28px; background:var(--panel-border); flex-shrink:0; margin: 0 0.25rem;"></div>
+                    <button id="rpGenerateAllBtnEl" onclick="generateAllRoleplay()" class="btn btn-primary"
+                        title="Generate all panels in order, skipping any that are already filled"
+                        style="background: linear-gradient(135deg, var(--accent-color), #8b5cf6);"><i
+                            class="bi bi-magic"></i> Generate All</button>
+                    <button id="rpGenerateAllStopBtnEl" onclick="stopAllRoleplay()" class="btn btn-secondary"
+                        style="display:none;"><i class="bi bi-stop-circle"></i> Stop All</button>
                     <button id="rpClearBtn" onclick="clearRoleplayData()" class="btn btn-ghost"><i class="bi bi-trash"></i>
                         Clear All</button>
                 </div>
@@ -1939,10 +1946,13 @@
                         </div>
 
                         <!-- Card Controls -->
-                        <div style="display: flex; gap: 0.5rem; justify-content: flex-start; margin-top: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-start; margin-top: 0.5rem; flex-wrap: wrap;">
                             <button class="btn btn-secondary" onclick="addNPC()"
                                 style="font-size: 85%; padding: 0.4rem 0.8rem;"><i class="bi bi-plus-lg"></i> Add
                                 Character</button>
+                            <button class="btn btn-primary" id="rpGenerateAllNPCsBtnEl" onclick="generateAllRoleplayNPCs(this)"
+                                style="font-size: 85%; padding: 0.4rem 0.8rem;"
+                                title="Generate all empty NPC cast members using AI"><i class="bi bi-sparkles"></i> Generate All NPCs</button>
                         </div>
                     </div>
                 </div>
@@ -1968,7 +1978,7 @@
                                     <option value="super-long">Super Long</option>
                                 </select>
                                 <button class="btn btn-primary" id="rpTab-timelineGenBtnEl"
-                                    onclick="generateSection('timeline')"><i class="bi bi-sparkles"></i>
+                                    onclick="generateRoleplaySection('timeline')"><i class="bi bi-sparkles"></i>
                                     Generate</button>
                                 <button class="btn btn-danger btn-sm" id="rpTab-timelineClearBtnEl"
                                     onclick="clearSection('timeline')"><i class="bi bi-trash"></i> Clear</button>
@@ -2001,7 +2011,7 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
-                                <button class="btn btn-primary" id="rpTab-loreGenBtnEl" onclick="generateSection('lore')"><i
+                                <button class="btn btn-primary" id="rpTab-loreGenBtnEl" onclick="generateRoleplaySection('lore')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
                                 <button class="btn btn-danger btn-sm" id="rpTab-loreClearBtnEl"
                                     onclick="clearSection('lore')"><i class="bi bi-trash"></i> Clear</button>
@@ -2146,7 +2156,7 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="btn btn-primary" id="rpTab-roleplayGenBtnEl" onclick="generateSection('roleplay')"><i
+                                <button class="btn btn-primary" id="rpTab-roleplayGenBtnEl" onclick="generateRoleplaySection('roleplay')"><i
                                         class="bi bi-sparkles"></i> Generate</button>
                                 <button class="btn btn-danger btn-sm" id="rpTab-roleplayClearBtnEl"
                                     onclick="clearSection('roleplay')"><i class="bi bi-trash"></i> Clear</button>
@@ -2188,9 +2198,9 @@
                                     <option value="long">Long</option>
                                     <option value="super-long">Super Long</option>
                                 </select>
-                                <button class="btn btn-primary" id="rpTab-introGenBtnEl" onclick="generateIntro()"><i
+                                <button class="btn btn-primary" id="rpTab-introGenBtnEl" onclick="generateRoleplayIntro()"><i
                                         class="bi bi-sparkles"></i> Generate</button>
-                                <button class="btn btn-secondary btn-sm" id="rpTab-introStopBtnEl" onclick="stopIntroGeneration()"
+                                <button class="btn btn-secondary btn-sm" id="rpTab-introStopBtnEl" onclick="stopRoleplayIntro()"
                                     style="display:none;"><i class="bi bi-stop-fill"></i> Stop</button>
                                 <button class="btn btn-danger btn-sm" id="rpTab-introClearBtnEl"
                                     onclick="clearIntro()"><i class="bi bi-trash"></i> Clear</button>
@@ -2214,10 +2224,10 @@
                                     </label>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:0.3rem;">
-                                    <button class="btn btn-ghost btn-sm" id="rpTab-introScenarioGenBtnEl" onclick="generateSection('introScenario')"
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introScenarioGenBtnEl" onclick="generateRoleplaySection('introScenario')"
                                         title="Regenerate Scenario Context" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
                                             class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
-                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introScenarioStopBtnEl" onclick="stopSection('introScenario')"
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introScenarioStopBtnEl" onclick="stopRoleplaySection('introScenario')"
                                         style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
                                             class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
                                     <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introScenario')"
@@ -2241,10 +2251,10 @@
                                     Roleplay Start (Dialogue & Narration)
                                 </div>
                                 <div style="display:flex; align-items:center; gap:0.3rem;">
-                                    <button class="btn btn-ghost btn-sm" id="rpTab-introStartGenBtnEl" onclick="generateSection('introStart')"
+                                    <button class="btn btn-ghost btn-sm" id="rpTab-introStartGenBtnEl" onclick="generateRoleplaySection('introStart')"
                                         title="Regenerate Roleplay Start" style="padding: 0.25rem; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;"><i
                                             class="bi bi-arrow-clockwise" style="font-size: 1.1rem;"></i></button>
-                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introStartStopBtnEl" onclick="stopSection('introStart')"
+                                    <button class="btn btn-ghost btn-danger btn-sm" id="rpTab-introStartStopBtnEl" onclick="stopRoleplaySection('introStart')"
                                         style="display:none; padding: 0.25rem; width: 30px; height: 30px; align-items: center; justify-content: center;" title="Stop generation"><i
                                             class="bi bi-stop-circle" style="font-size: 1.1rem;"></i></button>
                                     <button class="btn btn-ghost btn-danger btn-sm" onclick="clearSection('introStart')"
