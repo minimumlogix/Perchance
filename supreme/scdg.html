@@ -1759,6 +1759,25 @@
                     </div>
                     <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
 
+                        <!-- MAGIC IMPORT -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-bottom: 1px dashed var(--panel-border); padding-bottom: 1rem;">
+                            <div style="font-size: 88%; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="bi bi-magic" style="color:var(--accent-color);"></i>
+                                Magic Import <span style="opacity:0.5; font-size:85%; font-weight:normal; margin-left:0.2rem;">Extract details from any web page / Fandom wiki</span>
+                            </div>
+                            <p style="font-size:80%; opacity:0.6; margin:0 0 0.25rem;">Paste a URL from a wiki to automatically populate the roleplay scenario and NPC details.</p>
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="rpWikiUrlEl" class="detail-input" style="flex-grow:1;"
+                                    placeholder="https://genshin-impact.fandom.com/wiki/Archon_Quests">
+                                <button class="btn btn-primary" id="rpWikiImportBtnEl"
+                                    onclick="importRoleplayFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i>
+                                    import</button>
+                            </div>
+                            <textarea id="rpWikiOverrideEl" class="section-notes"
+                                style="min-height:2.2rem; margin-top:0.25rem; font-size:84%;"
+                                placeholder='Twist / Override (optional)  -  e.g. "Space Opera setting, with futuristic spaceships"'></textarea>
+                        </div>
+
                         <!-- GLOBAL PARAMETERS (SETTING, TONE, NPC COUNT, LENGTH, DYNAMICS) -->
                         <div
                             style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px dashed var(--panel-border);">
@@ -1833,29 +1852,6 @@
                     </div>
                 </div>
 
-                <!-- MAGIC IMPORT -->
-                <div class="panel collapsed" id="rpMagicImportPanelEl">
-                    <div class="panel-header" onclick="togglePanel('rpMagicImportPanelEl')">
-                        <span style="display: flex; align-items: center; gap: 0.4rem;"><i class="bi bi-magic"
-                                style="color:var(--accent-color);"></i> Magic Import</span>
-                        <span class="panel-chevron bi bi-chevron-right"></span>
-                    </div>
-                    <div class="panel-body">
-                        <p style="font-size:80%; opacity:0.6; margin:0 0 0.5rem;">Paste a URL from a Fandom wiki or any
-                            web page to automatically extract roleplay scenario and NPC details.</p>
-                        <div style="display:flex; gap:0.5rem;">
-                            <input type="text" id="rpWikiUrlEl" class="detail-input" style="flex-grow:1;"
-                                placeholder="https://genshin-impact.fandom.com/wiki/Archon_Quests">
-                            <button class="btn btn-primary" id="rpWikiImportBtnEl"
-                                onclick="importRoleplayFromWikiUrlButtonClickHandler()"><i class="bi bi-magic"></i>
-                                import</button>
-                        </div>
-                        <textarea id="rpWikiOverrideEl" class="section-notes"
-                            style="min-height:2.5rem; margin-top:0.5rem;"
-                            placeholder='Twist / Override (optional)  -  e.g. "Space Opera setting, with futuristic spaceships"'></textarea>
-                    </div>
-                </div>
-
                 <!-- PANEL 2: WORLD SETTING -->
                 <div class="panel" id="rpWorldPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpWorldPanelEl')">
@@ -1866,6 +1862,9 @@
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;"
                                 onclick="event.stopPropagation()">
+                                <select id="rpWorldImportSelector" class="select-input length-select" onchange="if(this.value) { window.loadWorld(this.value); this.value=''; }" style="max-width: 155px; font-size: 78%; padding: 0.2rem 0.4rem; height: 28px; outline: none; border-radius: 4px; border: 1px solid var(--panel-border); background: var(--input-bg); color: var(--text-main); font-weight: 500;">
+                                    <option value="">-- Load Saved World --</option>
+                                </select>
                                 <button class="btn btn-primary" id="rpWorldGenBtnEl" onclick="generateRoleplayWorldLore()"><i
                                         class="bi bi-sparkles"></i> Generate</button>
                                 <button class="btn btn-secondary btn-sm" id="rpWorldStopBtnEl" onclick="stopRoleplayWorldLore()"

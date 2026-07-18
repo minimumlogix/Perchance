@@ -2587,6 +2587,11 @@
             options = [
                 { value: 'rpWorldLore', text: 'World Lore Summary' },
                 { value: 'npcGeneration', text: 'NPC Cast Generation' },
+                { value: 'timeline', text: 'Timeline & History' },
+                { value: 'lore', text: 'Lore Keywords & Content JSON' },
+                { value: 'roleplay', text: 'Dialogue Examples' },
+                { value: 'introScenario', text: 'Starting Scene Context' },
+                { value: 'introStart', text: 'First Message Start Script' },
                 { value: 'scenarioNotes', text: 'Conflict / Plot Hook' },
                 { value: 'roleplayScenario', text: 'Full Scenario Sheet & Starter' },
                 { value: 'wikiImportRP', text: 'Wiki Importer Data Extractor' }
@@ -2787,13 +2792,23 @@
                     let name = window.roleplayState.worldName || "Unnamed World";
                     let setting = document.getElementById("rpSettingEl")?.value || "Any";
                     let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
-                    return root.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr);
+                    let notes = document.getElementById("rpWorldLoreNotesEl")?.value || "";
+                    return root.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, notes);
                 }
                 if (val === 'npcGeneration') {
                     let worldName = window.roleplayState.worldName || "Unnamed World";
                     let worldLore = window.roleplayState.worldLore || "";
                     let setting = document.getElementById("rpSettingEl")?.value || "Any";
-                    return root.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting);
+                    let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+                    let themes = window.roleplayState.themes || "";
+                    let existingNpcsText = window.roleplayState.npcs ? window.roleplayState.npcs.map((n, idx) => {
+                        if (!n.name || !n.name.trim()) return "";
+                        return `- Name: ${n.name}, Role: ${n.role}, Personality: ${n.personality}`;
+                    }).filter(Boolean).join("\n") : "";
+                    let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+                    let userName = window.roleplayState.userName || "the Player";
+                    let userRole = window.roleplayState.userRole || "a protagonist";
+                    return root.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting, tonesStr, themes, existingNpcsText, dynamics, userName, userRole);
                 }
                 if (val === 'scenarioNotes') {
                     let worldName = window.roleplayState.worldName || "Unnamed World";
@@ -2832,6 +2847,36 @@
                 if (val === 'wikiImportRP') {
                     let override = document.getElementById("rpWikiOverrideEl")?.value || "";
                     return root.prompts.roleplayPage.wikiImport.compile("Source Text Here", override);
+                }
+
+                const copiedSections = ["timeline", "lore", "roleplay", "introScenario", "introStart"];
+                if (copiedSections.includes(val)) {
+                    let context = window.buildCharacterContext ? window.buildCharacterContext(val) : "";
+                    let notes = "";
+                    if (val === "introScenario" || val === "introStart") {
+                        notes = (document.getElementById("rpTab-introNotesEl") || {}).value || "";
+                    } else {
+                        notes = (document.getElementById("rpTab-" + val + "NotesEl") || {}).value || "";
+                    }
+                    
+                    let lengthVal = "medium";
+                    if (val !== "introScenario" && val !== "introStart") {
+                        lengthVal = (document.getElementById("rpTab-" + val + "LengthEl") || {}).value || "medium";
+                    }
+                    
+                    let overview = (document.getElementById("rpThemesEl") || {}).value || "";
+                    let worldLore = window.roleplayState.worldLore || "";
+                    
+                    if (val === "roleplay" && window.buildRoleplayExamplePrompt) {
+                        return window.buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    if (val === "introScenario" && window.buildIntroScenarioPrompt) {
+                        return window.buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    if (val === "introStart" && window.buildIntroStartPrompt) {
+                        return window.buildIntroStartPrompt(context, notes, lengthVal, overview, worldLore);
+                    }
+                    return root.prompts.compile(val, context, notes, lengthVal, overview, worldLore);
                 }
             }
             
@@ -2874,15 +2919,20 @@
         if (e && e.target && e.target.id) {
             let id = e.target.id;
             let counterpartId = null;
-            if (id.startsWith("rpTab-")) {
+            if (id === "rpThemesEl") {
+                counterpartId = "wThemesEl";
+            } else if (id === "wThemesEl") {
+                counterpartId = "rpThemesEl";
+            } else if (id.startsWith("rpTab-")) {
                 counterpartId = id.replace("rpTab-", "");
             } else {
                 counterpartId = "rpTab-" + id;
             }
-            let counterpart = document.getElementById(counterpartId);
+            let counterpart = counterpartId ? document.getElementById(counterpartId) : null;
             if (counterpart) {
                 if (counterpart.value !== e.target.value) {
                     counterpart.value = e.target.value;
+                    counterpart.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }
         }
@@ -2898,15 +2948,20 @@
         if (e && e.target && e.target.id) {
             let id = e.target.id;
             let counterpartId = null;
-            if (id.startsWith("rpTab-")) {
+            if (id === "rpThemesEl") {
+                counterpartId = "wThemesEl";
+            } else if (id === "wThemesEl") {
+                counterpartId = "rpThemesEl";
+            } else if (id.startsWith("rpTab-")) {
                 counterpartId = id.replace("rpTab-", "");
             } else {
                 counterpartId = "rpTab-" + id;
             }
-            let counterpart = document.getElementById(counterpartId);
+            let counterpart = counterpartId ? document.getElementById(counterpartId) : null;
             if (counterpart) {
                 if (counterpart.value !== e.target.value) {
                     counterpart.value = e.target.value;
+                    counterpart.dispatchEvent(new Event('change', { bubbles: true }));
                     // For custom select dropdowns, update label
                     if (counterpart.classList.contains('custom-select-hidden')) {
                         window.syncCustomSelectLabel(counterpart);

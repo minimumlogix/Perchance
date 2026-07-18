@@ -890,9 +890,13 @@
             .filter(d => d !== "Any" && root.dynamicPrompts && root.dynamicPrompts[d])
             .map(d => root.dynamicPrompts[d].evaluateItem);
 
+        let themesEl = document.getElementById("wThemesEl") || document.getElementById("rpThemesEl");
+        let themes = themesEl?.value || "";
+
         let parts = [];
         if (setting.trim()) parts.push("Setting: " + setting);
         if (toneParts.length > 0) parts.push("Tone: " + toneParts.join(" Additionally: "));
+        if (themes.trim()) parts.push("Core Themes / Keywords: " + themes.trim());
         if (archetypeParts.length > 0) parts.push("Character Archetype/Traits: " + archetypeParts.join(" Also: "));
         if (dynamicParts.length > 0) parts.push("Relationship Dynamics: " + dynamicParts.join(" Also: "));
         
@@ -1248,17 +1252,22 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         setSectionStatus(section, "⏳ Fleshing out character identity...");
         setGenerationStatus("Fleshing out character identity...");
 
+        let isRp = document.getElementById("rpTab-" + section + "NotesEl") || (section === "introScenario" || section === "introStart" ? document.getElementById("rpTab-introNotesEl") : null);
+
         let notes = "";
         if (section === "introScenario" || section === "introStart") {
-            notes = (document.getElementById("introNotesEl") || {}).value || "";
+            notes = (document.getElementById(isRp ? "rpTab-introNotesEl" : "introNotesEl") || {}).value || "";
         } else {
-            notes = (document.getElementById(section + "NotesEl") || {}).value || "";
+            notes = (document.getElementById(isRp ? ("rpTab-" + section + "NotesEl") : (section + "NotesEl")) || {}).value || "";
         }
         let lengthVal = getEffectiveLengthForSection(section);
-        let overview = (document.getElementById("overviewNotesEl") || {}).value || "";
-        let worldLore = (document.getElementById("worldLoreEl") || {}).value || "";
+        let overview = (document.getElementById("rpThemesEl") || document.getElementById("wThemesEl") || document.getElementById("overviewNotesEl") || {}).value || "";
+        let worldLore = (window.roleplayState && window.roleplayState.worldLore) || (document.getElementById("rpWorldOutputEl") || {}).innerText || (document.getElementById("worldLoreEl") || {}).value || "";
         let allSectionNotes = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline"]
-            .map(s => (document.getElementById(s + "NotesEl") || {}).value || "")
+            .map(s => {
+                let noteEl = document.getElementById(isRp ? ("rpTab-" + s + "NotesEl") : (s + "NotesEl"));
+                return noteEl ? noteEl.value : "";
+            })
             .filter(Boolean)
             .join("\n");
 
@@ -1442,6 +1451,10 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             introNotesEl.value = "";
             localStorage.removeItem("introNotes");
         }
+        let rpIntroNotesEl = document.getElementById("rpTab-introNotesEl");
+        if (rpIntroNotesEl) {
+            rpIntroNotesEl.value = "";
+        }
         if (typeof window.clearRoleplayImagesState === "function") {
             window.clearRoleplayImagesState();
         }
@@ -1545,7 +1558,8 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let globalVal = localStorage.globalLength || 'custom';
         if (globalVal && globalVal !== 'custom') return globalVal;
         let id = (section === "introScenario" || section === "introStart") ? "intro" : section;
-        return (document.getElementById(id + "LengthEl") || {}).value || "medium";
+        let selectEl = document.getElementById("rpTab-" + id + "LengthEl") || document.getElementById(id + "LengthEl");
+        return selectEl?.value || "medium";
     };
 
     window.setGlobalLength = function (val, silent) {

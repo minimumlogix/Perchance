@@ -637,15 +637,17 @@
         let name = (document.getElementById("rpWorldNameEl")?.value || "").trim() || "Unnamed World";
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
         let notes = document.getElementById("rpWorldLoreNotesEl")?.value || "";
 
         root.name = window.literal(name);
         root.setting = setting;
         root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
         root.notes = window.literal(notes);
 
         // Compile prompt
-        let instruction = window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, notes);
+        let instruction = window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, themes, notes);
 
         let typewriter = new TypewriterStreamer(outputEl, { speed: 12 });
         window.rpWorldLoreTypewriter = typewriter;
@@ -751,6 +753,17 @@
         let worldName = window.roleplayState.worldName || "Unnamed World";
         let worldLore = window.roleplayState.worldLore || "Generic setting";
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
+        let themes = window.roleplayState.themes || "";
+        let dynamics = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+        let userName = window.roleplayState.userName || "the Player";
+        let userRole = window.roleplayState.userRole || "a protagonist";
+
+        // Build existing NPC cast text (excluding current slot)
+        let existingNpcsText = window.roleplayState.npcs.map((npc, idx) => {
+            if (idx === index || !npc.name || !npc.name.trim()) return "";
+            return `- Name: ${npc.name}, Role: ${npc.role}, Personality: ${npc.personality}`;
+        }).filter(Boolean).join("\n");
 
         let origText = btn.innerHTML;
         btn.disabled = true;
@@ -759,6 +772,13 @@
         root.worldName = window.literal(worldName);
         root.worldLore = window.literal(worldLore);
         root.setting = setting;
+        root.tonesStr = tonesStr;
+        root.themes = window.literal(themes);
+        root.dynamics = window.literal(dynamics);
+        root.userName = window.literal(userName);
+        root.userRole = window.literal(userRole);
+        root.existingNpcsText = window.literal(existingNpcsText);
+
         let instruction = root.prompts.roleplayPage.npcGeneration.instruction.evaluateItem;
 
         try {

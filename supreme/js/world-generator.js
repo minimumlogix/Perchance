@@ -81,9 +81,18 @@
         let loreEl = document.getElementById("worldLoreEl");
         let wOverviewOutputEl = document.getElementById("w-overviewOutputEl");
         let rpWorldLoreEl = document.getElementById("rpWorldLoreEl");
+        let rpWorldOutputEl = document.getElementById("rpWorldOutputEl");
         
         if (loreEl && loreEl.value !== loreText) loreEl.value = loreText;
         if (rpWorldLoreEl && rpWorldLoreEl.value !== loreText) rpWorldLoreEl.value = loreText;
+        
+        if (rpWorldOutputEl) {
+            rpWorldOutputEl.innerHTML = window.formatSectionText(loreText);
+        }
+        if (window.roleplayState) {
+            window.roleplayState.worldLore = loreText;
+            if (typeof window.saveRoleplayState === "function") window.saveRoleplayState();
+        }
         
         if (wOverviewOutputEl) {
             if (loreText) {

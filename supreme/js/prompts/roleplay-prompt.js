@@ -52,33 +52,51 @@
                 let name = (window.root && window.root.name) || "";
                 let setting = (window.root && window.root.setting) || "";
                 let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
                 let notes = (window.root && window.root.notes) || "";
-                return window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, notes);
+                return window.prompts.roleplayPage.worldLore.compile(name, setting, tonesStr, themes, notes);
             }),
-            compile: function (name, setting, tonesStr, notes) {
+            compile: function (name, setting, tonesStr, themes, notes) {
                 let prompt = "Write a concise world overview (3-4 sentences maximum) for a roleplay setting.\nWorld Name: " + name + "\nSetting: " + setting + "\nTones: " + tonesStr;
+                if (themes && themes.trim()) {
+                    prompt += "\nCore Themes / Keywords: " + themes;
+                }
                 if (notes && notes.trim()) {
-                    prompt += "\nSpecific Notes/Themes: " + notes;
+                    prompt += "\nSpecific Notes/Guidance: " + notes;
                 }
                 prompt += "\n\nDo not include titles. Write in a factual, evocative style. Do not use the em-dash (—) character. Output only the lore content.";
                 return prompt;
             }
-        },
-
-        npcGeneration: {
+        },        npcGeneration: {
             instruction: makeInstruction(() => {
                 let worldName = (window.root && window.root.worldName) || "";
                 let worldLore = (window.root && window.root.worldLore) || "";
                 let setting = (window.root && window.root.setting) || "";
-                return window.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting);
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let existingNpcsText = (window.root && window.root.existingNpcsText) || "";
+                let dynamics = (window.root && window.root.dynamics) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                return window.prompts.roleplayPage.npcGeneration.compile(worldName, worldLore, setting, tonesStr, themes, existingNpcsText, dynamics, userName, userRole);
             }),
-            compile: function (worldName, worldLore, setting) {
-                return `Generate a single creative NPC profile fitting the world described below.
+            compile: function (worldName, worldLore, setting, tonesStr, themes, existingNpcsText, dynamics, userName, userRole) {
+                let prompt = `Generate a single creative NPC profile fitting the world and existing context described below.
 World Name: ${worldName}
 Lore: ${worldLore}
 Setting Genre: ${setting}
+Tone: ${tonesStr}
+Core Themes / Keywords: ${themes}
+Roleplay Dynamics: ${dynamics}
+Player Name: ${userName}
+Player Role: ${userRole}`;
 
-You MUST respond with exactly a JSON object matching this schema:
+                if (existingNpcsText && existingNpcsText.trim()) {
+                    prompt += `\n\nExisting NPC Cast in the Scene (DO NOT duplicate their names, roles, appearance, or personality. Create a unique character that complements them):
+${existingNpcsText}`;
+                }
+
+                prompt += `\n\nYou MUST respond with exactly a JSON object matching this schema:
 {
   "name": "Full name and nickname if any.",
   "age": "Current age.",
@@ -96,6 +114,7 @@ You MUST respond with exactly a JSON object matching this schema:
 }
 
 Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks. Do not use em-dashes.`;
+                return prompt;
             }
         },
 
