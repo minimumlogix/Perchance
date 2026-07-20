@@ -245,7 +245,7 @@ Do NOT include headers, labels, or introductions.`;
                 else if (lengthVal === "long") lengthRule = "Write a detailed, atmospheric description (7-8 sentences).";
                 else if (lengthVal === "super-long") lengthRule = "Write a comprehensive setup (9-12 sentences).";
 
-                let prompt = `You are writing the SCENARIO CONTEXT (Starting Scene Context) to establish the beginning of this roleplay session.
+                let prompt = `You are writing the SCENARIO CONTEXT (Starting Scene Context) to establish the beginning of this roleplay session. 
 
 World Name: ${worldName}
 Setting: ${setting}
@@ -262,8 +262,10 @@ Specific Notes/Guidance: ${notes}
 
 Rules:
 1. ${lengthRule}
-2. Set the scene, the atmosphere, and the immediate situation. Explain where the player is, who the NPCs are in the scene, and the initial conflict or plot hook that launches the interaction.
-3. Output ONLY the scene context paragraphs. Do NOT include headers, labels (like 'Scenario Context:'), or dialogue. Focus purely on setup.`;
+2. Start by clearly describing the world first, establishing its atmosphere, setting, genre, and any essential context before introducing any characters.
+3. Explain the role that **{{user}}** is playing in this world, then introduce the other character, their relationship to **{{user}}** if relevant, followed by the current situation or setting. Include only the essential details **{{user}}** needs to immediately understand the scene, character dynamics, tone, and context so they can naturally continue the roleplay in character. Do **not** reveal spoilers or information that **{{user}}** as a character should not know at the beginning.
+4. Focus entirely on scene setup. Do **not** write any character dialogue, direct speech, thoughts, or narration beyond the setup. Keep the writing immersive, visual, atmospheric, and engaging while avoiding clichés. The paragraph should feel like the opening of an interactive story.
+5. Output **only one paragraph** containing the scene context. Do **not** include headers, labels, titles, or explanatory text (such as "Scenario Context:"). Do **not** exceed one paragraph.`;
                 return prompt;
             }
         },
@@ -310,11 +312,9 @@ Specific Notes/Guidance: ${notes}
 
 Rules:
 1. ${lengthRule}
-2. Format: Output actions/narration inside asterisks and dialogues in double quotes. Include NPC speaker indicators if multiple NPCs speak.
-For example:
-*Kaito paces around the table* "The sweeps are clear, but we don't have much time." *Yvette looks up from her weapon* "Stop worrying. Just get the door open."
-3. Do NOT write from the Player's perspective.
-4. Output ONLY the greeting dialogue and narration. Do NOT include headers.`;
+2. Write the character's opening message as a direct continuation of the scenario context. Include direct dialogue addressed to **{{user}}** together with narration and actions. Write naturally, not like an AI. Fully embody the character without holding back their personality, emotions, speech patterns, body language, physical expressions, or sensory observations. Draw on all five senses where appropriate.
+3. Format all narration and actions inside *asterisks* and all spoken dialogue inside "double quotes". Output **only** the greeting dialogue and narration. Do **not** include headers, labels, titles, explanations, or any text such as "Intro Script:". Do **not** use the em dash (—) symbol anywhere in the writing.
+4. Prefix every spoken line with the character's short name using the format \`CharacterName: "Dialogue"\`. Weave in actions, pauses, gestures, or expressions between dialogue where natural. For example: \`Kaito: "The security sweeps are on a ten-minute loop." *He checks his arm cannon before glancing toward {{user}}.* "We've got one shot at this."\` Ensure the dialogue reflects the character's personality, current emotional state, and relationship with **{{user}}**.`;
                 return prompt;
             }
         },
@@ -400,7 +400,7 @@ Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks
             }),
             compile: function (worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr) {
                 let parts = ["You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The {{user}} is the player of this roleplay."];
-                
+
                 let worldData = "WORLD DATA:\n- World Name: " + worldName + "\n- World Lore/Setting: " + worldLore + "\n- Setting Genre: " + setting + "\n- Atmospheric Tones: " + tonesStr;
                 if (themes) worldData += "\n- Themes/Keywords: " + themes;
                 if (rpDynamicsStr && rpDynamicsStr !== "Any" && rpDynamicsStr !== "none") worldData += "\n- Group/Roleplay Dynamics: " + rpDynamicsStr;
