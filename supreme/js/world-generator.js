@@ -495,6 +495,7 @@
         
         let lengthVal = window.worldState.activeLength || "medium";
         let lengthInstruction = getLengthInstruction(lengthVal);
+        let existingContext = window.buildWorldContext(section);
 
         let instruction = root.prompts.worldPage.sectionGeneration.compile(
             section,
@@ -503,7 +504,8 @@
             wTones,
             window.literal(wThemes),
             window.literal(sectionNotes),
-            lengthInstruction
+            lengthInstruction,
+            window.literal(existingContext)
         );
 
         if (outputEl) {

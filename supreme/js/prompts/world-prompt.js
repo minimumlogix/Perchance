@@ -58,11 +58,14 @@
                 role: "Important Characters of this world",
                 rules: "Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."
             },
-            compile: function (section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction) {
+            compile: function (section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction, existingContext) {
                 let config = window.prompts.worldPage.sectionGeneration[section];
                 if (!config) return "";
                 let parts = ["You are an expert world-builder and lore compiler. You are writing the " + section.toUpperCase() + " section for a detailed world log."];
-                parts.push("WORLD DETAILS:\n- World Name: " + wName + "\n- Setting Genre: " + wSetting + "\n- Atmospheric Tones: " + wTones + "\n- Core Themes / Keywords: " + wThemes + (sectionNotes.trim() ? "\n- Section Notes/Directives: " + sectionNotes : ""));
+                parts.push("WORLD DETAILS:\n- World Name: " + wName + "\n- Setting Genre: " + wSetting + "\n- Atmospheric Tones: " + wTones + "\n- Core Themes / Keywords: " + wThemes + (sectionNotes && sectionNotes.trim() ? "\n- Section Notes/Directives: " + sectionNotes : ""));
+                if (existingContext && existingContext.trim()) {
+                    parts.push("EXISTING WORLD LORE & CONTEXT (Ensure your generated " + section.toUpperCase() + " section strictly aligns with, references, and builds logically upon these existing details):\n---\n" + existingContext.trim() + "\n---");
+                }
                 parts.push("SECTION TARGET:\nCompile the " + config.role + ".");
                 parts.push("STRICT RULES:\n" + config.rules + "\n4. DO NOT use the em dash character (—) anywhere in your response. Replace it with a comma, semicolon, colon, or rewrite.\n5. Do not write introductory or concluding prose. Output the section content immediately.\n" + lengthInstruction);
                 return parts.join("\n\n");

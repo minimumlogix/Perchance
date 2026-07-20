@@ -94,6 +94,10 @@
                 parts.push(
                     "WORLD & SCENARIO CONTEXT:\n- Setting: " + setting + "\n- Tones: " + tonesStr + "\n- Themes: " + themes + "\n- World Lore: " + worldLore + "\n- Player (" + userName + "): " + userRole + "\n- Major NPCs: " + npcsText
                 );
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    parts.push("ROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n" + sessionContext.trim());
+                }
                 if (notes && notes.trim()) parts.push("USER NOTES / PLOT GUIDANCE:\n" + notes);
                 parts.push(
                     "REQUIRED OUTPUT FORMAT:\nWrite a rich, detailed narrative paragraph containing:\n1. **Main Hook & Story Quest**: What is the core inciting incident, call to adventure, or central conflict?\n2. **Good Outcomes (Success)**: What positive rewards, victories, or peace can be achieved if the characters succeed?\n3. **Bad Outcomes / Perils (Failure)**: What dire consequences, tragedies, or threats can happen if they fail?\n4. **Hidden Secrets & Spoilers**: Clearly tag hidden plot twists, true villain motivations, or secret events with: '[SPOILER - NOT KNOWN TO CHARACTERS INITIALLY]' so the player/gamemaster knows."
@@ -144,14 +148,18 @@ Rules:
 1. ${lengthRule}
 2. Events must represent history, recent changes, occurrences, or actions by the NPCs and Player that set up the current scene.
 3. Do NOT make it about a single character's life; it must map out the world/scenario state and the events leading up to the start.
-4. Format: You MUST output exactly in this format (using a literal equals sign \\='):
+4. Format: You MUST output exactly in this format (using a literal equals sign =):
 - [Time/Era/Year/Event] = [Milestone/Description]
 For example:
 - 10 Years Ago = The first dimensional rift opened in the lower sectors.
 - 3 Months Ago = Kaito was assigned as the lead warden of Sector 7.
-- Yesterday = The security grid was disabled by an unknown hacker.
+- Yesterday = The security grid was disabled by an unknown hacker.`;
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
 
-Do NOT include headers, markdown bolding, or introductions. Output only the list.`;
+                prompt += `\n\nDo NOT include headers, markdown bolding, or introductions. Output only the list.`;
                 return prompt;
             }
         },
@@ -203,6 +211,11 @@ JSON format example:
     "key": ["aether-cull", "mana", "arcane", "illegal reactor"]
   }
 }`;
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
                 return prompt;
             }
         },
@@ -250,9 +263,14 @@ Rules:
 ${userName}: "Dialogue" *Action description*
 [NPC Name]: "Dialogue" *Action description*
 3. The interactions should showcase how the NPCs react to the Player, how they speak based on their unique personalities, and the dynamics between the cast.
-4. Use asterisks for actions/narration and double quotes for dialogue.
+4. Use asterisks for actions/narration and double quotes for dialogue.`;
 
-Do NOT include headers, labels, or introductions.`;
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
+                prompt += `\n\nDo NOT include headers, labels, or introductions.`;
                 return prompt;
             }
         },
@@ -300,6 +318,12 @@ Rules:
 3. Explain the role that **{{user}}** is playing in this world, then introduce the other character, their relationship to **{{user}}** if relevant, followed by the current situation or setting. Include only the essential details **{{user}}** needs to immediately understand the scene, character dynamics, tone, and context so they can naturally continue the roleplay in character. Do **not** reveal spoilers or information that **{{user}}** as a character should not know at the beginning.
 4. Focus entirely on scene setup. Do **not** write any character dialogue, direct speech, thoughts, or narration beyond the setup. Keep the writing immersive, visual, atmospheric, and engaging while avoiding clichés. The paragraph should feel like the opening of an interactive story.
 5. Output **only one paragraph** containing the scene context. Do **not** include headers, labels, titles, or explanatory text (such as "Scenario Context:"). Do **not** exceed one paragraph.`;
+
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
                 return prompt;
             }
         },
@@ -349,6 +373,12 @@ Rules:
 2. Write the character's opening message as a direct continuation of the scenario context. Include direct dialogue addressed to **{{user}}** together with narration and actions. Write naturally, not like an AI. Fully embody the character without holding back their personality, emotions, speech patterns, body language, physical expressions, or sensory observations. Draw on all five senses where appropriate.
 3. Format all narration and actions inside *asterisks* and all spoken dialogue inside "double quotes". Output **only** the greeting dialogue and narration. Do **not** include headers, labels, titles, explanations, or any text such as "Intro Script:". Do **not** use the em dash (—) symbol anywhere in the writing.
 4. Prefix every spoken line with the character's short name using the format \`CharacterName: "Dialogue"\`. Weave in actions, pauses, gestures, or expressions between dialogue where natural. For example: \`Kaito: "The security sweeps are on a ten-minute loop." *He checks his arm cannon before glancing toward {{user}}.* "We've got one shot at this."\` Ensure the dialogue reflects the character's personality, current emotional state, and relationship with **{{user}}**.`;
+
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
                 return prompt;
             }
         },
@@ -400,6 +430,12 @@ ${existingNpcsText}`;
 }
 
 Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks. Do not use em-dashes.`;
+
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
                 return prompt;
             }
         },
@@ -445,6 +481,11 @@ Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks
                 if (rpDynamicsStr && rpDynamicsStr !== "Any" && rpDynamicsStr !== "none") worldData += "\n- Group/Roleplay Dynamics: " + rpDynamicsStr;
                 parts.push(worldData);
 
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    parts.push("ROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n" + sessionContext.trim());
+                }
+
                 parts.push("PLAYER DATA (The User):\n- Player Name: " + pName + "\n- Player Role/Background: " + pRole);
                 parts.push("NPC CAST SHEET:\n" + npcsText);
                 parts.push("SCENARIO INSTRUCTIONS:\n- Plot Hook / Situation: " + scenarioNotes + "\n\n" + lengthInstruction);
@@ -489,6 +530,12 @@ Example:
 - elena_the_weaver = A soft-spoken apothecary with stained fingers who sells rare antitoxins.
 
 Do not include introductory text, titles, or concluding remarks. Do not use the em-dash (—) symbol anywhere. Output raw single-line entries matching the format.`;
+
+                let sessionContext = (window.root && window.root.sessionContext) || "";
+                if (sessionContext && sessionContext.trim()) {
+                    prompt += `\n\nROLEPLAY SESSION CONTEXT (Previously generated panels to build upon & align with):\n${sessionContext.trim()}`;
+                }
+
                 return prompt;
             }
         }

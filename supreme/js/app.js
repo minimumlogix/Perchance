@@ -2747,6 +2747,7 @@
                     let lenVal = lenEl ? lenEl.value : "medium";
                     let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lenVal) : "";
                     
+                    let existingContext = window.buildWorldContext ? window.buildWorldContext(section) : "";
                     return root.prompts.worldPage.sectionGeneration.compile(
                         section,
                         wName,
@@ -2754,7 +2755,8 @@
                         wTones,
                         wThemes,
                         sectionNotes,
-                        lengthInstruction
+                        lengthInstruction,
+                        existingContext
                     );
                 }
                 if (val === 'bannerImage') {

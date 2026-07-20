@@ -769,6 +769,87 @@
         });
     };
 
+    window.buildRoleplaySessionContext = function (excludeSection) {
+        let rp = window.roleplayState || {};
+        let parts = [];
+
+        // 1. Roleplay Guidance Prompt (Panel 3)
+        if (excludeSection !== "rpPrompt") {
+            let rpPrompt = (rp.roleplayPrompt || document.getElementById("rpPromptTextEl")?.value || "").trim();
+            if (rpPrompt) {
+                parts.push("=== NARRATIVE GUIDANCE / ROLEPLAY PROMPT ===\n" + rpPrompt);
+            }
+        }
+
+        // 2. Main Cast (Panel 4)
+        if (excludeSection !== "npcs") {
+            let mainCastText = rp.npcs ? rp.npcs.map((n, idx) => {
+                if (!n.name || !n.name.trim()) return "";
+                let details = [n.age, n.gender, n.race].filter(Boolean).join(", ");
+                return `NPC #${idx + 1}: ${n.name}${n.role ? " (" + n.role + ")" : ""}\n` +
+                       (details ? "- Details: " + details + "\n" : "") +
+                       (n.appearance ? "- Appearance: " + n.appearance + "\n" : "") +
+                       (n.personality ? "- Personality: " + n.personality + "\n" : "") +
+                       (n.beliefs ? "- Beliefs: " + n.beliefs + "\n" : "") +
+                       (n.abilities ? "- Abilities: " + n.abilities + "\n" : "") +
+                       (n.biography ? "- Biography: " + n.biography : "");
+            }).filter(Boolean).join("\n\n") : "";
+            if (mainCastText) {
+                parts.push("=== MAIN NPC CAST ===\n" + mainCastText);
+            }
+        }
+
+        // 3. Background Cast (Panel 5)
+        if (excludeSection !== "backgroundNpcs") {
+            let bgCastText = (rp.backgroundNpcs || document.getElementById("rpBackgroundCastEl")?.value || "").trim();
+            if (bgCastText) {
+                parts.push("=== BACKGROUND NPC CAST ===\n" + bgCastText);
+            }
+        }
+
+        // 4. Timeline (Panel 7)
+        if (excludeSection !== "timeline") {
+            let timelineText = (rp.timeline || document.getElementById("rpTab-timelineOutputEl")?.innerText || "").trim();
+            if (timelineText) {
+                parts.push("=== HISTORICAL TIMELINE ===\n" + timelineText);
+            }
+        }
+
+        // 5. Plot & Hook (Panel 8)
+        if (excludeSection !== "plot") {
+            let plotText = (rp.plot || document.getElementById("rpTab-plotOutputEl")?.innerText || "").trim();
+            if (plotText) {
+                parts.push("=== PLOT & STORY HOOK ===\n" + plotText);
+            }
+        }
+
+        // 6. Lore Entries (Panel 9)
+        if (excludeSection !== "lore") {
+            let loreText = (rp.lore || document.getElementById("rpTab-loreOutputEl")?.innerText || "").trim();
+            if (loreText) {
+                parts.push("=== SCENARIO LORE ENTRIES ===\n" + loreText);
+            }
+        }
+
+        // 7. Roleplay Example (Panel 10)
+        if (excludeSection !== "roleplay") {
+            let roleplayText = (rp.roleplay || document.getElementById("rpTab-roleplayOutputEl")?.innerText || "").trim();
+            if (roleplayText) {
+                parts.push("=== DIALOGUE EXAMPLES ===\n" + roleplayText);
+            }
+        }
+
+        // 8. Scenario Context (Panel 11)
+        if (excludeSection !== "introScenario") {
+            let introScenarioText = (rp.introScenario || document.getElementById("rpTab-introScenarioOutputEl")?.innerText || "").trim();
+            if (introScenarioText) {
+                parts.push("=== STARTING SCENE CONTEXT ===\n" + introScenarioText);
+            }
+        }
+
+        return parts.join("\n\n");
+    };
+
     window.buildRPSessionTimelinePrompt = function (notes, lengthVal, worldName, worldLore) {
         let setting = document.getElementById("rpSettingEl")?.value || "Any";
         let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
@@ -794,6 +875,7 @@
         root.userRole = window.literal(userRole);
         root.notes = window.literal(notes);
         root.lengthVal = lengthVal;
+        root.sessionContext = window.literal(window.buildRoleplaySessionContext("timeline"));
 
         return root.prompts.roleplayPage.timeline.instruction.evaluateItem;
     };
@@ -822,6 +904,7 @@
         root.userName = window.literal(userName);
         root.userRole = window.literal(userRole);
         root.notes = window.literal(notes);
+        root.sessionContext = window.literal(window.buildRoleplaySessionContext("lore"));
 
         return root.prompts.roleplayPage.lore.instruction.evaluateItem;
     };
@@ -851,6 +934,7 @@
         root.userRole = window.literal(userRole);
         root.notes = window.literal(notes);
         root.lengthVal = lengthVal;
+        root.sessionContext = window.literal(window.buildRoleplaySessionContext("roleplay"));
 
         return root.prompts.roleplayPage.roleplay.instruction.evaluateItem;
     };
@@ -880,6 +964,7 @@
         root.userRole = window.literal(userRole);
         root.notes = window.literal(notes);
         root.lengthVal = lengthVal;
+        root.sessionContext = window.literal(window.buildRoleplaySessionContext("introScenario"));
 
         return root.prompts.roleplayPage.introScenario.instruction.evaluateItem;
     };
@@ -910,6 +995,7 @@
         root.notes = window.literal(notes);
         root.lengthVal = lengthVal;
         root.scenarioContext = window.literal(scenarioContext);
+        root.sessionContext = window.literal(window.buildRoleplaySessionContext("introStart"));
 
         return root.prompts.roleplayPage.introStart.instruction.evaluateItem;
     };
