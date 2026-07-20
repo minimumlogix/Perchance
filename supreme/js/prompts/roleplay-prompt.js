@@ -68,6 +68,40 @@
                 return prompt;
             }
         },
+        plot: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let npcsText = (window.root && window.root.npcsText) || "";
+                let userName = (window.root && window.root.userName) || "";
+                let userRole = (window.root && window.root.userRole) || "";
+                let notes = (window.root && window.root.notes) || "";
+                let lengthVal = (window.root && window.root.lengthVal) || "medium";
+                let rpPrompt = (window.root && window.root.rpPrompt) || "";
+                return window.prompts.roleplayPage.plot.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, userName, userRole, notes, lengthVal, rpPrompt);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, npcsText, userName, userRole, notes, lengthVal, rpPrompt) {
+                let parts = [
+                    "You are a master RPG story designer, narrative director, and quest weaver.",
+                    "Generate a detailed narrative plot overview and main story hook for a roleplay session set in '" + (worldName || "this realm") + "'."
+                ];
+                if (rpPrompt && rpPrompt.trim()) {
+                    parts.push("ROLEPLAY SYSTEM GUIDANCE / NARRATIVE INSTRUCTIONS:\n" + rpPrompt.trim());
+                }
+                parts.push(
+                    "WORLD & SCENARIO CONTEXT:\n- Setting: " + setting + "\n- Tones: " + tonesStr + "\n- Themes: " + themes + "\n- World Lore: " + worldLore + "\n- Player (" + userName + "): " + userRole + "\n- Major NPCs: " + npcsText
+                );
+                if (notes && notes.trim()) parts.push("USER NOTES / PLOT GUIDANCE:\n" + notes);
+                parts.push(
+                    "REQUIRED OUTPUT FORMAT:\nWrite a rich, detailed narrative paragraph containing:\n1. **Main Hook & Story Quest**: What is the core inciting incident, call to adventure, or central conflict?\n2. **Good Outcomes (Success)**: What positive rewards, victories, or peace can be achieved if the characters succeed?\n3. **Bad Outcomes / Perils (Failure)**: What dire consequences, tragedies, or threats can happen if they fail?\n4. **Hidden Secrets & Spoilers**: Clearly tag hidden plot twists, true villain motivations, or secret events with: '[SPOILER - NOT KNOWN TO CHARACTERS INITIALLY]' so the player/gamemaster knows."
+                );
+                if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
+                return parts.join("\n\n");
+            }
+        },
 
         timeline: {
             instruction: makeInstruction(() => {
@@ -458,6 +492,18 @@ Do not include introductory text, titles, or concluding remarks. Do not use the 
                 return prompt;
             }
         }
+    };
+
+    window.buildRPSessionPlotPrompt = function (notes, lengthVal, worldName, worldLore) {
+        let rp = window.roleplayState || {};
+        let npcsText = rp.npcs ? rp.npcs.map(n => n.name).filter(Boolean).join(", ") : "";
+        let setting = document.getElementById("rpSettingEl")?.value || "Any";
+        let tonesStr = rp.tones ? rp.tones.join(", ") : "Any tone";
+        let themes = rp.themes || "";
+        let userName = rp.userName || "Player";
+        let userRole = rp.userRole || "Protagonist";
+        let rpPrompt = rp.roleplayPrompt || "";
+        return window.prompts.roleplayPage.plot.compile(worldName, worldLore, setting, tonesStr, themes, npcsText, userName, userRole, notes, lengthVal, rpPrompt);
     };
 })();
 

@@ -1275,7 +1275,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         let lengthVal = getEffectiveLengthForSection(section);
         let overview = (document.getElementById("rpThemesEl") || document.getElementById("wThemesEl") || document.getElementById("overviewNotesEl") || {}).value || "";
         let worldLore = (window.roleplayState && window.roleplayState.worldLore) || (document.getElementById("rpWorldOutputEl") || {}).innerText || (document.getElementById("worldLoreEl") || {}).value || "";
-        let allSectionNotes = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline"]
+        let allSectionNotes = ["shortDescription", "role", "personality", "beliefs", "preferences", "abilities", "relations", "appearance", "background", "timeline", "plot"]
             .map(s => {
                 let noteEl = document.getElementById(isRp ? ("rpTab-" + s + "NotesEl") : (s + "NotesEl"));
                 return noteEl ? noteEl.value : "";
@@ -1297,6 +1297,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
         if (isRp) {
             let worldName = window.roleplayState?.worldName || "Unnamed World";
             if (section === "timeline") instruction = window.buildRPSessionTimelinePrompt(notes, lengthVal, worldName, worldLore);
+            if (section === "plot") instruction = window.buildRPSessionPlotPrompt(notes, lengthVal, worldName, worldLore);
             if (section === "lore") instruction = window.buildRPSessionLorePrompt(notes, worldName, worldLore);
             if (section === "roleplay") instruction = window.buildRPSessionExamplePrompt(notes, lengthVal, worldName, worldLore);
             if (section === "introScenario") instruction = window.buildRPSessionIntroScenarioPrompt(notes, lengthVal, worldName, worldLore);
@@ -1316,6 +1317,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             if (section === "appearance") instruction = buildAppearancePrompt(context, notes, lengthVal, overview, worldLore);
             if (section === "background") instruction = buildBackgroundPrompt(context, notes, lengthVal, overview, worldLore);
             if (section === "timeline") instruction = buildTimelinePrompt(context, notes, lengthVal, overview, worldLore);
+            if (section === "plot") instruction = window.buildPlotPrompt(context, notes, lengthVal, overview, worldLore);
             if (section === "lore") instruction = buildLorePrompt(context, notes, lengthVal, overview, worldLore);
             if (section === "roleplay") instruction = buildRoleplayExamplePrompt(context, notes, lengthVal, overview, worldLore);
             if (section === "introScenario") instruction = buildIntroScenarioPrompt(context, notes, lengthVal, overview, worldLore);
@@ -1333,6 +1335,7 @@ Note: Only add multiple characters if there are any. Write their dialogue in the
             relations: "Defining character relations",
             background: "Forging backstory & origins",
             timeline: "Establishing timeline milestones",
+            plot: "Weaving story plot & hook",
             lore: "Crafting world lore entries",
             roleplay: "Simulating roleplay examples",
             introScenario: "Structuring scenario context",

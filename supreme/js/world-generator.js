@@ -73,6 +73,60 @@
         if (rpWorldNameEl && rpWorldNameEl.value !== name) rpWorldNameEl.value = name;
     };
 
+    window.worldImportScope = localStorage.worldImportScope || "overview";
+
+    window.compileWorldLoreText = function (w, scope) {
+        if (!w) return "";
+        scope = scope || window.worldImportScope || "overview";
+        let sections = w.sections || {};
+        
+        if (scope === "overview") {
+            return sections.overview || "";
+        }
+        
+        let parts = [];
+        let titles = {
+            overview: "WORLD OVERVIEW",
+            rules: "RULES & SYSTEM",
+            races: "RACES & SPECIES",
+            regions: "REGIONS & LANDMARKS",
+            factions: "FACTIONS & GROUPS",
+            bestiary: "BESTIARY & CREATURES",
+            characters: "KEY CHARACTERS"
+        };
+        
+        for (let key of ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"]) {
+            let val = (sections[key] || "").trim();
+            if (val) {
+                parts.push(`=== ${titles[key]} ===\n${val}`);
+            }
+        }
+        return parts.join("\n\n");
+    };
+
+    window.setWorldImportScope = function (scope) {
+        window.worldImportScope = scope;
+        localStorage.worldImportScope = scope;
+        
+        let labelText = scope === "all" ? "All Panels" : "Overview Only";
+        let iconClass = scope === "all" ? "bi bi-layers-fill" : "bi bi-layers-half";
+        
+        document.querySelectorAll(".worldImportScopeBtn").forEach(btn => {
+            btn.innerHTML = `<i class="${iconClass}"></i> ${labelText}`;
+        });
+        
+        if (window.worldState) {
+            let loreText = window.compileWorldLoreText(window.worldState, scope);
+            window.syncWorldLore(loreText);
+        }
+    };
+
+    window.toggleWorldImportScope = function () {
+        let current = window.worldImportScope || "overview";
+        let next = current === "overview" ? "all" : "overview";
+        window.setWorldImportScope(next);
+    };
+
     // Synchronize world lore / overview output across all tabs
     window.syncWorldLore = function (loreText) {
         window.worldState.sections.overview = loreText;
@@ -131,7 +185,8 @@
         window.syncWorldName(w.name || "");
         
         // 2. Sync Lore
-        window.syncWorldLore(w.sections?.overview || "");
+        let compiledLore = window.compileWorldLoreText(w, window.worldImportScope);
+        window.syncWorldLore(compiledLore);
         
         // 3. Sync Setting
         if (typeof selectWorldSetting === "function") selectWorldSetting(w.setting || "Any", false);

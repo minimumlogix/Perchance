@@ -372,4 +372,18 @@
             }
         }
     };
+
+    window.buildPlotPrompt = function (context, notes, lengthVal, overview, worldLore) {
+        let parts = [
+            "You are an expert story designer, quest weaver, and narrative director.",
+            "Generate a detailed narrative plot overview and story hook for this character and roleplay scenario.",
+            "Write a detailed narrative paragraph containing:\n1. **Main Hook & Quest**: The central conflict, inciting incident, or adventure call.\n2. **Good Outcomes**: The positive possibilities, victories, and rewards of success.\n3. **Bad Outcomes & Threats**: The potential perils, tragedies, and dangers of failure.\n4. **Hidden Secrets & Spoilers**: Clearly tag hidden plot twists or secret motives as: '[SPOILER - NOT KNOWN TO CHARACTERS INITIALLY]'.",
+            notes ? "User Guidance / Notes: " + notes : "",
+            overview ? "Overview: " + overview : "",
+            worldLore ? "World Lore: " + worldLore : "",
+            context ? "Character Details:\n" + context : ""
+        ].filter(Boolean);
+        if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
+        return parts.join("\n\n");
+    };
 })();

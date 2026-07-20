@@ -31,6 +31,7 @@
         outputScenario: "",
         outputStarter: "",
         timeline: "",
+        plot: "",
         lore: "",
         roleplay: "",
         introScenario: "",
@@ -92,6 +93,7 @@
                 outputScenario: window.roleplayState.outputScenario,
                 outputStarter: window.roleplayState.outputStarter,
                 timeline: window.roleplayState.timeline,
+                plot: window.roleplayState.plot,
                 lore: window.roleplayState.lore,
                 roleplay: window.roleplayState.roleplay,
                 introScenario: window.roleplayState.introScenario,
@@ -1702,6 +1704,13 @@
         if (rp.timeline) {
             lines.push(`## Timeline`);
             lines.push(rp.timeline);
+            lines.push(``);
+        }
+
+        let plotText = (rp.plot || document.getElementById("rpTab-plotOutputEl")?.innerText || "").trim();
+        if (plotText) {
+            lines.push(`## Plot & Hook`);
+            lines.push(plotText);
             lines.push(``);
         }
 
