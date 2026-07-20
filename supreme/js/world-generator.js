@@ -76,9 +76,17 @@
     window.worldImportScope = localStorage.worldImportScope || "overview";
 
     window.compileWorldLoreText = function (w, scope) {
-        if (!w) return "";
+        if (!w) w = window.worldState || {};
         scope = scope || window.worldImportScope || "overview";
-        let sections = w.sections || {};
+        let sections = Object.assign({}, w.sections || {});
+        
+        let keys = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
+        keys.forEach(k => {
+            let el = document.getElementById(`w-${k}OutputEl`);
+            if (el && el.innerText && el.innerText.trim()) {
+                sections[k] = el.innerText.trim();
+            }
+        });
         
         if (scope === "overview") {
             return sections.overview || "";
@@ -95,7 +103,7 @@
             characters: "KEY CHARACTERS"
         };
         
-        for (let key of ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"]) {
+        for (let key of keys) {
             let val = (sections[key] || "").trim();
             if (val) {
                 parts.push(`=== ${titles[key]} ===\n${val}`);
@@ -119,6 +127,9 @@
             let loreText = window.compileWorldLoreText(window.worldState, scope);
             window.syncWorldLore(loreText);
         }
+        if (typeof window.updateBrainContextView === "function") {
+            window.updateBrainContextView();
+        }
     };
 
     window.toggleWorldImportScope = function () {
@@ -129,7 +140,6 @@
 
     // Synchronize world lore / overview output across all tabs
     window.syncWorldLore = function (loreText) {
-        window.worldState.sections.overview = loreText;
         localStorage.worldLore = loreText;
         
         let loreEl = document.getElementById("worldLoreEl");
@@ -149,8 +159,9 @@
         }
         
         if (wOverviewOutputEl) {
-            if (loreText) {
-                wOverviewOutputEl.innerHTML = window.formatSectionText(loreText);
+            let overviewText = window.worldState?.sections?.overview || loreText;
+            if (overviewText) {
+                wOverviewOutputEl.innerHTML = window.formatSectionText(overviewText);
                 wOverviewOutputEl.style.display = "block";
                 let edit = document.getElementById("w-overviewEditBtnEl");
                 let copy = document.getElementById("w-overviewCopyBtnEl");
@@ -164,6 +175,9 @@
                 if (edit) edit.style.display = "none";
                 if (copy) copy.style.display = "none";
             }
+        }
+        if (typeof window.updateBrainContextView === "function") {
+            window.updateBrainContextView();
         }
     };
 
@@ -184,16 +198,24 @@
         // 1. Sync Name
         window.syncWorldName(w.name || "");
         
-        // 2. Sync Lore
+        // 2. Sync Section Notes and Sections in World tab first
+        window.worldState.sectionNotes = Object.assign({
+            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
+        }, w.sectionNotes || {});
+        window.worldState.sections = Object.assign({
+            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
+        }, w.sections || {});
+
+        // 3. Sync Lore based on active Scope
         let compiledLore = window.compileWorldLoreText(w, window.worldImportScope);
         window.syncWorldLore(compiledLore);
         
-        // 3. Sync Setting
+        // 4. Sync Setting
         if (typeof selectWorldSetting === "function") selectWorldSetting(w.setting || "Any", false);
         if (typeof selectSetting === "function") selectSetting(w.setting || "Any", false);
         if (typeof selectRoleplaySetting === "function") selectRoleplaySetting(w.setting || "Any", false);
         
-        // 4. Sync Tones
+        // 5. Sync Tones
         window.worldState.tones = w.tones || ["Any"];
         localStorage.tones = JSON.stringify(w.tones || ["Any"]);
         if (typeof loadWorldTones === "function") loadWorldTones();
@@ -207,14 +229,14 @@
             updateRoleplayToneLabel();
         }
         
-        // 5. Sync Themes
+        // 6. Sync Themes
         window.worldState.themes = w.themes || "";
         let wThemesEl = document.getElementById("wThemesEl");
         let rpThemesEl = document.getElementById("rpThemesEl");
         if (wThemesEl) wThemesEl.value = w.themes || "";
         if (rpThemesEl) rpThemesEl.value = w.themes || "";
         
-        // 6. Sync Banner/Visuals
+        // 7. Sync Banner/Visuals
         window.worldState.bannerUrl = w.bannerUrl || "";
         if (w.bannerUrl) {
             if (typeof updateWorldLoreVisuals === "function") updateWorldLoreVisuals(w.bannerUrl);
@@ -226,14 +248,6 @@
             localStorage.removeItem("worldLoreImageUrl");
             if (typeof updateWorldBannerUI === "function") updateWorldBannerUI("");
         }
-        
-        // 7. Sync Section Notes and Sections in World tab
-        window.worldState.sectionNotes = Object.assign({
-            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
-        }, w.sectionNotes || {});
-        window.worldState.sections = Object.assign({
-            overview: "", rules: "", races: "", regions: "", factions: "", bestiary: "", characters: ""
-        }, w.sections || {});
         
         let notes = window.worldState.sectionNotes;
         let overviewNotesEl = document.getElementById("w-overviewNotesEl");
