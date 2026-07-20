@@ -1612,16 +1612,16 @@
         let lines = [];
         lines.push(`# Roleplay Scenario: ${title}`);
         lines.push(``);
-        if (rp.setting && rp.setting !== "Any") lines.push(`**Setting:** ${rp.setting}`);
-        if (rp.tones && rp.tones.length > 0) lines.push(`**Tones:** ${Array.isArray(rp.tones) ? rp.tones.join(", ") : rp.tones}`);
-        if (rp.rpDynamics && rp.rpDynamics.length > 0) lines.push(`**Group Dynamics:** ${Array.isArray(rp.rpDynamics) ? rp.rpDynamics.join(", ") : rp.rpDynamics}`);
-        if (rp.themes) lines.push(`**Themes:** ${rp.themes}`);
+        if (rp.setting && rp.setting !== "Any") lines.push(`Setting: ${rp.setting}`);
+        if (rp.tones && rp.tones.length > 0) lines.push(`Tones: ${Array.isArray(rp.tones) ? rp.tones.join(", ") : rp.tones}`);
+        if (rp.rpDynamics && rp.rpDynamics.length > 0) lines.push(`Group Dynamics: ${Array.isArray(rp.rpDynamics) ? rp.rpDynamics.join(", ") : rp.rpDynamics}`);
+        if (rp.themes) lines.push(`Themes: ${rp.themes}`);
         lines.push(``);
 
         if (rp.userName || rp.userRole) {
             lines.push(`## Player Character`);
-            if (rp.userName) lines.push(`- **Name:** ${rp.userName}`);
-            if (rp.userRole) lines.push(`- **Role / Background:** ${rp.userRole}`);
+            if (rp.userName) lines.push(`- Name: ${rp.userName}`);
+            if (rp.userRole) lines.push(`- Role / Background: ${rp.userRole}`);
             lines.push(``);
         }
 
@@ -1630,14 +1630,14 @@
             rp.npcs.forEach((npc, i) => {
                 if (npc.name || npc.role || npc.appearance) {
                     lines.push(`### NPC #${i + 1}: ${npc.name || "Unnamed"}`);
-                    if (npc.role) lines.push(`- **Role:** ${npc.role}`);
-                    if (npc.age || npc.gender || npc.race) lines.push(`- **Details:** ${[npc.age, npc.gender, npc.race].filter(Boolean).join(", ")}`);
-                    if (npc.appearance) lines.push(`- **Appearance:** ${npc.appearance}`);
-                    if (npc.personality) lines.push(`- **Personality:** ${npc.personality}`);
-                    if (npc.beliefs) lines.push(`- **Beliefs:** ${npc.beliefs}`);
-                    if (npc.abilities) lines.push(`- **Abilities:** ${npc.abilities}`);
-                    if (npc.biography) lines.push(`- **Biography:** ${npc.biography}`);
-                    if (npc.rules) lines.push(`- **Rules:** ${npc.rules}`);
+                    if (npc.role) lines.push(`- Role: ${npc.role}`);
+                    if (npc.age || npc.gender || npc.race) lines.push(`- Details: ${[npc.age, npc.gender, npc.race].filter(Boolean).join(", ")}`);
+                    if (npc.appearance) lines.push(`- Appearance: ${npc.appearance}`);
+                    if (npc.personality) lines.push(`- Personality: ${npc.personality}`);
+                    if (npc.beliefs) lines.push(`- Beliefs: ${npc.beliefs}`);
+                    if (npc.abilities) lines.push(`- Abilities: ${npc.abilities}`);
+                    if (npc.biography) lines.push(`- Biography: ${npc.biography}`);
+                    if (npc.rules) lines.push(`- Rules: ${npc.rules}`);
                     lines.push(``);
                 }
             });
