@@ -1961,8 +1961,41 @@
                     </div>
                 </div>
 
+                <!-- PANEL 3: ROLEPLAY PROMPT -->
+                <div class="panel" id="rpRoleplayPromptPanelEl">
+                    <div class="panel-header" onclick="togglePanel('rpRoleplayPromptPanelEl')">
+                        <div class="panel-title">
+                            <div class="panel-badge"><i class="bi bi-chat-square-quote"></i></div>
+                            <span>Roleplay Prompt</span>
+                        </div>
+                        <span class="panel-chevron bi bi-chevron-down"></span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="font-size: 80%; opacity: 0.7; margin: 0 0 0.2rem 0;">
+                            Select a preset roleplay guidance style or customize your own prompt to guide the AI's narrative behavior.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                            <label class="image-tool-label" style="font-weight: 600; color: var(--text-muted);"><i class="bi bi-sliders"></i> Roleplay Type / Preset Guidance</label>
+                            <select id="rpPromptTypeEl" class="select-input length-select" onchange="window.selectRoleplayPromptPreset(this.value);" style="max-width: 380px;">
+                                <option value="none">-- None / Standard --</option>
+                                <option value="slow-burn">Collaborative Novelist (Slow-Burn Narrative)</option>
+                                <option value="gamemaster">Hidden Gamemaster & World Simulator</option>
+                                <option value="custom">Custom Instructions</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                            <label style="font-size: 80%; color: var(--text-muted); font-weight: 500;">Roleplay Guidance Instructions (Editable)</label>
+                            <textarea id="rpPromptTextEl" class="detail-input" style="min-height: 110px; font-size: 88%; line-height: 1.5; resize: vertical;"
+                                placeholder="Select a preset above or type custom instructions to guide how the AI acts during this roleplay..."
+                                oninput="if(document.getElementById('rpPromptTypeEl').value !== 'custom') { document.getElementById('rpPromptTypeEl').value = 'custom'; } saveRoleplayState();"></textarea>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                            <button class="btn btn-secondary btn-sm" onclick="window.clearRoleplayPrompt()"><i class="bi bi-trash"></i> Clear Prompt</button>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- PANEL 3: PLAYER / USER DETAILED PROFILE -->
+                <!-- PANEL 4: PLAYER SETUP (YOU) -->
                 <div class="panel" id="rpPlayerPanelEl">
                     <div class="panel-header" onclick="togglePanel('rpPlayerPanelEl')">
                         <div class="panel-title">

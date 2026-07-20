@@ -396,10 +396,15 @@ Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks
                 let scenarioNotes = (window.root && window.root.scenarioNotes) || "";
                 let lengthInstruction = (window.root && window.root.lengthInstruction) || "";
                 let rpDynamicsStr = (window.root && window.root.rpDynamicsStr) || "";
-                return window.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr);
+                let roleplayPrompt = (window.root && window.root.roleplayPrompt) || "";
+                return window.prompts.roleplayPage.roleplayScenario.compile(worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr, roleplayPrompt);
             }),
-            compile: function (worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr) {
+            compile: function (worldName, worldLore, setting, tonesStr, themes, pName, pRole, npcsText, scenarioNotes, lengthInstruction, rpDynamicsStr, roleplayPrompt) {
                 let parts = ["You are a creative co-writer and RPG Scenario Designer. You are creating a structured multi-character Roleplay Scenario Sheet and a Starter Message. The {{user}} is the player of this roleplay."];
+
+                if (roleplayPrompt && roleplayPrompt.trim()) {
+                    parts.push("ROLEPLAY SYSTEM GUIDANCE / NARRATIVE INSTRUCTIONS:\n" + roleplayPrompt.trim());
+                }
 
                 let worldData = "WORLD DATA:\n- World Name: " + worldName + "\n- World Lore/Setting: " + worldLore + "\n- Setting Genre: " + setting + "\n- Atmospheric Tones: " + tonesStr;
                 if (themes) worldData += "\n- Themes/Keywords: " + themes;

@@ -25,6 +25,8 @@
             }
         ],
         backgroundNpcs: "",
+        roleplayPromptType: "none",
+        roleplayPrompt: "",
         scenarioNotes: "",
         outputScenario: "",
         outputStarter: "",
@@ -68,6 +70,8 @@
             window.roleplayState.activeLength = document.getElementById("rpLengthEl")?.value || "medium";
             window.roleplayState.themes = document.getElementById("rpThemesEl")?.value || "";
             window.roleplayState.backgroundNpcs = document.getElementById("rpBackgroundCastEl")?.value || "";
+            window.roleplayState.roleplayPromptType = document.getElementById("rpPromptTypeEl")?.value || "none";
+            window.roleplayState.roleplayPrompt = document.getElementById("rpPromptTextEl")?.value || "";
 
             localStorage.rpState = JSON.stringify({
                 worldName: window.roleplayState.worldName,
@@ -81,6 +85,8 @@
                 themes: window.roleplayState.themes,
                 npcs: window.roleplayState.npcs,
                 backgroundNpcs: window.roleplayState.backgroundNpcs,
+                roleplayPromptType: window.roleplayState.roleplayPromptType,
+                roleplayPrompt: window.roleplayState.roleplayPrompt,
                 scenarioNotes: window.roleplayState.scenarioNotes,
                 activeLength: window.roleplayState.activeLength,
                 outputScenario: window.roleplayState.outputScenario,
@@ -1301,6 +1307,7 @@
             let tonesStr = window.roleplayState.tones ? window.roleplayState.tones.join(", ") : "Any tone";
             let themes = window.roleplayState.themes || "";
             let rpDynamicsStr = window.roleplayState.rpDynamics ? window.roleplayState.rpDynamics.join(", ") : "Any";
+            let roleplayPrompt = window.roleplayState.roleplayPrompt || "";
 
             let prompt = root.prompts.roleplayPage.roleplayScenario.compile(
                 window.literal(worldName), 
@@ -1313,7 +1320,8 @@
                 window.literal(npcsText), 
                 window.literal(scenarioNotes), 
                 lengthInstruction,
-                rpDynamicsStr
+                rpDynamicsStr,
+                window.literal(roleplayPrompt)
             );
 
             if (tabScenario) {
@@ -1539,6 +1547,34 @@
 /* ==========================================================================
    BACKGROUND NPC CAST CONTROLLER & EXPORTS
    ========================================================================== */
+    window.roleplayPromptPresets = {
+        "slow-burn": "Act as a collaborative novelist focusing on a slow-burn narrative. Prioritize atmospheric descriptions, internal monologues, and subtle character chemistry over rapid plot progression. Do not rush the story or resolve conflicts prematurely; let tension build organically through dialogue and subtext. Avoid summarizing time skips unless requested. Instead, focus on the 'micro-moments'—the small gestures and pauses that make a scene feel lived-in and authentic.",
+        "gamemaster": "Act as a hidden Gamemaster and world simulator. Your goal is to maintain a consistent, reactive environment where every action has a logical consequence. Do not play as my character or dictate my thoughts; instead, describe the world's reaction to my inputs. Keep the plot driven by environmental cues and NPC interactions. Manage the 'invisible' systems of the world—politics, weather, and NPC motivations—and reveal them only through organic discovery. Always leave the outcome of a scene open for my character to influence."
+    };
+
+    window.selectRoleplayPromptPreset = function (presetKey) {
+        let textEl = document.getElementById("rpPromptTextEl");
+        if (!textEl) return;
+
+        if (presetKey === "none") {
+            textEl.value = "";
+        } else if (window.roleplayPromptPresets[presetKey]) {
+            textEl.value = window.roleplayPromptPresets[presetKey];
+        }
+        window.roleplayState.roleplayPromptType = presetKey;
+        window.roleplayState.roleplayPrompt = textEl.value;
+        window.saveRoleplayState();
+    };
+
+    window.clearRoleplayPrompt = function () {
+        let typeEl = document.getElementById("rpPromptTypeEl");
+        let textEl = document.getElementById("rpPromptTextEl");
+        if (typeEl) typeEl.value = "none";
+        if (textEl) textEl.value = "";
+        window.roleplayState.roleplayPromptType = "none";
+        window.roleplayState.roleplayPrompt = "";
+        window.saveRoleplayState();
+    };
     window.generateRoleplayBackgroundCast = async function () {
         let genBtn = document.getElementById("rpBgCastGenBtnEl");
         let statusEl = document.getElementById("rpBgCastStatusEl");
@@ -1647,6 +1683,13 @@
         if (bgNpcs) {
             lines.push(`## Background Cast (NPCs)`);
             lines.push(bgNpcs);
+            lines.push(``);
+        }
+
+        let rpPrompt = (rp.roleplayPrompt || document.getElementById("rpPromptTextEl")?.value || "").trim();
+        if (rpPrompt) {
+            lines.push(`## Roleplay Guidance Prompt`);
+            lines.push(rpPrompt);
             lines.push(``);
         }
 
@@ -1770,6 +1813,8 @@
         let lengthEl = document.getElementById("rpLengthEl");
         let themesEl = document.getElementById("rpThemesEl");
         let bgCastEl = document.getElementById("rpBackgroundCastEl");
+        let promptTypeEl = document.getElementById("rpPromptTypeEl");
+        let promptTextEl = document.getElementById("rpPromptTextEl");
 
         if (nameEl) nameEl.value = window.roleplayState.worldName || "";
         if (loreNotesEl) loreNotesEl.value = window.roleplayState.worldLoreNotes || "";
@@ -1786,6 +1831,8 @@
         if (lengthEl) lengthEl.value = window.roleplayState.activeLength || "medium";
         if (themesEl) themesEl.value = window.roleplayState.themes || "";
         if (bgCastEl) bgCastEl.value = window.roleplayState.backgroundNpcs || "";
+        if (promptTypeEl) promptTypeEl.value = window.roleplayState.roleplayPromptType || "none";
+        if (promptTextEl) promptTextEl.value = window.roleplayState.roleplayPrompt || "";
 
         // Restore setting, tone, dynamic, length custom elements
         window.selectRoleplaySetting(window.roleplayState.setting || "Any");
