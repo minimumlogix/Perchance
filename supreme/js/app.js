@@ -2738,13 +2738,13 @@
                     section = section.charAt(0).toLowerCase() + section.slice(1);
                     
                     let wName = window.worldState.name || "Unnamed";
-                    let wSetting = window.worldState.setting;
+                    let wSetting = window.worldState.setting || "Any";
                     let wTones = window.worldState.tones ? window.worldState.tones.join(", ") : "";
-                    let wThemes = window.worldState.themes;
-                    let notesEl = document.getElementById("w" + section.charAt(0).toUpperCase() + section.slice(1) + "NotesEl");
-                    let sectionNotes = notesEl ? notesEl.value : "";
-                    let lenEl = document.getElementById("w" + section.charAt(0).toUpperCase() + section.slice(1) + "LengthEl");
-                    let lenVal = lenEl ? lenEl.value : "medium";
+                    let wThemes = window.worldState.themes || "";
+                    let notesEl = document.getElementById(`w-${section}NotesEl`);
+                    let sectionNotes = notesEl ? notesEl.value : (window.worldState.sectionNotes?.[section] || "");
+                    let lenEl = document.getElementById("wLengthEl") || document.getElementById(`w-${section}LengthEl`);
+                    let lenVal = lenEl ? lenEl.value : (window.worldState.activeLength || "medium");
                     let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lenVal) : "";
                     
                     let existingContext = window.buildWorldContext ? window.buildWorldContext(section) : "";

@@ -40,6 +40,37 @@
         activeWorldId: null
     };
 
+    window.buildWorldContext = function (excludeSection) {
+        let sections = ["overview", "rules", "races", "regions", "factions", "bestiary", "characters"];
+        let titles = {
+            overview: "WORLD OVERVIEW",
+            rules: "RULES OF THE WORLD",
+            races: "RACES & SPECIES",
+            regions: "REGIONS OF THE WORLD",
+            factions: "MAJOR FACTIONS",
+            bestiary: "BESTIARY & ANIMALS",
+            characters: "IMPORTANT CHARACTERS"
+        };
+        let parts = [];
+        sections.forEach(s => {
+            if (s === excludeSection) return;
+            let text = "";
+            if (window.worldState && window.worldState.sections && window.worldState.sections[s]) {
+                text = window.worldState.sections[s].trim();
+            }
+            if (!text) {
+                let outEl = document.getElementById(`w-${s}OutputEl`);
+                if (outEl && outEl.innerText && outEl.innerText.trim()) {
+                    text = outEl.innerText.trim();
+                }
+            }
+            if (text) {
+                parts.push(`=== ${titles[s]} ===\n${text}`);
+            }
+        });
+        return parts.join("\n\n");
+    };
+
     // Helper to check if the active world has any input content
     function hasWorldContent() {
         if ((window.worldState.name || "").trim()) return true;
