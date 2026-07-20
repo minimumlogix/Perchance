@@ -413,6 +413,46 @@ Output ONLY the valid raw JSON object. Do not wrap in markdown \`\`\`json blocks
                 if (window.getBannedFormattingRule) parts.push(window.getBannedFormattingRule());
                 return parts.join("\n\n");
             }
+        },
+
+        npcBackgroundGeneration: {
+            instruction: makeInstruction(() => {
+                let worldName = (window.root && window.root.worldName) || "";
+                let worldLore = (window.root && window.root.worldLore) || "";
+                let setting = (window.root && window.root.setting) || "";
+                let tonesStr = (window.root && window.root.tonesStr) || "";
+                let themes = (window.root && window.root.themes) || "";
+                let existingNpcsText = (window.root && window.root.existingNpcsText) || "";
+                let notes = (window.root && window.root.notes) || "";
+                return window.prompts.roleplayPage.npcBackgroundGeneration.compile(worldName, worldLore, setting, tonesStr, themes, existingNpcsText, notes);
+            }),
+            compile: function (worldName, worldLore, setting, tonesStr, themes, existingNpcsText, notes) {
+                let prompt = `Generate 3 to 5 background / secondary NPC descriptions fitting the world.
+World Name: ${worldName}
+Lore: ${worldLore}
+Setting Genre: ${setting}
+Tones: ${tonesStr}
+Themes: ${themes}`;
+
+                if (existingNpcsText && existingNpcsText.trim()) {
+                    prompt += `\n\nExisting Main NPC Cast (DO NOT duplicate): ${existingNpcsText}`;
+                }
+                if (notes && notes.trim()) {
+                    prompt += `\n\nSpecific Notes / Guidance: ${notes}`;
+                }
+
+                prompt += `\n\nSTRICT FORMATTING RULE:
+Respond ONLY with a bulleted list where each line follows this exact format:
+- character_name = details about the character (appearance, personality, role in story in a single line)
+
+Example:
+- captain_kell = A scarred city watch guard with a missing eye who accepts bribes to look the other way.
+- elena_the_weaver = A soft-spoken apothecary with stained fingers who sells rare antitoxins.
+
+Do not include introductory text, titles, or concluding remarks. Do not use the em-dash (—) symbol anywhere. Output raw single-line entries matching the format.`;
+                return prompt;
+            }
         }
     };
 })();
+

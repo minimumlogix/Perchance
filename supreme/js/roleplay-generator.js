@@ -24,6 +24,7 @@
                 abilities: "", biography: "", rules: "", image: ""
             }
         ],
+        backgroundNpcs: "",
         scenarioNotes: "",
         outputScenario: "",
         outputStarter: "",
@@ -66,6 +67,7 @@
             window.roleplayState.scenarioNotes = document.getElementById("rpScenarioNotesEl")?.value || "";
             window.roleplayState.activeLength = document.getElementById("rpLengthEl")?.value || "medium";
             window.roleplayState.themes = document.getElementById("rpThemesEl")?.value || "";
+            window.roleplayState.backgroundNpcs = document.getElementById("rpBackgroundCastEl")?.value || "";
 
             localStorage.rpState = JSON.stringify({
                 worldName: window.roleplayState.worldName,
@@ -78,6 +80,7 @@
                 rpDynamics: window.roleplayState.rpDynamics,
                 themes: window.roleplayState.themes,
                 npcs: window.roleplayState.npcs,
+                backgroundNpcs: window.roleplayState.backgroundNpcs,
                 scenarioNotes: window.roleplayState.scenarioNotes,
                 activeLength: window.roleplayState.activeLength,
                 outputScenario: window.roleplayState.outputScenario,
@@ -1270,6 +1273,15 @@
                 npcsText = "None specified (generate 1-2 interesting NPCs fitting the world setting).";
             }
 
+            let bgCastText = (window.roleplayState.backgroundNpcs || document.getElementById("rpBackgroundCastEl")?.value || "").trim();
+            if (bgCastText) {
+                if (npcsText && npcsText !== "None specified (generate 1-2 interesting NPCs fitting the world setting).") {
+                    npcsText += `\n\nBACKGROUND CAST (SINGLE-LINE DESCRIPTIONS):\n${bgCastText}`;
+                } else {
+                    npcsText = `BACKGROUND CAST (SINGLE-LINE DESCRIPTIONS):\n${bgCastText}`;
+                }
+            }
+
             // Starters length instructions
             let lengthVal = window.roleplayState.activeLength || "medium";
             let lengthInstruction = window.getLengthInstruction ? window.getLengthInstruction(lengthVal, 'starter') : "";
@@ -1524,6 +1536,198 @@
         URL.revokeObjectURL(url);
     };
 
+/* ==========================================================================
+   BACKGROUND NPC CAST CONTROLLER & EXPORTS
+   ========================================================================== */
+    window.generateRoleplayBackgroundCast = async function () {
+        let genBtn = document.getElementById("rpBgCastGenBtnEl");
+        let statusEl = document.getElementById("rpBgCastStatusEl");
+        let outputEl = document.getElementById("rpBackgroundCastEl");
+        let notesEl = document.getElementById("rpBackgroundCastNotesEl");
+
+        if (statusEl) statusEl.innerHTML = `<span><i class="bi bi-arrow-repeat spin-icon" style="color:var(--accent-color);"></i> Generating Background NPCs...</span>`;
+        if (genBtn) genBtn.disabled = true;
+
+        try {
+            let existingNpcsText = (window.roleplayState.npcs || [])
+                .map(n => n.name)
+                .filter(Boolean)
+                .join(", ");
+
+            let promptStr = window.prompts.roleplayPage.npcBackgroundGeneration.compile(
+                window.roleplayState.worldName || "",
+                window.roleplayState.worldLore || "",
+                window.roleplayState.setting || "",
+                Array.isArray(window.roleplayState.tones) ? window.roleplayState.tones.join(", ") : (window.roleplayState.tones || ""),
+                window.roleplayState.themes || "",
+                existingNpcsText,
+                notesEl ? notesEl.value : ""
+            );
+
+            let res = await window.ai({ instruction: promptStr });
+            let resultText = typeof res === "string" ? res : (res.text || res.generatedText || "");
+
+            if (outputEl) {
+                outputEl.value = resultText.trim();
+                window.roleplayState.backgroundNpcs = outputEl.value;
+                window.saveRoleplayState();
+            }
+            if (statusEl) statusEl.innerHTML = `<span style="color:#10b981;"><i class="bi bi-check-circle-fill"></i> Generated background cast!</span>`;
+            setTimeout(() => { if (statusEl) statusEl.textContent = ""; }, 3000);
+        } catch (e) {
+            console.error("Background cast generation failed:", e);
+            if (statusEl) statusEl.innerHTML = `<span style="color:#ef4444;"><i class="bi bi-exclamation-triangle-fill"></i> Generation failed.</span>`;
+        } finally {
+            if (genBtn) genBtn.disabled = false;
+        }
+    };
+
+    window.clearRoleplayBackgroundCast = function () {
+        let outputEl = document.getElementById("rpBackgroundCastEl");
+        let notesEl = document.getElementById("rpBackgroundCastNotesEl");
+        if (outputEl) outputEl.value = "";
+        if (notesEl) notesEl.value = "";
+        window.roleplayState.backgroundNpcs = "";
+        window.saveRoleplayState();
+    };
+
+    window.copyRoleplayBackgroundCast = function () {
+        let outputEl = document.getElementById("rpBackgroundCastEl");
+        if (!outputEl || !outputEl.value.trim()) return;
+        navigator.clipboard.writeText(outputEl.value.trim()).then(() => {
+            let btn = document.getElementById("rpBgCastCopyBtnEl");
+            if (btn) {
+                let orig = btn.innerHTML;
+                btn.innerHTML = `<i class="bi bi-check-lg"></i> Copied!`;
+                setTimeout(() => { btn.innerHTML = orig; }, 1500);
+            }
+        });
+    };
+
+    window.exportRoleplayAsMarkdown = function () {
+        let rp = window.roleplayState || {};
+        let title = (rp.worldName || "Roleplay Scenario").trim();
+        let safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+        let lines = [];
+        lines.push(`# Roleplay Scenario: ${title}`);
+        lines.push(``);
+        if (rp.setting && rp.setting !== "Any") lines.push(`**Setting:** ${rp.setting}`);
+        if (rp.tones && rp.tones.length > 0) lines.push(`**Tones:** ${Array.isArray(rp.tones) ? rp.tones.join(", ") : rp.tones}`);
+        if (rp.rpDynamics && rp.rpDynamics.length > 0) lines.push(`**Group Dynamics:** ${Array.isArray(rp.rpDynamics) ? rp.rpDynamics.join(", ") : rp.rpDynamics}`);
+        if (rp.themes) lines.push(`**Themes:** ${rp.themes}`);
+        lines.push(``);
+
+        if (rp.userName || rp.userRole) {
+            lines.push(`## Player Character`);
+            if (rp.userName) lines.push(`- **Name:** ${rp.userName}`);
+            if (rp.userRole) lines.push(`- **Role / Background:** ${rp.userRole}`);
+            lines.push(``);
+        }
+
+        if (rp.npcs && rp.npcs.length > 0) {
+            lines.push(`## Main Cast (NPCs)`);
+            rp.npcs.forEach((npc, i) => {
+                if (npc.name || npc.role || npc.appearance) {
+                    lines.push(`### NPC #${i + 1}: ${npc.name || "Unnamed"}`);
+                    if (npc.role) lines.push(`- **Role:** ${npc.role}`);
+                    if (npc.age || npc.gender || npc.race) lines.push(`- **Details:** ${[npc.age, npc.gender, npc.race].filter(Boolean).join(", ")}`);
+                    if (npc.appearance) lines.push(`- **Appearance:** ${npc.appearance}`);
+                    if (npc.personality) lines.push(`- **Personality:** ${npc.personality}`);
+                    if (npc.beliefs) lines.push(`- **Beliefs:** ${npc.beliefs}`);
+                    if (npc.abilities) lines.push(`- **Abilities:** ${npc.abilities}`);
+                    if (npc.biography) lines.push(`- **Biography:** ${npc.biography}`);
+                    if (npc.rules) lines.push(`- **Rules:** ${npc.rules}`);
+                    lines.push(``);
+                }
+            });
+        }
+
+        let bgNpcs = (rp.backgroundNpcs || document.getElementById("rpBackgroundCastEl")?.value || "").trim();
+        if (bgNpcs) {
+            lines.push(`## Background Cast (NPCs)`);
+            lines.push(bgNpcs);
+            lines.push(``);
+        }
+
+        if (rp.scenarioNotes) {
+            lines.push(`## Scenario Notes / Conflict`);
+            lines.push(rp.scenarioNotes);
+            lines.push(``);
+        }
+
+        if (rp.timeline) {
+            lines.push(`## Timeline`);
+            lines.push(rp.timeline);
+            lines.push(``);
+        }
+
+        if (rp.lore) {
+            lines.push(`## Lore Entries`);
+            lines.push(rp.lore);
+            lines.push(``);
+        }
+
+        if (rp.introScenario) {
+            lines.push(`## Scenario Context`);
+            lines.push(rp.introScenario);
+            lines.push(``);
+        }
+
+        if (rp.introStart) {
+            lines.push(`## Roleplay Start`);
+            lines.push(rp.introStart);
+            lines.push(``);
+        }
+
+        if (rp.outputScenario) {
+            lines.push(`## Compiled Scenario Sheet`);
+            lines.push(rp.outputScenario);
+            lines.push(``);
+        }
+
+        if (rp.outputStarter) {
+            lines.push(`## Compiled Roleplay Starter`);
+            lines.push(rp.outputStarter);
+            lines.push(``);
+        }
+
+        let markdownText = lines.join("\n");
+        let blob = new Blob([markdownText], { type: "text/markdown;charset=utf-8;" });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeTitle}_roleplay.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    window.exportRoleplayAsJson = function () {
+        let rp = window.roleplayState || {};
+        let title = (rp.worldName || "Roleplay Scenario").trim();
+        let safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+        let jsonStr = JSON.stringify(rp, null, 2);
+        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeTitle}_roleplay.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    window.saveRoleplayFromTopBar = function (btn) {
+        if (window.saveRoleplayState) window.saveRoleplayState();
+        if (btn) {
+            let orig = btn.innerHTML;
+            btn.innerHTML = `<i class="bi bi-check-lg"></i> Saved!`;
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+    };
+
     // Hook layout loading on load
     setTimeout(() => {
         window.loadRoleplayState();
@@ -1565,6 +1769,7 @@
         let notesEl = document.getElementById("rpScenarioNotesEl");
         let lengthEl = document.getElementById("rpLengthEl");
         let themesEl = document.getElementById("rpThemesEl");
+        let bgCastEl = document.getElementById("rpBackgroundCastEl");
 
         if (nameEl) nameEl.value = window.roleplayState.worldName || "";
         if (loreNotesEl) loreNotesEl.value = window.roleplayState.worldLoreNotes || "";
@@ -1580,6 +1785,7 @@
         if (notesEl) notesEl.value = window.roleplayState.scenarioNotes || "";
         if (lengthEl) lengthEl.value = window.roleplayState.activeLength || "medium";
         if (themesEl) themesEl.value = window.roleplayState.themes || "";
+        if (bgCastEl) bgCastEl.value = window.roleplayState.backgroundNpcs || "";
 
         // Restore setting, tone, dynamic, length custom elements
         window.selectRoleplaySetting(window.roleplayState.setting || "Any");

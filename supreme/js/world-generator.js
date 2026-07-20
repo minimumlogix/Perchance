@@ -1064,6 +1064,79 @@
         if (btn) btn.disabled = false;
     };
 
+/* ==========================================================================
+   WORLD EXPORTS & TOP BAR HELPERS
+   ========================================================================== */
+    window.exportWorldAsMarkdown = function () {
+        let w = window.worldState || {};
+        let title = (w.name || "Unnamed World").trim();
+        let safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+        let lines = [];
+        lines.push(`# ${title}`);
+        lines.push(``);
+        if (w.setting && w.setting !== "Any") lines.push(`**Setting / Genre:** ${w.setting}`);
+        if (w.tones && w.tones.length > 0) lines.push(`**Atmospheric Tones:** ${Array.isArray(w.tones) ? w.tones.join(", ") : w.tones}`);
+        if (w.themes) lines.push(`**Core Themes:** ${w.themes}`);
+        lines.push(``);
+
+        const sectionTitles = {
+            overview: "World Overview",
+            rules: "System & Rules",
+            races: "Races & Species",
+            regions: "Geography & Regions",
+            factions: "Factions & Organizations",
+            bestiary: "Bestiary & Creatures",
+            characters: "Key Figures & History"
+        };
+
+        let sections = w.sections || {};
+        for (let key in sectionTitles) {
+            let text = (sections[key] || "").trim();
+            if (text) {
+                lines.push(`## ${sectionTitles[key]}`);
+                lines.push(text);
+                lines.push(``);
+            }
+        }
+
+        let markdownText = lines.join("\n");
+        let blob = new Blob([markdownText], { type: "text/markdown;charset=utf-8;" });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeTitle}_world.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    window.exportWorldAsJson = function () {
+        let w = window.worldState || {};
+        let title = (w.name || "Unnamed World").trim();
+        let safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+        
+        let jsonStr = JSON.stringify(w, null, 2);
+        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${safeTitle}_world.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    };
+
+    window.saveWorldFromTopBar = function (btn) {
+        if (window.saveWorldState) window.saveWorldState();
+        if (btn) {
+            let orig = btn.innerHTML;
+            btn.innerHTML = `<i class="bi bi-check-lg"></i> Saved!`;
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+    };
+
+
     // Load active world state on DOMContentLoaded or defer script evaluation
     setTimeout(() => {
         window.loadWorldState();
