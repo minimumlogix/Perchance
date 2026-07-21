@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elysium — AI Character Chat</title>
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- THIRD-PARTY LIBRARIES -->
+  <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.1/dist/purify.min.js"></script>
+
+  <style>
+    /* ===========================
+       GLOBAL DESIGN SYSTEM
+    =========================== */
+    :root {
+      --bg-dark: #121015;
+      --bg-panel: #1b1722;
+      --bg-card: #221c2c;
+      --bg-card-hover: #2b2438;
+      --bg-input: #1b1724;
+      --bg-bubble-user: #3b282c;
+      --bg-bubble-ai: #1d1826;
+      
+      --accent-copper: #e09f87;
+      --accent-copper-hover: #f0af97;
+      --accent-bronze: #b86a55;
+      --accent-gradient: linear-gradient(135deg, #e09f87 0%, #c46953 100%);
+      
+      --border-dark: #2a2335;
+      --border-accent: rgba(224, 159, 135, 0.25);
+      
+      --text-main: #f3effa;
+      --text-muted: #a098ad;
+      --text-italic: #cbbccf;
+      --text-gold: #e5b083;
+      
+      --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+
+      --sidebar-width: 280px;
+      --info-width: 320px;
+      --border-radius: 12px;
+      --transition-speed: 0.25s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* CUSTOM SCROLLBARS */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #362e45;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-bronze);
+    }
+
+    /* ===========================
+       APP CONTAINER LAYOUT
+    =========================== */
+    #app {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ===========================
+       LEFT SIDEBAR (CHATS)
+    =========================== */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 10;
+      transition: transform var(--transition-speed) ease;
+    }
+
+    .sidebar-header {
+      padding: 1.25rem 1rem 1rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.5px;
+    }
+
+    .brand-icon {
+      color: var(--accent-copper);
+      font-size: 1.2rem;
+    }
+
+    .btn-new-chat {
+      margin: 0.5rem 1rem 1rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+    }
+
+    .btn-new-chat:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-border);
+      color: var(--accent-copper);
+    }
+
+    .chats-section-title {
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .chat-search-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px;
+    }
+    .chat-search-btn:hover {
+      color: var(--text-main);
+    }
+
+    .chats-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background var(--transition-speed);
+      position: relative;
+    }
+
+    .chat-item:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .chat-item.active {
+      background: #272033;
+      border-left: 3px solid var(--accent-copper);
+    }
+
+    .chat-avatar-wrapper {
+      position: relative;
+    }
+
+    .chat-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border-dark);
+    }
+
+    .online-indicator {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #4cd964;
+      border: 2px solid var(--bg-panel);
+    }
+
+    .chat-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .chat-item-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-item-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .chat-item-preview {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-style: italic;
+    }
+
+    .user-profile-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .user-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .user-sub:hover {
+      color: var(--accent-copper);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    .footer-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+    }
+    .footer-btn:hover {
+      color: var(--text-main);
+    }
+
+    /* ===========================
+       MAIN CHAT AREA
+    =========================== */
+    .main-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: var(--bg-dark);
+      position: relative;
+    }
+
+    /* CHAT HEADER */
+    .chat-header {
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(18, 16, 21, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    .chat-header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border-accent);
+    }
+
+    .chat-header-title {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .verified-badge {
+      color: var(--accent-copper);
+      font-size: 0.9rem;
+    }
+
+    .chat-header-status {
+      font-size: 0.75rem;
+      color: #4cd964;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4cd964;
+    }
+
+    .chat-header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.4rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* MESSAGES CONTAINER */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* INTRO NARRATIVE BOX */
+    .narrative-intro-card {
+      background: rgba(27, 23, 34, 0.6);
+      border: 1px dashed var(--border-dark);
+      border-radius: var(--border-radius);
+      padding: 1.25rem;
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--text-italic);
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    /* MESSAGE BUBBLES */
+    .message-row {
+      display: flex;
+      gap: 0.85rem;
+      max-width: 85%;
+    }
+
+    .message-row.user-row {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .message-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .user-row .message-meta {
+      justify-content: flex-end;
+    }
+
+    .message-author {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .message-bubble {
+      padding: 1rem 1.15rem;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      position: relative;
+      word-break: break-word;
+    }
+
+    .ai-row .message-bubble {
+      background-color: var(--bg-bubble-ai);
+      border: 1px solid var(--border-dark);
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+    }
+
+    .user-row .message-bubble {
+      background-color: var(--bg-bubble-user);
+      border: 1px solid rgba(224, 159, 135, 0.2);
+      color: var(--text-main);
+      border-top-right-radius: 4px;
+    }
+
+    .message-bubble em, .message-bubble .action-text {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--text-italic);
+    }
+
+    .message-bubble img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 0.75rem;
+      border: 1px solid var(--border-dark);
+    }
+
+    /* TOOLBAR FOR MESSAGES */
+    .message-actions-bar {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .message-row:hover .message-actions-bar {
+      opacity: 1;
+    }
+
+    .action-sub-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.2s;
+    }
+
+    .action-sub-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+      border-color: var(--accent-border);
+    }
+
+    /* INPUT CONTAINER */
+    .chat-input-wrapper {
+      padding: 1rem 1.5rem 1.25rem 1.5rem;
+      background: linear-gradient(180deg, rgba(18, 16, 21, 0) 0%, rgba(18, 16, 21, 0.95) 40%);
+    }
+
+    .chat-input-box {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-dark);
+      border-radius: 16px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.2s;
+    }
+
+    .chat-input-box:focus-within {
+      border-color: var(--accent-border);
+    }
+
+    .chat-textarea {
+      width: 100%;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      resize: none;
+      max-height: 120px;
+      min-height: 24px;
+    }
+
+    .chat-textarea::placeholder {
+      color: rgba(160, 152, 173, 0.5);
+    }
+
+    .chat-input-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.25rem;
+    }
+
+    .input-tools-left {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-tool-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .input-tool-btn:hover {
+      color: var(--accent-copper);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-send {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(224, 159, 135, 0.3);
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .btn-send:hover {
+      transform: scale(1.05);
+    }
+
+    .disclaimer-text {
+      text-align: center;
+      font-size: 0.72rem;
+      color: rgba(160, 152, 173, 0.6);
+      margin-top: 0.4rem;
+    }
+
+    /* ===========================
+       RIGHT SIDEBAR (INFO & MEMORY)
+    =========================== */
+    .info-panel {
+      width: var(--info-width);
+      background-color: var(--bg-panel);
+      border-left: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      transition: transform var(--transition-speed) ease;
+    }
+
+    .info-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-title {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .portrait-card {
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .portrait-img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--border-dark);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .info-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-dark);
+      padding: 0 1.25rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.75rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-copper);
+      border-bottom-color: var(--accent-copper);
+    }
+
+    .tab-content {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .info-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .info-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .btn-full-profile {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      color: var(--text-main);
+      padding: 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-full-profile:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-border);
+      color: var(--accent-copper);
+    }
+
+    /* VOICE WIDGET */
+    .voice-widget {
+      margin: 1.25rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .voice-header {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .voice-player {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-play-voice {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .voice-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .waveform-visualizer {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+
+    .bar {
+      width: 3px;
+      height: 40%;
+      background: var(--accent-copper);
+      border-radius: 2px;
+      transition: height 0.2s ease;
+    }
+
+    .waveform-visualizer.playing .bar {
+      animation: sound-wave 0.8s infinite alternate ease-in-out;
+    }
+
+    .waveform-visualizer.playing .bar:nth-child(1) { animation-delay: 0.1s; }
+    .waveform-visualizer.playing .bar:nth-child(2) { animation-delay: 0.3s; }
+    .waveform-visualizer.playing .bar:nth-child(3) { animation-delay: 0.5s; }
+    .waveform-visualizer.playing .bar:nth-child(4) { animation-delay: 0.2s; }
+    .waveform-visualizer.playing .bar:nth-child(5) { animation-delay: 0.4s; }
+
+    @keyframes sound-wave {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+
+    /* ===========================
+       MOBILE NAVIGATION & LAYOUT
+    =========================== */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-dark);
+      z-index: 20;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent-copper);
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+    }
+
+    /* ===========================
+       MODALS & DIALOGS
+    =========================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 16px;
+      width: 520px;
+      max-width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .btn-close-modal {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .form-input, .form-textarea, .form-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      padding: 0.65rem;
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--accent-copper);
+    }
+
+    .modal-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border-dark);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      color: var(--text-main);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      border: none;
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 992px) {
+      .info-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        transform: translateX(100%);
+        box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+      }
+      .info-panel.open {
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 60px;
+        z-index: 30;
+        transform: translateX(-100%);
+        box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .mobile-menu-toggle {
+        display: block;
+      }
+      .mobile-bottom-nav {
+        display: flex;
+      }
+      .main-chat {
+        padding-bottom: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app">
+
+    <!-- ===========================
+         LEFT SIDEBAR (CHATS)
+    =========================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-icon">❖</span> Elysium
+        </div>
+      </div>
+
+      <button class="btn-new-chat" id="btnNewChat">
+        <span>+</span> New Chat
+      </button>
+
+      <div class="chats-section-title">
+        <span>Chats</span>
+        <button class="chat-search-btn" id="btnSearchChats" title="Search Chats">🔍</button>
+      </div>
+
+      <div class="chats-list" id="chatsList">
+        <!-- CHAT ITEMS DYNAMICALLY RENDERED HERE -->
+      </div>
+
+      <!-- USER PROFILE FOOTER -->
+      <div class="user-profile-footer">
+        <img src="assets/lysandra.png" alt="User" class="user-avatar" id="userAvatar">
+        <div class="user-details">
+          <div class="user-name" id="userName">Nyx</div>
+          <div class="user-sub" id="btnEditUserPersona">View profile</div>
+        </div>
+        <div class="footer-actions">
+          <button class="footer-btn" id="btnSettings" title="Settings & Backup">⚙️</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===========================
+         MAIN CHAT AREA
+    =========================== -->
+    <main class="main-chat">
+      <!-- HEADER -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <button class="mobile-menu-toggle" id="btnMobileMenu">☰</button>
+          <img src="assets/lysandra.png" class="chat-header-avatar" id="headerAvatar" alt="Character">
+          <div>
+            <div class="chat-header-title">
+              <span id="headerName">Lysandra</span>
+              <span class="verified-badge">✓</span>
+            </div>
+            <div class="chat-header-status">
+              <span class="status-dot"></span>
+              <span id="headerStatus">Online now</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-right">
+          <button class="icon-btn" id="btnBookmark" title="Bookmark Chat">🔖</button>
+          <button class="icon-btn" id="btnToggleInfo" title="Toggle Character Info">ℹ️</button>
+        </div>
+      </header>
+
+      <!-- MESSAGES SCROLL CONTAINER -->
+      <div class="messages-container" id="messagesContainer">
+        <!-- NARRATIVE INTRO -->
+        <div class="narrative-intro-card" id="narrativeIntro">
+          Loading scenario...
+        </div>
+
+        <!-- DYNAMIC MESSAGES RENDER HERE -->
+      </div>
+
+      <!-- INPUT BAR -->
+      <div class="chat-input-wrapper">
+        <div class="chat-input-box">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Type a message..." rows="1"></textarea>
+          <div class="chat-input-controls">
+            <div class="input-tools-left">
+              <button class="input-tool-btn" id="btnGenImage" title="Generate Scene Illustration">🖼️</button>
+              <button class="input-tool-btn" id="btnDiceRoll" title="Roll Action Dice">🎲</button>
+              <button class="input-tool-btn" id="btnQuickPrompt" title="Prompt Ideas">📄</button>
+            </div>
+            <button class="btn-send" id="btnSend" title="Send Message">➤</button>
+          </div>
+        </div>
+        <div class="disclaimer-text">Remember: Everything characters say is made up!</div>
+      </div>
+    </main>
+
+    <!-- ===========================
+         RIGHT SIDEBAR (INFO & MEMORY)
+    =========================== -->
+    <aside class="info-panel" id="infoPanel">
+      <div class="info-header">
+        <div class="info-title">
+          <span id="infoCharName">Lysandra</span>
+          <span class="verified-badge">✓</span>
+        </div>
+        <button class="icon-btn" id="btnCloseInfo">✖</button>
+      </div>
+
+      <!-- PORTRAIT CARD -->
+      <div class="portrait-card">
+        <img src="assets/lysandra.png" class="portrait-img" id="infoPortraitImg" alt="Portrait">
+      </div>
+
+      <!-- TABS -->
+      <div class="info-tabs">
+        <button class="tab-btn active" data-tab="info" id="tabBtnInfo">Info</button>
+        <button class="tab-btn" data-tab="memory" id="tabBtnMemory">Memory</button>
+      </div>
+
+      <!-- TAB CONTENT: INFO -->
+      <div class="tab-content" id="tabContentInfo">
+        <div class="info-group">
+          <div class="info-label">Age</div>
+          <div class="info-value" id="infoAge">27</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Occupation</div>
+          <div class="info-value" id="infoOccupation">Informant</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Location</div>
+          <div class="info-value" id="infoLocation">Velmora, Eryndor</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Personality</div>
+          <div class="info-value" id="infoPersonality">Cunning, graceful, intelligent, mysterious</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Scenario</div>
+          <div class="info-value" id="infoScenario">You meet Lysandra in a quiet tavern during your travels...</div>
+        </div>
+
+        <button class="btn-full-profile" id="btnEditCharacterProfile">
+          👤 View & Edit Profile
+        </button>
+      </div>
+
+      <!-- TAB CONTENT: MEMORY -->
+      <div class="tab-content" id="tabContentMemory" style="display:none;">
+        <div class="info-group">
+          <div class="info-label">Long-Term Memories</div>
+          <div class="info-value" id="memoryList" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <!-- DYNAMIC MEMORIES -->
+          </div>
+        </div>
+        <button class="btn-secondary" id="btnAddMemory" style="margin-top:0.5rem; font-size:0.85rem;">+ Add Memory</button>
+      </div>
+
+      <!-- VOICE WIDGET -->
+      <div class="voice-widget">
+        <div class="voice-header">Voice</div>
+        <div class="voice-player">
+          <button class="btn-play-voice" id="btnPlayVoice">▶</button>
+          <div class="voice-title" id="voiceNameDisplay">Velvet Whisper</div>
+          <div class="waveform-visualizer" id="waveform">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===========================
+         MOBILE BOTTOM NAV
+    =========================== -->
+    <nav class="mobile-bottom-nav">
+      <button class="nav-item active" id="navChat">
+        <span class="nav-icon">💬</span>
+        <span>Chat</span>
+      </button>
+      <button class="nav-item" id="navCreate">
+        <span class="nav-icon">➕</span>
+        <span>Create</span>
+      </button>
+      <button class="nav-item" id="navExplore">
+        <span class="nav-icon">🧭</span>
+        <span>Explore</span>
+      </button>
+      <button class="nav-item" id="navProfile">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===========================
+       MODALS
+  =========================== -->
+
+  <!-- CHARACTER CREATION / EDIT MODAL -->
+  <div class="modal-overlay" id="characterModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="charModalTitle">Create Character</div>
+        <button class="btn-close-modal" id="btnCloseCharModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="inputCharName" placeholder="e.g. Lysandra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avatar URL / Image</label>
+          <input type="text" class="form-input" id="inputCharAvatar" placeholder="Image URL">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age</label>
+          <input type="text" class="form-input" id="inputCharAge" placeholder="e.g. 27">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Occupation</label>
+          <input type="text" class="form-input" id="inputCharOccupation" placeholder="e.g. Informant">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" class="form-input" id="inputCharLocation" placeholder="e.g. Velmora">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Personality</label>
+          <input type="text" class="form-input" id="inputCharPersonality" placeholder="e.g. Cunning, mysterious">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Scenario / Context</label>
+          <textarea class="form-textarea" id="inputCharScenario" rows="3" placeholder="Where do you meet this character?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Greeting Message</label>
+          <textarea class="form-textarea" id="inputCharGreeting" rows="3" placeholder="First message sent by character..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">System Role Instruction</label>
+          <textarea class="form-textarea" id="inputCharRoleInstruction" rows="3" placeholder="AI behavior rules, secrets, dialogue style..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelCharModal">Cancel</button>
+        <button class="btn-primary" id="btnSaveCharModal">Save Character</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLORE / CATALOG MODAL -->
+  <div class="modal-overlay" id="exploreModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Explore Characters</div>
+        <button class="btn-close-modal" id="btnCloseExploreModal">✖</button>
+      </div>
+      <div class="modal-body" id="exploreCatalogList">
+        <!-- CATALOG CARDS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- USER PERSONA MODAL -->
+  <div class="modal-overlay" id="personaModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Your Profile Persona</div>
+        <button class="btn-close-modal" id="btnClosePersonaModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" class="form-input" id="inputUserName" value="Nyx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Persona Description</label>
+          <textarea class="form-textarea" id="inputUserPersona" rows="3" placeholder="How characters perceive you (e.g., wanderer, warrior, mage)..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="btnSavePersona">Save Persona</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & EMERGENCY BACKUP MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Settings & Data Management</div>
+        <button class="btn-close-modal" id="btnCloseSettingsModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Database Export & Backup</label>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Export your full database of characters, threads, and chat history as JSON backup.</p>
+          <button class="btn-secondary" id="btnExportDb" style="margin-top:0.5rem;">💾 Export Database JSON</button>
+        </div>
+        <hr style="border-color:var(--border-dark);">
+        <div class="form-group">
+          <label class="form-label" style="color:#ff6b6b;">Danger Zone</label>
+          <button class="btn-secondary" id="btnResetDb" style="color:#ff6b6b; border-color:#ff6b6b;">🚨 Delete All Database Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===========================
+       CORE JAVASCRIPT LOGIC
+  =========================== -->
+  <script>
+    /* ===========================
+       1. CONSTANTS & INITIAL DATA
+    =========================== */
+    const DB_NAME = "elysium_chat_db_v1";
+
+    const DEFAULT_CHARACTERS = [
+      {
+        id: "lysandra",
+        name: "Lysandra",
+        verified: true,
+        avatarUrl: "assets/lysandra.png",
+        age: "27",
+        occupation: "Informant",
+        location: "Velmora, Eryndor",
+        personality: "Cunning, graceful, intelligent, mysterious",
+        scenario: "You meet Lysandra in a quiet tavern during your travels. Rumors say she knows everything about everyone.",
+        greeting: "The tavern is quiet tonight, the kind of silence that presses against your ears. Lysandra sits across from you, swirling the wine in her glass. Her gaze is unreadable.\n\n\"So... you're the one they call the Ravager.\"\n\n*Her lips curve into a faint smile.*\n\n\"Tell me, is the legend as dangerous as they say, or just another good story to scare children?\"",
+        roleInstruction: "You are Lysandra, a master informant operating in Velmora. You speak with calm composure, elegant vocabulary, and subtle intrigue. Keep responses immersive, rich with sensory atmospheric descriptions, and under 3 paragraphs unless requested.",
+        voiceName: "Velvet Whisper"
+      },
+      {
+        id: "kaelen",
+        name: "Kaelen",
+        verified: true,
+        avatarUrl: "assets/kaelen.png",
+        age: "31",
+        occupation: "Wandering Sellsword",
+        location: "Ironclad Pass",
+        personality: "Gruff, loyal, battle-hardened, sarcastic",
+        scenario: "Rain pours heavily as Kaelen takes cover under the tavern roof, eyeing your blade.",
+        greeting: "*Kaelen shakes the rainwater off his heavy cloak, steel armor clanking in the dimly lit hall.*\n\n\"The rain tonight feels like a bad omen. You look like someone who knows how to handle a blade... or at least knows how to stay alive.\"",
+        roleInstruction: "You are Kaelen, a veteran mercenary with a dry sharp humor. You speak pragmatically and value honor over empty talk.",
+        voiceName: "Deep Oak"
+      },
+      {
+        id: "evelyn",
+        name: "Evelyn",
+        verified: true,
+        avatarUrl: "assets/evelyn.png",
+        age: "24",
+        occupation: "Arcane Scholar",
+        location: "The Grand Citadel Library",
+        personality: "Erudite, curious, soft-spoken, intensely observant",
+        scenario: "Evelyn is surrounded by ancient glowing tomes in a restricted library section.",
+        greeting: "*Evelyn adjusts her spectacles, her violet eyes glinting behind stacks of ancient parchment.*\n\n\"Quietly now... the Archivists will throw us out if they catch us in this wing. What forbidden knowledge are you searching for?\"",
+        roleInstruction: "You are Evelyn, an arcane archivist studying lost elemental magic. Speak with intelligence and gentle wonder.",
+        voiceName: "Soft Moonlight"
+      }
+    ];
+
+    /* ===========================
+       2. INDEXEDDB / DEXIE SETUP
+    =========================== */
+    const db = new Dexie(DB_NAME);
+    db.version(1).stores({
+      characters: 'id, name, age, occupation',
+      threads: 'id, characterId, lastUpdated',
+      messages: 'id, threadId, characterId, role, timestamp',
+      memories: 'id, characterId, content',
+      userProfile: 'id'
+    });
+
+    /* ===========================
+       3. GLOBAL STATE
+    =========================== */
+    let activeCharacter = null;
+    let activeThread = null;
+    let currentSpeechUtterance = null;
+    let isSpeaking = false;
+
+    /* ===========================
+       4. INITIALIZATION
+    =========================== */
+    async function initApp() {
+      await seedDefaultDataIfNeeded();
+      setupEventListeners();
+
+      // Load user profile
+      const userProf = await db.userProfile.get("default") || { id: "default", name: "Nyx", persona: "A mystery traveler." };
+      document.getElementById("userName").textContent = userProf.name;
+      document.getElementById("inputUserName").value = userProf.name;
+      document.getElementById("inputUserPersona").value = userProf.persona;
+
+      // Render character sidebar list
+      await renderSidebarChats();
+
+      // Select default character (Lysandra)
+      const characters = await db.characters.toArray();
+      if (characters.length > 0) {
+        await selectCharacter(characters[0].id);
+      }
+    }
+
+    async function seedDefaultDataIfNeeded() {
+      const count = await db.characters.count();
+      if (count === 0) {
+        for (const char of DEFAULT_CHARACTERS) {
+          await db.characters.put(char);
+          
+          // Create initial thread
+          const threadId = "thread_" + char.id;
+          await db.threads.put({
+            id: threadId,
+            characterId: char.id,
+            lastUpdated: Date.now()
+          });
+
+          // Create greeting message
+          await db.messages.put({
+            id: "msg_greeting_" + char.id,
+            threadId: threadId,
+            characterId: char.id,
+            role: "character",
+            content: char.greeting,
+            timestamp: Date.now()
+          });
+        }
+      }
+    }
+
+    /* ===========================
+       5. SIDEBAR & CHAT NAVIGATION
+    =========================== */
+    async function renderSidebarChats() {
+      const chatsListEl = document.getElementById("chatsList");
+      chatsListEl.innerHTML = "";
+
+      const characters = await db.characters.toArray();
+      for (const char of characters) {
+        const thread = await db.threads.where({ characterId: char.id }).first();
+        let lastMsgSnippet = char.greeting.substring(0, 45).replace(/\n/g, ' ') + '...';
+        let lastTimeStr = "Just now";
+
+        if (thread) {
+          const lastMsg = await db.messages.where({ threadId: thread.id }).last();
+          if (lastMsg) {
+            lastMsgSnippet = lastMsg.content.substring(0, 45).replace(/\n/g, ' ') + '...';
+            lastTimeStr = formatTimestamp(lastMsg.timestamp);
+          }
+        }
+
+        const item = document.createElement("div");
+        item.className = `chat-item ${activeCharacter && activeCharacter.id === char.id ? 'active' : ''}`;
+        item.onclick = () => selectCharacter(char.id);
+
+        item.innerHTML = `
+          <div class="chat-avatar-wrapper">
+            <img src="${char.avatarUrl}" class="chat-avatar" alt="${char.name}">
+            <div class="online-indicator"></div>
+          </div>
+          <div class="chat-item-info">
+            <div class="chat-item-top">
+              <span class="chat-item-name">${char.name}</span>
+              <span class="chat-item-time">${lastTimeStr}</span>
+            </div>
+            <div class="chat-item-preview">${escapeHtml(lastMsgSnippet)}</div>
+          </div>
+        `;
+
+        chatsListEl.appendChild(item);
+      }
+    }
+
+    async function selectCharacter(characterId) {
+      activeCharacter = await db.characters.get(characterId);
+      if (!activeCharacter) return;
+
+      activeThread = await db.threads.where({ characterId: characterId }).first();
+      if (!activeThread) {
+        activeThread = {
+          id: "thread_" + characterId + "_" + Date.now(),
+          characterId: characterId,
+          lastUpdated: Date.now()
+        };
+        await db.threads.put(activeThread);
+      }
+
+      // Update Header
+      document.getElementById("headerAvatar").src = activeCharacter.avatarUrl;
+      document.getElementById("headerName").textContent = activeCharacter.name;
+      document.getElementById("narrativeIntro").textContent = activeCharacter.scenario;
+
+      // Update Right Info Panel
+      document.getElementById("infoCharName").textContent = activeCharacter.name;
+      document.getElementById("infoPortraitImg").src = activeCharacter.avatarUrl;
+      document.getElementById("infoAge").textContent = activeCharacter.age || "Unknown";
+      document.getElementById("infoOccupation").textContent = activeCharacter.occupation || "N/A";
+      document.getElementById("infoLocation").textContent = activeCharacter.location || "N/A";
+      document.getElementById("infoPersonality").textContent = activeCharacter.personality || "N/A";
+      document.getElementById("infoScenario").textContent = activeCharacter.scenario || "N/A";
+      document.getElementById("voiceNameDisplay").textContent = activeCharacter.voiceName || "Velvet Whisper";
+
+      // Render Messages
+      await renderMessages();
+      await renderMemories();
+      await renderSidebarChats();
+
+      // Mobile close sidebar if open
+      document.getElementById("sidebar").classList.remove("open");
+    }
+
+    /* ===========================
+       6. MESSAGES RENDERING & UI LOGIC
+    =========================== */
+    async function renderMessages() {
+      const container = document.getElementById("messagesContainer");
+      // Keep narrative card, remove existing message rows
+      container.querySelectorAll(".message-row").forEach(el => el.remove());
+
+      if (!activeThread) return;
+
+      const messages = await db.messages.where({ threadId: activeThread.id }).sortBy("timestamp");
+
+      for (const msg of messages) {
+        const isUser = msg.role === "user";
+        const row = document.createElement("div");
+        row.className = `message-row ${isUser ? 'user-row' : 'ai-row'}`;
+        row.dataset.msgId = msg.id;
+
+        const avatarSrc = isUser ? "assets/lysandra.png" : activeCharacter.avatarUrl;
+        const authorName = isUser ? "You" : activeCharacter.name;
+        const formattedTime = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Parse markdown & italics
+        let parsedContent = marked.parse(msg.content);
+        parsedContent = DOMPurify.sanitize(parsedContent);
+
+        let imageHtml = msg.imageUrl ? `<img src="${msg.imageUrl}" alt="Generated Illustration">` : '';
+
+        row.innerHTML = `
+          <img src="${avatarSrc}" class="message-avatar" alt="${authorName}">
+          <div class="message-content-wrapper">
+            <div class="message-meta">
+              <span class="message-author">${authorName}</span>
+              <span>${formattedTime}</span>
+            </div>
+            <div class="message-bubble">
+              ${parsedContent}
+              ${imageHtml}
+            </div>
+            <div class="message-actions-bar">
+              ${!isUser ? `<button class="action-sub-btn" onclick="rerunLastMessage()">↩ Rerun</button>` : ''}
+              <button class="action-sub-btn" onclick="speakText(\`${escapeJsString(msg.content)}\`)">🔊 Listen</button>
+              <button class="action-sub-btn" onclick="deleteMessage('${msg.id}')">🗑 Delete</button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(row);
+      }
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    /* ===========================
+       7. SENDING & SIMULATING CHAT
+    =========================== */
+    async function handleSendMessage() {
+      const inputEl = document.getElementById("chatInput");
+      const text = inputEl.value.trim();
+      if (!text || !activeThread || !activeCharacter) return;
+
+      inputEl.value = "";
+      inputEl.style.height = "auto";
+
+      // Save user message
+      const userMsgId = "msg_" + Date.now();
+      await db.messages.put({
+        id: userMsgId,
+        threadId: activeThread.id,
+        characterId: activeCharacter.id,
+        role: "user",
+        content: text,
+        timestamp: Date.now()
+      });
+
+      await renderMessages();
+
+      // Simulate AI Character Streaming Response
+      await generateAIResponse();
+    }
+
+    async function generateAIResponse() {
+      if (!activeThread || !activeCharacter) return;
+
+      // Show typing row placeholder
+      const container = document.getElementById("messagesContainer");
+      const typingRow = document.createElement("div");
+      typingRow.className = "message-row ai-row";
+      typingRow.id = "typingRow";
+      typingRow.innerHTML = `
+        <img src="${activeCharacter.avatarUrl}" class="message-avatar">
+        <div class="message-content-wrapper">
+          <div class="message-meta">
+            <span class="message-author">${activeCharacter.name}</span>
+            <span>typing...</span>
+          </div>
+          <div class="message-bubble">
+            <em>*studies you thoughtfully, preparing to answer...*</em>
+          </div>
+        </div>
+      `;
+      container.appendChild(typingRow);
+      container.scrollTop = container.scrollHeight;
+
+      // Construct AI Prompt Context
+      const history = await db.messages.where({ threadId: activeThread.id }).sortBy("timestamp");
+      const lastUserMsg = history.filter(m => m.role === "user").pop();
+
+      // Generated AI response templates based on character tone
+      let aiText = "";
+      if (activeCharacter.id === "lysandra") {
+        const responses = [
+          `*Lysandra swirls the dark red wine in her crystal glass, a knowing glint in her eyes.*\n\n"Every whisper in Velmora has its price, my dear friend. But for you? Perhaps I am inclined to share a piece of the truth."`,
+          `*She leans forward slightly, resting her chin upon her manicured hand.*\n\n"You speak as though danger is a stranger to you. Tell me, what is it you truly seek in these dark streets?"`,
+          `*A quiet chuckle escapes her lips, soft as velvet in the amber glow of the hearth.*\n\n"Legends have a way of twisting the past. But between us, some stories don't even capture half the terror."`
+        ];
+        aiText = responses[Math.floor(Math.random() * responses.length)];
+      } else if (activeCharacter.id === "kaelen") {
+        const responses = [
+          `*Kaelen rests a gloved hand on the pommel of his broadsword, adjusting his coat.*\n\n"Talk is cheap when sword steel is rusted. If we're riding north at dawn, make sure your gear is sharp."`,
+          `*He takes a long draught from his pewter tankard and grunts.*\n\n"I've fought sellswords, dragons, and mad lords. Trust me, the dead don't care about your noble titles."`
+        ];
+        aiText = responses[Math.floor(Math.random() * responses.length)];
+      } else {
+        aiText = `*${activeCharacter.name} listens closely, taking in your words with thoughtful deliberation.*\n\n"Interesting perspective... Let us explore this mystery deeper together."`;
+      }
+
+      await delay(1200);
+
+      // Save AI message to DB
+      typingRow.remove();
+      const aiMsgId = "msg_ai_" + Date.now();
+      await db.messages.put({
+        id: aiMsgId,
+        threadId: activeThread.id,
+        characterId: activeCharacter.id,
+        role: "character",
+        content: aiText,
+        timestamp: Date.now()
+      });
+
+      // Update thread last updated
+      await db.threads.update(activeThread.id, { lastUpdated: Date.now() });
+
+      await renderMessages();
+      await renderSidebarChats();
+    }
+
+    async function rerunLastMessage() {
+      const history = await db.messages.where({ threadId: activeThread.id }).sortBy("timestamp");
+      const lastMsg = history[history.length - 1];
+      if (lastMsg && lastMsg.role === "character") {
+        await db.messages.delete(lastMsg.id);
+        await renderMessages();
+        await generateAIResponse();
+      }
+    }
+
+    async function deleteMessage(msgId) {
+      await db.messages.delete(msgId);
+      await renderMessages();
+    }
+
+    /* ===========================
+       8. MEMORIES SYSTEM
+    =========================== */
+    async function renderMemories() {
+      if (!activeCharacter) return;
+      const memListEl = document.getElementById("memoryList");
+      memListEl.innerHTML = "";
+
+      const memories = await db.memories.where({ characterId: activeCharacter.id }).toArray();
+      if (memories.length === 0) {
+        memListEl.innerHTML = `<div style="font-style:italic; color:var(--text-muted); font-size:0.85rem;">No active memories yet. Click '+ Add Memory' to add custom facts.</div>`;
+        return;
+      }
+
+      for (const mem of memories) {
+        const item = document.createElement("div");
+        item.style.cssText = "background:var(--bg-card); padding:0.5rem 0.75rem; border-radius:6px; border:1px solid var(--border-dark); font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;";
+        item.innerHTML = `
+          <span>${escapeHtml(mem.content)}</span>
+          <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" onclick="deleteMemory('${mem.id}')">✖</button>
+        `;
+        memListEl.appendChild(item);
+      }
+    }
+
+    async function deleteMemory(memId) {
+      await db.memories.delete(memId);
+      await renderMemories();
+    }
+
+    /* ===========================
+       9. TEXT TO SPEECH & VOICE WIDGET
+    =========================== */
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const cleanText = text.replace(/\*.*?\*/g, ''); // strip action brackets
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+
+        const waveform = document.getElementById("waveform");
+        const btnPlay = document.getElementById("btnPlayVoice");
+
+        utterance.onstart = () => {
+          waveform.classList.add("playing");
+          btnPlay.textContent = "⏸";
+        };
+        utterance.onend = () => {
+          waveform.classList.remove("playing");
+          btnPlay.textContent = "▶";
+        };
+        utterance.onerror = () => {
+          waveform.classList.remove("playing");
+          btnPlay.textContent = "▶";
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Text-to-speech is not supported in this browser.");
+      }
+    }
+
+    /* ===========================
+       10. EVENT LISTENERS
+    =========================== */
+    function setupEventListeners() {
+      // Send button & Enter key
+      document.getElementById("btnSend").onclick = handleSendMessage;
+      document.getElementById("chatInput").onkeydown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSendMessage();
+        }
+      };
+
+      // Auto-expand textarea
+      document.getElementById("chatInput").oninput = function() {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+      };
+
+      // Navigation & Toggle Panels
+      document.getElementById("btnToggleInfo").onclick = () => {
+        document.getElementById("infoPanel").classList.toggle("open");
+      };
+      document.getElementById("btnCloseInfo").onclick = () => {
+        document.getElementById("infoPanel").classList.remove("open");
+      };
+      document.getElementById("btnMobileMenu").onclick = () => {
+        document.getElementById("sidebar").classList.toggle("open");
+      };
+
+      // Tabs
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.onclick = function() {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          this.classList.add("active");
+          const tab = this.dataset.tab;
+          document.getElementById("tabContentInfo").style.display = tab === "info" ? "flex" : "none";
+          document.getElementById("tabContentMemory").style.display = tab === "memory" ? "flex" : "none";
+        };
+      });
+
+      // Voice Play button
+      document.getElementById("btnPlayVoice").onclick = () => {
+        if (activeCharacter) {
+          speakText(activeCharacter.greeting);
+        }
+      };
+
+      // New Chat button
+      document.getElementById("btnNewChat").onclick = () => {
+        openModal("characterModal");
+      };
+
+      // Modals Close
+      document.getElementById("btnCloseCharModal").onclick = () => closeModal("characterModal");
+      document.getElementById("btnCancelCharModal").onclick = () => closeModal("characterModal");
+      document.getElementById("btnClosePersonaModal").onclick = () => closeModal("personaModal");
+      document.getElementById("btnCloseSettingsModal").onclick = () => closeModal("settingsModal");
+      document.getElementById("btnCloseExploreModal").onclick = () => closeModal("exploreModal");
+
+      document.getElementById("btnEditUserPersona").onclick = () => openModal("personaModal");
+      document.getElementById("btnSettings").onclick = () => openModal("settingsModal");
+
+      // Save Persona
+      document.getElementById("btnSavePersona").onclick = async () => {
+        const name = document.getElementById("inputUserName").value.trim() || "Nyx";
+        const persona = document.getElementById("inputUserPersona").value.trim();
+        await db.userProfile.put({ id: "default", name, persona });
+        document.getElementById("userName").textContent = name;
+        closeModal("personaModal");
+      };
+
+      // Save Character Modal
+      document.getElementById("btnSaveCharModal").onclick = async () => {
+        const name = document.getElementById("inputCharName").value.trim();
+        if (!name) { alert("Please enter a character name."); return; }
+
+        const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+        const newChar = {
+          id: id,
+          name: name,
+          avatarUrl: document.getElementById("inputCharAvatar").value.trim() || "assets/lysandra.png",
+          age: document.getElementById("inputCharAge").value.trim() || "25",
+          occupation: document.getElementById("inputCharOccupation").value.trim() || "Wanderer",
+          location: document.getElementById("inputCharLocation").value.trim() || "Unknown",
+          personality: document.getElementById("inputCharPersonality").value.trim() || "Mysterious",
+          scenario: document.getElementById("inputCharScenario").value.trim() || "You meet in a tavern.",
+          greeting: document.getElementById("inputCharGreeting").value.trim() || `*${name} looks up at you with interest.*`,
+          roleInstruction: document.getElementById("inputCharRoleInstruction").value.trim() || `You are ${name}.`,
+          voiceName: "Velvet Whisper"
+        };
+
+        await db.characters.put(newChar);
+
+        // Create Thread & Greeting
+        const threadId = "thread_" + id;
+        await db.threads.put({ id: threadId, characterId: id, lastUpdated: Date.now() });
+        await db.messages.put({
+          id: "msg_greeting_" + id,
+          threadId: threadId,
+          characterId: id,
+          role: "character",
+          content: newChar.greeting,
+          timestamp: Date.now()
+        });
+
+        closeModal("characterModal");
+        await selectCharacter(id);
+      };
+
+      // Add Memory Button
+      document.getElementById("btnAddMemory").onclick = async () => {
+        if (!activeCharacter) return;
+        const text = prompt("Enter long-term memory fact for " + activeCharacter.name + ":");
+        if (text && text.trim()) {
+          await db.memories.put({
+            id: "mem_" + Date.now(),
+            characterId: activeCharacter.id,
+            content: text.trim()
+          });
+          await renderMemories();
+        }
+      };
+
+      // Dice Roll Button
+      document.getElementById("btnDiceRoll").onclick = () => {
+        const prompts = [
+          "*asks about their darkest secret*",
+          "*offers a gold coin and asks for advice*",
+          "*notices an old scar on their hand*",
+          "*whispers a rumor you heard in the marketplace*"
+        ];
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+        document.getElementById("chatInput").value = randomPrompt;
+      };
+
+      // Export Database JSON
+      document.getElementById("btnExportDb").onclick = async () => {
+        const data = {
+          characters: await db.characters.toArray(),
+          threads: await db.threads.toArray(),
+          messages: await db.messages.toArray(),
+          memories: await db.memories.toArray()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `elysium-backup-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      // Reset Database Data
+      document.getElementById("btnResetDb").onclick = async () => {
+        if (confirm("Are you sure you want to reset all chats and restore defaults?")) {
+          await db.delete();
+          window.location.reload();
+        }
+      };
+
+      // Mobile Navigation Tab Handlers
+      document.getElementById("navChat").onclick = () => {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("infoPanel").classList.remove("open");
+      };
+      document.getElementById("navCreate").onclick = () => openModal("characterModal");
+      document.getElementById("navExplore").onclick = () => openModal("exploreModal");
+      document.getElementById("navProfile").onclick = () => openModal("personaModal");
+    }
+
+    /* ===========================
+       11. UTILITIES
+    =========================== */
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add("open");
+    }
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove("open");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function escapeJsString(str) {
+      if (!str) return '';
+      return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${');
+    }
+
+    function formatTimestamp(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // INITIALIZE ON LOAD
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>

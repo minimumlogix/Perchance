@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elysium — AI Character Chat</title>
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- THIRD-PARTY LIBRARIES -->
+  <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.1/dist/purify.min.js"></script>
+
+  <!-- DYNAMIC RESOURCE LOADER -->
+  <script>
+    (function () {
+      const isLocal = !window.location.hostname.includes("perchance.org");
+      const basePath = isLocal ? "" : "https://minimumlogix.github.io/Perchance/chat/";
+
+      // 1. Inject Stylesheets
+      const stylesheets = [
+        "css/main.css",
+        "css/components.css"
+      ];
+      stylesheets.forEach(href => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = basePath + href;
+        document.head.appendChild(link);
+      });
+
+      // 2. Bind Perchance plugins to the global window scope
+      const plugins = ['ai', 'image', 'uploadPlugin', 'superFetch', 'literal'];
+      const mocks = {};
+
+      plugins.forEach(name => {
+        Object.defineProperty(window, name, {
+          get: function () {
+            if (typeof window.root !== "undefined" && typeof window.root[name] !== "undefined") {
+              return window.root[name];
+            }
+            if (typeof root !== "undefined" && typeof root[name] !== "undefined") {
+              return root[name];
+            }
+            return mocks[name];
+          },
+          set: function (val) {
+            mocks[name] = val;
+          },
+          configurable: true
+        });
+      });
+
+      // 3. Inject Scripts in strict dependency order
+      const scripts = [
+        "js/config.js",
+        "js/db.js",
+        "js/state.js",
+        "js/ai-service.js",
+        "js/image-service.js",
+        "js/share-service.js",
+        "js/ui.js",
+        "js/app.js"
+      ];
+      scripts.forEach(src => {
+        const script = document.createElement("script");
+        script.src = basePath + src;
+        script.defer = true;
+        script.async = false;
+        document.head.appendChild(script);
+      });
+    })();
+  </script>
+</head>
+<body data-theme="elysium">
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app">
+
+    <!-- ===========================
+         LEFT SIDEBAR (CHATS)
+    =========================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-icon">❖</span> Elysium
+        </div>
+      </div>
+
+      <button class="btn-new-chat" id="btnNewChat">
+        <span>+</span> New Chat
+      </button>
+
+      <div class="chats-section-title">
+        <span>Chats</span>
+        <button class="chat-search-btn" id="btnSearchChats" title="Search Chats">🔍</button>
+      </div>
+
+      <div class="chats-list" id="chatsList">
+        <!-- CHAT ITEMS DYNAMICALLY RENDERED HERE -->
+      </div>
+
+      <!-- USER PROFILE FOOTER -->
+      <div class="user-profile-footer">
+        <img src="assets/lysandra.png" alt="User" class="user-avatar" id="userAvatar">
+        <div class="user-details">
+          <div class="user-name" id="userName">Nyx</div>
+          <div class="user-sub" id="btnEditUserPersona">View profile</div>
+        </div>
+        <div class="footer-actions">
+          <button class="footer-btn" id="btnSettings" title="Settings & Backup">⚙️</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===========================
+         MAIN CHAT AREA
+    =========================== -->
+    <main class="main-chat">
+      <!-- HEADER -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <button class="mobile-menu-toggle" id="btnMobileMenu">☰</button>
+          <img src="assets/lysandra.png" class="chat-header-avatar" id="headerAvatar" alt="Character">
+          <div>
+            <div class="chat-header-title">
+              <span id="headerName">Lysandra</span>
+              <span class="verified-badge">✓</span>
+            </div>
+            <div class="chat-header-status">
+              <span class="status-dot"></span>
+              <span id="headerStatus">Online now</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-right">
+          <button class="icon-btn" id="btnBookmark" title="Bookmark Chat">🔖</button>
+          <button class="icon-btn" id="btnToggleInfo" title="Toggle Character Info">ℹ️</button>
+        </div>
+      </header>
+
+      <!-- MESSAGES SCROLL CONTAINER -->
+      <div class="messages-container" id="messagesContainer">
+        <!-- NARRATIVE INTRO -->
+        <div class="narrative-intro-card" id="narrativeIntro">
+          Loading scenario...
+        </div>
+
+        <!-- DYNAMIC MESSAGES RENDER HERE -->
+      </div>
+
+      <!-- INPUT BAR -->
+      <div class="chat-input-wrapper">
+        <div class="chat-input-box">
+          <textarea class="chat-textarea" id="chatInput" placeholder="Type a message..." rows="1"></textarea>
+          <div class="chat-input-controls">
+            <div class="input-tools-left">
+              <button class="input-tool-btn" id="btnGenImage" title="Generate Scene Illustration">🖼️</button>
+              <button class="input-tool-btn" id="btnDiceRoll" title="Roll Action Dice">🎲</button>
+              <button class="input-tool-btn" id="btnQuickPrompt" title="Prompt Ideas">📄</button>
+            </div>
+            <button class="btn-send" id="btnSend" title="Send Message">➤</button>
+          </div>
+        </div>
+        <div class="disclaimer-text">Remember: Everything characters say is made up!</div>
+      </div>
+    </main>
+
+    <!-- ===========================
+         RIGHT SIDEBAR (INFO & MEMORY)
+    =========================== -->
+    <aside class="info-panel" id="infoPanel">
+      <div class="info-header">
+        <div class="info-title">
+          <span id="infoCharName">Lysandra</span>
+          <span class="verified-badge">✓</span>
+        </div>
+        <button class="icon-btn" id="btnCloseInfo">✖</button>
+      </div>
+
+      <!-- PORTRAIT CARD -->
+      <div class="portrait-card">
+        <img src="assets/lysandra.png" class="portrait-img" id="infoPortraitImg" alt="Portrait">
+      </div>
+
+      <!-- TABS -->
+      <div class="info-tabs">
+        <button class="tab-btn active" data-tab="info" id="tabBtnInfo">Info</button>
+        <button class="tab-btn" data-tab="memory" id="tabBtnMemory">Memory</button>
+      </div>
+
+      <!-- TAB CONTENT: INFO -->
+      <div class="tab-content" id="tabContentInfo">
+        <div class="info-group">
+          <div class="info-label">Age</div>
+          <div class="info-value" id="infoAge">27</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Occupation</div>
+          <div class="info-value" id="infoOccupation">Informant</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Location</div>
+          <div class="info-value" id="infoLocation">Velmora, Eryndor</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Personality</div>
+          <div class="info-value" id="infoPersonality">Cunning, graceful, intelligent, mysterious</div>
+        </div>
+        <div class="info-group">
+          <div class="info-label">Scenario</div>
+          <div class="info-value" id="infoScenario">You meet Lysandra in a quiet tavern during your travels...</div>
+        </div>
+
+        <button class="btn-full-profile" id="btnEditCharacterProfile">
+          👤 View & Edit Profile
+        </button>
+      </div>
+
+      <!-- TAB CONTENT: MEMORY -->
+      <div class="tab-content" id="tabContentMemory" style="display:none;">
+        <div class="info-group">
+          <div class="info-label">Long-Term Memories</div>
+          <div class="info-value" id="memoryList" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <!-- DYNAMIC MEMORIES -->
+          </div>
+        </div>
+        <button class="btn-secondary" id="btnAddMemory" style="margin-top:0.5rem; font-size:0.85rem;">+ Add Memory</button>
+      </div>
+
+      <!-- VOICE WIDGET -->
+      <div class="voice-widget">
+        <div class="voice-header">Voice</div>
+        <div class="voice-player">
+          <button class="btn-play-voice" id="btnPlayVoice">▶</button>
+          <div class="voice-title" id="voiceNameDisplay">Velvet Whisper</div>
+          <div class="waveform-visualizer" id="waveform">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===========================
+         MOBILE BOTTOM NAV
+    =========================== -->
+    <nav class="mobile-bottom-nav">
+      <button class="nav-item active" id="navChat">
+        <span class="nav-icon">💬</span>
+        <span>Chat</span>
+      </button>
+      <button class="nav-item" id="navCreate">
+        <span class="nav-icon">➕</span>
+        <span>Create</span>
+      </button>
+      <button class="nav-item" id="navExplore">
+        <span class="nav-icon">🧭</span>
+        <span>Explore</span>
+      </button>
+      <button class="nav-item" id="navProfile">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===========================
+       MODALS
+  =========================== -->
+
+  <!-- CHARACTER CREATION / EDIT MODAL -->
+  <div class="modal-overlay" id="characterModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="charModalTitle">Create Character</div>
+        <button class="btn-close-modal" id="btnCloseCharModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="inputCharName" placeholder="e.g. Lysandra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avatar URL / Image</label>
+          <input type="text" class="form-input" id="inputCharAvatar" placeholder="Image URL">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age</label>
+          <input type="text" class="form-input" id="inputCharAge" placeholder="e.g. 27">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Occupation</label>
+          <input type="text" class="form-input" id="inputCharOccupation" placeholder="e.g. Informant">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" class="form-input" id="inputCharLocation" placeholder="e.g. Velmora">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Personality</label>
+          <input type="text" class="form-input" id="inputCharPersonality" placeholder="e.g. Cunning, mysterious">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Scenario / Context</label>
+          <textarea class="form-textarea" id="inputCharScenario" rows="3" placeholder="Where do you meet this character?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Greeting Message</label>
+          <textarea class="form-textarea" id="inputCharGreeting" rows="3" placeholder="First message sent by character..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">System Role Instruction</label>
+          <textarea class="form-textarea" id="inputCharRoleInstruction" rows="3" placeholder="AI behavior rules, secrets, dialogue style..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelCharModal">Cancel</button>
+        <button class="btn-primary" id="btnSaveCharModal">Save Character</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLORE / CATALOG MODAL -->
+  <div class="modal-overlay" id="exploreModal">
+    <div class="modal-card" style="width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title">Explore Characters</div>
+        <button class="btn-close-modal" id="btnCloseExploreModal">✖</button>
+      </div>
+      <div class="modal-body" id="exploreCatalogList">
+        <!-- CATALOG CARDS POPULATED DYNAMICALLY -->
+      </div>
+    </div>
+  </div>
+
+  <!-- USER PERSONA MODAL -->
+  <div class="modal-overlay" id="personaModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Your Profile Persona</div>
+        <button class="btn-close-modal" id="btnClosePersonaModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" class="form-input" id="inputUserName" value="Nyx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Persona Description</label>
+          <textarea class="form-textarea" id="inputUserPersona" rows="3" placeholder="How characters perceive you (e.g., wanderer, warrior, mage)..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="btnSavePersona">Save Persona</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & THEMES MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Settings & Customization</div>
+        <button class="btn-close-modal" id="btnCloseSettingsModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Visual Theme</label>
+          <div id="themeSelectorGrid">
+            <!-- DYNAMIC THEME CARDS -->
+          </div>
+        </div>
+        <hr style="border-color:var(--border-dark);">
+        <div class="form-group">
+          <label class="form-label">Perchance Code Exporter</label>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Copy ready-to-paste Perchance generator import snippet.</p>
+          <button class="btn-secondary" onclick="window.exportPerchanceBundle()" style="margin-top:0.5rem;">📋 Copy Perchance Code</button>
+        </div>
+        <hr style="border-color:var(--border-dark);">
+        <div class="form-group">
+          <label class="form-label">Database Export & Backup</label>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Export your full database of characters, threads, and chat history as JSON backup.</p>
+          <button class="btn-secondary" id="btnExportDb" style="margin-top:0.5rem;">💾 Export Database JSON</button>
+        </div>
+        <hr style="border-color:var(--border-dark);">
+        <div class="form-group">
+          <label class="form-label" style="color:#ff6b6b;">Danger Zone</label>
+          <button class="btn-secondary" id="btnResetDb" style="color:#ff6b6b; border-color:#ff6b6b;">🚨 Delete All Database Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

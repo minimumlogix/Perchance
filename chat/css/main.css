@@ -1,0 +1,158 @@
+/* ===========================
+   DESIGN SYSTEM & THEMES
+=========================== */
+:root, [data-theme="elysium"] {
+  --bg-dark: #110e16;
+  --bg-panel: #181420;
+  --bg-card: #201a2c;
+  --bg-card-hover: #2a2238;
+  --bg-input: #171322;
+  --bg-bubble-user: #3a262d;
+  --bg-bubble-ai: #1d1828;
+  
+  --accent-copper: #e09f87;
+  --accent-copper-hover: #f4b49e;
+  --accent-bronze: #b86a55;
+  --accent-gold: #e5b083;
+  --accent-gradient: linear-gradient(135deg, #e09f87 0%, #c46953 100%);
+  --accent-glow: 0 0 20px rgba(224, 159, 135, 0.2);
+  
+  --border-dark: #292136;
+  --border-accent: rgba(224, 159, 135, 0.25);
+  
+  --text-main: #f3effa;
+  --text-muted: #a098ad;
+  --text-italic: #cbbccf;
+  --text-gold: #e5b083;
+  
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+
+  --sidebar-width: 290px;
+  --info-width: 320px;
+  --border-radius: 12px;
+  --transition-speed: 0.25s;
+}
+
+/* THEME: AMETHYST MIDNIGHT */
+[data-theme="amethyst"] {
+  --bg-dark: #0f0b18;
+  --bg-panel: #161024;
+  --bg-card: #1f1733;
+  --bg-card-hover: #2a1f45;
+  --bg-input: #150f24;
+  --bg-bubble-user: #311c47;
+  --bg-bubble-ai: #1a132c;
+  
+  --accent-copper: #b388ff;
+  --accent-copper-hover: #d1b8ff;
+  --accent-bronze: #7c4dff;
+  --accent-gold: #80d8ff;
+  --accent-gradient: linear-gradient(135deg, #b388ff 0%, #651fff 100%);
+  --accent-glow: 0 0 20px rgba(179, 136, 255, 0.3);
+  
+  --border-dark: #2c1e4a;
+  --border-accent: rgba(179, 136, 255, 0.3);
+  
+  --text-main: #f5f0ff;
+  --text-muted: #a795c7;
+  --text-italic: #d4c5f0;
+}
+
+/* THEME: OBSIDIAN ROSE */
+[data-theme="obsidian"] {
+  --bg-dark: #140a0c;
+  --bg-panel: #1c0e12;
+  --bg-card: #28141a;
+  --bg-card-hover: #361b23;
+  --bg-input: #190c10;
+  --bg-bubble-user: #4a1923;
+  --bg-bubble-ai: #241016;
+  
+  --accent-copper: #ff5252;
+  --accent-copper-hover: #ff7979;
+  --accent-bronze: #c62828;
+  --accent-gold: #ff8a80;
+  --accent-gradient: linear-gradient(135deg, #ff5252 0%, #b71c1c 100%);
+  --accent-glow: 0 0 20px rgba(255, 82, 82, 0.3);
+  
+  --border-dark: #3a1922;
+  --border-accent: rgba(255, 82, 82, 0.3);
+  
+  --text-main: #fff0f2;
+  --text-muted: #c7959d;
+  --text-italic: #f0c5cb;
+}
+
+/* THEME: EMERALD ARCANE */
+[data-theme="emerald"] {
+  --bg-dark: #0a1410;
+  --bg-panel: #0e1c16;
+  --bg-card: #142820;
+  --bg-card-hover: #1b362b;
+  --bg-input: #0c1913;
+  --bg-bubble-user: #194a36;
+  --bg-bubble-ai: #10241b;
+  
+  --accent-copper: #64ffda;
+  --accent-copper-hover: #a7ffeb;
+  --accent-bronze: #00bfa5;
+  --accent-gold: #ffd54f;
+  --accent-gradient: linear-gradient(135deg, #64ffda 0%, #00897b 100%);
+  --accent-glow: 0 0 20px rgba(100, 255, 218, 0.3);
+  
+  --border-dark: #1a382c;
+  --border-accent: rgba(100, 255, 218, 0.3);
+  
+  --text-main: #e8f8f5;
+  --text-muted: #95c7b9;
+  --text-italic: #c5f0e4;
+}
+
+/* ===========================
+   GLOBAL RESET
+=========================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ===========================
+   CUSTOM SCROLLBARS
+=========================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-bronze);
+}
+
+/* ===========================
+   APP CONTAINER LAYOUT
+=========================== */
+#app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
