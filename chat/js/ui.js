@@ -1,13 +1,15 @@
 /* ===========================
-   UI RENDERER MODULE
+   UI RENDERER & DIALOG MODULE
 =========================== */
 const UI = {
-  async renderSidebarChats() {
+  async renderSidebarChats(filterText = "") {
     const chatsListEl = document.getElementById("chatsList");
     if (!chatsListEl) return;
     chatsListEl.innerHTML = "";
 
+    const query = filterText.toLowerCase().trim();
     const characters = await db.characters.toArray();
+
     for (const char of characters) {
       const thread = await db.threads.where({ characterId: char.id }).first();
       let lastMsgSnippet = char.greeting.substring(0, 45).replace(/\n/g, ' ') + '...';
@@ -24,7 +26,17 @@ const UI = {
         }
       }
 
+      // Filter check
+      if (query) {
+        const matchName = char.name.toLowerCase().includes(query);
+        const matchOccupation = (char.occupation || "").toLowerCase().includes(query);
+        const matchSnippet = lastMsgSnippet.toLowerCase().includes(query);
+        if (!matchName && !matchOccupation && !matchSnippet) continue;
+      }
+
       const isActive = AppState.activeCharacter && AppState.activeCharacter.id === char.id;
+      const isBookmarked = thread?.isBookmarked || char.isBookmarked;
+
       const item = document.createElement("div");
       item.className = `chat-item ${isActive ? 'active' : ''}`;
       item.onclick = () => window.selectCharacter(char.id);
@@ -36,7 +48,7 @@ const UI = {
         </div>
         <div class="chat-item-info">
           <div class="chat-item-top">
-            <span class="chat-item-name">${this.escapeHtml(char.name)}</span>
+            <span class="chat-item-name">${this.escapeHtml(char.name)} ${isBookmarked ? '🔖' : ''}</span>
             <span class="chat-item-time">${lastTimeStr}</span>
           </div>
           <div class="chat-item-preview">${this.escapeHtml(lastMsgSnippet)}</div>
@@ -69,7 +81,7 @@ const UI = {
       const authorName = isUser ? userProf.name : AppState.activeCharacter.name;
       const formattedTime = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Determine active variation content if character response has multiple candidates
+      // Determine active variation content
       let displayContent = msg.content;
       let variations = msg.variations || [msg.content];
       let activeIndex = msg.activeVariationIndex || 0;
@@ -233,4 +245,40 @@ const UI = {
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return `${Math.floor(diff / 86400)}d ago`;
   }
+};
+
+window.confirmAsync = async function(message, opts) {
+  if (!opts) opts = {};
+  if (!message) message = "Are you sure?";
+  return new Promise(resolve => {
+    const overlay = Object.assign(document.createElement("div"), { tabIndex: 0 });
+    overlay.style.cssText = `position:fixed;inset:0;z-index:99999999;display:grid;place-items:center;background-color:rgba(0,0,0,.65);font:16px/1.4 var(--font-ui, system-ui);`;
+    overlay.innerHTML = `<div style="text-align:left !important;max-width:min(97vw, 450px);padding:20px;border-radius:12px;background-color:var(--bg-panel, #222);color:var(--text-main, #fff);border:1px solid var(--border-dark, #444);box-shadow:0 4px 20px rgba(0,0,0,.5);">
+      <p style="margin:0 0 20px;white-space:pre-wrap;line-height:1.5;">${message.replace(/[<>&]/g, m => ({ "<": "&lt;", "&": "&amp;", ">": "&gt;" }[m]))}</p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button ${opts.hideCancel ? "hidden" : ""} class="btn-secondary" style="padding:6px 16px;">Cancel</button>
+        <button autofocus class="btn-primary" style="padding:6px 16px;">Okay</button>
+      </div>
+    </div>`;
+    const [cancelBtn, okBtn] = overlay.querySelectorAll("button");
+    const finish = val => { overlay.remove(); resolve(val); };
+    cancelBtn.onclick = () => finish(false);
+    okBtn.onclick = () => finish(true);
+    overlay.onkeydown = e => {
+      if (e.key === "Escape") finish(false);
+      else if (e.key === "Enter") finish(true);
+    };
+    document.body.append(overlay);
+    overlay.focus({ preventScroll: true });
+  });
+};
+
+window.createLoadingModal = function(text) {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `position:fixed;inset:0;z-index:99999999;display:grid;place-items:center;background-color:rgba(0,0,0,.65);font:16px/1.4 var(--font-ui, system-ui); color:#fff;`;
+  overlay.innerHTML = `<div style="padding:20px 30px; border-radius:12px; background:var(--bg-panel, #222); border:1px solid var(--border-dark, #444); font-weight:600;">${text}</div>`;
+  document.body.append(overlay);
+  return {
+    delete() { overlay.remove(); }
+  };
 };

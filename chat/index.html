@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
   <!-- GOOGLE FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
 
   <!-- THIRD-PARTY LIBRARIES -->
   <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
@@ -17,6 +20,9 @@
 
   <!-- DYNAMIC RESOURCE LOADER -->
   <script>
+    // ─── DYNAMIC RESOURCE LOADER ──────────────────────────────────────────
+    // Dynamically resolves local vs. production asset paths based on the running hostname.
+    // Enables seamless local development without changing script locations.
     (function () {
       const isLocal = !window.location.hostname.includes("perchance.org");
       const basePath = isLocal ? "" : "https://minimumlogix.github.io/Perchance/chat/";
@@ -33,8 +39,8 @@
         document.head.appendChild(link);
       });
 
-      // 2. Bind Perchance plugins to the global window scope
-      const plugins = ['ai', 'image', 'uploadPlugin', 'superFetch', 'literal'];
+      // 2. Bind Perchance plugins to the global window scope.
+      const plugins = ['ai', 'image', 'prompt2', 'uploadPlugin', 'superFetch', 'literal'];
       const mocks = {};
 
       plugins.forEach(name => {
@@ -55,7 +61,7 @@
         });
       });
 
-      // 3. Inject Scripts in strict dependency order
+      // 3. Inject Scripts in correct dependency order
       const scripts = [
         "js/config.js",
         "js/db.js",
@@ -70,12 +76,14 @@
         const script = document.createElement("script");
         script.src = basePath + src;
         script.defer = true;
-        script.async = false;
+        script.async = false; // Force scripts to execute in appended order
         document.head.appendChild(script);
       });
     })();
   </script>
 </head>
+
+
 <body data-theme="elysium">
 
   <!-- MAIN APP CONTAINER -->
@@ -98,6 +106,12 @@
       <div class="chats-section-title">
         <span>Chats</span>
         <button class="chat-search-btn" id="btnSearchChats" title="Search Chats">🔍</button>
+      </div>
+
+      <!-- SEARCH INPUT CONTAINER -->
+      <div id="sidebarSearchContainer" style="display:none; padding: 0 1rem 0.5rem 1rem;">
+        <input type="text" id="inputSearchChats" class="form-input" placeholder="Search chats..."
+          style="width:100%; font-size:0.82rem; padding:0.4rem 0.6rem;">
       </div>
 
       <div class="chats-list" id="chatsList">
@@ -217,9 +231,14 @@
           <div class="info-value" id="infoScenario">You meet Lysandra in a quiet tavern during your travels...</div>
         </div>
 
-        <button class="btn-full-profile" id="btnEditCharacterProfile">
-          👤 View & Edit Profile
-        </button>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+          <button class="btn-full-profile" id="btnEditCharacterProfile">
+            👤 View & Edit Profile
+          </button>
+          <button class="btn-secondary" id="btnShareCharacter" style="font-size:0.85rem; padding:0.5rem;">
+            🔗 Share Character Link
+          </button>
+        </div>
       </div>
 
       <!-- TAB CONTENT: MEMORY -->
@@ -230,7 +249,8 @@
             <!-- DYNAMIC MEMORIES -->
           </div>
         </div>
-        <button class="btn-secondary" id="btnAddMemory" style="margin-top:0.5rem; font-size:0.85rem;">+ Add Memory</button>
+        <button class="btn-secondary" id="btnAddMemory" style="margin-top:0.5rem; font-size:0.85rem;">+ Add
+          Memory</button>
       </div>
 
       <!-- VOICE WIDGET -->
@@ -285,6 +305,7 @@
         <button class="btn-close-modal" id="btnCloseCharModal">✖</button>
       </div>
       <div class="modal-body">
+        <input type="hidden" id="inputCharId">
         <div class="form-group">
           <label class="form-label">Name</label>
           <input type="text" class="form-input" id="inputCharName" placeholder="e.g. Lysandra">
@@ -311,15 +332,18 @@
         </div>
         <div class="form-group">
           <label class="form-label">Scenario / Context</label>
-          <textarea class="form-textarea" id="inputCharScenario" rows="3" placeholder="Where do you meet this character?"></textarea>
+          <textarea class="form-textarea" id="inputCharScenario" rows="3"
+            placeholder="Where do you meet this character?"></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Greeting Message</label>
-          <textarea class="form-textarea" id="inputCharGreeting" rows="3" placeholder="First message sent by character..."></textarea>
+          <textarea class="form-textarea" id="inputCharGreeting" rows="3"
+            placeholder="First message sent by character..."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">System Role Instruction</label>
-          <textarea class="form-textarea" id="inputCharRoleInstruction" rows="3" placeholder="AI behavior rules, secrets, dialogue style..."></textarea>
+          <textarea class="form-textarea" id="inputCharRoleInstruction" rows="3"
+            placeholder="AI behavior rules, secrets, dialogue style..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -356,7 +380,8 @@
         </div>
         <div class="form-group">
           <label class="form-label">Persona Description</label>
-          <textarea class="form-textarea" id="inputUserPersona" rows="3" placeholder="How characters perceive you (e.g., wanderer, warrior, mage)..."></textarea>
+          <textarea class="form-textarea" id="inputUserPersona" rows="3"
+            placeholder="How characters perceive you (e.g., wanderer, warrior, mage)..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -382,23 +407,34 @@
         <hr style="border-color:var(--border-dark);">
         <div class="form-group">
           <label class="form-label">Perchance Code Exporter</label>
-          <p style="font-size:0.85rem; color:var(--text-muted);">Copy ready-to-paste Perchance generator import snippet.</p>
-          <button class="btn-secondary" onclick="window.exportPerchanceBundle()" style="margin-top:0.5rem;">📋 Copy Perchance Code</button>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Copy ready-to-paste Perchance generator import snippet.
+          </p>
+          <button class="btn-secondary" onclick="window.exportPerchanceBundle()" style="margin-top:0.5rem;">📋 Copy
+            Perchance Code</button>
         </div>
         <hr style="border-color:var(--border-dark);">
         <div class="form-group">
-          <label class="form-label">Database Export & Backup</label>
-          <p style="font-size:0.85rem; color:var(--text-muted);">Export your full database of characters, threads, and chat history as JSON backup.</p>
-          <button class="btn-secondary" id="btnExportDb" style="margin-top:0.5rem;">💾 Export Database JSON</button>
+          <label class="form-label">Database Backup & Restore</label>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Export or import your complete database backup JSON
+            file.</p>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <button class="btn-secondary" id="btnExportDb" style="flex:1;">💾 Export JSON</button>
+            <label class="btn-secondary" style="flex:1; text-align:center; cursor:pointer;">
+              📂 Import JSON
+              <input type="file" id="inputImportDb" accept=".json" style="display:none;">
+            </label>
+          </div>
         </div>
         <hr style="border-color:var(--border-dark);">
         <div class="form-group">
           <label class="form-label" style="color:#ff6b6b;">Danger Zone</label>
-          <button class="btn-secondary" id="btnResetDb" style="color:#ff6b6b; border-color:#ff6b6b;">🚨 Delete All Database Data</button>
+          <button class="btn-secondary" id="btnResetDb" style="color:#ff6b6b; border-color:#ff6b6b;">🚨 Delete All
+            Database Data</button>
         </div>
       </div>
     </div>
   </div>
 
 </body>
+
 </html>

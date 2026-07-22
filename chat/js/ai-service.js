@@ -1,10 +1,297 @@
 /* ===========================
-   AI SERVICE (PERCHANCE & LOCAL)
+   AI SERVICE & HIERARCHICAL SUMMARIZATION LOGIC
 =========================== */
+
+// 1. SANDBOX EVALUATOR FOR PERCHANCE EXPRESSIONS
+async function evaluatePerchanceTextInSandbox(text, opts) {
+  if (!opts) opts = {};
+  let iframe = document.querySelector('#perchanceCodeEvaluationSandboxIframe');
+  if (!iframe) {
+    iframe = document.createElement("iframe");
+    iframe.src = "https://7deabe31ae18ea5ed27c5f71b9633999.perchance.org/ai-character-chat-sandboxed-executor";
+    iframe.id = "perchanceCodeEvaluationSandboxIframe";
+    iframe.sandbox = "allow-scripts allow-same-origin";
+    iframe.style.cssText = "position:fixed; width:1px; height:1px; opacity:0.01; top:-10px; right:-10px; pointer-events:none; border:0; outline:0; user-select:none;";
+    document.body.append(iframe);
+    iframe._resolvers = {};
+    
+    let iframeLoadResolver;
+    let iframeLoadPromise = new Promise(r => iframeLoadResolver = r);
+    window.addEventListener('message', (event) => {
+      if (event.origin === 'https://7deabe31ae18ea5ed27c5f71b9633999.perchance.org') {
+        if (event.data.finishedLoading) {
+          iframeLoadResolver();
+          return;
+        }
+        const { requestId, text } = event.data;
+        if (iframe._resolvers[requestId]) {
+          iframe._resolvers[requestId](text);
+          delete iframe._resolvers[requestId];
+        }
+      }
+    });
+    await iframeLoadPromise;
+  }
+
+  const requestId = Math.random().toString();
+  return new Promise((resolve, reject) => {
+    iframe._resolvers[requestId] = resolve;
+    if (opts.timeout) {
+      setTimeout(() => {
+        if (iframe._resolvers[requestId]) reject("Sandbox did not respond in time.");
+      }, opts.timeout);
+    }
+    iframe.contentWindow.postMessage({ text, requestId }, 'https://7deabe31ae18ea5ed27c5f71b9633999.perchance.org');
+  });
+}
+
+// 2. GET UN-SUMMARIZED MESSAGE OBJECTS FOR CONTEXT
+function getMessageObjsWithoutSummarizedOnes(messages, opts) {
+  if (!opts) opts = {};
+  messages = messages.slice(0);
+  const minimumMessageLevel = opts.minimumMessageLevel || 0;
+
+  let messageObjsWithoutSummarizedOnes = [];
+  let highestLevelSeen = 0;
+
+  while (messages.length > 0) {
+    let m = messages.pop();
+    let level = m.summariesEndingHere ? Math.max(...Object.keys(m.summariesEndingHere).map(n => Number(n))) : 0;
+    if (level < minimumMessageLevel) continue;
+    if (level >= highestLevelSeen) {
+      messageObjsWithoutSummarizedOnes.unshift(m);
+      highestLevelSeen = level;
+    }
+  }
+  return messageObjsWithoutSummarizedOnes;
+}
+
+// 3. BACKGROUND HIERARCHICAL SUMMARIZATION ENGINE
+async function injectHierarchicalSummariesAndComputeNextSummariesInBackgroundIfNeeded(threadId, opts) {
+  if (!window.__aiHierarchicalSummaryStuff) window.__aiHierarchicalSummaryStuff = {};
+  if (!window.__aiHierarchicalSummaryStuff[threadId]) {
+    window.__aiHierarchicalSummaryStuff[threadId] = {};
+    window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject = [];
+  }
+  if (!opts) opts = {};
+
+  let originalMessages = await db.messages.where({ threadId }).toArray();
+  let idToOriginalMessage = originalMessages.reduce((a, v) => (a[v.id] = v, a), {});
+  
+  let preparedMessages = originalMessages;
+  for (let m of preparedMessages) {
+    let originalMessage = idToOriginalMessage[m.id];
+    if (originalMessage.summariesEndingHere) m.summariesEndingHere = originalMessage.summariesEndingHere;
+  }
+
+  let thread = await db.threads.get(threadId);
+  let threadCharacter = await db.characters.get(thread.characterId);
+  let userName = thread.userCharacter?.name ?? (AppState.userProfile ? AppState.userProfile.name : "Nyx");
+  let characterName = threadCharacter.name;
+  let roleInstruction = (threadCharacter.roleInstruction || "")
+    .replaceAll("{{char}}", characterName)
+    .replaceAll("{{user}}", userName);
+  let extraContext = `In case it's useful here's a description of the **${characterName}** character: ` + roleInstruction.replace(/\n+/g, " ");
+
+  let idToPreparedMessage = preparedMessages.reduce((a, v) => (a[v.id] = v, a), {});
+
+  // Inject summaries ready to inject
+  if (window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject.length > 0) {
+    let messagesToUpdate = new Set();
+    for (let { summarizedMessages, lastMessageSummarizedId, summary, memories, level } of window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject) {
+      if (level <= 0) continue;
+      let lastSummarizedMessageText = summarizedMessages[summarizedMessages.length - 1];
+      let lastMessageObjInSummary = idToPreparedMessage[lastMessageSummarizedId];
+      if (!lastMessageObjInSummary) continue;
+
+      let expectedLastSummarizedText = level === 1 ? `${lastMessageObjInSummary.name || characterName}: ${lastMessageObjInSummary.content}` : lastMessageObjInSummary.summariesEndingHere[level - 1];
+      if (expectedLastSummarizedText && expectedLastSummarizedText.trim() === lastSummarizedMessageText.trim()) {
+        let m = lastMessageObjInSummary;
+        if (!m.summariesEndingHere) m.summariesEndingHere = {};
+        m.summariesEndingHere[level] = summary;
+        messagesToUpdate.add(m);
+      }
+    }
+
+    if (window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject.length >= 3) {
+      for (let m of messagesToUpdate) {
+        await db.messages.update(m.id, { summariesEndingHere: m.summariesEndingHere });
+      }
+      window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject = [];
+    }
+  }
+
+  const aiPlugin = window.ai || window.root?.ai;
+  if (!aiPlugin) return;
+
+  const numCharsToSummarizeAtATime = 1500;
+
+  (async function() {
+    if (window.__aiHierarchicalSummaryStuff[threadId].alreadyDoingSummary) return;
+    try {
+      window.__aiHierarchicalSummaryStuff[threadId].alreadyDoingSummary = true;
+
+      const allMessageObjs = [];
+      let i = 0;
+      for (let m of preparedMessages) {
+        allMessageObjs.push({
+          text: `${m.role === 'user' ? userName : characterName}: ${m.content}`,
+          index: i++,
+          messageId: m.id,
+          level: 0,
+        });
+        let summaryEntries = Object.entries(m.summariesEndingHere || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
+        for (let [level, summary] of summaryEntries) {
+          level = Number(level);
+          allMessageObjs.push({
+            text: summary,
+            index: i++,
+            messageId: m.id,
+            level,
+          });
+        }
+      }
+
+      let summaryLevelToMessageBlocks = new Map();
+      let summaryLevelBeingProcessed = 1;
+
+      while (true) {
+        const thisLevelAndPreviousLevelMessageObjs = allMessageObjs.filter(m => m.level === summaryLevelBeingProcessed || m.level === summaryLevelBeingProcessed - 1);
+        if (thisLevelAndPreviousLevelMessageObjs.length === 0) break;
+
+        const blocks = [];
+        let currentBlock = [];
+        currentBlock.messageData = [];
+        for (let m of thisLevelAndPreviousLevelMessageObjs) {
+          currentBlock.push(m.text);
+          currentBlock.messageData.push(m);
+          if (m.level === summaryLevelBeingProcessed) {
+            blocks.push(currentBlock);
+            currentBlock = [];
+            currentBlock.messageData = [];
+          }
+        }
+        blocks.push(currentBlock);
+        summaryLevelToMessageBlocks.set(summaryLevelBeingProcessed, blocks);
+        summaryLevelBeingProcessed++;
+      }
+
+      const summaryLevelBlockEntries = [...summaryLevelToMessageBlocks.entries()].sort((a, b) => a[0] - b[0]);
+      for (let [summaryLevel, blocks] of summaryLevelBlockEntries) {
+        let messagesToSummarizeFromFinalBlock = blocks[blocks.length - 1];
+        let numCharsInFinalBlock = messagesToSummarizeFromFinalBlock.reduce((a, v) => a + v.length, 0);
+        if (numCharsInFinalBlock < numCharsToSummarizeAtATime) continue;
+
+        while (true) {
+          if (messagesToSummarizeFromFinalBlock.length <= 1) break;
+          let numChars = messagesToSummarizeFromFinalBlock.reduce((a, v) => a + v.length, 0);
+          if (numChars < numCharsToSummarizeAtATime) break;
+          messagesToSummarizeFromFinalBlock.pop();
+          messagesToSummarizeFromFinalBlock.messageData.pop();
+        }
+
+        if (messagesToSummarizeFromFinalBlock.length === 0) continue;
+
+        let lastMessageSummarizedData = messagesToSummarizeFromFinalBlock.messageData[messagesToSummarizeFromFinalBlock.length - 1];
+        let lastMessageSummarizedId = lastMessageSummarizedData.messageId;
+
+        let exampleBlocksForStartWith = blocks.slice(-3, -1);
+        let exampleBlockSummaries = exampleBlocksForStartWith.map(b => b[b.length - 1]);
+
+        let summariesAtThisLevelAndAbove = getMessageObjsWithoutSummarizedOnes(preparedMessages, { minimumMessageLevel: summaryLevel }).map(m => {
+          let level = m.summariesEndingHere ? Math.max(...Object.keys(m.summariesEndingHere).map(n => Number(n))) : 0;
+          if (level === 0) return m.content;
+          else return m.summariesEndingHere[level];
+        });
+
+        let instructionSummaries = JSON.parse(JSON.stringify(summariesAtThisLevelAndAbove));
+        while (instructionSummaries.length > 0) {
+          if (exampleBlockSummaries.includes(instructionSummaries[instructionSummaries.length - 1])) {
+            instructionSummaries.pop();
+            continue;
+          }
+          break;
+        }
+
+        let startWithBlocks = exampleBlocksForStartWith.map((block) => ({ messages: block.slice(0, -1), summary: block.slice(-1)[0] }));
+        startWithBlocks.push({ messages: messagesToSummarizeFromFinalBlock, summary: "" });
+
+        let startWith = startWithBlocks.map(({ messages, summary }, blockI) => {
+          let letterLabel = blockI === 0 ? "[A]" : (blockI === 1 ? "[B]" : "[C]");
+          let messagesText = messages.map((message, mi) => {
+            message = message.replace(/\n/g, " ").trim();
+            return `${summaryLevel === 1 ? `(${mi + 1}) ` : ""}${message}`;
+          }).join(" ");
+          summary = (summary || "").replace(/\n/g, " ").trim();
+          return `>>> FULL TEXT of ${letterLabel}: ${messagesText}\n>>> SUMMARY of ${letterLabel}: ${summary}`;
+        }).join("\n---\n").trim();
+
+        let sharedContextPrefixText = [
+          `Below is${extraContext ? ` some context, plus` : ""} a summary of some events. You must use this information to complete the '@@@ TASK' specified at the bottom of this instruction.`,
+          `${extraContext ? `\n# Potentially Useful Context (may or may not be relevant):\n${extraContext}\n` : ""}`,
+          `# Summary of Previous Events:`,
+        ].join("\n").trim();
+
+        const summaryTaskPrompt = `@@@ TASK: Your task is to generate some text and then a 'SUMMARY' of that text, and then do that a few more times. Above are the characters and the initial scenario, and a summary of earlier events. You must write the text, and then a summary of that text that you wrote, and then some more text, and a summary of that new text, and so on. Each summary should be a single paragraph of text which summarizes the important details from the preceding 'full text' to roughly half its original size.
+Use this format/template for your response:
+\`\`\`
+>>> FULL TEXT of [A]: <some text>
+>>> SUMMARY of [A]: <a one-paragraph summary of the [A] text>
+---
+>>> FULL TEXT of [B]: <some text>
+>>> SUMMARY of [B]: <a one-paragraph summary of the [B] text>
+---
+>>> FULL TEXT of [C]: <some text>
+>>> SUMMARY of [C]: <a one-paragraph summary of the [C] text>
+\`\`\`
+Again, your task is to write some text labelled with a letter, and then a summary of that text, and then some new text, and then a summary of that new text, and so on. Each summary should be a single paragraph of text which summarizes the new text to roughly half its original length. Don't add flowery prose to summaries. Summary text should contain only the most important information, and should use well-phrased sentences with natural structure and correct grammar.
+NOTE: Don't append any other commentary/notes in your summaries (e.g. no word counts or commentary after completing the task). Just do the task and then end your response.
+IMPORTANT: Avoid repetition within summaries! If there are erroneously repeated elements in the full text, then remove or ignore them when writing your well-phrased summary.`.trim();
+
+        startWith = startWith.trim().slice(0, -1) + " (full, natural, readable sentences with correct grammar):";
+
+        let promptOptions = {
+          instruction: [
+            sharedContextPrefixText,
+            (instructionSummaries.length > 0 ? instructionSummaries : ["(None.)"]).join("\n"),
+            ``,
+            summaryTaskPrompt,
+          ].join("\n").trim(),
+          startWith,
+          stopSequences: ["\n\n", "\n---", "\n>>> FULL TEXT", "FULL TEXT"],
+        };
+
+        let data = await aiPlugin(promptOptions);
+        if (data.stopReason === "error") continue;
+
+        let summary = (data.generatedText || "").trim().replace(/\n+/g, " ").trim().replace(/---$/, "").replace(">>> FULL TEXT", "").replace("FULL TEXT", "").trim();
+        if (!summary || (instructionSummaries[instructionSummaries.length - 1] || "").trim() === summary) {
+          continue;
+        }
+
+        window.__aiHierarchicalSummaryStuff[threadId].summariesReadyToInject.push({
+          summarizedMessages: messagesToSummarizeFromFinalBlock,
+          lastMessageSummarizedId,
+          summary,
+          level: summaryLevel
+        });
+      }
+    } catch (e) {
+      console.error("Hierarchical summary error:", e);
+    } finally {
+      window.__aiHierarchicalSummaryStuff[threadId].alreadyDoingSummary = false;
+    }
+  })();
+}
+
+// 4. MAIN CHARACTER RESPONSE GENERATOR
 async function generateCharacterResponse(character, thread, userMessageText) {
   const history = await db.messages.where({ threadId: thread.id }).sortBy("timestamp");
   const memories = await db.memories.where({ characterId: character.id }).toArray();
   const userProf = AppState.userProfile || DEFAULT_USER_PROFILE;
+
+  // Compute background summary if conversation is long
+  injectHierarchicalSummariesAndComputeNextSummariesInBackgroundIfNeeded(thread.id).catch(console.error);
 
   // Build Context String
   let promptContext = `System Role: ${character.roleInstruction}\n`;
@@ -21,7 +308,8 @@ async function generateCharacterResponse(character, thread, userMessageText) {
   const recentMsgs = history.slice(-10);
   for (const m of recentMsgs) {
     const sender = m.role === "user" ? userProf.name : character.name;
-    promptContext += `${sender}: ${m.content}\n`;
+    const textContent = (m.variations && m.variations.length > 0) ? m.variations[m.activeVariationIndex || 0] : m.content;
+    promptContext += `${sender}: ${textContent}\n`;
   }
 
   promptContext += `${character.name}:`;

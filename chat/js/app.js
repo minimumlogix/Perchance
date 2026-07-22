@@ -12,6 +12,7 @@ window.selectCharacter = async function(characterId) {
     AppState.activeThread = {
       id: "thread_" + characterId + "_" + Date.now(),
       characterId: characterId,
+      isBookmarked: false,
       lastUpdated: Date.now()
     };
     await db.threads.put(AppState.activeThread);
@@ -21,6 +22,12 @@ window.selectCharacter = async function(characterId) {
   document.getElementById("headerAvatar").src = AppState.activeCharacter.avatarUrl;
   document.getElementById("headerName").textContent = AppState.activeCharacter.name;
   document.getElementById("narrativeIntro").textContent = AppState.activeCharacter.scenario;
+
+  const btnBookmark = document.getElementById("btnBookmark");
+  if (btnBookmark) {
+    btnBookmark.textContent = AppState.activeThread.isBookmarked ? "🔖" : "📑";
+    btnBookmark.title = AppState.activeThread.isBookmarked ? "Remove Bookmark" : "Bookmark Chat";
+  }
 
   // Update Right Info Panel
   document.getElementById("infoCharName").textContent = AppState.activeCharacter.name;
@@ -173,7 +180,6 @@ window.saveEditedUserMessage = async function(msgId) {
 
   await db.messages.update(msgId, { content: newText });
 
-  // Delete subsequent messages to branch history
   const msg = await db.messages.get(msgId);
   const history = await db.messages.where({ threadId: msg.threadId }).sortBy("timestamp");
   const cutIndex = history.findIndex(m => m.id === msgId);
@@ -187,7 +193,6 @@ window.saveEditedUserMessage = async function(msgId) {
 
   await UI.renderMessages();
 
-  // Generate fresh response from edited point
   AppState.isGenerating = true;
   const aiText = await generateCharacterResponse(AppState.activeCharacter, AppState.activeThread, newText);
 
@@ -234,6 +239,8 @@ window.importCatalogCharacter = async function(catalogId) {
       characterId: char.id,
       role: "character",
       content: char.greeting,
+      variations: [char.greeting],
+      activeVariationIndex: 0,
       timestamp: Date.now()
     });
   }
@@ -343,6 +350,40 @@ function setupEventListeners() {
     this.style.height = (this.scrollHeight) + "px";
   };
 
+  // Bookmark Toggle Button
+  document.getElementById("btnBookmark").onclick = async () => {
+    if (!AppState.activeThread) return;
+    const newStatus = !AppState.activeThread.isBookmarked;
+    AppState.activeThread.isBookmarked = newStatus;
+    await db.threads.update(AppState.activeThread.id, { isBookmarked: newStatus });
+    
+    document.getElementById("btnBookmark").textContent = newStatus ? "🔖" : "📑";
+    await UI.renderSidebarChats();
+  };
+
+  // Search Toggle & Handler
+  document.getElementById("btnSearchChats").onclick = () => {
+    const searchContainer = document.getElementById("sidebarSearchContainer");
+    if (!searchContainer) return;
+    const isHidden = searchContainer.style.display === "none";
+    searchContainer.style.display = isHidden ? "block" : "none";
+    if (isHidden) document.getElementById("inputSearchChats").focus();
+  };
+
+  document.getElementById("inputSearchChats").oninput = function() {
+    UI.renderSidebarChats(this.value);
+  };
+
+  // Share Character Button
+  document.getElementById("btnShareCharacter").onclick = async () => {
+    if (!AppState.activeCharacter) return;
+    const payload = { addCharacter: AppState.activeCharacter };
+    const shareUrl = await generateShareLinkForCharacter(payload);
+    if (shareUrl) {
+      await window.confirmAsync(`Here is your character share URL:\n\n${shareUrl}`, { hideCancel: true });
+    }
+  };
+
   document.getElementById("btnGenImage").onclick = async () => {
     if (!AppState.activeCharacter || !AppState.activeThread) return;
     
@@ -413,13 +454,45 @@ function setupEventListeners() {
     }
   };
 
-  document.getElementById("btnNewChat").onclick = () => UI.openModal("characterModal");
+  // Open Create Modal
+  document.getElementById("btnNewChat").onclick = () => {
+    document.getElementById("charModalTitle").textContent = "Create Character";
+    document.getElementById("inputCharId").value = "";
+    document.getElementById("inputCharName").value = "";
+    document.getElementById("inputCharAvatar").value = "";
+    document.getElementById("inputCharAge").value = "";
+    document.getElementById("inputCharOccupation").value = "";
+    document.getElementById("inputCharLocation").value = "";
+    document.getElementById("inputCharPersonality").value = "";
+    document.getElementById("inputCharScenario").value = "";
+    document.getElementById("inputCharGreeting").value = "";
+    document.getElementById("inputCharRoleInstruction").value = "";
+    UI.openModal("characterModal");
+  };
+
+  // Edit Active Character Profile
+  document.getElementById("btnEditCharacterProfile").onclick = () => {
+    if (!AppState.activeCharacter) return;
+    const char = AppState.activeCharacter;
+    document.getElementById("charModalTitle").textContent = "Edit Character Profile";
+    document.getElementById("inputCharId").value = char.id;
+    document.getElementById("inputCharName").value = char.name || "";
+    document.getElementById("inputCharAvatar").value = char.avatarUrl || "";
+    document.getElementById("inputCharAge").value = char.age || "";
+    document.getElementById("inputCharOccupation").value = char.occupation || "";
+    document.getElementById("inputCharLocation").value = char.location || "";
+    document.getElementById("inputCharPersonality").value = char.personality || "";
+    document.getElementById("inputCharScenario").value = char.scenario || "";
+    document.getElementById("inputCharGreeting").value = char.greeting || "";
+    document.getElementById("inputCharRoleInstruction").value = char.roleInstruction || "";
+    UI.openModal("characterModal");
+  };
+
   document.getElementById("btnEditUserPersona").onclick = () => UI.openModal("personaModal");
   document.getElementById("btnSettings").onclick = () => {
     UI.renderThemeSelector();
     UI.openModal("settingsModal");
   };
-  document.getElementById("btnEditCharacterProfile").onclick = () => UI.openModal("characterModal");
 
   document.getElementById("btnCloseCharModal").onclick = () => UI.closeModal("characterModal");
   document.getElementById("btnCancelCharModal").onclick = () => UI.closeModal("characterModal");
@@ -440,12 +513,15 @@ function setupEventListeners() {
     await UI.renderMessages();
   };
 
+  // Save / Update Character
   document.getElementById("btnSaveCharModal").onclick = async () => {
     const name = document.getElementById("inputCharName").value.trim();
     if (!name) { alert("Please enter a character name."); return; }
 
-    const id = name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
-    const newChar = {
+    const existingId = document.getElementById("inputCharId").value;
+    const id = existingId || (name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now());
+
+    const charObj = {
       id: id,
       name: name,
       avatarUrl: document.getElementById("inputCharAvatar").value.trim() || "assets/lysandra.png",
@@ -459,20 +535,22 @@ function setupEventListeners() {
       voiceName: "Velvet Whisper"
     };
 
-    await db.characters.put(newChar);
+    await db.characters.put(charObj);
 
-    const threadId = "thread_" + id;
-    await db.threads.put({ id: threadId, characterId: id, lastUpdated: Date.now() });
-    await db.messages.put({
-      id: "msg_greeting_" + id,
-      threadId: threadId,
-      characterId: id,
-      role: "character",
-      content: newChar.greeting,
-      variations: [newChar.greeting],
-      activeVariationIndex: 0,
-      timestamp: Date.now()
-    });
+    if (!existingId) {
+      const threadId = "thread_" + id;
+      await db.threads.put({ id: threadId, characterId: id, lastUpdated: Date.now() });
+      await db.messages.put({
+        id: "msg_greeting_" + id,
+        threadId: threadId,
+        characterId: id,
+        role: "character",
+        content: charObj.greeting,
+        variations: [charObj.greeting],
+        activeVariationIndex: 0,
+        timestamp: Date.now()
+      });
+    }
 
     UI.closeModal("characterModal");
     await window.selectCharacter(id);
@@ -491,6 +569,7 @@ function setupEventListeners() {
     }
   };
 
+  // Export DB JSON
   document.getElementById("btnExportDb").onclick = async () => {
     const data = {
       characters: await db.characters.toArray(),
@@ -505,6 +584,29 @@ function setupEventListeners() {
     a.download = `elysium-backup-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Import DB JSON File
+  document.getElementById("inputImportDb").onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const data = JSON.parse(evt.target.result);
+        if (data.characters) await db.characters.bulkPut(data.characters);
+        if (data.threads) await db.threads.bulkPut(data.threads);
+        if (data.messages) await db.messages.bulkPut(data.messages);
+        if (data.memories) await db.memories.bulkPut(data.memories);
+
+        alert("Database successfully restored from JSON backup!");
+        window.location.reload();
+      } catch (err) {
+        alert("Failed to parse JSON backup file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
   };
 
   document.getElementById("btnResetDb").onclick = async () => {
@@ -526,4 +628,9 @@ function setupEventListeners() {
   document.getElementById("navProfile")?.addEventListener("click", () => UI.openModal("personaModal"));
 }
 
-window.addEventListener("DOMContentLoaded", initApp);
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}
+

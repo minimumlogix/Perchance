@@ -1,77 +1,109 @@
 /* ===========================
    SHARE & CLOUD IMPORT SERVICE
 =========================== */
-async function generateCharacterShareLink(characterObj) {
-  const upload = window.uploadPlugin || window.upload || window.root?.uploadPlugin;
-  if (!upload) {
-    alert("Share links require the Perchance upload-plugin when running on Perchance.");
+
+const urlNamedCharacters = {
+  "assistant": "assistant",
+  "psychologist": "615fdef95fa7e75cbbaf943dc44d72be.gz",
+  "ai-adventure": "b33c6ff0c14f92e8095ca90765848485.gz",
+  "coding-assistant": "570b3c67b8ed9ed8f83ef652be549b1c.gz",
+  "story-writer": "76b20593b117ab083d746312df4df296.gz",
+  "world-war-simulator": "e1cf5213432a7eb9e310ec269fe38672.gz",
+  "therapist": "5cdaa39f9aabc7424c3b2e1b780a1e29.gz"
+};
+
+async function compressBlobWithGzip(blob) {
+  const cs = new CompressionStream('gzip');
+  const compressedStream = blob.stream().pipeThrough(cs);
+  const outputBlob = await new Response(compressedStream).blob();
+  return new Blob([outputBlob], { type: "application/gzip" });
+}
+
+async function decompressBlobWithGzip(blob) {
+  const ds = new DecompressionStream("gzip");
+  const decompressedStream = blob.stream().pipeThrough(ds);
+  return await new Response(decompressedStream).blob();
+}
+
+async function generateShareLinkForCharacter(json) {
+  if (!window.CompressionStream) {
+    alert("Share links use a feature that's only available in modern browsers. Please upgrade your browser to the latest version to use this feature.");
     return null;
   }
 
-  if (!window.CompressionStream) {
-    alert("Share links require modern browser CompressionStream support.");
+  const uploadPlugin = window.uploadPlugin || window.upload || window.root?.uploadPlugin;
+  if (!uploadPlugin) {
+    alert("Share links require the Perchance upload-plugin.");
+    return null;
+  }
+
+  const jsonString = JSON.stringify(json);
+  const dataUrlJsonString = jsonString.replace(/#/g, "%23");
+  const blob = await fetch("data:text/plain;charset=utf-8," + dataUrlJsonString).then(res => res.blob());
+
+  const compressedBlob = await compressBlobWithGzip(blob);
+  const { url, error } = await uploadPlugin(compressedBlob);
+
+  if (error) {
+    alert(`Error: ${error}${error === "disallowed_content" ? ". If you believe this is incorrect, edit the character description to explicitly state that the character is 18 or older." : ""}`);
+    return null;
+  }
+
+  const fileName = url.replace("https://user.uploads.dev/file/", "");
+  const characterName = json.addCharacter ? json.addCharacter.name.replace(/\s+/g, "_").replace(/~/g, "") : "character";
+  const generatorName = window.generatorName || "ai-character-chat";
+  const shareUrl = `https://perchance.org/${generatorName}?data=${characterName}~${fileName}`;
+  
+  return shareUrl;
+}
+
+async function loadDataFromUrlThatReferencesCloudStorageFile() {
+  if (!window.DecompressionStream) {
+    console.warn("Character share links require modern browser DecompressionStream support.");
     return null;
   }
 
   try {
-    const jsonString = JSON.stringify(characterObj);
-    const blob = new Blob([jsonString], { type: "application/json" });
+    const searchParams = new URL(window.location.href).searchParams;
+    let dataParamValue = searchParams.get("data");
 
-    // Gzip compress
-    const cs = new CompressionStream('gzip');
-    const compressedStream = blob.stream().pipeThrough(cs);
-    const compressedBlob = await new Response(compressedStream).blob();
+    if (!dataParamValue) {
+      if (searchParams.get("char") && urlNamedCharacters[searchParams.get("char")]) {
+        dataParamValue = "foo~" + urlNamedCharacters[searchParams.get("char")];
+      } else {
+        return null;
+      }
+    }
 
-    const { url, error } = await upload(compressedBlob);
-    if (error) {
-      alert("Error uploading share link: " + error);
+    const fileName = dataParamValue.split("~").slice(-1)[0];
+    const fileUrl = "https://user.uploads.dev/file/" + fileName;
+
+    const blob = await fetch(fileUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : null })
+      .then(res => res.ok ? res.blob() : null)
+      .catch(console.error);
+
+    if (!blob) {
+      if (window.confirmAsync) {
+        await confirmAsync(`Tried to load character share URL, but the file specified does not exist. Check perchance.org/quarantined-files`, { hideCancel: true });
+      }
       return null;
     }
 
-    const fileName = url.replace("https://user.uploads.dev/file/", "");
-    const safeCharName = characterObj.name.replace(/\s+/g, "_").replace(/~/g, "");
-    const generatorName = window.generatorName || "ai-character-chat";
-    const shareUrl = `https://perchance.org/${generatorName}?data=${safeCharName}~${fileName}`;
-    return shareUrl;
-  } catch (err) {
-    console.error("Failed to generate share link:", err);
-    alert("Failed to generate share link: " + err.message);
+    let text;
+    if (fileUrl.endsWith(".gz") || dataParamValue.includes("~")) {
+      const decompressedBlob = await decompressBlobWithGzip(blob);
+      text = await decompressedBlob.text();
+    } else {
+      text = await blob.text();
+    }
+
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to load chat data from cloud URL:", e);
     return null;
   }
 }
 
 async function checkAndLoadDataFromUrl() {
-  const searchParams = new URLSearchParams(window.location.search);
-  const dataParam = searchParams.get("data");
-  if (!dataParam) return null;
-
-  if (!window.DecompressionStream) {
-    console.warn("DecompressionStream not supported by browser.");
-    return null;
-  }
-
-  try {
-    const fileName = dataParam.split("~").slice(-1)[0];
-    const fileUrl = "https://user.uploads.dev/file/" + fileName;
-
-    const res = await fetch(fileUrl);
-    if (!res.ok) return null;
-
-    const blob = await res.blob();
-    let jsonText = "";
-
-    if (fileUrl.endsWith(".gz") || dataParam.includes("~")) {
-      const ds = new DecompressionStream('gzip');
-      const decompressedStream = blob.stream().pipeThrough(ds);
-      jsonText = await new Response(decompressedStream).text();
-    } else {
-      jsonText = await blob.text();
-    }
-
-    const characterObj = JSON.parse(jsonText);
-    return characterObj;
-  } catch (err) {
-    console.error("Error loading share link data:", err);
-    return null;
-  }
+  return await loadDataFromUrlThatReferencesCloudStorageFile();
 }
