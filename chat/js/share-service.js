@@ -107,3 +107,41 @@ async function loadDataFromUrlThatReferencesCloudStorageFile() {
 async function checkAndLoadDataFromUrl() {
   return await loadDataFromUrlThatReferencesCloudStorageFile();
 }
+
+/* ===========================
+   CHARACTER URL SLUG ROUTER
+=========================== */
+function slugifyName(name) {
+  return (name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function getCharacterSlug(char) {
+  if (!char) return "";
+  const uid = char.uniqueId || char.id.substring(0, 5);
+  const nameSlug = slugifyName(char.name);
+  return `${uid}-${nameSlug}`;
+}
+
+async function findCharacterBySlug(slug) {
+  if (!slug) return null;
+  const cleanSlug = slug.replace(/^#\/?/, "").replace(/^\?char=/, "").replace(/^\//, "").trim();
+  if (!cleanSlug || cleanSlug === "home") return null;
+
+  const uid = cleanSlug.split("-")[0];
+
+  const allChars = await db.characters.toArray();
+  let match = allChars.find(c => c.uniqueId === uid || c.id === cleanSlug || c.id === uid);
+  if (!match) {
+    match = allChars.find(c => getCharacterSlug(c) === cleanSlug || c.id.includes(uid));
+  }
+  if (!match && typeof EXPLORE_CATALOG !== "undefined") {
+    match = EXPLORE_CATALOG.find(c => c.uniqueId === uid || getCharacterSlug(c) === cleanSlug || c.id === uid);
+  }
+  return match;
+}
+

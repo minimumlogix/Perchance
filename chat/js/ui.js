@@ -260,6 +260,82 @@ const UI = {
     `;
   },
 
+  async renderHomePage(filterSearch = "") {
+    const gridEl = document.getElementById("homeCharacterGrid");
+    if (!gridEl) return;
+    gridEl.innerHTML = "";
+
+    const userProf = AppState.userProfile || DEFAULT_USER_PROFILE;
+
+    // Render User Header Profile & Banner
+    const homeProfileName = document.getElementById("homeProfileName");
+    if (homeProfileName) homeProfileName.textContent = userProf.name || "Odin";
+
+    // Combine IndexedDB characters + Explore catalog
+    const dbChars = await db.characters.toArray();
+    const map = new Map();
+    [...dbChars, ...EXPLORE_CATALOG].forEach(c => map.set(c.id, c));
+    const allChars = Array.from(map.values());
+
+    const query = filterSearch.toLowerCase().trim();
+
+    for (const char of allChars) {
+      if (query) {
+        const matchName = char.name.toLowerCase().includes(query);
+        const matchOcc = (char.occupation || "").toLowerCase().includes(query);
+        const matchScen = (char.scenario || "").toLowerCase().includes(query);
+        const matchTag = (char.tags || []).some(t => t.toLowerCase().includes(query));
+        if (!matchName && !matchOcc && !matchScen && !matchTag) continue;
+      }
+
+      const slug = getCharacterSlug(char);
+      const tagsHtml = (char.tags || ["Yandere", "Calm", "Quiet"]).map(t => `<span class="tag-pill">${this.escapeHtml(t)}</span>`).join("");
+
+      const card = document.createElement("div");
+      card.className = "bot-card";
+      card.onclick = () => window.selectCharacter(char.id);
+
+      card.innerHTML = `
+        <div class="bot-card-media">
+          <img src="${char.avatarUrl}" class="bot-card-img" alt="${this.escapeHtml(char.name)}">
+          <button class="bot-card-menu-btn" onclick="event.stopPropagation(); window.shareOrEditChar('${char.id}')">⋮</button>
+          <div class="bot-card-overlay-bottom">
+            <span class="bot-card-badge">💬 ${char.chats || '12.4k'}</span>
+            <span class="bot-card-badge">❤️ ${char.likes || '24'}</span>
+          </div>
+        </div>
+        <div class="bot-card-body">
+          <div class="bot-card-title-row">
+            <span class="bot-card-title">${this.escapeHtml(char.name)}</span>
+            <span class="verified-badge">✓</span>
+          </div>
+          <div class="bot-card-subtitle">${this.escapeHtml(char.scenario || char.roleInstruction || '')}</div>
+          <div class="bot-card-tags">
+            ${tagsHtml}
+          </div>
+        </div>
+      `;
+
+      gridEl.appendChild(card);
+    }
+  },
+
+  showHomeView() {
+    const homeView = document.getElementById("homeView");
+    const appView = document.getElementById("app");
+    if (homeView) homeView.style.display = "flex";
+    if (appView) appView.style.display = "none";
+    window.location.hash = "home";
+    this.renderHomePage();
+  },
+
+  showChatView() {
+    const homeView = document.getElementById("homeView");
+    const appView = document.getElementById("app");
+    if (homeView) homeView.style.display = "none";
+    if (appView) appView.style.display = "flex";
+  },
+
   renderExploreCatalog() {
     const catalogContainer = document.getElementById("exploreCatalogList");
     if (!catalogContainer) return;

@@ -4,14 +4,20 @@
 
 // 1. SELECT CHARACTER
 window.selectCharacter = async function(characterId) {
-  AppState.activeCharacter = await db.characters.get(characterId);
-  if (!AppState.activeCharacter) return;
+  let char = await db.characters.get(characterId);
+  if (!char) {
+    char = typeof EXPLORE_CATALOG !== "undefined" ? EXPLORE_CATALOG.find(c => c.id === characterId || c.uniqueId === characterId) : null;
+    if (char) {
+      await db.characters.put(char);
+    } else return;
+  }
+  AppState.activeCharacter = char;
 
-  AppState.activeThread = await db.threads.where({ characterId: characterId }).first();
+  AppState.activeThread = await db.threads.where({ characterId: AppState.activeCharacter.id }).first();
   if (!AppState.activeThread) {
     AppState.activeThread = {
-      id: "thread_" + characterId + "_" + Date.now(),
-      characterId: characterId,
+      id: "thread_" + AppState.activeCharacter.id + "_" + Date.now(),
+      characterId: AppState.activeCharacter.id,
       isBookmarked: false,
       lastUpdated: Date.now()
     };
@@ -39,7 +45,14 @@ window.selectCharacter = async function(characterId) {
   document.getElementById("infoScenario").textContent = AppState.activeCharacter.scenario || "N/A";
   document.getElementById("voiceNameDisplay").textContent = AppState.activeCharacter.voiceName || "Velvet Whisper";
 
-  // Render Subsystems
+  // Update URL Slug (e.g. #BKxL2-eva-robin)
+  const slug = getCharacterSlug(AppState.activeCharacter);
+  if (window.location.hash !== "#" + slug) {
+    history.pushState(null, "", "#" + slug);
+  }
+
+  // Show Chat View & Render Subsystems
+  UI.showChatView();
   await UI.renderMessages();
   await UI.renderMemories();
   await UI.renderLore();
@@ -47,6 +60,14 @@ window.selectCharacter = async function(characterId) {
 
   // Close mobile sidebar
   document.getElementById("sidebar").classList.remove("open");
+};
+
+window.shareOrEditChar = async function(charId) {
+  const char = (await db.characters.get(charId)) || (typeof EXPLORE_CATALOG !== "undefined" ? EXPLORE_CATALOG.find(c => c.id === charId) : null);
+  if (!char) return;
+  const slug = getCharacterSlug(char);
+  const fullUrl = `${window.location.origin}${window.location.pathname}#${slug}`;
+  await window.confirmAsync(`Character Unique URL:\n\n${fullUrl}`, { hideCancel: true });
 };
 
 // 2. SEND MESSAGE & GENERATE RESPONSE
@@ -325,14 +346,31 @@ window.speakMessageText = function(text) {
 };
 
 // 8. APP INIT
+async function handleUrlRouting() {
+  const hash = window.location.hash.trim();
+  if (hash && hash !== "#home") {
+    const matchedChar = await findCharacterBySlug(hash);
+    if (matchedChar) {
+      await window.selectCharacter(matchedChar.id);
+      return;
+    }
+  }
+  UI.showHomeView();
+}
+
 async function initApp() {
   await seedDefaultDataIfNeeded();
 
   // Load User Profile & Theme
   AppState.userProfile = await db.userProfile.get("default") || DEFAULT_USER_PROFILE;
-  document.getElementById("userName").textContent = AppState.userProfile.name;
-  document.getElementById("inputUserName").value = AppState.userProfile.name;
-  document.getElementById("inputUserPersona").value = AppState.userProfile.persona || "";
+  const userNameEl = document.getElementById("userName");
+  if (userNameEl) userNameEl.textContent = AppState.userProfile.name;
+  
+  const inputUserName = document.getElementById("inputUserName");
+  if (inputUserName) inputUserName.value = AppState.userProfile.name;
+  
+  const inputUserPersona = document.getElementById("inputUserPersona");
+  if (inputUserPersona) inputUserPersona.value = AppState.userProfile.persona || "";
 
   if (AppState.userProfile.theme) {
     document.body.setAttribute("data-theme", AppState.userProfile.theme);
@@ -345,12 +383,10 @@ async function initApp() {
     await db.characters.put(newChar);
     await window.selectCharacter(newChar.id);
   } else {
-    const characters = await db.characters.toArray();
-    if (characters.length > 0) {
-      await window.selectCharacter(characters[0].id);
-    }
+    await handleUrlRouting();
   }
 
+  window.addEventListener("hashchange", handleUrlRouting);
   setupEventListeners();
 }
 
@@ -377,6 +413,15 @@ function setupEventListeners() {
       if (userHistoryIndex >= userSentHistory.length) userHistoryIndex = -1;
     }
   };
+
+  // Home Page Listeners
+  document.getElementById("brandLogo")?.addEventListener("click", () => UI.showHomeView());
+  document.getElementById("btnHome")?.addEventListener("click", () => UI.showHomeView());
+  document.getElementById("btnEditHomeProfile")?.addEventListener("click", () => UI.openModal("personaModal"));
+  
+  document.getElementById("homeSearchInput")?.addEventListener("input", function() {
+    UI.renderHomePage(this.value);
+  });
 
   chatInputEl.oninput = function() {
     this.style.height = "auto";

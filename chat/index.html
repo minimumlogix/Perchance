@@ -30,7 +30,8 @@
       // 1. Inject Stylesheets
       const stylesheets = [
         "css/main.css",
-        "css/components.css"
+        "css/components.css",
+        "css/home.css"
       ];
       stylesheets.forEach(href => {
         const link = document.createElement("link");
@@ -86,18 +87,84 @@
 
 <body data-theme="elysium">
 
-  <!-- MAIN APP CONTAINER -->
-  <div id="app">
+  <!-- ===========================
+       HOME PAGE VIEW
+  =========================== -->
+  <div id="homeView">
+    <div class="home-container">
+      
+      <!-- PROFILE HERO HEADER -->
+      <header class="profile-hero">
+        <div class="profile-left">
+          <div class="profile-user-info">
+            <img src="assets/lysandra.png" class="profile-avatar" id="homeProfileAvatar" alt="User Avatar">
+            <div class="profile-details">
+              <div class="profile-name-row">
+                <span class="profile-name" id="homeProfileName">Odin</span>
+                <div class="human-badge">A <span>HUMAN</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-stats-row">
+            <div class="stat-item">
+              <span class="stat-value">977</span>
+              <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">8</span>
+              <span class="stat-label">Following</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">5,174</span>
+              <span class="stat-label">Likes</span>
+            </div>
+            <button class="btn-edit-profile" id="btnEditHomeProfile">Edit Profile</button>
+          </div>
+        </div>
+
+        <div class="profile-hero-banner">
+          <img src="assets/lysandra.png" class="hero-banner-img" alt="ODIN Hero Graphic">
+        </div>
+      </header>
+
+      <!-- CATALOG NAVIGATION TABS & SEARCH -->
+      <nav class="catalog-nav">
+        <div class="catalog-tabs">
+          <button class="cat-tab-btn active">Public Bots <span>110</span></button>
+          <button class="cat-tab-btn">Favorites <span>4</span></button>
+          <button class="cat-tab-btn">Post <span>0</span></button>
+        </div>
+        <div class="catalog-actions">
+          <input type="text" id="homeSearchInput" class="catalog-search-input" placeholder="Search bots...">
+          <button class="btn-filter-icon" title="Sort / Filter">≡</button>
+        </div>
+      </nav>
+
+      <!-- BOT CARDS GRID -->
+      <div class="bot-grid" id="homeCharacterGrid">
+        <!-- BOT CARDS POPULATED DYNAMICALLY -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN CHAT APP CONTAINER -->
+  <div id="app" style="display:none;">
 
     <!-- ===========================
          LEFT SIDEBAR (CHATS)
     =========================== -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="brand">
+        <div class="brand" id="brandLogo" style="cursor:pointer;" title="Return to Home Gallery">
           <span class="brand-icon">❖</span> Elysium
         </div>
       </div>
+
+      <button class="btn-new-chat" id="btnHome" style="background:var(--bg-panel); margin-bottom:0.3rem;">
+        <span>🏠</span> Home Gallery
+      </button>
 
       <button class="btn-new-chat" id="btnNewChat">
         <span>+</span> New Chat
