@@ -11,6 +11,15 @@ db.version(1).stores({
   userProfile: 'id'
 });
 
+db.version(2).stores({
+  characters: 'id, name, age, occupation',
+  threads: 'id, characterId, replyAsCharacterId, lastUpdated',
+  messages: 'id, threadId, characterId, role, timestamp',
+  memories: 'id, characterId, content',
+  lore: 'id, characterId, text',
+  userProfile: 'id'
+});
+
 async function seedDefaultDataIfNeeded() {
   const count = await db.characters.count();
   if (count === 0) {
@@ -22,6 +31,8 @@ async function seedDefaultDataIfNeeded() {
       await db.threads.put({
         id: threadId,
         characterId: char.id,
+        replyAsCharacterId: char.id,
+        forceLoadCharacterIds: [],
         lastUpdated: Date.now()
       });
 
@@ -35,5 +46,20 @@ async function seedDefaultDataIfNeeded() {
         timestamp: Date.now()
       });
     }
+
+    // Seed initial Lorebook entries
+    await db.lore.put({
+      id: "lore_velmora",
+      characterId: "lysandra",
+      text: "Velmora is a bustling coastal capital in Eryndor, renowned for its grand harbors, shadowy alleyways, and powerful merchant guilds.",
+      triggers: ["Velmora", "Eryndor", "city", "capital"]
+    });
+    await db.lore.put({
+      id: "lore_informant",
+      characterId: "lysandra",
+      text: "Lysandra runs an elite covert intelligence network across Eryndor from the Velvet Hearth tavern.",
+      triggers: ["informant", "network", "spy", "secret"]
+    });
   }
 }
+

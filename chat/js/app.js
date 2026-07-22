@@ -42,6 +42,7 @@ window.selectCharacter = async function(characterId) {
   // Render Subsystems
   await UI.renderMessages();
   await UI.renderMemories();
+  await UI.renderLore();
   await UI.renderSidebarChats();
 
   // Close mobile sidebar
@@ -277,6 +278,23 @@ window.deleteMemory = async function(memId) {
   await UI.renderMemories();
 };
 
+window.deleteLore = async function(loreId) {
+  await db.lore.delete(loreId);
+  await UI.renderLore();
+};
+
+window.toggleForceLoadChar = async function(charId, isChecked) {
+  if (!AppState.activeThread) return;
+  let forceIds = AppState.activeThread.forceLoadCharacterIds || [];
+  if (isChecked) {
+    if (!forceIds.includes(charId)) forceIds.push(charId);
+  } else {
+    forceIds = forceIds.filter(id => id !== charId);
+  }
+  AppState.activeThread.forceLoadCharacterIds = forceIds;
+  await db.threads.update(AppState.activeThread.id, { forceLoadCharacterIds: forceIds });
+};
+
 window.speakMessageText = function(text) {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
@@ -336,19 +354,69 @@ async function initApp() {
   setupEventListeners();
 }
 
+let userSentHistory = [];
+let userHistoryIndex = -1;
+
 function setupEventListeners() {
   document.getElementById("btnSend").onclick = window.handleSendMessage;
-  document.getElementById("chatInput").onkeydown = (e) => {
+  
+  const chatInputEl = document.getElementById("chatInput");
+  chatInputEl.onkeydown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       window.handleSendMessage();
+    } else if (e.key === "ArrowUp" && chatInputEl.selectionStart === 0 && userSentHistory.length > 0) {
+      e.preventDefault();
+      if (userHistoryIndex === -1) userHistoryIndex = userSentHistory.length;
+      userHistoryIndex = Math.max(0, userHistoryIndex - 1);
+      chatInputEl.value = userSentHistory[userHistoryIndex] || "";
+    } else if (e.key === "ArrowDown" && userHistoryIndex !== -1) {
+      e.preventDefault();
+      userHistoryIndex = Math.min(userSentHistory.length, userHistoryIndex + 1);
+      chatInputEl.value = userSentHistory[userHistoryIndex] || "";
+      if (userHistoryIndex >= userSentHistory.length) userHistoryIndex = -1;
     }
   };
 
-  document.getElementById("chatInput").oninput = function() {
+  chatInputEl.oninput = function() {
     this.style.height = "auto";
     this.style.height = (this.scrollHeight) + "px";
   };
+
+  // Reply As (Group Chat) Selector
+  document.getElementById("btnReplyAs").onclick = async () => {
+    if (!AppState.activeThread) return;
+    const characters = await db.characters.toArray();
+    if (characters.length === 0) return;
+
+    let charOptionsStr = characters.map((c, i) => `${i + 1}. ${c.name} (${c.occupation || 'Character'})`).join("\n");
+    const choice = prompt(`Select character to reply next (Group Chat mode):\n\n${charOptionsStr}\n\nEnter number (1-${characters.length}):`);
+    
+    if (choice) {
+      const idx = parseInt(choice.trim(), 10) - 1;
+      if (!isNaN(idx) && idx >= 0 && idx < characters.length) {
+        const selectedChar = characters[idx];
+        AppState.activeThread.replyAsCharacterId = selectedChar.id;
+        await db.threads.update(AppState.activeThread.id, { replyAsCharacterId: selectedChar.id });
+        document.getElementById("btnReplyAs").textContent = `💬 Reply As (${selectedChar.name})`;
+      }
+    }
+  };
+
+  // Force Load Modal
+  document.getElementById("btnForceLoad").onclick = async () => {
+    await UI.renderForceLoadSelector();
+    UI.openModal("forceLoadModal");
+  };
+  document.getElementById("btnCloseForceLoadModal").onclick = () => UI.closeModal("forceLoadModal");
+  document.getElementById("btnSaveForceLoadModal").onclick = () => UI.closeModal("forceLoadModal");
+
+  // Community Comments Modal
+  document.getElementById("btnComments").onclick = () => {
+    UI.renderComments();
+    UI.openModal("commentsModal");
+  };
+  document.getElementById("btnCloseCommentsModal").onclick = () => UI.closeModal("commentsModal");
 
   // Bookmark Toggle Button
   document.getElementById("btnBookmark").onclick = async () => {
@@ -445,6 +513,8 @@ function setupEventListeners() {
       const tab = this.dataset.tab;
       document.getElementById("tabContentInfo").style.display = tab === "info" ? "flex" : "none";
       document.getElementById("tabContentMemory").style.display = tab === "memory" ? "flex" : "none";
+      document.getElementById("tabContentLore").style.display = tab === "lore" ? "flex" : "none";
+      if (tab === "lore") UI.renderLore();
     };
   });
 
@@ -467,7 +537,38 @@ function setupEventListeners() {
     document.getElementById("inputCharScenario").value = "";
     document.getElementById("inputCharGreeting").value = "";
     document.getElementById("inputCharRoleInstruction").value = "";
+    document.getElementById("inputCharImportUrl").value = "";
     UI.openModal("characterModal");
+  };
+
+  // Magic Character Import from Share URL
+  document.getElementById("btnImportCharFromUrl").onclick = async () => {
+    const link = document.getElementById("inputCharImportUrl").value.trim();
+    if (!link) { alert("Please paste a character share URL."); return; }
+    
+    const loadingModal = UI.createLoadingModal ? UI.createLoadingModal("Loading character data...") : null;
+    try {
+      const data = await loadDataFromUrlThatReferencesCloudStorageFile(link);
+      loadingModal?.delete();
+      if (data && data.addCharacter) {
+        const c = data.addCharacter;
+        document.getElementById("inputCharName").value = c.name || "";
+        document.getElementById("inputCharAvatar").value = c.avatarUrl || "";
+        document.getElementById("inputCharAge").value = c.age || "25";
+        document.getElementById("inputCharOccupation").value = c.occupation || "";
+        document.getElementById("inputCharLocation").value = c.location || "";
+        document.getElementById("inputCharPersonality").value = c.personality || "";
+        document.getElementById("inputCharScenario").value = c.scenario || "";
+        document.getElementById("inputCharGreeting").value = c.greeting || "";
+        document.getElementById("inputCharRoleInstruction").value = c.roleInstruction || "";
+        alert(`Successfully imported character: ${c.name}!`);
+      } else {
+        alert("Could not extract character data from the provided URL.");
+      }
+    } catch(err) {
+      loadingModal?.delete();
+      alert("Failed to load character: " + err.message);
+    }
   };
 
   // Edit Active Character Profile
@@ -499,6 +600,8 @@ function setupEventListeners() {
   document.getElementById("btnClosePersonaModal").onclick = () => UI.closeModal("personaModal");
   document.getElementById("btnCloseSettingsModal").onclick = () => UI.closeModal("settingsModal");
   document.getElementById("btnCloseExploreModal").onclick = () => UI.closeModal("exploreModal");
+  document.getElementById("btnCloseLoreModal").onclick = () => UI.closeModal("loreModal");
+  document.getElementById("btnCancelLoreModal").onclick = () => UI.closeModal("loreModal");
 
   document.getElementById("btnSavePersona").onclick = async () => {
     const name = document.getElementById("inputUserName").value.trim() || "Nyx";
@@ -569,13 +672,43 @@ function setupEventListeners() {
     }
   };
 
+  // Lorebook Modal Handlers
+  document.getElementById("btnAddLore").onclick = () => {
+    if (!AppState.activeCharacter) return;
+    document.getElementById("inputLoreId").value = "";
+    document.getElementById("inputLoreText").value = "";
+    document.getElementById("inputLoreTriggers").value = "";
+    UI.openModal("loreModal");
+  };
+
+  document.getElementById("btnSaveLoreModal").onclick = async () => {
+    if (!AppState.activeCharacter) return;
+    const text = document.getElementById("inputLoreText").value.trim();
+    if (!text) { alert("Please enter lore text."); return; }
+
+    const rawTriggers = document.getElementById("inputLoreTriggers").value.trim();
+    const triggersArr = rawTriggers ? rawTriggers.split(",").map(t => t.trim()).filter(Boolean) : [];
+
+    const loreObj = {
+      id: "lore_" + Date.now(),
+      characterId: AppState.activeCharacter.id,
+      text: text,
+      triggers: triggersArr
+    };
+
+    await db.lore.put(loreObj);
+    UI.closeModal("loreModal");
+    await UI.renderLore();
+  };
+
   // Export DB JSON
   document.getElementById("btnExportDb").onclick = async () => {
     const data = {
       characters: await db.characters.toArray(),
       threads: await db.threads.toArray(),
       messages: await db.messages.toArray(),
-      memories: await db.memories.toArray()
+      memories: await db.memories.toArray(),
+      lore: await db.lore.toArray()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);

@@ -126,6 +126,7 @@
           <div class="user-sub" id="btnEditUserPersona">View profile</div>
         </div>
         <div class="footer-actions">
+          <button class="footer-btn" id="btnComments" title="Community Comments & Feedback">🙋</button>
           <button class="footer-btn" id="btnSettings" title="Settings & Backup">⚙️</button>
         </div>
       </div>
@@ -153,6 +154,8 @@
         </div>
 
         <div class="chat-header-right">
+          <button class="icon-btn" id="btnReplyAs" title="Reply As... (Group Chat)">💬 Reply As...</button>
+          <button class="icon-btn" id="btnForceLoad" title="Force-Load Character Descriptions">📋 Force-Load</button>
           <button class="icon-btn" id="btnBookmark" title="Bookmark Chat">🔖</button>
           <button class="icon-btn" id="btnToggleInfo" title="Toggle Character Info">ℹ️</button>
         </div>
@@ -171,7 +174,7 @@
       <!-- INPUT BAR -->
       <div class="chat-input-wrapper">
         <div class="chat-input-box">
-          <textarea class="chat-textarea" id="chatInput" placeholder="Type a message..." rows="1"></textarea>
+          <textarea class="chat-textarea" id="chatInput" placeholder="Type a message... (Use ↑/↓ for history)" rows="1"></textarea>
           <div class="chat-input-controls">
             <div class="input-tools-left">
               <button class="input-tool-btn" id="btnGenImage" title="Generate Scene Illustration">🖼️</button>
@@ -186,7 +189,7 @@
     </main>
 
     <!-- ===========================
-         RIGHT SIDEBAR (INFO & MEMORY)
+         RIGHT SIDEBAR (INFO & MEMORY & LORE)
     =========================== -->
     <aside class="info-panel" id="infoPanel">
       <div class="info-header">
@@ -206,6 +209,7 @@
       <div class="info-tabs">
         <button class="tab-btn active" data-tab="info" id="tabBtnInfo">Info</button>
         <button class="tab-btn" data-tab="memory" id="tabBtnMemory">Memory</button>
+        <button class="tab-btn" data-tab="lore" id="tabBtnLore">Lore</button>
       </div>
 
       <!-- TAB CONTENT: INFO -->
@@ -251,6 +255,17 @@
         </div>
         <button class="btn-secondary" id="btnAddMemory" style="margin-top:0.5rem; font-size:0.85rem;">+ Add
           Memory</button>
+      </div>
+
+      <!-- TAB CONTENT: LORE -->
+      <div class="tab-content" id="tabContentLore" style="display:none;">
+        <div class="info-group">
+          <div class="info-label">World Lore & Triggers</div>
+          <div class="info-value" id="loreList" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <!-- DYNAMIC LORE ENTRIES -->
+          </div>
+        </div>
+        <button class="btn-secondary" id="btnAddLore" style="margin-top:0.5rem; font-size:0.85rem;">+ Add Lore Entry</button>
       </div>
 
       <!-- VOICE WIDGET -->
@@ -305,6 +320,13 @@
         <button class="btn-close-modal" id="btnCloseCharModal">✖</button>
       </div>
       <div class="modal-body">
+        <div class="form-group" style="background:var(--bg-card); padding:0.75rem; border-radius:8px; border:1px solid var(--border-dark); margin-bottom:1rem;">
+          <label class="form-label" style="color:var(--accent-copper);">✨ Magic Import / Load Share URL</label>
+          <div style="display:flex; gap:0.5rem; margin-top:0.3rem;">
+            <input type="text" class="form-input" id="inputCharImportUrl" placeholder="Paste Perchance character share URL..." style="flex:1;">
+            <button class="btn-secondary" id="btnImportCharFromUrl" style="padding:0.4rem 0.8rem; font-size:0.85rem;">Load</button>
+          </div>
+        </div>
         <input type="hidden" id="inputCharId">
         <div class="form-group">
           <label class="form-label">Name</label>
@@ -349,6 +371,64 @@
       <div class="modal-footer">
         <button class="btn-secondary" id="btnCancelCharModal">Cancel</button>
         <button class="btn-primary" id="btnSaveCharModal">Save Character</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOREBOOK ENTRY MODAL -->
+  <div class="modal-overlay" id="loreModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="loreModalTitle">Add Lorebook Entry</div>
+        <button class="btn-close-modal" id="btnCloseLoreModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="inputLoreId">
+        <div class="form-group">
+          <label class="form-label">Lore Content / Fact Text</label>
+          <textarea class="form-textarea" id="inputLoreText" rows="3" placeholder="Description of place, faction, object, or historical event..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Keyword Triggers (comma separated)</label>
+          <input type="text" class="form-input" id="inputLoreTriggers" placeholder="e.g. Velmora, guild, ancient sword">
+          <small style="color:var(--text-muted); font-size:0.78rem;">When any of these keywords appear in recent messages, this lore entry will be dynamically included in AI memory context.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelLoreModal">Cancel</button>
+        <button class="btn-primary" id="btnSaveLoreModal">Save Lore</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORCE-LOAD CHARACTERS MODAL -->
+  <div class="modal-overlay" id="forceLoadModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Force-Load Character Descriptions</div>
+        <button class="btn-close-modal" id="btnCloseForceLoadModal">✖</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Select extra characters whose descriptions and system prompts should always be forced into context during this chat session.</p>
+        <div id="forceLoadCharacterList" style="display:flex; flex-direction:column; gap:0.5rem;">
+          <!-- CHECKBOX LIST RENDERED DYNAMICALLY -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="btnSaveForceLoadModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY COMMENTS MODAL -->
+  <div class="modal-overlay" id="commentsModal">
+    <div class="modal-card" style="width: 720px; max-height:85vh;">
+      <div class="modal-header">
+        <div class="modal-title">Community Comments & Feedback</div>
+        <button class="btn-close-modal" id="btnCloseCommentsModal">✖</button>
+      </div>
+      <div class="modal-body" id="commentsPluginContainer" style="padding:0.5rem; height:500px;">
+        <div style="text-align:center; padding:2rem; color:var(--text-muted);">Loading community channels...</div>
       </div>
     </div>
   </div>

@@ -178,6 +178,88 @@ const UI = {
     }
   },
 
+  async renderLore() {
+    if (!AppState.activeCharacter) return;
+    const loreListEl = document.getElementById("loreList");
+    if (!loreListEl) return;
+    loreListEl.innerHTML = "";
+
+    const loreEntries = await db.lore.where({ characterId: AppState.activeCharacter.id }).toArray();
+    if (loreEntries.length === 0) {
+      loreListEl.innerHTML = `<div style="font-style:italic; color:var(--text-muted); font-size:0.85rem;">No lorebook entries yet. Click '+ Add Lore Entry' to add world context & keywords.</div>`;
+      return;
+    }
+
+    for (const l of loreEntries) {
+      let triggerChips = "";
+      let triggersArr = l.triggers || [];
+      if (typeof triggersArr === "string") triggersArr = triggersArr.split(",");
+      if (triggersArr.length > 0) {
+        triggerChips = `<div style="display:flex; flex-wrap:wrap; gap:0.25rem; margin-top:0.3rem;">` +
+          triggersArr.map(t => `<span style="background:rgba(224, 159, 135, 0.15); color:var(--accent-copper); padding:1px 6px; border-radius:4px; font-size:0.75rem;">🔑 ${this.escapeHtml(t.trim())}</span>`).join("") +
+          `</div>`;
+      }
+
+      const item = document.createElement("div");
+      item.style.cssText = "background:var(--bg-card); padding:0.6rem 0.75rem; border-radius:6px; border:1px solid var(--border-dark); font-size:0.85rem; display:flex; flex-direction:column; gap:0.25rem;";
+      item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <span style="font-weight:500;">${this.escapeHtml(l.text)}</span>
+          <button style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem;" onclick="window.deleteLore('${l.id}')">✖</button>
+        </div>
+        ${triggerChips}
+      `;
+      loreListEl.appendChild(item);
+    }
+  },
+
+  async renderForceLoadSelector() {
+    const listEl = document.getElementById("forceLoadCharacterList");
+    if (!listEl || !AppState.activeThread) return;
+    listEl.innerHTML = "";
+
+    const characters = await db.characters.toArray();
+    const activeForceIds = AppState.activeThread.forceLoadCharacterIds || [];
+
+    for (const char of characters) {
+      if (char.id === AppState.activeCharacter?.id) continue;
+      const isChecked = activeForceIds.includes(char.id);
+
+      const label = document.createElement("label");
+      label.style.cssText = "display:flex; align-items:center; gap:0.75rem; background:var(--bg-card); padding:0.6rem 0.8rem; border-radius:8px; border:1px solid var(--border-dark); cursor:pointer;";
+      label.innerHTML = `
+        <input type="checkbox" value="${char.id}" ${isChecked ? 'checked' : ''} onchange="window.toggleForceLoadChar('${char.id}', this.checked)">
+        <img src="${char.avatarUrl}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+        <div>
+          <div style="font-weight:600; font-size:0.9rem;">${this.escapeHtml(char.name)}</div>
+          <div style="font-size:0.78rem; color:var(--text-muted);">${this.escapeHtml(char.occupation || '')}</div>
+        </div>
+      `;
+      listEl.appendChild(label);
+    }
+  },
+
+  renderComments() {
+    const container = document.getElementById("commentsPluginContainer");
+    if (!container) return;
+
+    const commentsPlugin = window.commentsPlugin || window.root?.commentsPlugin || window.root?.tabbedCommentsPlugin;
+    if (typeof commentsPlugin === "function") {
+      try {
+        container.innerHTML = commentsPlugin({ width: "100%", height: "100%" });
+        return;
+      } catch (err) {
+        console.warn("Failed to render comments plugin:", err);
+      }
+    }
+    container.innerHTML = `
+      <div style="text-align:center; padding:3rem; color:var(--text-muted);">
+        <p style="font-weight:600; margin-bottom:0.5rem;">Community Comments & Feedback</p>
+        <p style="font-size:0.85rem;">Perchance comments plugin will render automatically when running on Perchance.org</p>
+      </div>
+    `;
+  },
+
   renderExploreCatalog() {
     const catalogContainer = document.getElementById("exploreCatalogList");
     if (!catalogContainer) return;

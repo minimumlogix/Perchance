@@ -284,22 +284,101 @@ IMPORTANT: Avoid repetition within summaries! If there are erroneously repeated 
   })();
 }
 
+// PETRA KEYWORD SYSTEM FOR LOREBOOK & TRIGGERS
+function parseLoreEntryWithTriggers(loreEntryText) {
+  if (!loreEntryText) return { text: "", triggers: [] };
+  const triggerRegex = /\[\{.*?\}\]$/;
+  const match = loreEntryText.match(triggerRegex);
+
+  let text = loreEntryText.trim();
+  let triggers = [];
+
+  if (match) {
+    const triggerString = match[0];
+    text = text.substring(0, text.length - triggerString.length).trim();
+    try {
+      triggers = JSON.parse(triggerString);
+    } catch (error) {
+      console.error("Error parsing lore triggers:", error);
+    }
+  }
+
+  return {
+    text: text,
+    triggers: triggers || []
+  };
+}
+
+function unparseLoreEntryWithTriggers(loreEntry) {
+  if (!loreEntry) return "";
+  return `${loreEntry.text} ${JSON.stringify(loreEntry.triggers || [])}`;
+}
+
 // 4. MAIN CHARACTER RESPONSE GENERATOR
 async function generateCharacterResponse(character, thread, userMessageText) {
+  // Determine replier character
+  let replierChar = character;
+  if (thread && thread.replyAsCharacterId && thread.replyAsCharacterId !== character.id) {
+    const customReplier = await db.characters.get(thread.replyAsCharacterId);
+    if (customReplier) replierChar = customReplier;
+  }
+
   const history = await db.messages.where({ threadId: thread.id }).sortBy("timestamp");
-  const memories = await db.memories.where({ characterId: character.id }).toArray();
+  const memories = await db.memories.where({ characterId: replierChar.id }).toArray();
+  const allLore = await db.lore.where({ characterId: replierChar.id }).toArray();
   const userProf = AppState.userProfile || DEFAULT_USER_PROFILE;
+
+  // Dynamic Lorebook Keyword Trigger Matching
+  const recentMsgsText = history.slice(-5).map(m => m.content).join(" ").toLowerCase() + " " + (userMessageText || "").toLowerCase();
+  const matchedLore = [];
+
+  for (const item of allLore) {
+    let triggersArr = item.triggers;
+    if (typeof triggersArr === "string") {
+      triggersArr = triggersArr.split(",").map(t => t.trim());
+    }
+    if (!triggersArr || triggersArr.length === 0) {
+      // If no triggers specified, include by default
+      matchedLore.push(item.text);
+      continue;
+    }
+
+    const hasMatch = triggersArr.some(trig => trig && recentMsgsText.includes(trig.toLowerCase()));
+    if (hasMatch) {
+      matchedLore.push(item.text);
+    }
+  }
+
+  // Force-Loaded Extra Characters
+  let forceLoadedText = "";
+  if (thread.forceLoadCharacterIds && thread.forceLoadCharacterIds.length > 0) {
+    for (const fId of thread.forceLoadCharacterIds) {
+      if (fId === replierChar.id) continue;
+      const fChar = await db.characters.get(fId);
+      if (fChar) {
+        forceLoadedText += `[Present Character: ${fChar.name} - ${fChar.roleInstruction}]\n`;
+      }
+    }
+  }
 
   // Compute background summary if conversation is long
   injectHierarchicalSummariesAndComputeNextSummariesInBackgroundIfNeeded(thread.id).catch(console.error);
 
   // Build Context String
-  let promptContext = `System Role: ${character.roleInstruction}\n`;
-  promptContext += `Character Details: Name: ${character.name}, Age: ${character.age}, Occupation: ${character.occupation}, Location: ${character.location}, Personality: ${character.personality}\n`;
+  let promptContext = `System Role: ${replierChar.roleInstruction}\n`;
+  promptContext += `Character Details: Name: ${replierChar.name}, Age: ${replierChar.age}, Occupation: ${replierChar.occupation}, Location: ${replierChar.location}, Personality: ${replierChar.personality}\n`;
   promptContext += `User Details: Name: ${userProf.name}, Persona: ${userProf.persona}\n`;
+
+  if (forceLoadedText) {
+    promptContext += `# Force-Loaded Additional Characters:\n${forceLoadedText}\n`;
+  }
   
   if (memories.length > 0) {
     promptContext += `Long-Term Memories:\n` + memories.map(m => `- ${m.content}`).join("\n") + `\n`;
+  }
+
+  if (matchedLore.length > 0) {
+    promptContext += `# World Lorebook & Context:\n` + matchedLore.map(l => `- ${l}`).join("\n") + `\n`;
   }
   
   promptContext += `Current Scenario: ${character.scenario}\n\nChat History:\n`;
@@ -307,12 +386,16 @@ async function generateCharacterResponse(character, thread, userMessageText) {
   // Format last 10 messages
   const recentMsgs = history.slice(-10);
   for (const m of recentMsgs) {
-    const sender = m.role === "user" ? userProf.name : character.name;
+    let sender = userProf.name;
+    if (m.role === "character") {
+      const msgChar = m.characterId ? (await db.characters.get(m.characterId)) : null;
+      sender = msgChar ? msgChar.name : character.name;
+    }
     const textContent = (m.variations && m.variations.length > 0) ? m.variations[m.activeVariationIndex || 0] : m.content;
     promptContext += `${sender}: ${textContent}\n`;
   }
 
-  promptContext += `${character.name}:`;
+  promptContext += `${replierChar.name}:`;
 
   // 1. Check if Perchance ai-text-plugin is available
   const aiPlugin = window.ai || window.root?.ai;
@@ -320,11 +403,11 @@ async function generateCharacterResponse(character, thread, userMessageText) {
     try {
       const result = await aiPlugin({
         instruction: promptContext,
-        startWith: `${character.name}: *`,
+        startWith: `${replierChar.name}: *`,
         hideStartWith: false
       });
       if (result && (result.generatedText || result.text)) {
-        return (result.generatedText || result.text).replace(new RegExp(`^${character.name}:\\s*`), '');
+        return (result.generatedText || result.text).replace(new RegExp(`^${replierChar.name}:\\s*`), '');
       }
     } catch (err) {
       console.warn("Perchance AI plugin error, falling back:", err);
@@ -333,7 +416,7 @@ async function generateCharacterResponse(character, thread, userMessageText) {
 
   // 2. Local Fallback Generator
   await delay(1200);
-  return generateFallbackResponse(character, userMessageText);
+  return generateFallbackResponse(replierChar, userMessageText);
 }
 
 function generateFallbackResponse(character, userMsg) {
