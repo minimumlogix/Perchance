@@ -345,6 +345,32 @@ window.speakMessageText = function(text) {
   }
 };
 
+window.speakMessageById = async function(msgId) {
+  const msg = await db.messages.get(msgId);
+  if (!msg) return;
+  const content = (msg.variations && msg.variations.length > 0)
+    ? msg.variations[msg.activeVariationIndex || 0]
+    : msg.content;
+  window.speakMessageText(content);
+};
+
+window.exportPerchanceBundle = function() {
+  const code = `ai = {import:ai-text-plugin}
+image = {import:text-to-image-plugin}
+comments = {import:comments-plugin}
+upload = {import:upload-plugin}
+superFetch = {import:super-fetch-plugin}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => {
+      alert("Perchance import code copied to clipboard!");
+    }).catch(() => {
+      prompt("Copy Perchance import code:", code);
+    });
+  } else {
+    prompt("Copy Perchance import code:", code);
+  }
+};
+
 // 8. APP INIT
 async function handleUrlRouting() {
   const hash = window.location.hash.trim();

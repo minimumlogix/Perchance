@@ -114,7 +114,7 @@ const UI = {
             <div class="actions-left">
               ${swiperControls}
               <button class="action-sub-btn" onclick="window.generateNewVariation('${msg.id}')">🔄 New</button>
-              <button class="action-sub-btn" onclick="window.speakMessageText('${this.escapeJsString(displayContent)}')">🔊 Listen</button>
+              <button class="action-sub-btn" onclick="window.speakMessageById('${msg.id}')">🔊 Listen</button>
             </div>
             <div class="actions-right">
               <button class="action-sub-btn" onclick="window.deleteMessage('${msg.id}')">🗑 Delete</button>
