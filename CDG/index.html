@@ -1,13 +1,18 @@
+<!-- HEADER -->
 <h1>AI Character Description Generator</h1>
 <p style="font-size:85%; opacity:0.8; margin:1rem auto; margin-bottom:1.5rem; max-width:650px;">Generates a character description/profile and their image, optionally including a user outline/prompt. If you just want to generate character <i>images</i>, use <b><a href="https://perchance.org/ai-character-generator" target="_blank">this image generator</a></b> instead.</p>
 
+<!-- PRELOAD SCRIPTS -->
 <script>
   (async function() {
     window.massiveWordList = await fetch("https://user.uploads.dev/file/fdd83a6f7348fec983cb2583936beaf5.txt").then(r => r.text()).then(t => t.split("\n")).catch(e => null);
   })();
 </script>
 
+<!-- MAIN GENERATOR CONTAINER -->
 <div style="text-align:left; display:flex; flex-direction:column; width:95%; max-width:700px; margin:0 auto; justify-content:center; align-items:center;"> 
+  
+  <!-- CHARACTER DESCRIPTION SECTION -->
   <textarea id="customFeaturesEl" oninput="localStorage.customFeatures=this.value" placeholder="(optional) Keywords, design notes, features, age, etc." style="display:block; width:100%; min-height:4rem;"></textarea>
   <script>customFeaturesEl.value = localStorage.customFeatures || "";</script>
   <div id="descSettingsEl" style="margin-top:0.25rem; font-size:80%; display:flex; justify-content:center;"> 
@@ -23,14 +28,69 @@
   </div>
   
   <div style="display:flex; justify-content:center; align-items:center; margin-bottom:0.5rem; margin-top:1rem;">
-    <button id="generateBtn" onclick="regenerate()" style="font-size:120%;">✨ generate</button>
+    <button id="generateBtn" onclick="regenerate()" style="font-size:120%;">✨ generate description</button>
     <div style="width:0; height:max-content; position:relative;">
-      <button id="stopBtn" onclick="window.lastCharacterPromptStreamObj?.stop(); window.lastImageCaptionPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
+      <button id="stopBtn" onclick="window.lastCharacterPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
     </div>
   </div>
   <p id="outputEl" style="width:100%;"></p>
+
+  <!-- BEHAVIOR EXAMPLES SECTION -->
+  <div id="behaviorCtn" style="width:100%; margin-top:1.5rem; border-top:1px dashed #444; padding-top:1rem;">
+    <div style="font-weight:bold; margin-bottom:0.5rem; text-align:center; color:#13a000;">Behavior Examples</div>
+    <textarea id="customBehaviorFeaturesEl" oninput="localStorage.customBehaviorFeatures=this.value" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..." style="display:block; width:100%; min-height:4rem;"></textarea>
+    <script>customBehaviorFeaturesEl.value = localStorage.customBehaviorFeatures || "";</script>
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:0.5rem; margin-top:0.75rem;">
+      <button id="generateBehaviorBtn" onclick="generateBehavior()" style="font-size:110%;">✨ generate behavior examples</button>
+      <div style="width:0; height:max-content; position:relative;">
+        <button id="stopBehaviorBtn" onclick="window.lastBehaviorPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
+      </div>
+    </div>
+    <p id="behaviorOutputEl" style="width:100%; margin-top:0.75rem;"></p>
+  </div>
+
+  <!-- SCENARIO DESCRIPTION SECTION -->
+  <div id="scenarioCtn" style="width:100%; margin-top:1.5rem; border-top:1px dashed #444; padding-top:1rem;">
+    <div style="font-weight:bold; margin-bottom:0.5rem; text-align:center; color:#13a000;">Scenario Description</div>
+    <textarea id="customScenarioFeaturesEl" oninput="localStorage.customScenarioFeatures=this.value" placeholder="(optional) Keywords, world context, or scenario outline..." style="display:block; width:100%; min-height:4rem;"></textarea>
+    <script>customScenarioFeaturesEl.value = localStorage.customScenarioFeatures || "";</script>
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:0.5rem; margin-top:0.75rem;">
+      <button id="generateScenarioBtn" onclick="generateScenario()" style="font-size:110%;">✨ generate scenario description</button>
+      <div style="width:0; height:max-content; position:relative;">
+        <button id="stopScenarioBtn" onclick="window.lastScenarioPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
+      </div>
+    </div>
+    <p id="scenarioOutputEl" style="width:100%; margin-top:0.75rem;"></p>
+  </div>
+
+  <!-- ROLEPLAY START SECTION -->
+  <div id="roleplayStartCtn" style="width:100%; margin-top:1.5rem; border-top:1px dashed #444; padding-top:1rem;">
+    <div style="font-weight:bold; margin-bottom:0.5rem; text-align:center; color:#13a000;">Roleplay Start</div>
+    <textarea id="customRoleplayStartFeaturesEl" oninput="localStorage.customRoleplayStartFeatures=this.value" placeholder="(optional) Keywords, opening dialogue notes, or entry actions..." style="display:block; width:100%; min-height:4rem;"></textarea>
+    <script>customRoleplayStartFeaturesEl.value = localStorage.customRoleplayStartFeatures || "";</script>
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:0.5rem; margin-top:0.75rem;">
+      <button id="generateRoleplayStartBtn" onclick="generateRoleplayStart()" style="font-size:110%;">✨ generate roleplay start</button>
+      <div style="width:0; height:max-content; position:relative;">
+        <button id="stopRoleplayStartBtn" onclick="window.lastRoleplayStartPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
+      </div>
+    </div>
+    <p id="roleplayStartOutputEl" style="width:100%; margin-top:0.75rem;"></p>
+  </div>
+
+  <!-- CHARACTER IMAGES SECTION -->
+  <div id="imagesSectionCtn" style="width:100%; margin-top:1.5rem; border-top:1px dashed #444; padding-top:1rem;">
+    <div style="font-weight:bold; margin-bottom:0.5rem; text-align:center; color:#13a000;">Character Images</div>
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:0.5rem;">
+      <button id="generateImagesBtn" onclick="generateImagesSection()" style="font-size:110%;">✨ generate images</button>
+      <div style="width:0; height:max-content; position:relative;">
+        <button id="stopImagesBtn" onclick="window.lastImageCaptionPromptStreamObj?.stop();" style="width:max-content; font-size:80%; margin-left:0.5rem; display:none;">❌ stop</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
+<!-- IMAGE GALLERY AREA -->
 <div id="imagesAreaEl" style="display:none;">
   <p id="imagePromptEl" style="text-align:center; max-width:1050px; margin:0 auto; padding:1rem;"></p>
   <div id="imageSettingsEl" style="margin-top:0.25rem; font-size:80%; display:flex; justify-content:center;"> 
@@ -47,13 +107,15 @@
 </div>
 
 <br><br>
+
+<!-- FOOTER & CREDITS -->
 <div id="commentsCtn"></div>
 
 <p style="font-size:80%; margin-top:1rem;">This generator uses a combination of the <a href="https://perchance.org/ai-text-plugin" target="_blank">ai-text-plugin</a> and the <a href="https://perchance.org/text-to-image-plugin" target="_blank">text-to-image-plugin</a>.</p>
 
 <br><br>
 
-<!-- COMMENTS STUFF -->
+<!-- COMMENTS SYSTEM -->
 <script>
   function createCommentsSectionHtml() {
     let commentsPluginHtml = comments({width:"min(750px, 100%)", height:"min(70vh, 600px)", forceColorScheme:localStorage.forceColorScheme || null});
@@ -67,7 +129,7 @@
   createCommentsSectionHtml();
 </script>
 
-<!-- DARK MODE STUFF -->
+<!-- DARK MODE SYSTEM -->
 <div style="position:fixed; bottom:0.5rem; left:0.5rem; z-index:10;">
   <button id="darkModeBtn" style="cursor:pointer;" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();">🌃</button>
 </div>
@@ -113,8 +175,8 @@
     setColorScheme(systemIsInDarkMode ? "dark" : "light");
   }
 </script>
- 
-<!-- FEEDBACK STUFF -->
+
+<!-- FEEDBACK SYSTEM -->
 <div style="position:fixed; bottom:0.5rem; right:0.5rem; text-align:right; z-index:100;">
   <div id="feedbackCommentsCtn"></div>
   <button id="feedbackBtn893745ykfuhd" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='✖ close'; } else {  feedbackCommentsCtn.innerHTML='';  this.innerHTML='🗨️ feedback'; }">🗨️ feedback</button>
@@ -127,6 +189,7 @@
   }
 </script>
 
+<!-- STYLES -->
 <style>
   button:disabled {
     filter: grayscale(1); /* since firefox doesn't seem to change emoji colors to indicate disabledness - only affects text */
