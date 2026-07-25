@@ -5,6 +5,8 @@
 window.CDG_SETTINGS_DEFAULTS = {
   theme: "dark",
   descLength: "medium",
+  mainCast: "1",
+  bgCast: "0",
   visualStyle: "",
   customFeatures: "",
   customBehaviorFeatures: "",

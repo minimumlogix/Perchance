@@ -8,12 +8,21 @@ window.regenerate = async function() {
   let generateBtn = document.getElementById("generateBtn");
   let stopBtn = document.getElementById("stopBtn");
   let outputEl = document.getElementById("outputEl");
+  let mainCastEl = document.getElementById("mainCastEl");
+  
+  let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
+  let promptToUse = window.fantasyCharacterPrompt;
+  if (mainCastCount >= 2 && mainCastCount <= 4) {
+    promptToUse = window.multiCharacterScenarioPrompt || window.fantasyCharacterPrompt;
+  } else if (mainCastCount >= 5) {
+    promptToUse = window.largeCastScenarioPrompt || window.multiCharacterScenarioPrompt || window.fantasyCharacterPrompt;
+  }
   
   if (generateBtn) generateBtn.disabled = true;
   if (stopBtn) stopBtn.classList.remove("u-hidden");
   if (generateBtn) generateBtn.innerHTML = "✨ regenerate description";
   
-  window.lastCharacterPromptStreamObj = window.ai(window.fantasyCharacterPrompt);
+  window.lastCharacterPromptStreamObj = window.ai(promptToUse);
   if (outputEl) outputEl.innerHTML = window.lastCharacterPromptStreamObj;
   
   await window.lastCharacterPromptStreamObj;

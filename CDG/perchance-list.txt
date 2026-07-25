@@ -172,7 +172,7 @@ fantasyCharacterPrompt
     [""]
     Use this template:
     ---
-    Short Description \= \[emoji\] <Maximum 1 sentence, under 55 characters including spaces. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
+    Short Description \= \[emoji\] <Maximum 1 sentence, under 55 characters including spaces. start with emoji in square brackets. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
 
     Name \= <full name and optional nickname in quotes>
     Age \= <number or estimate>
@@ -279,6 +279,215 @@ fantasyCharacterPrompt
       generatedText,
       physicalAppearanceText,
     };
+
+multiCharacterScenarioPrompt
+  instruction
+    Please create an immersive roleplay scenario featuring [mainCastEl ? mainCastEl.value : "2"] interconnected Main NPCs [bgCastEl && bgCastEl.value > 0 ? "and " + bgCastEl.value + " background NPCs" : ""].
+
+    Create a cast that genuinely feels like they have lived, worked, fought, and changed together long before {{user}} arrived. The story should not revolve around {{user}}. Instead, {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
+
+    Every NPC must have a unique identity, purpose, worldview, personality, strengths, flaws, motivations, and role within the group. Avoid creating multiple characters with similar personalities or overlapping narrative functions. Every member should contribute something irreplaceable.
+
+    Relationships should feel natural and lived-in. The cast should share history through trust, resentment, old favors, rivalries, inside jokes, ideological disagreements, and mutual respect. Their chemistry should emerge naturally instead of relying on dramatic exposition.
+
+    Characters should possess realistic motivations shaped by their upbringing, experiences, culture, and responsibilities. Small details often make characters memorable more than exaggerated traits. Keep descriptions grounded, descriptive, and believable.
+
+    The world should feel alive beyond the main cast. Include organizations, locations, supporting NPCs, historical events, and ongoing political or social conflicts whenever appropriate. Everything should reinforce the setting rather than exist independently.
+
+    {{user}} should be given a clear role within the scenario but should not automatically become the leader, chosen one, strongest member, or center of attention. Existing NPCs should naturally hold authority, influence, or expertise where appropriate.
+
+    The scenario should encourage slow-burn storytelling through meaningful interactions, conflicting personalities, evolving relationships, and gradual character development rather than constant action or immediate emotional attachment.
+
+    Keep prose lean, descriptive, and immersive. Avoid cliché anime personalities, excessive exposition, fourth-wall breaks, forced humor, generic hero speeches, or repetitive descriptions.
+
+    [getOptionalSeedWordsTip()]
+
+    Use this template:
+    ---
+    # Scenario
+
+    Title \= <scenario title>
+
+    Genre \= <primary genre>
+
+    Setting \= <world setting>
+
+    Tone \= <overall tone>
+
+    Themes \= <major themes>
+
+    Group Dynamics \= <party dynamic or relationship structure>
+
+    Scenario \= <Describe the current situation, ongoing conflict, why the cast has gathered, and what immediately involves {{user}}.>
+
+    ---
+
+    # Player Character
+
+    Name \= {{user}}
+
+    Role \= <Describe {{user}}'s role within the scenario, background, current objective, reputation, responsibilities, experience level, and why they have become involved.>
+
+    ---
+
+    # Main Cast (NPCs)
+
+    [let count = parseInt(mainCastEl ? mainCastEl.value : "2", 10); let out = []; for(let i = 1; i <= count; i++) { out.push(`## NPC #${i}: <Full Name>\n\nRole \\= <Describe the NPC's role within the group, responsibilities, relationship with {{user}}, and why their actions significantly affect {{user}}'s immediate future.>\n\nDetails \\= <Age, Gender, Race>\n\nAppearance \\= <Describe physique, posture, facial features, eyes, hair, clothing, equipment, weapons, accessories, distinctive traits, scars, tattoos, mannerisms, and overall visual identity in one cohesive description.>\n\nPersonality \\= <Describe personality, strengths, flaws, habits, communication style, emotions, behavior, worldview, beliefs, mentality, morals, values, likes, dislikes, hobbies, romance attitude, and any defining quotes naturally within one cohesive description.>\n\nAbilities \\=\n- <Ability 1 Name> \\= <description>\n- <Ability 2 Name> \\= <description>\n\nBiography \\= <Describe origins, upbringing, family, defining life events, career, important relationships, motivations, achievements, failures, current objectives, secrets, internal conflicts, and how they became involved in the current scenario.>\n\nRules \\= <Describe behavioral rules, roleplay constraints, strict boundaries, habits, limitations, things they always do, things they never do, and interaction rules involving {{user}}.>`); } out.join("\n\n---\n\n")]
+
+    ---
+
+    # Background Cast (NPCs)
+
+    [let bgCount = parseInt(bgCastEl ? bgCastEl.value : "0", 10); bgCount > 0 ? (new Array(bgCount).fill(0)).map((_, idx) => `- <Background NPC #${idx+1} Name> \\= <Short description of role and dynamic>`).join("\n") : "- <Supporting NPC 1> \\= <Short description>\n- <Supporting NPC 2> \\= <Short description>"]
+
+    ---
+
+    # Organizations
+
+    - <Organization 1> \= <Description>
+    - <Organization 2> \= <Description>
+
+    ---
+
+    # Important Locations
+
+    - <Location 1> \= <Description>
+    - <Location 2> \= <Description>
+
+    ---
+
+    # Timeline
+
+    - Ancient History \= <Important historical event>
+    - Years Ago \= <Major event>
+    - Months Ago \= <Major event>
+    - Today \= <Current starting point>
+
+    ---
+
+    # Roleplay Guidance Prompt
+
+    <Provide instructions for how the AI should write this scenario, including narrative style, pacing, dialogue quality, character autonomy, emotional progression, romance pacing if applicable, combat style, scene transitions, and roleplay behavior. Focus on immersive, slow-burn storytelling that respects each character's established personality and agency.>
+
+    ---
+    [""]
+    # Design notes:
+    IMPORTANT: [customFeaturesEl.value.trim() || "The setting or primary theme should be inspired by "+race.selectOne]
+    [descLengthEl.value === "short" ? `IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.` : ""]
+    $output = [this.joinItems("\n")]
+
+  startWith = # Scenario\n\nTitle = 
+
+  render(data) =>
+    let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1+`<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>`+p3);
+    text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1+p2+`<b style="color:#13a000">${p3.trim()}</b>`+p4);
+    text = text.replace(/(^|\n)(#+[a-zA-Z/ _'\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1+`<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>`+p3);
+    return text;
+  onStart(data) =>
+    clearOldImageStuff();
+  async onFinish(data) => 
+    if(data.stopReason === "user") return;
+    let generatedText = data.text;
+    let physicalAppearanceText = ((generatedText.match(/(?:Appearance)\s*[:=]\s*(.+?)\n/s) || [])[1] || "").trim();
+    window.lastCharacterTextData = { generatedText, physicalAppearanceText };
+
+largeCastScenarioPrompt
+  instruction
+    Please create an immersive roleplay scenario featuring a large cast of [mainCastEl ? mainCastEl.value : "5"] Main NPCs [bgCastEl && bgCastEl.value > 0 ? "and " + bgCastEl.value + " background NPCs" : ""].
+
+    Because this is a large cast (5+ characters), format BOTH Main Cast and Background Cast using concise bullet point descriptions (- <Name> = <Short description>) to keep the context crisp, readable, and highly engaging.
+
+    Create a cast that genuinely feels like they have lived, worked, fought, and changed together. The story should not revolve around {{user}}. Instead, {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
+
+    [getOptionalSeedWordsTip()]
+
+    Use this template:
+    ---
+    # Scenario
+
+    Title \= <scenario title>
+
+    Genre \= <primary genre>
+
+    Setting \= <world setting>
+
+    Tone \= <overall tone>
+
+    Themes \= <major themes>
+
+    Group Dynamics \= <party dynamic or relationship structure>
+
+    Scenario \= <Describe the current situation, ongoing conflict, why the cast has gathered, and what immediately involves {{user}}.>
+
+    ---
+
+    # Player Character
+
+    Name \= {{user}}
+
+    Role \= <Describe {{user}}'s role within the scenario, background, current objective, reputation, responsibilities, and experience level.>
+
+    ---
+
+    # Main Cast (NPCs)
+
+    [let count = parseInt(mainCastEl ? mainCastEl.value : "5", 10); (new Array(count).fill(0)).map((_, idx) => `- <Main NPC #${idx+1} Name> \\= <Concise description: Age, Gender, Race, Role, Key Appearance, Personality, Abilities, and Rules>`).join("\n")]
+
+    ---
+
+    # Background Cast (NPCs)
+
+    [let bgCount = parseInt(bgCastEl ? bgCastEl.value : "0", 10); bgCount > 0 ? (new Array(bgCount).fill(0)).map((_, idx) => `- <Background NPC #${idx+1} Name> \\= <Short description of role and dynamic>`).join("\n") : "- <Supporting NPC 1> \\= <Short description>\n- <Supporting NPC 2> \\= <Short description>"]
+
+    ---
+
+    # Organizations
+
+    - <Organization 1> \= <Description>
+    - <Organization 2> \= <Description>
+
+    ---
+
+    # Important Locations
+
+    - <Location 1> \= <Description>
+    - <Location 2> \= <Description>
+
+    ---
+
+    # Timeline
+
+    - Ancient History \= <Important historical event>
+    - Years Ago \= <Major event>
+    - Today \= <Current starting point>
+
+    ---
+
+    # Roleplay Guidance Prompt
+
+    <Provide instructions for how the AI should write this scenario, focusing on immersive, slow-burn storytelling.>
+
+    ---
+    [""]
+    # Design notes:
+    IMPORTANT: [customFeaturesEl.value.trim() || "The setting or primary theme should be inspired by "+race.selectOne]
+    $output = [this.joinItems("\n")]
+
+  startWith = # Scenario\n\nTitle = 
+
+  render(data) =>
+    let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1+`<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>`+p3);
+    text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1+p2+`<b style="color:#13a000">${p3.trim()}</b>`+p4);
+    text = text.replace(/(^|\n)(#+[a-zA-Z/ _'\-0-9]{1,50})(\n)/g, (m, p1, p2, p3) => p1+`<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>`+p3);
+    return text;
+  onStart(data) =>
+    clearOldImageStuff();
+  async onFinish(data) => 
+    if(data.stopReason === "user") return;
+    let generatedText = data.text;
+    let physicalAppearanceText = ((generatedText.match(/(?:Appearance)\s*[:=]\s*(.+?)\n/s) || [])[1] || "").trim();
+    window.lastCharacterTextData = { generatedText, physicalAppearanceText };
+
 
 behaviorPrompt
   instruction

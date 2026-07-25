@@ -68,6 +68,28 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  let mainCastEl = document.getElementById("mainCastEl");
+  if (mainCastEl) {
+    setTimeout(() => {
+      mainCastEl.value = settings.mainCast || localStorage.mainCast || mainCastEl.value;
+    }, 10);
+    mainCastEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ mainCast: this.value });
+      localStorage.mainCast = this.value;
+    });
+  }
+
+  let bgCastEl = document.getElementById("bgCastEl");
+  if (bgCastEl) {
+    setTimeout(() => {
+      bgCastEl.value = settings.bgCast || localStorage.bgCast || bgCastEl.value;
+    }, 10);
+    bgCastEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ bgCast: this.value });
+      localStorage.bgCast = this.value;
+    });
+  }
+
   let visualStyleEl = document.getElementById("visualStyleEl");
   if (visualStyleEl) {
     setTimeout(() => {
