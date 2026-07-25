@@ -20,6 +20,11 @@ window.regenerate = async function() {
   
   if (stopBtn) stopBtn.classList.add("u-hidden");
   if (generateBtn) generateBtn.disabled = false;
+
+  if (outputEl) {
+    window.renderResponseToolbar("outputEl", "regenerate");
+    window.CDGStorage.setCache("outputEl", outputEl.innerHTML);
+  }
 };
 
 window.generateBehavior = async function() {
@@ -48,6 +53,11 @@ window.generateBehavior = async function() {
   
   if (stopBehaviorBtn) stopBehaviorBtn.classList.add("u-hidden");
   if (generateBehaviorBtn) generateBehaviorBtn.disabled = false;
+
+  if (behaviorOutputEl) {
+    window.renderResponseToolbar("behaviorOutputEl", "generateBehavior");
+    window.CDGStorage.setCache("behaviorOutputEl", behaviorOutputEl.innerHTML);
+  }
 };
 
 window.generateScenario = async function() {
@@ -76,6 +86,11 @@ window.generateScenario = async function() {
   
   if (stopScenarioBtn) stopScenarioBtn.classList.add("u-hidden");
   if (generateScenarioBtn) generateScenarioBtn.disabled = false;
+
+  if (scenarioOutputEl) {
+    window.renderResponseToolbar("scenarioOutputEl", "generateScenario");
+    window.CDGStorage.setCache("scenarioOutputEl", scenarioOutputEl.innerHTML);
+  }
 };
 
 window.generateRoleplayStart = async function() {
@@ -104,6 +119,11 @@ window.generateRoleplayStart = async function() {
   
   if (stopRoleplayStartBtn) stopRoleplayStartBtn.classList.add("u-hidden");
   if (generateRoleplayStartBtn) generateRoleplayStartBtn.disabled = false;
+
+  if (roleplayStartOutputEl) {
+    window.renderResponseToolbar("roleplayStartOutputEl", "generateRoleplayStart");
+    window.CDGStorage.setCache("roleplayStartOutputEl", roleplayStartOutputEl.innerHTML);
+  }
 };
 
 window.generateImagesSection = async function() {
@@ -325,7 +345,6 @@ window.generateShareLinkForCharacter = async function(json) {
     let characterName = encodeURIComponent(json.addCharacter.name.replace(/\s+/g, "_").replaceAll("~", "").replaceAll('"', ""));
     let shareUrl = `https://perchance.org/ai-character-chat?data=${characterName}~${fileName}`;
 
-    let colorScheme = localStorage.forceColorScheme !== undefined ? localStorage.forceColorScheme : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
     await window.prompt2({
       content: { type: "none", html: `<div style="margin-bottom:0.5rem; opacity:0.7; font-size:90%;">Your character has been created. Here's the link:</div><div style="display:flex; gap:0.5rem;"><input value="${shareUrl}" class="c-select" style="flex-grow:1; min-width:0; font-size:80%;"> <button class="c-button c-button--sm" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('input').value); this.textContent='copied ✅'; setTimeout(() => { this.textContent='📋 copy'; }, 2000);">📋 copy</button> <button class="c-button c-button--sm" onclick="window.open(this.parentElement.querySelector('input').value)">↗️ visit</button> </div>` },
     }, { cancelButtonText: null, submitButtonText: "finished", verticallyCenter: true });

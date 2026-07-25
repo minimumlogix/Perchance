@@ -60,3 +60,38 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
+
+/* ===========================
+   RESPONSE ACTION TOOLBAR & ICON BUTTONS
+=========================== */
+
+.ai-text-response-buttons-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  width: 100%;
+}
+
+.c-button--icon {
+  padding: var(--space-2xs) var(--space-xs);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  min-width: 2rem;
+  height: 2rem;
+}
+
+.c-button--active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.is-editing {
+  outline: 2px dashed var(--color-primary);
+  outline-offset: 2px;
+  padding: var(--space-xs);
+  border-radius: var(--radius-xs);
+}

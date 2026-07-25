@@ -3,7 +3,10 @@
 =========================== */
 
 document.addEventListener("DOMContentLoaded", function() {
-  /* Preload Massive Word List */
+  /* 1. Initialize Settings & Storage Cache */
+  let settings = window.CDGStorage.getSettings();
+
+  /* 2. Preload Massive Word List */
   (async function() {
     try {
       let res = await fetch("https://user.uploads.dev/file/fdd83a6f7348fec983cb2583936beaf5.txt");
@@ -14,35 +17,39 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   })();
 
-  /* Initialize LocalStorage Input Persistence */
+  /* 3. Initialize LocalStorage & Settings Persistence */
   let customFeaturesEl = document.getElementById("customFeaturesEl");
   if (customFeaturesEl) {
-    customFeaturesEl.value = localStorage.customFeatures || "";
+    customFeaturesEl.value = settings.customFeatures || localStorage.customFeatures || "";
     customFeaturesEl.addEventListener("input", function() {
+      window.CDGStorage.saveSettings({ customFeatures: this.value });
       localStorage.customFeatures = this.value;
     });
   }
 
   let customBehaviorFeaturesEl = document.getElementById("customBehaviorFeaturesEl");
   if (customBehaviorFeaturesEl) {
-    customBehaviorFeaturesEl.value = localStorage.customBehaviorFeatures || "";
+    customBehaviorFeaturesEl.value = settings.customBehaviorFeatures || localStorage.customBehaviorFeatures || "";
     customBehaviorFeaturesEl.addEventListener("input", function() {
+      window.CDGStorage.saveSettings({ customBehaviorFeatures: this.value });
       localStorage.customBehaviorFeatures = this.value;
     });
   }
 
   let customScenarioFeaturesEl = document.getElementById("customScenarioFeaturesEl");
   if (customScenarioFeaturesEl) {
-    customScenarioFeaturesEl.value = localStorage.customScenarioFeatures || "";
+    customScenarioFeaturesEl.value = settings.customScenarioFeatures || localStorage.customScenarioFeatures || "";
     customScenarioFeaturesEl.addEventListener("input", function() {
+      window.CDGStorage.saveSettings({ customScenarioFeatures: this.value });
       localStorage.customScenarioFeatures = this.value;
     });
   }
 
   let customRoleplayStartFeaturesEl = document.getElementById("customRoleplayStartFeaturesEl");
   if (customRoleplayStartFeaturesEl) {
-    customRoleplayStartFeaturesEl.value = localStorage.customRoleplayStartFeatures || "";
+    customRoleplayStartFeaturesEl.value = settings.customRoleplayStartFeatures || localStorage.customRoleplayStartFeatures || "";
     customRoleplayStartFeaturesEl.addEventListener("input", function() {
+      window.CDGStorage.saveSettings({ customRoleplayStartFeatures: this.value });
       localStorage.customRoleplayStartFeatures = this.value;
     });
   }
@@ -50,9 +57,10 @@ document.addEventListener("DOMContentLoaded", function() {
   let descLengthEl = document.getElementById("descLengthEl");
   if (descLengthEl) {
     setTimeout(() => {
-      descLengthEl.value = localStorage.descLength || descLengthEl.value;
+      descLengthEl.value = settings.descLength || localStorage.descLength || descLengthEl.value;
     }, 10);
     descLengthEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ descLength: this.value });
       localStorage.descLength = this.value;
     });
   }
@@ -60,22 +68,36 @@ document.addEventListener("DOMContentLoaded", function() {
   let visualStyleEl = document.getElementById("visualStyleEl");
   if (visualStyleEl) {
     setTimeout(() => {
-      visualStyleEl.value = localStorage.visualStyle || visualStyleEl.value;
+      visualStyleEl.value = settings.visualStyle || localStorage.visualStyle || visualStyleEl.value;
     }, 10);
     visualStyleEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ visualStyle: this.value });
       localStorage.visualStyle = this.value;
     });
   }
 
-  /* Initialize Color Scheme Theme */
-  if (localStorage.forceColorScheme !== undefined) {
-    window.setColorScheme(localStorage.forceColorScheme);
-  } else {
-    let systemIsInDarkMode = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    window.setColorScheme(systemIsInDarkMode ? "dark" : "light");
-  }
+  /* 4. Default Dark Mode Initialization */
+  let initialTheme = localStorage.forceColorScheme || settings.theme || "dark";
+  window.setColorScheme(initialTheme);
 
-  /* Initialize Comments Section */
+  /* 5. Restore Cached Output Responses */
+  const outputs = [
+    { id: "outputEl", retry: "regenerate" },
+    { id: "behaviorOutputEl", retry: "generateBehavior" },
+    { id: "scenarioOutputEl", retry: "generateScenario" },
+    { id: "roleplayStartOutputEl", retry: "generateRoleplayStart" }
+  ];
+
+  outputs.forEach(({ id, retry }) => {
+    let cachedHTML = window.CDGStorage.getCache(id);
+    let el = document.getElementById(id);
+    if (cachedHTML && el) {
+      el.innerHTML = cachedHTML;
+      window.renderResponseToolbar(id, retry);
+    }
+  });
+
+  /* 6. Initialize Comments Section */
   if (typeof window.createCommentsSectionHtml === "function") {
     window.createCommentsSectionHtml();
   }

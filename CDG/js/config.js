@@ -1,6 +1,16 @@
 /* ===========================
-   CONFIGURATION & TEMPLATES
+   CONFIGURATION & APP DEFAULTS
 =========================== */
+
+window.CDG_SETTINGS_DEFAULTS = {
+  theme: "dark",
+  descLength: "medium",
+  visualStyle: "",
+  customFeatures: "",
+  customBehaviorFeatures: "",
+  customScenarioFeatures: "",
+  customRoleplayStartFeatures: ""
+};
 
 window.CDGConfig = {
   lengthSpecifiers: {
