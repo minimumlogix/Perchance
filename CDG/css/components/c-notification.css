@@ -1,0 +1,24 @@
+/* ===========================
+   COMPONENT: NOTIFICATION
+=========================== */
+
+.c-notification {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-xs);
+  border: var(--border-width-thin) solid var(--color-border);
+  background-color: var(--color-bg-surface);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.c-notification--success {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.c-notification--error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

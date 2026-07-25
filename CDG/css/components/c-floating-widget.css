@@ -1,0 +1,19 @@
+/* ===========================
+   COMPONENT: FLOATING WIDGET
+=========================== */
+
+.c-floating-widget {
+  position: fixed;
+  bottom: var(--space-sm);
+  z-index: var(--z-floating);
+}
+
+.c-floating-widget--bottom-left {
+  left: var(--space-sm);
+}
+
+.c-floating-widget--bottom-right {
+  right: var(--space-sm);
+  text-align: right;
+  z-index: 100;
+}

@@ -1,0 +1,45 @@
+/* ===========================
+   TYPOGRAPHY
+=========================== */
+
+h1,
+.u-h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--space-sm);
+}
+
+h2,
+.u-h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-xs);
+}
+
+h3,
+.u-h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-xs);
+}
+
+.u-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+  margin-bottom: var(--space-xl);
+}
+
+.u-text-subtle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+}
+
+.u-text-section-title {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}

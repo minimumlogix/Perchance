@@ -1,0 +1,21 @@
+/* ===========================
+   COMPONENT: BADGE & TAG
+=========================== */
+
+.c-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2xs) var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-box);
+  color: var(--color-text-main);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.c-badge--primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}

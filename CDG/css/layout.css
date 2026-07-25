@@ -1,0 +1,53 @@
+/* ===========================
+   LAYOUT PRIMITIVES
+=========================== */
+
+.l-container {
+  width: 95%;
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+}
+
+.l-container--gallery {
+  max-width: var(--gallery-max-width);
+  width: 100%;
+  margin-inline: auto;
+}
+
+.l-section {
+  width: 100%;
+  margin-top: var(--space-xl);
+  border-top: var(--border-width-thin) dashed var(--color-border);
+  padding-top: var(--space-lg);
+}
+
+.l-flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.l-flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.l-relative-holder {
+  width: 0;
+  height: max-content;
+  position: relative;
+}
+
+.l-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.l-grid--gallery {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}

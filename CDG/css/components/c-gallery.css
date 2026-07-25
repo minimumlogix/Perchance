@@ -1,0 +1,21 @@
+/* ===========================
+   COMPONENT: GALLERY
+=========================== */
+
+.c-gallery {
+  width: 100%;
+}
+
+.c-gallery__prompt {
+  text-align: center;
+  max-width: var(--gallery-max-width);
+  margin-inline: auto;
+  padding: var(--space-lg);
+}
+
+.c-gallery__grid {
+  text-align: center;
+  max-width: var(--gallery-max-width);
+  margin-inline: auto;
+  padding: var(--space-lg);
+}

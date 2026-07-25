@@ -1,0 +1,21 @@
+/* ===========================
+   COMPONENT: TABLE
+=========================== */
+
+.c-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.c-table th,
+.c-table td {
+  padding: var(--space-xs) var(--space-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+  text-align: left;
+}
+
+.c-table th {
+  background-color: var(--color-bg-box);
+  font-weight: var(--font-weight-medium);
+}

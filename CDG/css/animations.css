@@ -1,0 +1,29 @@
+/* ===========================
+   ANIMATIONS & KEYFRAMES
+=========================== */
+
+@keyframes u-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.u-anim-spin {
+  animation: u-spin var(--anim-duration-spin) linear infinite;
+}
+
+.u-anim-fade-in {
+  animation: u-fade-in var(--transition-base) ease-in-out;
+}
+
+@keyframes u-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

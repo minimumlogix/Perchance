@@ -1,0 +1,86 @@
+/* ===========================
+   UTILITY CLASSES
+=========================== */
+
+.u-hidden {
+  display: none !important;
+}
+
+.u-block {
+  display: block;
+}
+
+.u-flex {
+  display: flex;
+}
+
+.u-w-full {
+  width: 100%;
+}
+
+.u-text-center {
+  text-align: center;
+}
+
+.u-text-left {
+  text-align: left;
+}
+
+.u-mt-xs {
+  margin-top: var(--space-xs);
+}
+
+.u-mt-sm {
+  margin-top: var(--space-sm);
+}
+
+.u-mt-md {
+  margin-top: var(--space-md);
+}
+
+.u-mt-lg {
+  margin-top: var(--space-lg);
+}
+
+.u-mt-xl {
+  margin-top: var(--space-xl);
+}
+
+.u-mb-xs {
+  margin-bottom: var(--space-xs);
+}
+
+.u-mb-sm {
+  margin-bottom: var(--space-sm);
+}
+
+.u-mb-md {
+  margin-bottom: var(--space-md);
+}
+
+.u-mb-lg {
+  margin-bottom: var(--space-lg);
+}
+
+.u-ml-xs {
+  margin-left: var(--space-xs);
+}
+
+.u-ml-sm {
+  margin-left: var(--space-sm);
+}
+
+.u-mr-xs {
+  margin-right: var(--space-xs);
+}
+
+.u-mr-sm {
+  margin-right: var(--space-sm);
+}
+
+.is-disabled,
+*:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}

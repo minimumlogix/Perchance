@@ -1,0 +1,29 @@
+/* ===========================
+   COMPONENT: TOOLTIP
+=========================== */
+
+.c-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.c-tooltip__content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-bg-box);
+  color: var(--color-text-main);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  z-index: var(--z-tooltip);
+}
+
+.c-tooltip:hover .c-tooltip__content {
+  opacity: 1;
+}

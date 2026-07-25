@@ -1,0 +1,20 @@
+/* ===========================
+   COMPONENT: NAVIGATION
+=========================== */
+
+.c-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.c-nav__link {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.c-nav__link:hover,
+.c-nav__link.is-active {
+  color: var(--color-primary);
+}

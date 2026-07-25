@@ -1,0 +1,62 @@
+/* ===========================
+   COMPONENT: BUTTON
+=========================== */
+
+.c-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-main);
+  background-color: var(--color-bg-box);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.c-button:hover:not(:disabled) {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-text-muted);
+}
+
+.c-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.c-button--lg {
+  font-size: 120%;
+  padding: var(--space-sm) var(--space-lg);
+}
+
+.c-button--md {
+  font-size: 110%;
+  padding: var(--space-xs) var(--space-md);
+}
+
+.c-button--sm {
+  font-size: 80%;
+  padding: var(--space-2xs) var(--space-xs);
+}
+
+.c-button--stop {
+  font-size: 80%;
+  width: max-content;
+  margin-left: var(--space-sm);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.c-button--stop:hover:not(:disabled) {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}
+
+.c-button--floating {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}

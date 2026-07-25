@@ -1,0 +1,26 @@
+/* ===========================
+   COMPONENT: TABS
+=========================== */
+
+.c-tabs {
+  display: flex;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  gap: var(--space-xs);
+}
+
+.c-tabs__item {
+  padding: var(--space-xs) var(--space-md);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.c-tabs__item:hover {
+  color: var(--color-primary);
+}
+
+.c-tabs__item.is-active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
