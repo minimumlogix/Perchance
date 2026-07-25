@@ -43,6 +43,17 @@ window.CDGStorage = {
     try {
       localStorage.removeItem("CDG_CACHE_" + key);
     } catch (e) {}
+  },
+
+  initPersistentStorage: async function() {
+    if (navigator.storage && typeof navigator.storage.persist === "function") {
+      try {
+        const isPersisted = await navigator.storage.persisted();
+        if (!isPersisted) {
+          await navigator.storage.persist();
+        }
+      } catch (e) {}
+    }
   }
 };
 

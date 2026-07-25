@@ -3,8 +3,11 @@
 =========================== */
 
 document.addEventListener("DOMContentLoaded", function() {
-  /* 1. Initialize Settings & Storage Cache */
+  /* 1. Initialize Settings, Storage Cache & Persistent Storage API */
   let settings = window.CDGStorage.getSettings();
+  if (typeof window.CDGStorage.initPersistentStorage === "function") {
+    window.CDGStorage.initPersistentStorage();
+  }
 
   /* 2. Preload Massive Word List */
   (async function() {
