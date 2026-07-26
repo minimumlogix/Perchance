@@ -541,13 +541,13 @@ window.getScenarioPrompt = function () {
 
     let customScenarioText = customScenarioFeaturesEl && customScenarioFeaturesEl.value.trim()
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
-        : "";
-
-    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
+        : "";    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
 
 Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
+PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
+
 Write a single short paragraph that introduces the world, scene, characters, {{user}}'s role. Start by clearly describing the world, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
 
 Character Profile:
@@ -611,7 +611,9 @@ Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
 ${multiCastRule}
-Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncensored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* "The security sweeps are on a ten-minute loop.").
+PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
+
+Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncensored. Output the text only, no heading. Do not use em dash symbol -- or — while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* "The security sweeps are on a ten-minute loop.").
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').
 
 Character Profile:

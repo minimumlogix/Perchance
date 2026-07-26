@@ -31,10 +31,10 @@
         <div class="c-ai-modal__field">
           <label class="c-label c-ai-modal__label">Response type:</label>
           <select id="aiIdeaResponseTypeSelect" class="c-select c-ai-modal__select">
-            <option value="CHARACTER DESCRIPTION">CHARACTER DESCRIPTION</option>
-            <option value="PLOT HOOK">PLOT HOOK</option>
-            <option value="SCENARIO OUTLINE">SCENARIO OUTLINE</option>
-            <option value="BEHAVIOR & DIALOGUE">BEHAVIOR & DIALOGUE</option>
+            <option value="ROLEPLAY PREMISE & CHARACTER OUTLINE">ROLEPLAY PREMISE & CHARACTER OUTLINE</option>
+            <option value="BEHAVIOR & INTERACTION SCENARIO">BEHAVIOR & INTERACTION SCENARIO</option>
+            <option value="WORLD & SCENARIO CONTEXT">WORLD & SCENARIO CONTEXT</option>
+            <option value="ROLEPLAY START OPENING HOOK">ROLEPLAY START OPENING HOOK</option>
           </select>
         </div>
 
@@ -62,9 +62,22 @@
 
     let targetEl = document.getElementById(targetTextareaId);
     let keywordsInput = document.getElementById("aiIdeaKeywordsInput");
+    let responseTypeSelect = document.getElementById("aiIdeaResponseTypeSelect");
     
     if (keywordsInput) {
       keywordsInput.value = targetEl ? targetEl.value : "";
+    }
+
+    if (responseTypeSelect) {
+      if (targetTextareaId === "customBehaviorFeaturesEl") {
+        responseTypeSelect.value = "BEHAVIOR & INTERACTION SCENARIO";
+      } else if (targetTextareaId === "customScenarioFeaturesEl") {
+        responseTypeSelect.value = "WORLD & SCENARIO CONTEXT";
+      } else if (targetTextareaId === "customRoleplayStartFeaturesEl") {
+        responseTypeSelect.value = "ROLEPLAY START OPENING HOOK";
+      } else {
+        responseTypeSelect.value = "ROLEPLAY PREMISE & CHARACTER OUTLINE";
+      }
     }
 
     overlay.classList.remove("u-hidden");
@@ -97,23 +110,23 @@
     let targetEl = document.getElementById(currentTargetTextareaId);
 
     let keywords = keywordsInput ? keywordsInput.value.trim() : "";
-    let responseType = responseTypeSelect ? responseTypeSelect.value : "CHARACTER DESCRIPTION";
+    let responseType = responseTypeSelect ? responseTypeSelect.value : "ROLEPLAY PREMISE & CHARACTER OUTLINE";
 
     if (!targetEl) {
       window.closeAiIdeaModal();
       return;
     }
 
-    // Build prompt based on selected response type
+    // Build prompt based on selected response type and target notes field
     let instructionPrompt = "";
-    if (responseType === "CHARACTER DESCRIPTION") {
-      instructionPrompt = `Write a single, detailed, highly creative, and engaging character description paragraph based on these ideas/keywords: "${keywords || 'creative unique character'}". Focus on their physical appearance, personality traits, background, and unique visual features. Write ONLY one cohesive paragraph.`;
-    } else if (responseType === "PLOT HOOK") {
-      instructionPrompt = `Write a single, high-concept, compelling plot hook paragraph based on these ideas/keywords: "${keywords || 'intrigued plot'}". Focus on the initial situation, the main conflict, high stakes, and a captivating twist. Write ONLY one cohesive paragraph.`;
-    } else if (responseType === "SCENARIO OUTLINE") {
-      instructionPrompt = `Write a single immersive scenario description paragraph establishing an intriguing roleplay scene based on these ideas/keywords: "${keywords || 'dramatic scene'}". Focus on setting the scene, atmosphere, sensory details, and initial situation. Write ONLY one cohesive paragraph.`;
+    if (responseType === "ROLEPLAY PREMISE & CHARACTER OUTLINE") {
+      instructionPrompt = `Write a short, single-paragraph roleplay premise & character outline note based on these ideas/keywords: "${keywords || 'creative character concept'}". Focus on the basic identity of the character/cast, their core personality, background, and initial roleplay premise. Write ONLY one short, concise paragraph under 3 sentences.`;
+    } else if (responseType === "BEHAVIOR & INTERACTION SCENARIO") {
+      instructionPrompt = `Write a short, single-paragraph behavior/dialogue context note based on these ideas/keywords: "${keywords || 'character behavior scenario'}". Focus on specific behavioral traits, speech habits, emotional triggers, or interaction scenarios (e.g. an interaction demonstrating their yandere side, protective instinct, or witty banter). Write ONLY one short, concise paragraph under 3 sentences.`;
+    } else if (responseType === "WORLD & SCENARIO CONTEXT") {
+      instructionPrompt = `Write a short, single-paragraph world & scenario context note based on these ideas/keywords: "${keywords || 'roleplay world context'}". Focus on the world setting, atmosphere, ongoing conflict, why the cast has gathered, and the initial situation involving {{user}}. Write ONLY one short, concise paragraph under 3 sentences.`;
     } else {
-      instructionPrompt = `Write a single paragraph detailing character speech patterns, behavioral habits, and dialogue style based on these ideas/keywords: "${keywords || 'unique persona'}". Write ONLY one cohesive paragraph.`;
+      instructionPrompt = `Write a short, single-paragraph opening hook note based on these ideas/keywords: "${keywords || 'roleplay opening hook'}". Focus on the opening scene setup, the character's initial greeting attitude, direct action hook, and starting momentum for the roleplay start. Write ONLY one short, concise paragraph under 3 sentences.`;
     }
 
     if (generateBtn) {
