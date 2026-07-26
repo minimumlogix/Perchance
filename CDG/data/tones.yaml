@@ -1,3 +1,8 @@
+casual_everyday:
+  label: "💬 Casual & Everyday"
+  description: "Everyday conversational words, simple phrasing, no purple prose or complex archaisms"
+  prompt: "The tone is casual, modern, and natural. Use everyday words, plain spoken vocabulary, and natural conversational phrasing. Strictly avoid purple prose, overly complex vocabulary, Shakespearean archaisms, flowery metaphors, or unnaturally formal dialogue."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/genz-casual-tone.jpg"
 romantic:
   label: "💖 Romantic"
   description: "Focus on relationship and love"
