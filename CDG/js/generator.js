@@ -15,7 +15,7 @@ window.regenerate = async function () {
 
     if (generateBtn) generateBtn.disabled = true;
     if (stopBtn) stopBtn.classList.remove("u-hidden");
-    if (generateBtn) generateBtn.innerHTML = "✨ regenerate description";
+    if (generateBtn) generateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate description';
 
     window.lastCharacterPromptStreamObj = window.ai(promptToUse);
     if (outputEl) outputEl.innerHTML = window.lastCharacterPromptStreamObj;
@@ -47,7 +47,7 @@ window.generateBehavior = async function () {
 
     if (generateBehaviorBtn) generateBehaviorBtn.disabled = true;
     if (stopBehaviorBtn) stopBehaviorBtn.classList.remove("u-hidden");
-    if (generateBehaviorBtn) generateBehaviorBtn.innerHTML = "✨ regenerate behavior examples";
+    if (generateBehaviorBtn) generateBehaviorBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples';
     if (behaviorOutputEl) behaviorOutputEl.innerHTML = "";
 
     window.lastBehaviorPromptStreamObj = window.ai(window.behaviorPrompt);
@@ -80,7 +80,7 @@ window.generateScenario = async function () {
 
     if (generateScenarioBtn) generateScenarioBtn.disabled = true;
     if (stopScenarioBtn) stopScenarioBtn.classList.remove("u-hidden");
-    if (generateScenarioBtn) generateScenarioBtn.innerHTML = "✨ regenerate scenario description";
+    if (generateScenarioBtn) generateScenarioBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description';
     if (scenarioOutputEl) scenarioOutputEl.innerHTML = "";
 
     window.lastScenarioPromptStreamObj = window.ai(window.scenarioPrompt);
@@ -113,7 +113,7 @@ window.generateRoleplayStart = async function () {
 
     if (generateRoleplayStartBtn) generateRoleplayStartBtn.disabled = true;
     if (stopRoleplayStartBtn) stopRoleplayStartBtn.classList.remove("u-hidden");
-    if (generateRoleplayStartBtn) generateRoleplayStartBtn.innerHTML = "✨ regenerate roleplay start";
+    if (generateRoleplayStartBtn) generateRoleplayStartBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start';
     if (roleplayStartOutputEl) roleplayStartOutputEl.innerHTML = "";
 
     window.lastRoleplayStartPromptStreamObj = window.ai(window.roleplayStartPrompt);
@@ -215,7 +215,7 @@ window.generateImages = function () {
 
         imageHtml += `<div class="imageWrapper u-flex u-flex-column u-flex-center u-mb-md">
       ${window.image(promptData).evaluateItem}
-      <button class="c-button c-button--sm u-mt-xs" onclick="chatWithCharacterButtonClickHandler(this.closest('.imageWrapper').querySelector('iframe').textToImagePluginOutput, this)">💬 chat with this character</button>
+      <button class="c-button c-button--sm u-mt-xs" onclick="chatWithCharacterButtonClickHandler(this.closest('.imageWrapper').querySelector('iframe').textToImagePluginOutput, this)"><i class="bi bi-chat-quote-fill"></i> chat with this character</button>
     </div>`;
     }
 
@@ -333,7 +333,7 @@ window.generateShareLinkForCharacter = async function (json) {
         return;
     }
 
-    let loadingModal = window.createLoadingModal("⌛ Generating chat link...");
+    let loadingModal = window.createLoadingModal('<i class="bi bi-hourglass-split"></i> Generating chat link...');
     let jsonString = JSON.stringify(json);
     let dataUrlJsonString = jsonString.replace(/#/g, "%23");
     let blob = await fetch("data:text/plain;charset=utf-8," + dataUrlJsonString).then(res => res.blob());
@@ -350,7 +350,7 @@ window.generateShareLinkForCharacter = async function (json) {
         let shareUrl = `https://perchance.org/ai-character-chat?data=${characterName}~${fileName}`;
 
         await window.prompt2({
-            content: { type: "none", html: `<div style="margin-bottom:0.5rem; opacity:0.7; font-size:90%;">Your character has been created. Here's the link:</div><div style="display:flex; gap:0.5rem;"><input value="${shareUrl}" class="c-select" style="flex-grow:1; min-width:0; font-size:80%;"> <button class="c-button c-button--sm" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('input').value); this.textContent='copied ✅'; setTimeout(() => { this.textContent='📋 copy'; }, 2000);">📋 copy</button> <button class="c-button c-button--sm" onclick="window.open(this.parentElement.querySelector('input').value)">↗️ visit</button> </div>` },
+            content: { type: "none", html: `<div style="margin-bottom:0.5rem; opacity:0.7; font-size:90%;">Your character has been created. Here's the link:</div><div style="display:flex; gap:0.5rem;"><input value="${shareUrl}" class="c-select" style="flex-grow:1; min-width:0; font-size:80%;"> <button class="c-button c-button--sm" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('input').value); this.textContent='<i class=\"bi bi-check-lg\"></i> copied'; setTimeout(() => { this.textContent='<i class=\"bi bi-clipboard\"></i> copy'; }, 2000);"><i class="bi bi-clipboard"></i> copy</button> <button class="c-button c-button--sm" onclick="window.open(this.parentElement.querySelector('input').value)"><i class="bi bi-box-arrow-up-right"></i> visit</button> </div>` },
         }, { cancelButtonText: null, submitButtonText: "finished", verticallyCenter: true });
     }
 };

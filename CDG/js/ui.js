@@ -6,7 +6,8 @@ window.CDGStorage = {
   getSettings: function() {
     try {
       let saved = localStorage.getItem("CDG_APP_SETTINGS");
-      return saved ? { ...window.CDG_SETTINGS_DEFAULTS, ...JSON.parse(saved) } : { ...window.CDG_SETTINGS_DEFAULTS };
+      let parsed = saved ? JSON.parse(saved) : {};
+      return { ...window.CDG_SETTINGS_DEFAULTS, ...parsed };
     } catch (e) {
       return { ...window.CDG_SETTINGS_DEFAULTS };
     }
@@ -17,7 +18,9 @@ window.CDGStorage = {
       let current = this.getSettings();
       let updated = { ...current, ...patch };
       localStorage.setItem("CDG_APP_SETTINGS", JSON.stringify(updated));
-      if (patch.theme) localStorage.forceColorScheme = patch.theme;
+      if (patch.theme) {
+        localStorage.forceColorScheme = patch.theme;
+      }
       return updated;
     } catch (e) {
       return null;
@@ -57,6 +60,14 @@ window.CDGStorage = {
   }
 };
 
+// Sync storage changes instantly across multiple browser tabs
+window.addEventListener("storage", function(event) {
+  if (event.key === "CDG_APP_SETTINGS" || event.key === "forceColorScheme") {
+    let currentScheme = window.getCurrentColorScheme();
+    window.setColorScheme(currentScheme);
+  }
+});
+
 /* ===========================
    THEME MANAGEMENT (DEFAULT DARK)
 =========================== */
@@ -68,18 +79,21 @@ window.toggleManualDarkMode = function() {
 };
 
 window.getCurrentColorScheme = function() {
+  let settings = window.CDGStorage.getSettings();
+  if (settings && settings.theme) {
+    return settings.theme;
+  }
   if (localStorage.forceColorScheme !== undefined) {
     return localStorage.forceColorScheme;
   }
-  let settings = window.CDGStorage.getSettings();
-  return settings.theme || "dark";
+  return "dark";
 };
 
 window.setColorScheme = function(scheme) {
   let targetScheme = (scheme === "light" || scheme === "dark") ? scheme : "dark";
   
   let darkModeBtn = document.querySelector("#darkModeBtn");
-  if (darkModeBtn) darkModeBtn.textContent = (targetScheme === "dark" ? "🌄" : "🌃");
+  if (darkModeBtn) darkModeBtn.innerHTML = (targetScheme === "dark" ? '<i class="bi bi-brightness-high-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>');
   
   document.documentElement.setAttribute("data-theme", targetScheme);
   document.documentElement.classList.remove("t-dark", "t-light");
@@ -103,10 +117,10 @@ window.renderResponseToolbar = function(targetId, retryFnName) {
   toolbar.className = "ai-text-response-buttons-wrapper";
   toolbar.setAttribute("data-for", targetId);
   toolbar.innerHTML = `
-    <button class="c-button c-button--icon c-button--sm" title="Clear" onclick="clearOutput('${targetId}')">🗑️</button>
-    <button class="c-button c-button--icon c-button--sm" title="Copy" onclick="copyOutput('${targetId}', this)">📋</button>
-    <button class="c-button c-button--icon c-button--sm" title="Edit" onclick="toggleEditOutput('${targetId}', this)">✏️</button>
-    <button class="c-button c-button--icon c-button--sm" title="Retry" onclick="retryOutput('${retryFnName}')">🔄</button>
+    <button class="c-button c-button--icon c-button--sm" title="Clear" onclick="clearOutput('${targetId}')"><i class="bi bi-trash-fill"></i></button>
+    <button class="c-button c-button--icon c-button--sm" title="Copy" onclick="copyOutput('${targetId}', this)"><i class="bi bi-clipboard"></i></button>
+    <button class="c-button c-button--icon c-button--sm" title="Edit" onclick="toggleEditOutput('${targetId}', this)"><i class="bi bi-pencil-square"></i></button>
+    <button class="c-button c-button--icon c-button--sm" title="Retry" onclick="retryOutput('${retryFnName}')"><i class="bi bi-arrow-clockwise"></i></button>
   `;
 
   targetEl.parentNode.insertBefore(toolbar, targetEl.nextSibling);
@@ -129,9 +143,9 @@ window.copyOutput = function(targetId, btnEl) {
   
   let text = targetEl.innerText || targetEl.textContent;
   navigator.clipboard.writeText(text).then(() => {
-    let orig = btnEl.textContent;
-    btnEl.textContent = "✅";
-    setTimeout(() => { btnEl.textContent = orig; }, 1500);
+    let orig = btnEl.innerHTML;
+    btnEl.innerHTML = '<i class="bi bi-check-lg"></i>';
+    setTimeout(() => { btnEl.innerHTML = orig; }, 1500);
   }).catch(() => {
     alert("Failed to copy text.");
   });
@@ -145,14 +159,14 @@ window.toggleEditOutput = function(targetId, btnEl) {
   if (isEditing) {
     targetEl.contentEditable = "false";
     targetEl.classList.remove("is-editing");
-    btnEl.textContent = "✏️";
+    btnEl.innerHTML = '<i class="bi bi-pencil-square"></i>';
     btnEl.classList.remove("c-button--active");
     window.CDGStorage.setCache(targetId, targetEl.innerHTML);
   } else {
     targetEl.contentEditable = "true";
     targetEl.classList.add("is-editing");
     targetEl.focus();
-    btnEl.textContent = "💾";
+    btnEl.innerHTML = '<i class="bi bi-floppy-fill"></i>';
     btnEl.classList.add("c-button--active");
   }
 };
@@ -178,7 +192,7 @@ window.createCommentsSectionHtml = function() {
   });
   
   commentsCtn.innerHTML = `
-    <p><button class="c-button" onclick="if(commentsEl.classList.contains('u-hidden')) { commentsEl.classList.remove('u-hidden'); this.textContent='hide comments'; } else { commentsEl.classList.add('u-hidden'); this.textContent='💬 show comments'; }">💬 show comments</button></p>
+    <p><button class="c-button" onclick="if(commentsEl.classList.contains('u-hidden')) { commentsEl.classList.remove('u-hidden'); this.innerHTML='<i class=\"bi bi-eye-slash-fill\"></i> hide comments'; } else { commentsEl.classList.add('u-hidden'); this.innerHTML='<i class=\"bi bi-chat-left-text-fill\"></i> show comments'; }"><i class="bi bi-chat-left-text-fill"></i> show comments</button></p>
     <p id="commentsEl" class="u-hidden">
       ${commentsPluginHtml}
     </p>

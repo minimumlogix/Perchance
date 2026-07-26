@@ -25,7 +25,7 @@
 
         <div class="c-ai-modal__textarea-wrapper">
           <textarea id="aiIdeaKeywordsInput" class="c-textarea c-ai-modal__textarea" placeholder="Add keywords/ideas/instructions here..."></textarea>
-          <div class="c-ai-modal__bot-badge" title="AI Assistant Active">🤖</div>
+          <div class="c-ai-modal__bot-badge" title="AI Assistant Active"><i class="bi bi-robot"></i></div>
         </div>
 
         <div class="c-ai-modal__field">
@@ -118,7 +118,7 @@
 
     if (generateBtn) {
       generateBtn.disabled = true;
-      generateBtn.innerHTML = "✨ Generating...";
+      generateBtn.innerHTML = '<i class="bi bi-stars"></i> Generating...';
     }
 
     try {

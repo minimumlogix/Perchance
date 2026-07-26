@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" class="t-dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Character Description Generator</title>
   
+  <!-- INSTANT PRE-RENDER THEME RESTORATION -->
+  <script>
+    (function () {
+      try {
+        let saved = localStorage.getItem("CDG_APP_SETTINGS");
+        let theme = localStorage.forceColorScheme || (saved ? JSON.parse(saved).theme : null) || "dark";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.classList.remove("t-dark", "t-light");
+        document.documentElement.classList.add("t-" + theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.classList.add("t-dark");
+      }
+    })();
+  </script>
+
   <!-- DYNAMIC RESOURCE LOADER -->
   <script>
     (function () {
@@ -13,12 +29,13 @@
 
       // 1. Inject Stylesheets
       const stylesheets = [
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css",
         "css/main.css"
       ];
       stylesheets.forEach(href => {
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = basePath + href;
+        link.href = href.startsWith("http") ? href : basePath + href;
         document.head.appendChild(link);
       });
 
@@ -77,8 +94,8 @@
   <div class="c-textarea-wrapper">
     <textarea id="customFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, design notes, features, age, etc."></textarea>
     <div class="c-textarea-actions">
-      <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customFeaturesEl')">🎲</button>
-      <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customFeaturesEl')">🧠</button>
+      <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
+      <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
     </div>
   </div>
   
@@ -123,9 +140,9 @@
   </div>
   
   <div class="l-flex-center u-mt-md u-mb-xs">
-    <button id="generateBtn" class="c-button c-button--lg" onclick="regenerate()">✨ generate description</button>
+    <button id="generateBtn" class="c-button c-button--generate" onclick="regenerate()"><i class="bi bi-stars"></i> generate description</button>
     <div class="l-relative-holder">
-      <button id="stopBtn" class="c-button c-button--stop u-hidden" onclick="window.lastCharacterPromptStreamObj?.stop();">❌ stop</button>
+      <button id="stopBtn" class="c-button c-button--stop u-hidden" onclick="window.lastCharacterPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
     </div>
   </div>
   <p id="outputEl" class="u-w-full"></p>
@@ -136,14 +153,14 @@
     <div class="c-textarea-wrapper">
       <textarea id="customBehaviorFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..."></textarea>
       <div class="c-textarea-actions">
-        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customBehaviorFeaturesEl')">🎲</button>
-        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')">🧠</button>
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customBehaviorFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
       </div>
     </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
-      <button id="generateBehaviorBtn" class="c-button c-button--md" onclick="generateBehavior()">✨ generate behavior examples</button>
+      <button id="generateBehaviorBtn" class="c-button c-button--generate" onclick="generateBehavior()"><i class="bi bi-stars"></i> generate behavior examples</button>
       <div class="l-relative-holder">
-        <button id="stopBehaviorBtn" class="c-button c-button--stop u-hidden" onclick="window.lastBehaviorPromptStreamObj?.stop();">❌ stop</button>
+        <button id="stopBehaviorBtn" class="c-button c-button--stop u-hidden" onclick="window.lastBehaviorPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
       </div>
     </div>
     <p id="behaviorOutputEl" class="u-w-full u-mt-md"></p>
@@ -155,14 +172,14 @@
     <div class="c-textarea-wrapper">
       <textarea id="customScenarioFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, world context, or scenario outline..."></textarea>
       <div class="c-textarea-actions">
-        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customScenarioFeaturesEl')">🎲</button>
-        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customScenarioFeaturesEl')">🧠</button>
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customScenarioFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customScenarioFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
       </div>
     </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
-      <button id="generateScenarioBtn" class="c-button c-button--md" onclick="generateScenario()">✨ generate scenario description</button>
+      <button id="generateScenarioBtn" class="c-button c-button--generate" onclick="generateScenario()"><i class="bi bi-stars"></i> generate scenario description</button>
       <div class="l-relative-holder">
-        <button id="stopScenarioBtn" class="c-button c-button--stop u-hidden" onclick="window.lastScenarioPromptStreamObj?.stop();">❌ stop</button>
+        <button id="stopScenarioBtn" class="c-button c-button--stop u-hidden" onclick="window.lastScenarioPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
       </div>
     </div>
     <p id="scenarioOutputEl" class="u-w-full u-mt-md"></p>
@@ -174,14 +191,14 @@
     <div class="c-textarea-wrapper">
       <textarea id="customRoleplayStartFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, opening dialogue notes, or entry actions..."></textarea>
       <div class="c-textarea-actions">
-        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customRoleplayStartFeaturesEl')">🎲</button>
-        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customRoleplayStartFeaturesEl')">🧠</button>
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customRoleplayStartFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customRoleplayStartFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
       </div>
     </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
-      <button id="generateRoleplayStartBtn" class="c-button c-button--md" onclick="generateRoleplayStart()">✨ generate roleplay start</button>
+      <button id="generateRoleplayStartBtn" class="c-button c-button--generate" onclick="generateRoleplayStart()"><i class="bi bi-stars"></i> generate roleplay start</button>
       <div class="l-relative-holder">
-        <button id="stopRoleplayStartBtn" class="c-button c-button--stop u-hidden" onclick="window.lastRoleplayStartPromptStreamObj?.stop();">❌ stop</button>
+        <button id="stopRoleplayStartBtn" class="c-button c-button--stop u-hidden" onclick="window.lastRoleplayStartPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
       </div>
     </div>
     <p id="roleplayStartOutputEl" class="u-w-full u-mt-md"></p>
@@ -191,9 +208,9 @@
   <div id="imagesSectionCtn" class="c-card--section">
     <div class="c-card__title">Character Images</div>
     <div class="l-flex-center u-mb-xs">
-      <button id="generateImagesBtn" class="c-button c-button--md" onclick="generateImagesSection()">✨ generate images</button>
+      <button id="generateImagesBtn" class="c-button c-button--generate" onclick="generateImagesSection()"><i class="bi bi-images"></i> generate images</button>
       <div class="l-relative-holder">
-        <button id="stopImagesBtn" class="c-button c-button--stop u-hidden" onclick="window.lastImageCaptionPromptStreamObj?.stop();">❌ stop</button>
+        <button id="stopImagesBtn" class="c-button c-button--stop u-hidden" onclick="window.lastImageCaptionPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
       </div>
     </div>
   </div>
@@ -210,7 +227,7 @@
         [generateVisualStyleOptionsHtml()]
       </select>
     </div>
-    <button id="regenImagesBtn" class="c-button u-ml-sm" onclick="generateImages()">🎲 regenerate images</button>
+    <button id="regenImagesBtn" class="c-button c-button--generate u-ml-sm" onclick="generateImages()"><i class="bi bi-arrow-clockwise"></i> regenerate images</button>
   </div>
   <div id="imagesEl" class="c-gallery__grid"></div>
 </div>
@@ -222,13 +239,13 @@
 
 <!-- DARK MODE WIDGET -->
 <div class="c-floating-widget c-floating-widget--bottom-left">
-  <button id="darkModeBtn" class="c-button c-button--floating" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();">🌃</button>
+  <button id="darkModeBtn" class="c-button c-button--floating" onclick="window.toggleManualDarkMode(); createCommentsSectionHtml();"><i class="bi bi-brightness-high-fill"></i></button>
 </div>
 
 <!-- FEEDBACK WIDGET -->
 <div class="c-floating-widget c-floating-widget--bottom-right">
   <div id="feedbackCommentsCtn"></div>
-  <button id="feedbackBtn893745ykfuhd" class="c-button c-button--floating" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='✖ close'; } else { feedbackCommentsCtn.innerHTML=''; this.innerHTML='🗨️ feedback'; }">🗨️ feedback</button>
+  <button id="feedbackBtn893745ykfuhd" class="c-button c-button--floating" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='<i class=\"bi bi-x-lg\"></i> close'; } else { feedbackCommentsCtn.innerHTML=''; this.innerHTML='<i class=\"bi bi-chat-dots-fill\"></i> feedback'; }"><i class="bi bi-chat-dots-fill"></i> feedback</button>
 </div>
 
 </body>
