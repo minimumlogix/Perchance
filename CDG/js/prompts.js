@@ -130,7 +130,6 @@ ${shortNote}`;
     return {
         instruction,
         startWith: "Short Description = ",
-        endButtons: "none",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
             text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1 + p2 + `<b style="color:#13a000">${p3.trim()}</b>` + p4);
@@ -307,7 +306,6 @@ ${shortNote}`;
     return {
         instruction,
         startWith: "# Scenario\n\nTitle = ",
-        endButtons: "none",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
             text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1 + p2 + `<b style="color:#13a000">${p3.trim()}</b>` + p4);
@@ -448,7 +446,6 @@ ${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary
     return {
         instruction,
         startWith: "# Scenario\n\nTitle = ",
-        endButtons: "none",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
             text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1 + p2 + `<b style="color:#13a000">${p3.trim()}</b>` + p4);
@@ -509,7 +506,6 @@ ${customBehaviorText}`;
 
     return {
         instruction,
-        endButtons: "none",
         render: function (data) {
             let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
             return text;
@@ -556,7 +552,7 @@ ${descText}
 
 ${customScenarioText}`;
 
-    return { instruction, endButtons: "none" };
+    return { instruction };
 };
 
 /* ===========================
@@ -624,7 +620,6 @@ ${customRoleplayText}`;
 
     return {
         instruction,
-        endButtons: "none",
         render: function (data) {
             let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
             return text;
