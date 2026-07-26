@@ -207,7 +207,12 @@ function initCDGApp() {
     }
   });
 
-  /* 6. Autosave outputs and notes on beforeunload */
+  /* 6. Initialize Real-Time Storage Updater Engine (MutationObserver & Edit Listeners) */
+  if (typeof window.initStorageUpdaterEngine === "function") {
+    window.initStorageUpdaterEngine();
+  }
+
+  /* 7. Autosave outputs and notes on beforeunload */
   window.addEventListener("beforeunload", function() {
     outputs.forEach(({ id }) => {
       let el = document.getElementById(id);

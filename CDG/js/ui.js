@@ -246,6 +246,51 @@ window.retryOutput = function(retryFnName) {
 };
 
 /* ===========================
+   STORAGE UPDATER ENGINE
+=========================== */
+
+window.initStorageUpdaterEngine = function() {
+  const outputIds = ["outputEl", "behaviorOutputEl", "scenarioOutputEl", "roleplayStartOutputEl"];
+  const debounceTimers = {};
+
+  function updateCache(id) {
+    let el = document.getElementById(id);
+    if (!el) return;
+    let html = el.innerHTML.trim();
+    if (html) {
+      window.CDGStorage.setCache(id, html);
+    } else {
+      window.CDGStorage.clearCache(id);
+    }
+  }
+
+  function debouncedUpdateCache(id) {
+    if (debounceTimers[id]) clearTimeout(debounceTimers[id]);
+    debounceTimers[id] = setTimeout(() => {
+      updateCache(id);
+    }, 400);
+  }
+
+  outputIds.forEach(id => {
+    let el = document.getElementById(id);
+    if (!el) return;
+
+    let observer = new MutationObserver(() => {
+      debouncedUpdateCache(id);
+    });
+
+    observer.observe(el, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+
+    el.addEventListener("input", () => debouncedUpdateCache(id));
+    el.addEventListener("blur", () => updateCache(id));
+  });
+};
+
+/* ===========================
    MARKDOWN EXPORT SYSTEM
 =========================== */
 
@@ -257,10 +302,11 @@ window.htmlToMarkdown = function(html) {
   let toolbars = temp.querySelectorAll(".c-response-toolbar, .ai-text-response-buttons-wrapper");
   toolbars.forEach(tb => tb.remove());
 
+  // Replace <b> / <strong> with plain text (remove bolding)
   let bolds = temp.querySelectorAll("b, strong");
   bolds.forEach(b => {
     let t = b.textContent.trim();
-    if (t) b.textContent = `**${t}**`;
+    b.replaceWith(t);
   });
 
   for (let i = 1; i <= 6; i++) {
@@ -275,104 +321,72 @@ window.htmlToMarkdown = function(html) {
   brs.forEach(br => br.replaceWith("\n"));
 
   let text = temp.innerText || temp.textContent || "";
+  text = text.replace(/\*\*(.*?)\*\*/g, "$1");
   return text.replace(/\n{3,}/g, "\n\n").trim();
 };
 
 window.exportAsMarkdown = function() {
   let dateStr = new Date().toISOString().split("T")[0];
-  let sections = [];
+  let blocks = [];
 
-  sections.push(`# AI Roleplay Description Export\n*Exported on ${new Date().toLocaleString()}*`);
-
-  let tonePrompts = (window.toneSelector && window.toneSelector.selectedTags) ? window.toneSelector.selectedTags : [];
-  let settingPrompts = (window.worldSettingSelector && window.worldSettingSelector.selectedTags) ? window.worldSettingSelector.selectedTags : [];
-  if (tonePrompts.length > 0 || settingPrompts.length > 0) {
-    let settingsMd = `## Active Settings & Tags\n`;
-    if (tonePrompts.length > 0) {
-      settingsMd += `- **Roleplay Tones**: ${tonePrompts.join(", ")}\n`;
-    }
-    if (settingPrompts.length > 0) {
-      settingsMd += `- **World Settings**: ${settingPrompts.join(", ")}\n`;
-    }
-    sections.push(settingsMd);
+  function formatTags(selectorObj, title) {
+    if (!selectorObj || !selectorObj.selectedTags || selectorObj.selectedTags.length === 0) return "";
+    let items = selectorObj.selectedTags.map(tagKey => {
+      let info = selectorObj.findTagInfo ? selectorObj.findTagInfo(tagKey) : null;
+      let promptText = info ? (info.prompt || info.description || info.label) : null;
+      if (promptText) {
+        return `${tagKey} (${promptText})`;
+      }
+      return tagKey;
+    });
+    return `${title} = ${items.join(", ")}.`;
   }
 
+  // 1. Tones & World Settings (No start time, title header, or bolding)
+  let toneHeader = formatTags(window.toneSelector, "Roleplay Tone");
+  let worldHeader = formatTags(window.worldSettingSelector, "World Settings");
+
+  let headerLines = [];
+  if (toneHeader) headerLines.push(toneHeader);
+  if (worldHeader) headerLines.push(worldHeader);
+  if (headerLines.length > 0) {
+    blocks.push(headerLines.join("\n"));
+  }
+
+  // 2. Description (Character Profile - # Description)
   let descOutput = document.getElementById("outputEl");
-  let customFeaturesEl = document.getElementById("customFeaturesEl");
   let descText = descOutput ? window.htmlToMarkdown(descOutput.innerHTML) : "";
-  let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
-  if (descText || customFeaturesText) {
-    let block = `## Character Profile\n`;
-    if (customFeaturesText) {
-      block += `### Notes & Design Keywords\n${customFeaturesText}\n\n`;
-    }
-    if (descText) {
-      block += descText;
-    }
-    sections.push(block);
+  if (descText) {
+    blocks.push(`# Description\n\n${descText}`);
   }
 
+  // 3. Behavior Examples (# Behavior Examples)
   let behaviorOutput = document.getElementById("behaviorOutputEl");
-  let customBehaviorEl = document.getElementById("customBehaviorFeaturesEl");
   let behaviorText = behaviorOutput ? window.htmlToMarkdown(behaviorOutput.innerHTML) : "";
-  let customBehaviorText = customBehaviorEl ? customBehaviorEl.value.trim() : "";
-  if (behaviorText || customBehaviorText) {
-    let block = `## Behavior Examples\n`;
-    if (customBehaviorText) {
-      block += `### Notes\n${customBehaviorText}\n\n`;
-    }
-    if (behaviorText) {
-      block += behaviorText;
-    }
-    sections.push(block);
+  if (behaviorText) {
+    blocks.push(`# Behavior Examples\n\n${behaviorText}`);
   }
 
+  // 4. Scenario (# Scenario)
   let scenarioOutput = document.getElementById("scenarioOutputEl");
-  let customScenarioEl = document.getElementById("customScenarioFeaturesEl");
-  let scenarioPerspectiveEl = document.getElementById("scenarioPerspectiveEl");
   let scenarioText = scenarioOutput ? window.htmlToMarkdown(scenarioOutput.innerHTML) : "";
-  let customScenarioText = customScenarioEl ? customScenarioEl.value.trim() : "";
-  let scenarioPerspective = scenarioPerspectiveEl ? scenarioPerspectiveEl.value : "";
-  if (scenarioText || customScenarioText) {
-    let block = `## Scenario Description\n`;
-    if (scenarioPerspective) {
-      block += `*Narration Perspective: ${scenarioPerspective}*\n\n`;
-    }
-    if (customScenarioText) {
-      block += `### Notes\n${customScenarioText}\n\n`;
-    }
-    if (scenarioText) {
-      block += scenarioText;
-    }
-    sections.push(block);
+  if (scenarioText) {
+    blocks.push(`# Scenario\n\n${scenarioText}`);
   }
 
+  // 5. Roleplay Start (# Roleplay Start)
   let roleplayOutput = document.getElementById("roleplayStartOutputEl");
-  let customRoleplayEl = document.getElementById("customRoleplayStartFeaturesEl");
-  let roleplayPerspectiveEl = document.getElementById("roleplayStartPerspectiveEl");
   let roleplayText = roleplayOutput ? window.htmlToMarkdown(roleplayOutput.innerHTML) : "";
-  let customRoleplayText = customRoleplayEl ? customRoleplayEl.value.trim() : "";
-  let roleplayPerspective = roleplayPerspectiveEl ? roleplayPerspectiveEl.value : "";
-  if (roleplayText || customRoleplayText) {
-    let block = `## Roleplay Start\n`;
-    if (roleplayPerspective) {
-      block += `*Narration Perspective: ${roleplayPerspective}*\n\n`;
-    }
-    if (customRoleplayText) {
-      block += `### Notes\n${customRoleplayText}\n\n`;
-    }
-    if (roleplayText) {
-      block += roleplayText;
-    }
-    sections.push(block);
+  if (roleplayText) {
+    blocks.push(`# Roleplay Start\n\n${roleplayText}`);
   }
 
-  if (sections.length <= 1) {
-    alert("There is no content to export yet! Please generate a description or write notes first.");
+  if (blocks.length === 0) {
+    alert("There is no generated content to export yet! Please generate a description or scenario first.");
     return;
   }
 
-  let fullContent = sections.join("\n\n---\n\n");
+  let fullContent = blocks.join("\n\n");
 
   let nameMatch = fullContent.match(/(?:Name|Title)\s*[:=]\s*([^\n\r<]+)/i);
   let charName = (nameMatch && nameMatch[1]) ? nameMatch[1].trim().replace(/[^a-zA-Z0-9_-]/g, "_") : "roleplay_export";
