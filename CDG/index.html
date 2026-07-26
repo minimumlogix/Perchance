@@ -48,6 +48,8 @@
       const scripts = [
         "js/config.js",
         "js/prompts.js",
+        "js/yaml-plot-engine.js",
+        "js/ai-idea-generator.js",
         "js/ui.js",
         "js/generator.js",
         "js/app.js"
@@ -72,7 +74,13 @@
 <div class="l-container"> 
   
   <!-- CHARACTER DESCRIPTION SECTION -->
-  <textarea id="customFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, design notes, features, age, etc."></textarea>
+  <div class="c-textarea-wrapper">
+    <textarea id="customFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, design notes, features, age, etc."></textarea>
+    <div class="c-textarea-actions">
+      <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customFeaturesEl')">🎲</button>
+      <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customFeaturesEl')">🧠</button>
+    </div>
+  </div>
   
   <div id="descSettingsEl" class="c-settings-group"> 
     <div class="c-settings-box">
@@ -125,7 +133,13 @@
   <!-- BEHAVIOR EXAMPLES SECTION -->
   <div id="behaviorCtn" class="c-card--section">
     <div class="c-card__title">Behavior Examples</div>
-    <textarea id="customBehaviorFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..."></textarea>
+    <div class="c-textarea-wrapper">
+      <textarea id="customBehaviorFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..."></textarea>
+      <div class="c-textarea-actions">
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customBehaviorFeaturesEl')">🎲</button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')">🧠</button>
+      </div>
+    </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
       <button id="generateBehaviorBtn" class="c-button c-button--md" onclick="generateBehavior()">✨ generate behavior examples</button>
       <div class="l-relative-holder">
@@ -138,7 +152,13 @@
   <!-- SCENARIO DESCRIPTION SECTION -->
   <div id="scenarioCtn" class="c-card--section">
     <div class="c-card__title">Scenario Description</div>
-    <textarea id="customScenarioFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, world context, or scenario outline..."></textarea>
+    <div class="c-textarea-wrapper">
+      <textarea id="customScenarioFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, world context, or scenario outline..."></textarea>
+      <div class="c-textarea-actions">
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customScenarioFeaturesEl')">🎲</button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customScenarioFeaturesEl')">🧠</button>
+      </div>
+    </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
       <button id="generateScenarioBtn" class="c-button c-button--md" onclick="generateScenario()">✨ generate scenario description</button>
       <div class="l-relative-holder">
@@ -151,7 +171,13 @@
   <!-- ROLEPLAY START SECTION -->
   <div id="roleplayStartCtn" class="c-card--section">
     <div class="c-card__title">Roleplay Start</div>
-    <textarea id="customRoleplayStartFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, opening dialogue notes, or entry actions..."></textarea>
+    <div class="c-textarea-wrapper">
+      <textarea id="customRoleplayStartFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, opening dialogue notes, or entry actions..."></textarea>
+      <div class="c-textarea-actions">
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customRoleplayStartFeaturesEl')">🎲</button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customRoleplayStartFeaturesEl')">🧠</button>
+      </div>
+    </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
       <button id="generateRoleplayStartBtn" class="c-button c-button--md" onclick="generateRoleplayStart()">✨ generate roleplay start</button>
       <div class="l-relative-holder">

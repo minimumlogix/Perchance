@@ -1,0 +1,146 @@
+# ==========================================
+# RANDOM PLOT & CHARACTER PREMISE DATABASE
+# ==========================================
+
+version: "1.0"
+name: "Modular Plot Generator"
+
+# Default template format for combining sections
+templates:
+  - id: "three_part_plot"
+    format: "Part 1: Initial Situation\n{initial_situation}\n\nPart 2: Main Conflict\n{main_conflict}\n\nPart 3: Twist / Complication / Goal\n{twist_complication_goal}"
+    weight: 5
+  - id: "narrative_summary"
+    format: "In {setting}, {protagonist} lives a normal life—{initial_situation} However, everything changes {main_conflict} In the end, {twist_complication_goal}"
+    weight: 3
+
+# Modular categories with reusable entries, tags, weights, and rules
+categories:
+
+  # ----------------------------------------------------
+  # PART 1: INITIAL SITUATION
+  # ----------------------------------------------------
+  initial_situation:
+    - text: "A retired dragon hunter opens a small bakery in a quiet mountain village."
+      weight: 4
+      tags: ["fantasy", "cozy"]
+    - text: "A college student inherits a haunted apartment from an eccentric distant relative."
+      weight: 4
+      tags: ["modern", "supernatural"]
+    - text: "An AI awakens inside an abandoned colony starship drifting through deep space."
+      weight: 4
+      tags: ["sci-fi", "mystery"]
+    - text: "The kingdom celebrates its thousandth year of unbroken peace and prosperity."
+      weight: 4
+      tags: ["fantasy", "political"]
+    - text: "A disgraced alchemy professor takes a night job at an illegal potion clinic."
+      weight: 3
+      tags: ["fantasy", "urban"]
+    - text: "A solitude-loving lighthouse keeper discovers a siren washed ashore during a cosmic storm."
+      weight: 3
+      tags: ["supernatural", "nautical"]
+    - text: "A cybernetic bounty hunter takes one last routine contract before retiring to Mars."
+      weight: 3
+      tags: ["sci-fi", "cyberpunk"]
+    - text: "A quiet antique restorer uncovers an unlabeled leather journal written in backwards cipher."
+      weight: 3
+      tags: ["mystery", "historical"]
+    - text: "A disgraced royal knight works as a quiet tavern bouncer in the city slums."
+      weight: 3
+      tags: ["fantasy", "grit"]
+    - text: "A subterranean cartographer discovers an uncharted bioluminescent forest beneath the capitol."
+      weight: 3
+      tags: ["adventure", "fantasy"]
+    - text: "An undercover detective investigates a secretive aristocratic dining club."
+      weight: 3
+      tags: ["noir", "mystery"]
+    - text: "A planetary miner unearths a humming crystalline structure deep inside an asteroid core."
+      weight: 3
+      tags: ["sci-fi", "cosmic"]
+
+  # ----------------------------------------------------
+  # PART 2: MAIN CONFLICT
+  # ----------------------------------------------------
+  main_conflict:
+    - text: "...until mysterious disappearances begin plaguing the surrounding countryside."
+      weight: 4
+      tags: ["mystery", "supernatural"]
+    - text: "...when a forbidden relic of catastrophic power is stolen from the high vault."
+      weight: 4
+      tags: ["fantasy", "action"]
+    - text: "...after an ancient god starts speaking directly through their nightly dreams."
+      weight: 4
+      tags: ["supernatural", "cosmic"]
+    - text: "...because a rival empire unexpectedly launches a surprise full-scale invasion."
+      weight: 4
+      tags: ["political", "war"]
+    - text: "...when time begins fracturing, causing past and future events to bleed together."
+      weight: 3
+      tags: ["sci-fi", "mystery"]
+    - text: "...after discovering that the city's governor has secretly put a bounty on their head."
+      weight: 3
+      tags: ["crime", "thriller"]
+    - text: "...when an automated orbital defense grid goes rogue and locks down the continent."
+      weight: 3
+      tags: ["sci-fi", "dystopian"]
+    - text: "...after an accidental magical surge links their life force with a notorious outlaw boss."
+      weight: 3
+      tags: ["urban", "magic"]
+    - text: "...when the sun fails to rise one morning, leaving the world in perpetual twilight."
+      weight: 3
+      tags: ["fantasy", "apocalypse"]
+    - text: "...after realizing their closest companion is carrying a contagious shadow curse."
+      weight: 3
+      tags: ["dark", "drama"]
+
+  # ----------------------------------------------------
+  # PART 3: TWIST / COMPLICATION / GOAL
+  # ----------------------------------------------------
+  twist_complication_goal:
+    - text: "The real enemy behind the catastrophe is secretly the protagonist's future self."
+      weight: 4
+      tags: ["twist", "sci-fi"]
+    - text: "Every victory earned erases one precious core memory from their mind."
+      weight: 4
+      tags: ["complication", "tragedy"]
+    - text: "The villain is secretly protecting humanity from an even more devastating cosmic truth."
+      weight: 4
+      tags: ["twist", "morality"]
+    - text: "The protagonist must work alongside the exact person who betrayed them years ago."
+      weight: 4
+      tags: ["relationship", "drama"]
+    - text: "The magical power keeping them alive is slowly corrupting the surrounding land."
+      weight: 3
+      tags: ["complication", "stakes"]
+    - text: "They only have 72 hours to resolve the crisis before the rift becomes permanent."
+      weight: 3
+      tags: ["goal", "timer"]
+    - text: "Unlocking the final door requires sacrificing the memory of the person they love most."
+      weight: 3
+      tags: ["goal", "tragedy"]
+    - text: "Uncovering the truth reveals that the entire world is an artificial memory simulation."
+      weight: 3
+      tags: ["twist", "cyberpunk"]
+    - text: "The artifact can cure the plague, but activating it will permanently strip all magic from the realm."
+      weight: 3
+      tags: ["dilemma", "fantasy"]
+
+  # ----------------------------------------------------
+  # PROTAGONISTS
+  # ----------------------------------------------------
+  protagonist:
+    - text: "a battle-weary spellsword seeking redemption"
+    - text: "an ambitious young archivist with forbidden knowledge"
+    - text: "a sharp-tongued mercenary captain hiding a tragic past"
+    - text: "a rogue starship engineer with illegal cybernetic implants"
+    - text: "a disgraced noble turned street-smart informant"
+
+  # ----------------------------------------------------
+  # SETTINGS
+  # ----------------------------------------------------
+  setting:
+    - text: "a rain-slicked cyberpunk metropolis"
+    - text: "an ancient floating citadel above a sea of clouds"
+    - text: "a sun-bleached desert trading post"
+    - text: "a sprawling subterranean dwarven stronghold"
+    - text: "an overgrown post-apocalyptic city center"

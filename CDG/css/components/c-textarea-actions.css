@@ -1,0 +1,157 @@
+/* ===========================
+   COMPONENT: TEXTAREA ACTION STACK & AI MODAL
+=========================== */
+
+/* --- TEXTAREA WRAPPER & BUTTON STACK --- */
+.c-textarea-wrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  position: relative;
+}
+
+.c-textarea-wrapper .c-textarea {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  min-height: 5.5rem;
+}
+
+.c-textarea-actions {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-box, #252526);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-left: none;
+  border-top-right-radius: var(--radius-xs);
+  border-bottom-right-radius: var(--radius-xs);
+  overflow: hidden;
+  width: 2.75rem;
+}
+
+.c-textarea-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  cursor: pointer;
+  color: var(--color-text-main);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  padding: 0;
+}
+
+.c-textarea-btn:not(:last-child) {
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+}
+
+.c-textarea-btn:hover {
+  background-color: var(--color-bg-subtle, #333333);
+}
+
+.c-textarea-btn:active {
+  transform: scale(0.92);
+}
+
+/* --- PULSE HIGHLIGHT EFFECT --- */
+.u-highlight-pulse {
+  animation: pulseHighlight 0.6s ease-in-out;
+}
+
+@keyframes pulseHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(29, 128, 253, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(29, 128, 253, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(29, 128, 253, 0); }
+}
+
+/* --- AI IDEA GENERATOR MODAL --- */
+.c-ai-modal {
+  max-width: 480px;
+  width: 92%;
+  background-color: var(--color-bg-surface, #1e1e1e);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.c-ai-modal__header {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-md);
+  color: var(--color-text-main);
+}
+
+.c-ai-modal__textarea-wrapper {
+  position: relative;
+  margin-bottom: var(--space-md);
+}
+
+.c-ai-modal__textarea {
+  min-height: 6rem;
+  padding-right: 2.2rem;
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-base, #121212);
+}
+
+.c-ai-modal__bot-badge {
+  position: absolute;
+  bottom: 0.6rem;
+  right: 0.6rem;
+  font-size: 1.1rem;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.c-ai-modal__field {
+  margin-bottom: var(--space-md);
+}
+
+.c-ai-modal__label {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-xs);
+  color: var(--color-text-main);
+}
+
+.c-ai-modal__select {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-base, #121212);
+  text-transform: uppercase;
+}
+
+.c-ai-modal__tip {
+  font-size: 0.825rem;
+  color: var(--color-text-muted, #a0a0a0);
+  margin-bottom: var(--space-lg);
+}
+
+.c-ai-modal__tip-link {
+  color: #00ff88;
+  text-decoration: underline;
+}
+
+.c-ai-modal__tip-link:hover {
+  color: #33ff99;
+}
+
+.c-ai-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.c-button--primary {
+  background-color: #1d80fd !important;
+  color: #ffffff !important;
+  border-color: #1d80fd !important;
+  font-weight: var(--font-weight-bold);
+}
+
+.c-button--primary:hover:not(:disabled) {
+  background-color: #0267e3 !important;
+  border-color: #0267e3 !important;
+}
