@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
   window.toneSelector = new window.TagSelector("toneSelectorCtn", {
     title: "Roleplay Tone",
     yamlUrl: "data/tones.yaml",
+    defaultData: window.DEFAULT_TONES_DATA || {},
     placeholder: "Type to search or add custom tone...",
     initialTags: Array.isArray(initialTones) ? initialTones : [],
     onChange: function(tags) {
@@ -91,6 +92,7 @@ document.addEventListener("DOMContentLoaded", function() {
   window.worldSettingSelector = new window.TagSelector("worldSettingSelectorCtn", {
     title: "World Setting",
     yamlUrl: "data/world_settings.yaml",
+    defaultData: window.DEFAULT_WORLD_SETTINGS_DATA || {},
     placeholder: "Type to search or add custom setting...",
     initialTags: Array.isArray(initialWorldSettings) ? initialWorldSettings : [],
     onChange: function(tags) {
