@@ -33,7 +33,7 @@ window.getFantasyCharacterPrompt = function () {
         for (let idx = 0; idx < bgCastCount; idx++) {
             bgItems.push(`- <Background NPC #${idx + 1} Name> = <Short description of role and dynamic with main character>`);
         }
-        bgCastTemplate = `\n\n---\n\n# Background Cast (NPCs)\n\n${bgItems.join("\n")}`;
+        bgCastTemplate = `\n\n---\n\n## Background Cast (NPCs)\n\n${bgItems.join("\n")}`;
     }
 
     let instruction = `Please create an interesting and creative OC character including name, age, appearance, personality, etc.
@@ -196,7 +196,7 @@ Rules = <Describe behavioral rules, roleplay constraints, strict boundaries, hab
     if (bgCastCount > 0) {
         let bgItems = [];
         for (let idx = 0; idx < bgCastCount; idx++) {
-            bgItems.push(`- <Background NPC #${idx + 1} Name> = <Short description of role and dynamic>`);
+            bgItems.push(`- <Background NPC ###${idx + 1} Name> = <Short description of role and dynamic>`);
         }
         bgCastTemplate = bgItems.join("\n");
     } else {
@@ -226,7 +226,7 @@ Keep prose lean, descriptive, and immersive. Avoid cliché anime personalities, 
 ${seedWordsTip}
 Use this template:
 ---
-# Scenario
+## Scenario
 
 Title = <scenario title>
 
@@ -244,41 +244,47 @@ Scenario = <Describe the current situation, ongoing conflict, why the cast has g
 
 ---
 
-# Player Character
+## Player Character
 
+[
 Name = {{user}}
 
 Role = <Describe {{user}}'s role within the scenario, background, current objective, reputation, responsibilities, experience level, and why they have become involved.>
+]
 
 ---
 
-# Main Cast (NPCs)
+## Main Cast (NPCs)
 
+[
 ${mainCastTemplate}
+]
 
 ---
 
-# Background Cast (NPCs)
+## Background Cast (NPCs)
 
+[
 ${bgCastTemplate}
+]
 
 ---
 
-# Organizations
+## Organizations
 
 - <Organization 1> = <Description>
 - <Organization 2> = <Description>
 
 ---
 
-# Important Locations
+## Important Locations
 
 - <Location 1> = <Description>
 - <Location 2> = <Description>
 
 ---
 
-# Timeline
+## Timeline
 
 - Ancient History = <Important historical event>
 - Years Ago = <Major event>
@@ -287,7 +293,7 @@ ${bgCastTemplate}
 
 ---
 
-# Roleplay Guidance Prompt
+## Roleplay Guidance Prompt
 
 <Provide instructions for how the AI should write this scenario, including narrative style, pacing, dialogue quality, character autonomy, emotional progression, romance pacing if applicable, combat style, scene transitions, and roleplay behavior. Focus on immersive, slow-burn storytelling that respects each character's established personality and agency.>
 
@@ -344,7 +350,7 @@ window.getLargeCastScenarioPrompt = function () {
     if (bgCastCount > 0) {
         let bgItems = [];
         for (let idx = 0; idx < bgCastCount; idx++) {
-            bgItems.push(`- <Background NPC #${idx + 1} Name> = <Short description of role and dynamic>`);
+            bgItems.push(`- <Background NPC ###${idx + 1} Name> = <Short description of role and dynamic>`);
         }
         bgCastTemplate = bgItems.join("\n");
     } else {
@@ -362,7 +368,7 @@ Create a cast that genuinely feels like they have lived, worked, fought, and cha
 ${seedWordsTip}
 Use this template:
 ---
-# Scenario
+## Scenario
 
 Title = <scenario title>
 
@@ -380,41 +386,47 @@ Scenario = <Describe the current situation, ongoing conflict, why the cast has g
 
 ---
 
-# Player Character
+## Player Character
 
+[
 Name = {{user}}
 
 Role = <Describe {{user}}'s role within the scenario, background, current objective, reputation, responsibilities, and experience level.>
+]
 
 ---
 
-# Main Cast (NPCs)
+## Main Cast (NPCs)
 
+[
 ${mainCastTemplate}
+]
 
 ---
 
-# Background Cast (NPCs)
+## Background Cast (NPCs)
 
+[
 ${bgCastTemplate}
+]
 
 ---
 
-# Organizations
+## Organizations
 
 - <Organization 1> = <Description>
 - <Organization 2> = <Description>
 
 ---
 
-# Important Locations
+## Important Locations
 
 - <Location 1> = <Description>
 - <Location 2> = <Description>
 
 ---
 
-# Timeline
+## Timeline
 
 - Ancient History = <Important historical event>
 - Years Ago = <Major event>
@@ -422,7 +434,7 @@ ${bgCastTemplate}
 
 ---
 
-# Roleplay Guidance Prompt
+## Roleplay Guidance Prompt
 
 <Provide instructions for how the AI should write this scenario, focusing on immersive, slow-burn storytelling.>
 

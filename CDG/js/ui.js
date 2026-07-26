@@ -123,6 +123,7 @@ window.renderResponseToolbar = function(targetId, retryFnName) {
     <button class="c-button c-button--icon c-button--sm" title="Clear" onclick="clearOutput('${targetId}')"><i class="bi bi-trash-fill"></i></button>
     <button class="c-button c-button--icon c-button--sm" title="Copy" onclick="copyOutput('${targetId}', this)"><i class="bi bi-clipboard"></i></button>
     <button class="c-button c-button--icon c-button--sm" title="Edit" onclick="toggleEditOutput('${targetId}', this)"><i class="bi bi-pencil-square"></i></button>
+    <button class="c-button c-button--icon c-button--sm" title="Export Markdown" onclick="exportAsMarkdown()"><i class="bi bi-download"></i></button>
     <button class="c-button c-button--icon c-button--sm" title="Retry" onclick="retryOutput('${retryFnName}')"><i class="bi bi-arrow-clockwise"></i></button>
   `;
 
@@ -242,6 +243,149 @@ window.retryOutput = function(retryFnName) {
   if (typeof window[retryFnName] === "function") {
     window[retryFnName]();
   }
+};
+
+/* ===========================
+   MARKDOWN EXPORT SYSTEM
+=========================== */
+
+window.htmlToMarkdown = function(html) {
+  if (!html) return "";
+  let temp = document.createElement("div");
+  temp.innerHTML = html;
+
+  let toolbars = temp.querySelectorAll(".c-response-toolbar, .ai-text-response-buttons-wrapper");
+  toolbars.forEach(tb => tb.remove());
+
+  let bolds = temp.querySelectorAll("b, strong");
+  bolds.forEach(b => {
+    let t = b.textContent.trim();
+    if (t) b.textContent = `**${t}**`;
+  });
+
+  for (let i = 1; i <= 6; i++) {
+    let headers = temp.querySelectorAll("h" + i);
+    headers.forEach(h => {
+      let hashes = "#".repeat(i);
+      h.textContent = `\n\n${hashes} ${h.textContent.trim()}\n\n`;
+    });
+  }
+
+  let brs = temp.querySelectorAll("br");
+  brs.forEach(br => br.replaceWith("\n"));
+
+  let text = temp.innerText || temp.textContent || "";
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+};
+
+window.exportAsMarkdown = function() {
+  let dateStr = new Date().toISOString().split("T")[0];
+  let sections = [];
+
+  sections.push(`# AI Roleplay Description Export\n*Exported on ${new Date().toLocaleString()}*`);
+
+  let tonePrompts = (window.toneSelector && window.toneSelector.selectedTags) ? window.toneSelector.selectedTags : [];
+  let settingPrompts = (window.worldSettingSelector && window.worldSettingSelector.selectedTags) ? window.worldSettingSelector.selectedTags : [];
+  if (tonePrompts.length > 0 || settingPrompts.length > 0) {
+    let settingsMd = `## Active Settings & Tags\n`;
+    if (tonePrompts.length > 0) {
+      settingsMd += `- **Roleplay Tones**: ${tonePrompts.join(", ")}\n`;
+    }
+    if (settingPrompts.length > 0) {
+      settingsMd += `- **World Settings**: ${settingPrompts.join(", ")}\n`;
+    }
+    sections.push(settingsMd);
+  }
+
+  let descOutput = document.getElementById("outputEl");
+  let customFeaturesEl = document.getElementById("customFeaturesEl");
+  let descText = descOutput ? window.htmlToMarkdown(descOutput.innerHTML) : "";
+  let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
+  if (descText || customFeaturesText) {
+    let block = `## Character Profile\n`;
+    if (customFeaturesText) {
+      block += `### Notes & Design Keywords\n${customFeaturesText}\n\n`;
+    }
+    if (descText) {
+      block += descText;
+    }
+    sections.push(block);
+  }
+
+  let behaviorOutput = document.getElementById("behaviorOutputEl");
+  let customBehaviorEl = document.getElementById("customBehaviorFeaturesEl");
+  let behaviorText = behaviorOutput ? window.htmlToMarkdown(behaviorOutput.innerHTML) : "";
+  let customBehaviorText = customBehaviorEl ? customBehaviorEl.value.trim() : "";
+  if (behaviorText || customBehaviorText) {
+    let block = `## Behavior Examples\n`;
+    if (customBehaviorText) {
+      block += `### Notes\n${customBehaviorText}\n\n`;
+    }
+    if (behaviorText) {
+      block += behaviorText;
+    }
+    sections.push(block);
+  }
+
+  let scenarioOutput = document.getElementById("scenarioOutputEl");
+  let customScenarioEl = document.getElementById("customScenarioFeaturesEl");
+  let scenarioPerspectiveEl = document.getElementById("scenarioPerspectiveEl");
+  let scenarioText = scenarioOutput ? window.htmlToMarkdown(scenarioOutput.innerHTML) : "";
+  let customScenarioText = customScenarioEl ? customScenarioEl.value.trim() : "";
+  let scenarioPerspective = scenarioPerspectiveEl ? scenarioPerspectiveEl.value : "";
+  if (scenarioText || customScenarioText) {
+    let block = `## Scenario Description\n`;
+    if (scenarioPerspective) {
+      block += `*Narration Perspective: ${scenarioPerspective}*\n\n`;
+    }
+    if (customScenarioText) {
+      block += `### Notes\n${customScenarioText}\n\n`;
+    }
+    if (scenarioText) {
+      block += scenarioText;
+    }
+    sections.push(block);
+  }
+
+  let roleplayOutput = document.getElementById("roleplayStartOutputEl");
+  let customRoleplayEl = document.getElementById("customRoleplayStartFeaturesEl");
+  let roleplayPerspectiveEl = document.getElementById("roleplayStartPerspectiveEl");
+  let roleplayText = roleplayOutput ? window.htmlToMarkdown(roleplayOutput.innerHTML) : "";
+  let customRoleplayText = customRoleplayEl ? customRoleplayEl.value.trim() : "";
+  let roleplayPerspective = roleplayPerspectiveEl ? roleplayPerspectiveEl.value : "";
+  if (roleplayText || customRoleplayText) {
+    let block = `## Roleplay Start\n`;
+    if (roleplayPerspective) {
+      block += `*Narration Perspective: ${roleplayPerspective}*\n\n`;
+    }
+    if (customRoleplayText) {
+      block += `### Notes\n${customRoleplayText}\n\n`;
+    }
+    if (roleplayText) {
+      block += roleplayText;
+    }
+    sections.push(block);
+  }
+
+  if (sections.length <= 1) {
+    alert("There is no content to export yet! Please generate a description or write notes first.");
+    return;
+  }
+
+  let fullContent = sections.join("\n\n---\n\n");
+
+  let nameMatch = fullContent.match(/(?:Name|Title)\s*[:=]\s*([^\n\r<]+)/i);
+  let charName = (nameMatch && nameMatch[1]) ? nameMatch[1].trim().replace(/[^a-zA-Z0-9_-]/g, "_") : "roleplay_export";
+  let filename = `${charName}_${dateStr}.txt`;
+
+  let blob = new Blob([fullContent], { type: "text/markdown;charset=utf-8" });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
 };
 
 /* ===========================
