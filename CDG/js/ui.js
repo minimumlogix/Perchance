@@ -49,7 +49,10 @@ window.CDGStorage = {
   },
 
   initPersistentStorage: async function() {
-    if (navigator.storage && typeof navigator.storage.persist === "function") {
+    if (typeof window !== "undefined" && !window.StorageType) {
+      window.StorageType = { persistent: "persistent", temporary: "temporary" };
+    }
+    if (typeof navigator !== "undefined" && navigator.storage && typeof navigator.storage.persist === "function") {
       try {
         const isPersisted = await navigator.storage.persisted();
         if (!isPersisted) {
