@@ -72,6 +72,40 @@
   box-shadow: var(--shadow-sm);
 }
 
+.c-button--clear {
+  height: 2.75rem;
+  padding: 0 0.85rem;
+  white-space: nowrap;
+  color: var(--color-text-subtle);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-box);
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.c-button--clear:hover:not(:disabled) {
+  background-color: rgba(255, 77, 79, 0.15);
+  color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.c-button--clear-all {
+  height: 2.75rem;
+  padding: 0 0.85rem;
+  white-space: nowrap;
+  background-color: rgba(255, 77, 79, 0.1);
+  color: #ff4d4f;
+  border: 1px solid rgba(255, 77, 79, 0.4);
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.c-button--clear-all:hover:not(:disabled) {
+  background-color: #ff4d4f;
+  color: #ffffff;
+  border-color: #ff4d4f;
+}
+
 /* ===========================
    RESPONSE ACTION TOOLBAR & ICON BUTTONS
 =========================== */

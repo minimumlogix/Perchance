@@ -137,6 +137,70 @@ window.clearOutput = function(targetId) {
   window.CDGStorage.clearCache(targetId);
 };
 
+window.clearSection = function(type) {
+  if (type === "desc") {
+    window.clearOutput("outputEl");
+    let customEl = document.getElementById("customFeaturesEl");
+    if (customEl) {
+      customEl.value = "";
+      window.CDGStorage.saveSettings({ customFeatures: "" });
+      localStorage.customFeatures = "";
+    }
+    let btn = document.getElementById("generateBtn");
+    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate description';
+  } else if (type === "behavior") {
+    window.clearOutput("behaviorOutputEl");
+    let customEl = document.getElementById("customBehaviorFeaturesEl");
+    if (customEl) {
+      customEl.value = "";
+      window.CDGStorage.saveSettings({ customBehaviorFeatures: "" });
+      localStorage.customBehaviorFeatures = "";
+    }
+    let btn = document.getElementById("generateBehaviorBtn");
+    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate behavior examples';
+  } else if (type === "scenario") {
+    window.clearOutput("scenarioOutputEl");
+    let customEl = document.getElementById("customScenarioFeaturesEl");
+    if (customEl) {
+      customEl.value = "";
+      window.CDGStorage.saveSettings({ customScenarioFeatures: "" });
+      localStorage.customScenarioFeatures = "";
+    }
+    let btn = document.getElementById("generateScenarioBtn");
+    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate scenario description';
+  } else if (type === "roleplayStart") {
+    window.clearOutput("roleplayStartOutputEl");
+    let customEl = document.getElementById("customRoleplayStartFeaturesEl");
+    if (customEl) {
+      customEl.value = "";
+      window.CDGStorage.saveSettings({ customRoleplayStartFeatures: "" });
+      localStorage.customRoleplayStartFeatures = "";
+    }
+    let btn = document.getElementById("generateRoleplayStartBtn");
+    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate roleplay start';
+  }
+};
+
+window.clearAllContent = function() {
+  if (!confirm("Are you sure you want to clear all generated content, custom notes, and selected tags?")) return;
+  
+  window.clearSection("desc");
+  window.clearSection("behavior");
+  window.clearSection("scenario");
+  window.clearSection("roleplayStart");
+
+  if (window.toneSelector) {
+    window.toneSelector.selectedTags = [];
+    window.toneSelector.render();
+    window.toneSelector.onChange([]);
+  }
+  if (window.worldSettingSelector) {
+    window.worldSettingSelector.selectedTags = [];
+    window.worldSettingSelector.render();
+    window.worldSettingSelector.onChange([]);
+  }
+};
+
 window.copyOutput = function(targetId, btnEl) {
   let targetEl = document.getElementById(targetId);
   if (!targetEl) return;

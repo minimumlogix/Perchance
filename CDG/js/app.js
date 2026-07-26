@@ -188,24 +188,36 @@ document.addEventListener("DOMContentLoaded", function() {
   let initialTheme = localStorage.forceColorScheme || settings.theme || "dark";
   window.setColorScheme(initialTheme);
 
-  /* 5. Restore Cached Output Responses */
+  /* 5. Restore Cached Output Responses & Update Button State */
   const outputs = [
-    { id: "outputEl", retry: "regenerate" },
-    { id: "behaviorOutputEl", retry: "generateBehavior" },
-    { id: "scenarioOutputEl", retry: "generateScenario" },
-    { id: "roleplayStartOutputEl", retry: "generateRoleplayStart" }
+    { id: "outputEl", retry: "regenerate", btnId: "generateBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate description' },
+    { id: "behaviorOutputEl", retry: "generateBehavior", btnId: "generateBehaviorBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples' },
+    { id: "scenarioOutputEl", retry: "generateScenario", btnId: "generateScenarioBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description' },
+    { id: "roleplayStartOutputEl", retry: "generateRoleplayStart", btnId: "generateRoleplayStartBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start' }
   ];
 
-  outputs.forEach(({ id, retry }) => {
+  outputs.forEach(({ id, retry, btnId, text }) => {
     let cachedHTML = window.CDGStorage.getCache(id);
     let el = document.getElementById(id);
-    if (cachedHTML && el) {
+    if (cachedHTML && el && cachedHTML.trim()) {
       el.innerHTML = cachedHTML;
+      let btn = document.getElementById(btnId);
+      if (btn) btn.innerHTML = text;
       window.renderResponseToolbar(id, retry);
     }
   });
 
-  /* 6. Initialize Comments Section */
+  /* 6. Autosave outputs and notes on beforeunload */
+  window.addEventListener("beforeunload", function() {
+    outputs.forEach(({ id }) => {
+      let el = document.getElementById(id);
+      if (el && el.innerHTML.trim()) {
+        window.CDGStorage.setCache(id, el.innerHTML);
+      }
+    });
+  });
+
+  /* 7. Initialize Comments Section */
   if (typeof window.createCommentsSectionHtml === "function") {
     window.createCommentsSectionHtml();
   }
