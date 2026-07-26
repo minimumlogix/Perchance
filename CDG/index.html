@@ -245,7 +245,7 @@
 <!-- FEEDBACK WIDGET -->
 <div class="c-floating-widget c-floating-widget--bottom-right">
   <div id="feedbackCommentsCtn"></div>
-  <button id="feedbackBtn893745ykfuhd" class="c-button c-button--floating" onclick="if(feedbackCommentsCtn.innerHTML.length === 0) { feedbackCommentsCtn.innerHTML=generateFeedbackCommentsHtml(); this.innerHTML='<i class=\"bi bi-x-lg\"></i> close'; } else { feedbackCommentsCtn.innerHTML=''; this.innerHTML='<i class=\"bi bi-chat-dots-fill\"></i> feedback'; }"><i class="bi bi-chat-dots-fill"></i> feedback</button>
+  <button id="feedbackBtn893745ykfuhd" class="c-button c-button--floating" onclick="window.toggleFeedbackModal(this);"><i class="bi bi-chat-dots-fill"></i> feedback</button>
 </div>
 
 </body>

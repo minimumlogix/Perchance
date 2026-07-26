@@ -181,6 +181,18 @@ window.retryOutput = function(retryFnName) {
    COMMENTS & FEEDBACK SYSTEM
 =========================== */
 
+window.toggleCommentsSection = function(btnEl) {
+  let commentsEl = document.getElementById("commentsEl");
+  if (!commentsEl) return;
+  if (commentsEl.classList.contains("u-hidden")) {
+    commentsEl.classList.remove("u-hidden");
+    btnEl.innerHTML = '<i class="bi bi-eye-slash-fill"></i> hide comments';
+  } else {
+    commentsEl.classList.add("u-hidden");
+    btnEl.innerHTML = '<i class="bi bi-chat-left-text-fill"></i> show comments';
+  }
+};
+
 window.createCommentsSectionHtml = function() {
   let commentsCtn = document.getElementById("commentsCtn");
   if (!commentsCtn || typeof window.comments !== "function") return;
@@ -192,7 +204,7 @@ window.createCommentsSectionHtml = function() {
   });
   
   commentsCtn.innerHTML = `
-    <p><button class="c-button" onclick="if(commentsEl.classList.contains('u-hidden')) { commentsEl.classList.remove('u-hidden'); this.innerHTML='<i class=\"bi bi-eye-slash-fill\"></i> hide comments'; } else { commentsEl.classList.add('u-hidden'); this.innerHTML='<i class=\"bi bi-chat-left-text-fill\"></i> show comments'; }"><i class="bi bi-chat-left-text-fill"></i> show comments</button></p>
+    <p><button class="c-button" onclick="window.toggleCommentsSection(this)"><i class="bi bi-chat-left-text-fill"></i> show comments</button></p>
     <p id="commentsEl" class="u-hidden">
       ${commentsPluginHtml}
     </p>
@@ -212,6 +224,18 @@ window.generateFeedbackCommentsHtml = function() {
   };
   
   return window.comments(options);
+};
+
+window.toggleFeedbackModal = function(btnEl) {
+  let feedbackCommentsCtn = document.getElementById("feedbackCommentsCtn");
+  if (!feedbackCommentsCtn) return;
+  if (feedbackCommentsCtn.innerHTML.length === 0) {
+    feedbackCommentsCtn.innerHTML = window.generateFeedbackCommentsHtml();
+    btnEl.innerHTML = '<i class="bi bi-x-lg"></i> close';
+  } else {
+    feedbackCommentsCtn.innerHTML = '';
+    btnEl.innerHTML = '<i class="bi bi-chat-dots-fill"></i> feedback';
+  }
 };
 
 /* ===========================

@@ -92,6 +92,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
   let visualStyleEl = document.getElementById("visualStyleEl");
   if (visualStyleEl) {
+    if (typeof window.generateVisualStyleOptionsHtml === "function" && (!visualStyleEl.options || visualStyleEl.options.length === 0 || visualStyleEl.innerHTML.includes("["))) {
+      let optionsHtml = window.generateVisualStyleOptionsHtml();
+      if (optionsHtml) visualStyleEl.innerHTML = optionsHtml;
+    }
     setTimeout(() => {
       visualStyleEl.value = settings.visualStyle || localStorage.visualStyle || visualStyleEl.value;
     }, 10);
