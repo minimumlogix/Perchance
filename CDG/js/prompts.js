@@ -481,6 +481,7 @@ window.getBehaviorPrompt = function () {
         ? `Design Notes / Scenario:\n${customBehaviorFeaturesEl.value.trim()}`
         : "";
 
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
     let multiCastFormattingRule = mainCastCount >= 2 ? `\n5. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: "Dialogue" *Action*, Fio: *Action* "Dialogue").` : "";
 
     let instruction = `Based on the character profile below, generate a behavior example showing 5 back to back interactions between {{user}} and the cast.
@@ -493,6 +494,8 @@ Format the example strictly as follows:
 {{user}}: "Dialogue" *Action description*
 {{char}}: "Dialogue" *Action description*
 
+Requirements & Format:
+${toneAndSettingNote}
 Rules for example behavior:
 1. Use asterisks for actions and descriptions, NOT bolding.
 2. Use quotation marks for all dialogue.
