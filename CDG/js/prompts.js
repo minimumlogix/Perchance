@@ -9,14 +9,25 @@
 window.getFantasyCharacterPrompt = function () {
     let customFeaturesEl = document.getElementById("customFeaturesEl");
     let descLengthEl = document.getElementById("descLengthEl");
+    let bgCastEl = document.getElementById("bgCastEl");
 
     let lengthVal = descLengthEl ? descLengthEl.value : "medium";
+    let bgCastCount = parseInt(bgCastEl ? bgCastEl.value : "0", 10);
     let lengthSpec = (window.CDGConfig && window.CDGConfig.lengthSpecifiers && window.CDGConfig.lengthSpecifiers[lengthVal]) || "1-2 paragraphs";
     let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
     let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
 
     let shortNote = lengthVal === "short" ? "IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.\n" : "";
+
+    let bgCastTemplate = "";
+    if (bgCastCount > 0) {
+        let bgItems = [];
+        for (let idx = 0; idx < bgCastCount; idx++) {
+            bgItems.push(`- <Background NPC #${idx + 1} Name> = <Short description of role and dynamic with main character>`);
+        }
+        bgCastTemplate = `\n\n---\n\n# Background Cast (NPCs)\n\n${bgItems.join("\n")}`;
+    }
 
     let instruction = `Please create an interesting and creative OC character including name, age, appearance, personality, etc.
 Create a character that genuinely feels *real*, not cliche, or overwrought, or affected informality (this is a character description, not a place for rhetorical questions or fourth wall breaks). Sometimes it's the little "plain" details. Or specific things from their past that affected who they are (creativity seeds may help, but always stick to the implied world lore and the *underlying intention* behind the design notes). Aim for interesting worldbuilding within the character background. Use lean, unpretentious, crisp, descriptive passages that paint the character right into the reader's mind.
@@ -102,7 +113,7 @@ Internal conflicts = <personal dilemmas, emotional struggles, competing prioriti
 
 Short-term Goals = <immediate goals>
 
-Long-term Goals = <ultimate ambitions>
+Long-term Goals = <ultimate ambitions>${bgCastTemplate}
 ---
 
 # Design notes:
@@ -439,15 +450,19 @@ IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be insp
 window.getBehaviorPrompt = function () {
     let outputEl = document.getElementById("outputEl");
     let customBehaviorFeaturesEl = document.getElementById("customBehaviorFeaturesEl");
+    let mainCastEl = document.getElementById("mainCastEl");
+    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
     let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
-        || (outputEl && outputEl.innerText.trim())
+        || (outputEl && outputEl.innerText && outputEl.innerText.trim())
         || (window.lastCharacterPromptStreamObj ? (window.lastCharacterPromptStreamObj.text || window.lastCharacterPromptStreamObj.liveResponseText) : "");
 
     let customBehaviorText = customBehaviorFeaturesEl && customBehaviorFeaturesEl.value.trim()
         ? `Design Notes / Scenario:\n${customBehaviorFeaturesEl.value.trim()}`
         : "";
 
-    let instruction = `Based on the character profile below, generate a behavior example showing 5 back to back interactions between {{user}} and {{char}}.
+    let multiCastFormattingRule = mainCastCount >= 2 ? `\n5. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: "Dialogue" *Action*, Fio: *Action* "Dialogue").` : "";
+
+    let instruction = `Based on the character profile below, generate a behavior example showing 5 back to back interactions between {{user}} and the cast.
 
 Format the example strictly as follows:
 
@@ -461,7 +476,7 @@ Rules for example behavior:
 1. Use asterisks for actions and descriptions, NOT bolding.
 2. Use quotation marks for all dialogue.
 3. Write authentic humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. Include vivid descriptions of actions or scenarios.
-4. Show the character’s unique voice, personality, and relationship to {{user}}.
+4. Show the character’s unique voice, personality, and relationship to {{user}}.${multiCastFormattingRule}
 
 Character Profile:
 ${descText}
@@ -471,7 +486,7 @@ ${customBehaviorText}`;
     return {
         instruction,
         render: function (data) {
-            let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
+            let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
             return text;
         }
     };
@@ -484,9 +499,20 @@ ${customBehaviorText}`;
 window.getScenarioPrompt = function () {
     let outputEl = document.getElementById("outputEl");
     let customScenarioFeaturesEl = document.getElementById("customScenarioFeaturesEl");
+    let scenarioPerspectiveEl = document.getElementById("scenarioPerspectiveEl");
     let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
-        || (outputEl && outputEl.innerText.trim())
+        || (outputEl && outputEl.innerText && outputEl.innerText.trim())
         || (window.lastCharacterPromptStreamObj ? (window.lastCharacterPromptStreamObj.text || window.lastCharacterPromptStreamObj.liveResponseText) : "");
+
+    let perspectiveVal = scenarioPerspectiveEl ? scenarioPerspectiveEl.value : "thirdperson";
+    let perspectiveInstruction = "";
+    if (perspectiveVal === "firstperson") {
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the FIRST PERSON perspective using 'I', 'my', 'me' (e.g., *I stood watching...*).";
+    } else if (perspectiveVal === "secondperson") {
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the SECOND PERSON perspective addressing {{user}} directly using 'you', 'your' (e.g., *You see her standing...*).";
+    } else {
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the THIRD PERSON perspective using character names or 'he/she/they' (e.g., *She stood watching...*).";
+    }
 
     let customScenarioText = customScenarioFeaturesEl && customScenarioFeaturesEl.value.trim()
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
@@ -495,6 +521,7 @@ window.getScenarioPrompt = function () {
     let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
 
 Requirements & Format:
+${perspectiveInstruction}
 Write a single short paragraph that introduces the world, scene, characters, {{user}}'s role. Start by clearly describing the world, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
 
 Character Profile:
@@ -513,12 +540,18 @@ window.getRoleplayStartPrompt = function () {
     let outputEl = document.getElementById("outputEl");
     let scenarioOutputEl = document.getElementById("scenarioOutputEl");
     let customRoleplayStartFeaturesEl = document.getElementById("customRoleplayStartFeaturesEl");
+    let roleplayStartPerspectiveEl = document.getElementById("roleplayStartPerspectiveEl");
+    let mainCastEl = document.getElementById("mainCastEl");
+
+    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
+    let defaultPersp = mainCastCount >= 2 ? "thirdperson" : "firstperson";
+    let perspectiveVal = roleplayStartPerspectiveEl ? roleplayStartPerspectiveEl.value : defaultPersp;
 
     let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
-        || (outputEl && outputEl.innerText.trim())
+        || (outputEl && outputEl.innerText && outputEl.innerText.trim())
         || (window.lastCharacterPromptStreamObj ? (window.lastCharacterPromptStreamObj.text || window.lastCharacterPromptStreamObj.liveResponseText) : "");
 
-    let scenarioText = scenarioOutputEl && scenarioOutputEl.innerText.trim()
+    let scenarioText = scenarioOutputEl && scenarioOutputEl.innerText && scenarioOutputEl.innerText.trim()
         ? `Scenario Context:\n${scenarioOutputEl.innerText.trim()}`
         : "";
 
@@ -526,12 +559,32 @@ window.getRoleplayStartPrompt = function () {
         ? `Design Notes / Opening Context:\n${customRoleplayStartFeaturesEl.value.trim()}`
         : "";
 
+    let perspectiveInstruction = "";
+    if (perspectiveVal === "firstperson") {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in FIRST PERSON from the character's perspective using 'I', 'my', 'me' (e.g. *I saw you standing there alone* "Why the hell are you so early?").`;
+    } else if (perspectiveVal === "secondperson") {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration in SECOND PERSON addressing {{user}} directly using 'you', 'your' (e.g. *You saw her standing there alone* "Why are you early?").`;
+    } else {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in THIRD PERSON using character names or 'he/she/they' (e.g. *She saw you standing there alone* "Why the heck are you so early?").`;
+    }
+
+    let multiCastRule = "";
+    if (mainCastCount >= 2) {
+        multiCastRule = `\nMULTI-CHARACTER FORMATTING RULE:
+Since this scenario features multiple characters (${mainCastCount} Main Cast), EVERY line of dialogue and narration MUST start with the specific character's name followed by a colon.
+
+Example format:
+Amy: *She saw you standing there alone* "Why the heck are you so early?"
+Fio: *she follows Amy with a creepy smile only meant for you* "Thats right loser," *she snickers* "why did you come so early?"\n`;
+    }
+
     let instruction = `Based on the character profile and scenario context below, write the ROLEPLAY START (Dialogue & Narration) for the character to start the roleplay.
 
 Requirements & Format:
+${perspectiveInstruction}
+${multiCastRule}
 Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncensored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* "The security sweeps are on a ten-minute loop.").
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').
-character's short name: "dialogues that reflect the character’s personality and relationship to {{user}}". *Include actions or pauses*. E.g., "dialogue..." *muttered while fumbling with something* "more dialogue as per the character"
 
 Character Profile:
 ${descText}

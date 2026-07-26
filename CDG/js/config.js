@@ -8,6 +8,8 @@ window.CDG_SETTINGS_DEFAULTS = {
   mainCast: "1",
   bgCast: "0",
   visualStyle: "",
+  scenarioPerspective: "thirdperson",
+  roleplayStartPerspective: "firstperson",
   customFeatures: "",
   customBehaviorFeatures: "",
   customScenarioFeatures: "",

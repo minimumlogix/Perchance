@@ -68,6 +68,28 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  let scenarioPerspectiveEl = document.getElementById("scenarioPerspectiveEl");
+  if (scenarioPerspectiveEl) {
+    setTimeout(() => {
+      scenarioPerspectiveEl.value = settings.scenarioPerspective || localStorage.scenarioPerspective || scenarioPerspectiveEl.value;
+    }, 10);
+    scenarioPerspectiveEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ scenarioPerspective: this.value });
+      localStorage.scenarioPerspective = this.value;
+    });
+  }
+
+  let roleplayStartPerspectiveEl = document.getElementById("roleplayStartPerspectiveEl");
+  if (roleplayStartPerspectiveEl) {
+    setTimeout(() => {
+      roleplayStartPerspectiveEl.value = settings.roleplayStartPerspective || localStorage.roleplayStartPerspective || roleplayStartPerspectiveEl.value;
+    }, 10);
+    roleplayStartPerspectiveEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ roleplayStartPerspective: this.value });
+      localStorage.roleplayStartPerspective = this.value;
+    });
+  }
+
   let mainCastEl = document.getElementById("mainCastEl");
   if (mainCastEl) {
     setTimeout(() => {
@@ -76,6 +98,30 @@ document.addEventListener("DOMContentLoaded", function() {
     mainCastEl.addEventListener("change", function() {
       window.CDGStorage.saveSettings({ mainCast: this.value });
       localStorage.mainCast = this.value;
+      
+      let count = parseInt(this.value, 10);
+      let roleplayStartPersp = document.getElementById("roleplayStartPerspectiveEl");
+      let scenarioPersp = document.getElementById("scenarioPerspectiveEl");
+
+      if (count >= 2) {
+        if (scenarioPersp) {
+          scenarioPersp.value = "thirdperson";
+          window.CDGStorage.saveSettings({ scenarioPerspective: "thirdperson" });
+        }
+        if (roleplayStartPersp) {
+          roleplayStartPersp.value = "thirdperson";
+          window.CDGStorage.saveSettings({ roleplayStartPerspective: "thirdperson" });
+        }
+      } else {
+        if (scenarioPersp) {
+          scenarioPersp.value = "thirdperson";
+          window.CDGStorage.saveSettings({ scenarioPerspective: "thirdperson" });
+        }
+        if (roleplayStartPersp) {
+          roleplayStartPersp.value = "firstperson";
+          window.CDGStorage.saveSettings({ roleplayStartPerspective: "firstperson" });
+        }
+      }
     });
   }
 

@@ -176,6 +176,16 @@
         <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customScenarioFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
       </div>
     </div>
+    <div id="scenarioSettingsEl" class="c-settings-group u-mt-xs"> 
+      <div class="c-settings-box">
+        <div class="c-settings-box__label">Perspective:</div>
+        <select id="scenarioPerspectiveEl" class="c-select">
+          <option value="thirdperson">Third Person (She saw you...)</option>
+          <option value="firstperson">First Person (I saw you...)</option>
+          <option value="secondperson">Second Person (You see her...)</option>
+        </select>
+      </div>
+    </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
       <button id="generateScenarioBtn" class="c-button c-button--generate" onclick="generateScenario()"><i class="bi bi-stars"></i> generate scenario description</button>
       <div class="l-relative-holder">
@@ -193,6 +203,16 @@
       <div class="c-textarea-actions">
         <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customRoleplayStartFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
         <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customRoleplayStartFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
+      </div>
+    </div>
+    <div id="roleplayStartSettingsEl" class="c-settings-group u-mt-xs"> 
+      <div class="c-settings-box">
+        <div class="c-settings-box__label">Perspective:</div>
+        <select id="roleplayStartPerspectiveEl" class="c-select">
+          <option value="firstperson">First Person (*I saw you...* "Why are you early?")</option>
+          <option value="thirdperson">Third Person (*She saw you...* "Why is he early?")</option>
+          <option value="secondperson">Second Person (*You saw her...* "Why are you early?")</option>
+        </select>
       </div>
     </div>
     <div class="l-flex-center u-mt-md u-mb-xs">
