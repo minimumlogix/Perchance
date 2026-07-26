@@ -11,12 +11,7 @@ window.regenerate = async function() {
   let mainCastEl = document.getElementById("mainCastEl");
   
   let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
-  let promptToUse = window.fantasyCharacterPrompt;
-  if (mainCastCount >= 2 && mainCastCount <= 4) {
-    promptToUse = window.multiCharacterScenarioPrompt || window.fantasyCharacterPrompt;
-  } else if (mainCastCount >= 5) {
-    promptToUse = window.largeCastScenarioPrompt || window.multiCharacterScenarioPrompt || window.fantasyCharacterPrompt;
-  }
+  let promptToUse = window.getCharacterPrompt(mainCastCount);
   
   if (generateBtn) generateBtn.disabled = true;
   if (stopBtn) stopBtn.classList.remove("u-hidden");
