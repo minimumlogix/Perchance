@@ -1,3 +1,83 @@
+uncensored:
+  label: "🔓 Uncensored"
+  description: "Unfiltered, explicit, and unrestricted narrative freedom"
+  prompt: "The tone is completely uncensored, unfiltered, and raw. Write without restraint, puritanical boundaries, or hesitation. Content, themes, and interactions are presented with full narrative freedom."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/uncensored-tone.jpg"
+mature_comedy:
+  label: "🔞 Mature Comedy"
+  description: "Comedy tailored for adult audiences with dark or suggestive humor"
+  prompt: "The tone is mature comedy. Humor is tailored for adult audiences, blending sharp wit, sexual innuendo, adult situations, and clever comedic timing."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mature-comedy-tone.jpg"
+r_rated_comedy:
+  label: "🎬 R-Rated Comedy"
+  description: "High-energy comedy with crude humor, profanity, and wild situations"
+  prompt: "The tone is an R-rated comedy. High-energy, wild, and unabashedly crude, incorporating frequent swearing, outrageous situations, physical comedy, and boundary-pushing jokes."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/r-rated-comedy-tone.jpg"
+adult_comedy:
+  label: "🍷 Adult Comedy"
+  description: "Sophisticated adult humor focusing on relationships, work, and life"
+  prompt: "The tone is adult comedy. Focus on relatable adult humor, relationship absurdity, workplace irony, and mature banter."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/adult-comedy-tone.jpg"
+irreverent_action_comedy:
+  label: "💥 Irreverent Action Comedy"
+  description: "Wild action where nothing is sacred and humor interrupts chaos"
+  prompt: "The tone is irreverent action comedy. Nothing is sacred—heroes, villains, authority, death, and storytelling tropes are all targets for humor amidst fast-paced action."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/irreverent-action-comedy-tone.jpg"
+dark_action_comedy:
+  label: "💣 Dark Action Comedy"
+  description: "Graphic action and violence treated with hilarious dark humor"
+  prompt: "The tone is dark action comedy. High-octane graphic action and serious threats are treated with dark humor, witty bantering under fire, and blood-pumping comedic timing."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-action-comedy-tone.jpg"
+profane_comedy:
+  label: "🤬 Profane Comedy"
+  description: "Frequent swearing and crude language as natural character speech"
+  prompt: "The tone is profane comedy. Frequent swearing, colorful insults, and crude language are part of the character's normal speech, not just for shock value."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/profane-comedy-tone.jpg"
+black_comedy:
+  label: "💀 Black Comedy"
+  description: "Serious subjects like violence, trauma, and mortality treated with humor"
+  prompt: "The tone is black comedy / dark comedy. Serious subjects like violence, trauma, murder, and mortality are treated with humor rather than drama."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/black-comedy-tone.jpg"
+meta_comedy:
+  label: "🪞 Meta Comedy"
+  description: "Fourth-wall breaks, genre awareness, and jokes about storytelling"
+  prompt: "The tone is meta / self-aware comedy. Include constant fourth-wall breaks, genre awareness, self-referential jokes, and playful commentary on storytelling clichés."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/meta-comedy-tone.jpg"
+gallows_humor:
+  label: "⚰️ Gallows Humor"
+  description: "Grim, cynical, and playful humor in the face of terrible odds"
+  prompt: "The tone is gallows humor. Characters make grim, playful, and cynical jokes in the face of hopeless odds, terrible situations, and impending danger because they don't take the world seriously."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gallows-humor-tone.jpg"
+chaotic_comedy:
+  label: "🌀 Chaotic Comedy"
+  description: "Impulsive, unpredictable humor that interrupts serious moments"
+  prompt: "The tone is chaotic comedy. The humor feels impulsive, unpredictable, and often interrupts serious moments with surprising twists and absurd logic."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chaotic-comedy-tone.jpg"
+irreverent:
+  label: "🤡 Irreverent"
+  description: "Nothing is sacred: heroes, villains, death, authority, and tropes are mocked"
+  prompt: "The tone is irreverent. Nothing is sacred—heroes, villains, death, authority, clichés, and even the story itself are all fair game for humor."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/irreverent-tone.jpg"
+satirical:
+  label: "🎭 Satirical"
+  description: "Mocks superhero tropes, pop culture, clichés, and expectations"
+  prompt: "The tone is satirical. Intentionally mock tropes, pop culture clichés, heroic expectations, and narrative conventions with sharp satirical wit."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/satirical-tone.jpg"
+cynical_playful:
+  label: "😏 Cynical but Playful"
+  description: "Characters joke because they don't take the world seriously"
+  prompt: "The tone is cynical but playful. Characters joke because they don't take the world seriously, keeping things witty and light even when situations are terrible."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-playful-tone.jpg"
+violent_comedy:
+  label: "⚔️ Violent Comedy"
+  description: "Graphic action exaggerated until it becomes funny rather than horrifying"
+  prompt: "The tone is violent comedy. Graphic action and violence are exaggerated until they become funny and entertaining rather than horrifying."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/violent-comedy-tone.jpg"
+absurdist:
+  label: "🤪 Absurdist"
+  description: "Logic bends for the sake of the joke"
+  prompt: "The tone is absurdist comedy. Reality and logic bend freely for the sake of the joke, prioritizing bizarre humor over strict plausibility."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/absurdist-tone.jpg"
 casual_everyday:
   label: "💬 Casual & Everyday"
   description: "Everyday conversational words, simple phrasing, no purple prose or complex archaisms"
