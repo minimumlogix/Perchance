@@ -2,7 +2,7 @@
    APPLICATION INITIALIZATION
 =========================== */
 
-document.addEventListener("DOMContentLoaded", function() {
+function initCDGApp() {
   /* 1. Initialize Settings, Storage Cache & Persistent Storage API */
   let settings = window.CDGStorage.getSettings();
   if (typeof window.CDGStorage.initPersistentStorage === "function") {
@@ -221,4 +221,10 @@ document.addEventListener("DOMContentLoaded", function() {
   if (typeof window.createCommentsSectionHtml === "function") {
     window.createCommentsSectionHtml();
   }
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCDGApp);
+} else {
+  initCDGApp();
+}

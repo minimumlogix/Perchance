@@ -2,6 +2,11 @@
    TAG SELECTOR & HOVER CARDS
 =========================== */
 
+#toneSelectorCtn,
+#worldSettingSelectorCtn {
+  width: 100%;
+}
+
 .c-tag-section {
   margin-top: var(--space-xs);
   margin-bottom: var(--space-xs);
@@ -15,16 +20,27 @@
   margin-bottom: 4px;
 }
 
+.c-tag-wrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  position: relative;
+}
+
 .c-tag-container {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   background-color: var(--color-bg-secondary);
   border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-top-left-radius: var(--radius-xs);
+  border-bottom-left-radius: var(--radius-xs);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
   padding: 6px 10px;
-  min-height: 44px;
+  min-height: 2.75rem;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -32,6 +48,19 @@
 .c-tag-container:focus-within {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(19, 160, 0, 0.2);
+}
+
+.c-tag-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-box, #252526);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-left: none;
+  border-top-right-radius: var(--radius-xs);
+  border-bottom-right-radius: var(--radius-xs);
+  overflow: hidden;
+  width: 2.75rem;
 }
 
 .c-tag-pill {

@@ -238,10 +238,22 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
 
     async init() {
       this.containerEl = document.getElementById(this.containerId);
-      if (!this.containerEl) return;
-
-      // Render immediately with default embedded data
-      this.render();
+      if (!this.containerEl) {
+        let attempts = 0;
+        let timer = setInterval(() => {
+          attempts++;
+          this.containerEl = document.getElementById(this.containerId);
+          if (this.containerEl) {
+            clearInterval(timer);
+            this.render();
+          } else if (attempts > 30) {
+            clearInterval(timer);
+          }
+        }, 50);
+      } else {
+        // Render immediately with default embedded data
+        this.render();
+      }
 
       // Fetch latest YAML if network is available
       if (this.yamlUrl) {
@@ -272,17 +284,12 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
       let sectionEl = document.createElement("div");
       sectionEl.className = "c-tag-section";
 
-      let headerEl = document.createElement("div");
-      headerEl.className = "l-flex-between u-mb-xs";
-      headerEl.innerHTML = `
-        <span class="c-tag-section__label">${this.title}:</span>
-        <button type="button" class="c-tag-random-btn" title="Pick 3 Random ${this.title}s">
-          <i class="bi bi-dice-5-fill"></i> Randomize
-        </button>
-      `;
+      let labelEl = document.createElement("div");
+      labelEl.className = "c-tag-section__label";
+      labelEl.innerText = `${this.title}:`;
 
-      let randomBtn = headerEl.querySelector(".c-tag-random-btn");
-      randomBtn.addEventListener("click", () => this.randomize());
+      let wrapperEl = document.createElement("div");
+      wrapperEl.className = "c-tag-wrapper";
 
       let tagBoxEl = document.createElement("div");
       tagBoxEl.className = "c-tag-container";
@@ -329,8 +336,23 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
       dropdownEl.className = "c-tag-dropdown u-hidden";
       tagBoxEl.appendChild(dropdownEl);
 
-      sectionEl.appendChild(headerEl);
-      sectionEl.appendChild(tagBoxEl);
+      // Right-side dice button matching c-textarea-actions
+      let actionsEl = document.createElement("div");
+      actionsEl.className = "c-tag-actions";
+      actionsEl.innerHTML = `
+        <button type="button" class="c-textarea-btn" title="Pick 3 Random ${this.title}s">
+          <i class="bi bi-dice-5-fill"></i>
+        </button>
+      `;
+
+      let randomBtn = actionsEl.querySelector(".c-textarea-btn");
+      randomBtn.addEventListener("click", () => this.randomize());
+
+      wrapperEl.appendChild(tagBoxEl);
+      wrapperEl.appendChild(actionsEl);
+
+      sectionEl.appendChild(labelEl);
+      sectionEl.appendChild(wrapperEl);
       this.containerEl.appendChild(sectionEl);
 
       this.inputEl = inputEl;
