@@ -1,0 +1,220 @@
+/* ===========================
+   TAG SELECTOR & HOVER CARDS
+=========================== */
+
+.c-tag-section {
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  width: 100%;
+}
+
+.c-tag-section__label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-subtle);
+  margin-bottom: 4px;
+}
+
+.c-tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-bg-secondary);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  min-height: 44px;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.c-tag-container:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(19, 160, 0, 0.2);
+}
+
+.c-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg-elevated, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.c-tag-pill:hover {
+  border-color: var(--color-accent);
+  background: rgba(19, 160, 0, 0.15);
+}
+
+.c-tag-pill__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.c-tag-pill__remove:hover {
+  color: #ff4d4f;
+  transform: scale(1.2);
+}
+
+.c-tag-input-wrapper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 120px;
+}
+
+.c-tag-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-main);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  padding: 4px 0;
+}
+
+.c-tag-input::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 0.7;
+}
+
+.c-tag-random-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
+  border-radius: var(--radius-xs);
+  padding: 6px 10px;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.c-tag-random-btn:hover {
+  background: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
+}
+
+/* DROPDOWN SUGGESTIONS */
+.c-tag-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--color-bg-secondary);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.c-tag-dropdown__item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+
+.c-tag-dropdown__item:last-child {
+  border-bottom: none;
+}
+
+.c-tag-dropdown__item:hover,
+.c-tag-dropdown__item--active {
+  background: rgba(19, 160, 0, 0.15);
+}
+
+.c-tag-dropdown__title {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+}
+
+.c-tag-dropdown__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+}
+
+/* HOVER PREVIEW CARD TOOLTIP */
+.c-tag-hover-card {
+  position: fixed;
+  z-index: 9999;
+  width: 280px;
+  pointer-events: none;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.c-tag-hover-card--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.c-tag-hover-card__overlay {
+  background: linear-gradient(180deg, rgba(15, 17, 23, 0.88) 0%, rgba(15, 17, 23, 0.96) 100%);
+  backdrop-filter: blur(4px);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.c-tag-hover-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.c-tag-hover-card__desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.35;
+}
+
+.c-tag-hover-card__prompt {
+  font-size: 0.78rem;
+  color: var(--color-accent, #13a000);
+  font-style: italic;
+  margin-top: 2px;
+}

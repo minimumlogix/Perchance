@@ -68,6 +68,37 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  /* Tag Selectors Initialization */
+  let initialTones = settings.tones || (localStorage.tones ? JSON.parse(localStorage.tones) : []);
+  if (typeof initialTones === "string") {
+    try { initialTones = JSON.parse(initialTones); } catch(e) { initialTones = []; }
+  }
+  window.toneSelector = new window.TagSelector("toneSelectorCtn", {
+    title: "Roleplay Tone",
+    yamlUrl: "data/tones.yaml",
+    placeholder: "Type to search or add custom tone...",
+    initialTags: Array.isArray(initialTones) ? initialTones : [],
+    onChange: function(tags) {
+      window.CDGStorage.saveSettings({ tones: tags });
+      localStorage.tones = JSON.stringify(tags);
+    }
+  });
+
+  let initialWorldSettings = settings.worldSettings || (localStorage.worldSettings ? JSON.parse(localStorage.worldSettings) : []);
+  if (typeof initialWorldSettings === "string") {
+    try { initialWorldSettings = JSON.parse(initialWorldSettings); } catch(e) { initialWorldSettings = []; }
+  }
+  window.worldSettingSelector = new window.TagSelector("worldSettingSelectorCtn", {
+    title: "World Setting",
+    yamlUrl: "data/world_settings.yaml",
+    placeholder: "Type to search or add custom setting...",
+    initialTags: Array.isArray(initialWorldSettings) ? initialWorldSettings : [],
+    onChange: function(tags) {
+      window.CDGStorage.saveSettings({ worldSettings: tags });
+      localStorage.worldSettings = JSON.stringify(tags);
+    }
+  });
+
   let scenarioPerspectiveEl = document.getElementById("scenarioPerspectiveEl");
   if (scenarioPerspectiveEl) {
     setTimeout(() => {

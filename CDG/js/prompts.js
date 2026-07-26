@@ -1,10 +1,16 @@
-/* ===========================
-   PROMPT TEMPLATES & BUILDERS
-=========================== */
+window.getToneAndSettingInstruction = function () {
+    let tonePrompts = window.toneSelector ? window.toneSelector.getSelectedPrompts() : [];
+    let settingPrompts = window.worldSettingSelector ? window.worldSettingSelector.getSelectedPrompts() : [];
 
-/* ===========================
-   1. SINGLE CHARACTER PROMPT
-=========================== */
+    let result = "";
+    if (tonePrompts.length > 0) {
+        result += `\nROLEPLAY TONE: ${tonePrompts.join("; ")}\n`;
+    }
+    if (settingPrompts.length > 0) {
+        result += `\nWORLD SETTING: ${settingPrompts.join("; ")}\n`;
+    }
+    return result;
+};
 
 window.getFantasyCharacterPrompt = function () {
     let customFeaturesEl = document.getElementById("customFeaturesEl");
@@ -17,6 +23,7 @@ window.getFantasyCharacterPrompt = function () {
     let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
     let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
 
     let shortNote = lengthVal === "short" ? "IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.\n" : "";
 
@@ -117,7 +124,7 @@ Long-term Goals = <ultimate ambitions>${bgCastTemplate}
 ---
 
 # Design notes:
-IMPORTANT: ${customFeaturesText || ("The character's race should be " + randomRace)}
+${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The character's race should be " + randomRace)}
 ${shortNote}`;
 
     return {
@@ -159,6 +166,7 @@ window.getMultiCharacterScenarioPrompt = function () {
     let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
     let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
 
     let shortNote = lengthVal === "short" ? "IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.\n" : "";
 
@@ -286,7 +294,7 @@ ${bgCastTemplate}
 ---
 
 # Design notes:
-IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}
+${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}
 ${shortNote}`;
 
     return {
@@ -324,6 +332,7 @@ window.getLargeCastScenarioPrompt = function () {
     let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
     let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
 
     let mainItems = [];
     for (let idx = 0; idx < mainCastCount; idx++) {
@@ -420,7 +429,7 @@ ${bgCastTemplate}
 ---
 
 # Design notes:
-IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}`;
+${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}`;
 
     return {
         instruction,
@@ -513,6 +522,7 @@ window.getScenarioPrompt = function () {
     } else {
         perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the THIRD PERSON perspective using character names or 'he/she/they' (e.g., *She stood watching...*).";
     }
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
 
     let customScenarioText = customScenarioFeaturesEl && customScenarioFeaturesEl.value.trim()
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
@@ -522,6 +532,7 @@ window.getScenarioPrompt = function () {
 
 Requirements & Format:
 ${perspectiveInstruction}
+${toneAndSettingNote}
 Write a single short paragraph that introduces the world, scene, characters, {{user}}'s role. Start by clearly describing the world, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
 
 Character Profile:
@@ -546,6 +557,7 @@ window.getRoleplayStartPrompt = function () {
     let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
     let defaultPersp = mainCastCount >= 2 ? "thirdperson" : "firstperson";
     let perspectiveVal = roleplayStartPerspectiveEl ? roleplayStartPerspectiveEl.value : defaultPersp;
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
 
     let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
         || (outputEl && outputEl.innerText && outputEl.innerText.trim())
@@ -582,6 +594,7 @@ Fio: *she follows Amy with a creepy smile only meant for you* "Thats right loser
 
 Requirements & Format:
 ${perspectiveInstruction}
+${toneAndSettingNote}
 ${multiCastRule}
 Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncensored. Output the text only, no heading. Do not use em dash symbol -- while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* "The security sweeps are on a ten-minute loop.").
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').

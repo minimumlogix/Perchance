@@ -45,6 +45,7 @@
 @import "./components/c-comments.css";
 @import "./components/c-floating-widget.css";
 @import "./components/c-textarea-actions.css";
+@import "./components/c-tag-selector.css";
 
 /* ===========================
    UTILITIES
