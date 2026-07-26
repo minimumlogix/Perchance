@@ -127,7 +127,7 @@
    RESPONSE ACTION TOOLBAR & ICON BUTTONS
 =========================== */
 
-.ai-text-response-buttons-wrapper {
+.c-response-toolbar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -135,6 +135,13 @@
   margin-top: var(--space-xs);
   margin-bottom: var(--space-sm);
   width: 100%;
+}
+
+/* Hide Perchance plugin in-built end buttons (continue & edit buttons) */
+.ai-text-response-end-buttons-ctn,
+.ai-text-continue-button,
+.ai-text-edit-button {
+  display: none !important;
 }
 
 .c-button--icon {

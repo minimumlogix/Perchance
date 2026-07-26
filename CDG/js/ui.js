@@ -111,13 +111,17 @@ window.renderResponseToolbar = function(targetId, retryFnName) {
   let targetEl = document.getElementById(targetId);
   if (!targetEl) return;
 
-  let existingToolbar = targetEl.parentNode.querySelector(`.ai-text-response-buttons-wrapper[data-for="${targetId}"]`);
+  // Remove any leftover Perchance plugin built-in end buttons inside targetEl
+  let pluginButtons = targetEl.querySelectorAll(".ai-text-response-end-buttons-ctn, .ai-text-continue-button, .ai-text-edit-button");
+  pluginButtons.forEach(btn => btn.remove());
+
+  let existingToolbar = targetEl.parentNode.querySelector(`.c-response-toolbar[data-for="${targetId}"]`);
   if (existingToolbar) existingToolbar.remove();
 
   if (!targetEl.innerText.trim()) return;
 
   let toolbar = document.createElement("div");
-  toolbar.className = "ai-text-response-buttons-wrapper";
+  toolbar.className = "c-response-toolbar";
   toolbar.setAttribute("data-for", targetId);
   toolbar.innerHTML = `
     <button class="c-button c-button--icon c-button--sm" title="Clear" onclick="clearOutput('${targetId}')"><i class="bi bi-trash-fill"></i></button>
@@ -136,7 +140,7 @@ window.clearOutput = function(targetId) {
     targetEl.innerHTML = "";
     targetEl.contentEditable = "false";
   }
-  let toolbar = document.querySelector(`.ai-text-response-buttons-wrapper[data-for="${targetId}"]`);
+  let toolbar = document.querySelector(`.c-response-toolbar[data-for="${targetId}"]`);
   if (toolbar) toolbar.remove();
   window.CDGStorage.clearCache(targetId);
 };
@@ -299,7 +303,7 @@ window.htmlToMarkdown = function(html) {
   let temp = document.createElement("div");
   temp.innerHTML = html;
 
-  let toolbars = temp.querySelectorAll(".c-response-toolbar, .ai-text-response-buttons-wrapper");
+  let toolbars = temp.querySelectorAll(".c-response-toolbar, .ai-text-response-buttons-wrapper, .ai-text-response-end-buttons-ctn, .ai-text-continue-button, .ai-text-edit-button");
   toolbars.forEach(tb => tb.remove());
 
   // Replace <b> / <strong> with plain text (remove bolding)
