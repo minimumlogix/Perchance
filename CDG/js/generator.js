@@ -2,15 +2,6 @@
    GENERATION CONTROL LOGIC
 =========================== */
 
-function callAiEngine(promptData) {
-    if (typeof promptData === "string") {
-        return window.ai({ instruction: promptData, endButtons: "none" });
-    } else if (typeof promptData === "object" && promptData !== null) {
-        return window.ai(Object.assign({ endButtons: "none" }, promptData));
-    }
-    return window.ai(promptData);
-}
-
 window.regenerate = async function () {
     if (window.lastCharacterPromptStreamObj) await window.lastCharacterPromptStreamObj.stop();
 
@@ -26,7 +17,7 @@ window.regenerate = async function () {
     if (stopBtn) stopBtn.classList.remove("u-hidden");
     if (generateBtn) generateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate description';
 
-    window.lastCharacterPromptStreamObj = callAiEngine(promptToUse);
+    window.lastCharacterPromptStreamObj = window.ai(promptToUse);
     if (outputEl) outputEl.innerHTML = window.lastCharacterPromptStreamObj;
 
     await window.lastCharacterPromptStreamObj;
@@ -59,7 +50,7 @@ window.generateBehavior = async function () {
     if (generateBehaviorBtn) generateBehaviorBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples';
     if (behaviorOutputEl) behaviorOutputEl.innerHTML = "";
 
-    window.lastBehaviorPromptStreamObj = callAiEngine(window.behaviorPrompt);
+    window.lastBehaviorPromptStreamObj = window.ai(window.behaviorPrompt);
     if (behaviorOutputEl) behaviorOutputEl.innerHTML = window.lastBehaviorPromptStreamObj;
 
     await window.lastBehaviorPromptStreamObj;
@@ -92,7 +83,7 @@ window.generateScenario = async function () {
     if (generateScenarioBtn) generateScenarioBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description';
     if (scenarioOutputEl) scenarioOutputEl.innerHTML = "";
 
-    window.lastScenarioPromptStreamObj = callAiEngine(window.scenarioPrompt);
+    window.lastScenarioPromptStreamObj = window.ai(window.scenarioPrompt);
     if (scenarioOutputEl) scenarioOutputEl.innerHTML = window.lastScenarioPromptStreamObj;
 
     await window.lastScenarioPromptStreamObj;
@@ -125,7 +116,7 @@ window.generateRoleplayStart = async function () {
     if (generateRoleplayStartBtn) generateRoleplayStartBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start';
     if (roleplayStartOutputEl) roleplayStartOutputEl.innerHTML = "";
 
-    window.lastRoleplayStartPromptStreamObj = callAiEngine(window.roleplayStartPrompt);
+    window.lastRoleplayStartPromptStreamObj = window.ai(window.roleplayStartPrompt);
     if (roleplayStartOutputEl) roleplayStartOutputEl.innerHTML = window.lastRoleplayStartPromptStreamObj;
 
     await window.lastRoleplayStartPromptStreamObj;

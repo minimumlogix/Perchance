@@ -122,8 +122,6 @@ window.renderResponseToolbar = function(targetId, retryFnName) {
   toolbar.innerHTML = `
     <button class="c-button c-button--icon c-button--sm" title="Clear" onclick="clearOutput('${targetId}')"><i class="bi bi-trash-fill"></i></button>
     <button class="c-button c-button--icon c-button--sm" title="Copy" onclick="copyOutput('${targetId}', this)"><i class="bi bi-clipboard"></i></button>
-    <button class="c-button c-button--icon c-button--sm" title="Edit" onclick="toggleEditOutput('${targetId}', this)"><i class="bi bi-pencil-square"></i></button>
-    <button class="c-button c-button--icon c-button--sm" title="Continue Writing" onclick="continueOutput('${targetId}', '${retryFnName}')"><i class="bi bi-play-fill"></i> continue</button>
     <button class="c-button c-button--icon c-button--sm" title="Export Markdown" onclick="exportAsMarkdown()"><i class="bi bi-download"></i></button>
     <button class="c-button c-button--icon c-button--sm" title="Retry" onclick="retryOutput('${retryFnName}')"><i class="bi bi-arrow-clockwise"></i></button>
   `;
@@ -237,74 +235,6 @@ window.toggleEditOutput = function(targetId, btnEl) {
     targetEl.focus();
     btnEl.innerHTML = '<i class="bi bi-floppy-fill"></i>';
     btnEl.classList.add("c-button--active");
-  }
-};
-
-window.continueOutput = async function(targetId, retryFnName) {
-  let targetEl = document.getElementById(targetId);
-  if (!targetEl) return;
-
-  let existingText = targetEl.innerText || targetEl.textContent || "";
-  if (!existingText.trim()) {
-    alert("There is no text to continue writing!");
-    return;
-  }
-
-  let promptInstruction = "";
-  if (retryFnName === "regenerate") {
-    let mainCastEl = document.getElementById("mainCastEl");
-    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
-    promptInstruction = window.getCharacterPrompt(mainCastCount);
-  } else if (retryFnName === "generateBehavior") {
-    promptInstruction = window.behaviorPrompt;
-  } else if (retryFnName === "generateScenario") {
-    promptInstruction = window.scenarioPrompt;
-  } else if (retryFnName === "generateRoleplayStart") {
-    promptInstruction = window.roleplayStartPrompt;
-  }
-
-  let instructionText = typeof promptInstruction === "string" 
-    ? promptInstruction 
-    : (promptInstruction && promptInstruction.instruction ? promptInstruction.instruction : "Continue writing seamlessly from where it left off.");
-
-  let continueBtn = document.querySelector(`.ai-text-response-buttons-wrapper[data-for="${targetId}"] button[title="Continue Writing"]`);
-  if (continueBtn) {
-    continueBtn.disabled = true;
-    continueBtn.innerHTML = '<i class="bi bi-arrow-clockwise u-spin"></i> continuing...';
-  }
-
-  try {
-    let streamObj = window.ai({
-      instruction: instructionText,
-      startWith: existingText,
-      hideStartWith: true,
-      endButtons: "none"
-    });
-
-    let originalHTML = targetEl.innerHTML;
-    streamObj.onChunk(function(data) {
-      if (data && data.textChunk) {
-        targetEl.innerHTML = originalHTML + data.fullTextSoFar;
-      }
-    });
-
-    let result = await streamObj;
-
-    if (result && result.generatedText) {
-      targetEl.innerHTML = originalHTML + result.generatedText;
-    } else if (result && typeof result === "string") {
-      targetEl.innerHTML = originalHTML + result;
-    }
-
-    window.CDGStorage.setCache(targetId, targetEl.innerHTML);
-  } catch (err) {
-    console.error("Continue writing error:", err);
-  } finally {
-    if (continueBtn) {
-      continueBtn.disabled = false;
-      continueBtn.innerHTML = '<i class="bi bi-play-fill"></i> continue';
-    }
-    window.renderResponseToolbar(targetId, retryFnName);
   }
 };
 
