@@ -1,5 +1,5 @@
 /* ===========================
-   AI DRIVEN PLOT HOOK & CHARACTER IDEA GENERATOR (VISION ENABLED)
+   AI DRIVEN CONCEPT GENERATOR (STRUCTURED JSON & VISION ENABLED)
 =========================== */
 
 (function() {
@@ -49,6 +49,122 @@
   }
 
   /* ----------------------------------------------------
+     ROBUST PARSER FOR STREAMED JSON & REGEX FALLBACK
+  ---------------------------------------------------- */
+  function parseConceptJson(rawText) {
+    if (!rawText) return null;
+    
+    let cleaned = rawText.trim();
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    try {
+      let obj = JSON.parse(cleaned);
+      if (obj && typeof obj === "object") return obj;
+    } catch (e) {
+      // Incomplete JSON during streaming chunk - fallback to regex field extraction
+    }
+
+    let result = {};
+
+    let fields = ["roleplay_idea", "behaviour_idea", "scenario_idea", "start_idea"];
+    fields.forEach(field => {
+      let match = cleaned.match(new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"?`, "s"));
+      if (match && match[1]) {
+        result[field] = match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      }
+    });
+
+    let toneMatch = cleaned.match(/"roleplay_tone"\s*:\s*\[([^\]]*)\]?/s);
+    if (toneMatch && toneMatch[1]) {
+      let tags = toneMatch[1].match(/"([^"]+)"/g);
+      if (tags) {
+        result.roleplay_tone = tags.map(t => t.replace(/"/g, "").trim());
+      }
+    }
+
+    let settingMatch = cleaned.match(/"world_setting"\s*:\s*\[([^\]]*)\]?/s);
+    if (settingMatch && settingMatch[1]) {
+      let tags = settingMatch[1].match(/"([^"]+)"/g);
+      if (tags) {
+        result.world_setting = tags.map(t => t.replace(/"/g, "").trim());
+      }
+    }
+
+    return Object.keys(result).length > 0 ? result : null;
+  }
+
+  function applyParsedConcept(parsed) {
+    if (!parsed) return;
+
+    // 1. Roleplay Idea (Premise & Character Outline + Detailed Visual Appearance if Image)
+    if (parsed.roleplay_idea) {
+      let el = document.getElementById("customFeaturesEl");
+      if (el) {
+        el.value = parsed.roleplay_idea;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+
+    // 2. Behavior Idea
+    if (parsed.behaviour_idea) {
+      let el = document.getElementById("customBehaviorFeaturesEl");
+      if (el) {
+        el.value = parsed.behaviour_idea;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+
+    // 3. Scenario Idea
+    if (parsed.scenario_idea) {
+      let el = document.getElementById("customScenarioFeaturesEl");
+      if (el) {
+        el.value = parsed.scenario_idea;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+
+    // 4. Start Idea (Roleplay Start Hook)
+    if (parsed.start_idea) {
+      let el = document.getElementById("customRoleplayStartFeaturesEl");
+      if (el) {
+        el.value = parsed.start_idea;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+
+    // 5. Roleplay Tone Tags (4 tags)
+    if (Array.isArray(parsed.roleplay_tone) && parsed.roleplay_tone.length > 0 && window.toneSelector) {
+      let cleanTags = parsed.roleplay_tone.map(t => String(t).trim().toLowerCase().replace(/[\s-]+/g, "_"));
+      window.toneSelector.selectedTags = cleanTags.slice(0, 4);
+      window.toneSelector.render();
+      if (typeof window.toneSelector.onChange === "function") {
+        window.toneSelector.onChange(window.toneSelector.selectedTags);
+      }
+    }
+
+    // 6. World Setting Tags (2 tags)
+    if (Array.isArray(parsed.world_setting) && parsed.world_setting.length > 0 && window.worldSettingSelector) {
+      let cleanTags = parsed.world_setting.map(t => String(t).trim().toLowerCase().replace(/[\s-]+/g, "_"));
+      window.worldSettingSelector.selectedTags = cleanTags.slice(0, 2);
+      window.worldSettingSelector.render();
+      if (typeof window.worldSettingSelector.onChange === "function") {
+        window.worldSettingSelector.onChange(window.worldSettingSelector.selectedTags);
+      }
+    }
+  }
+
+  function pulseHighlightAllFields() {
+    const ids = ["customFeaturesEl", "customBehaviorFeaturesEl", "customScenarioFeaturesEl", "customRoleplayStartFeaturesEl", "toneSelectorCtn", "worldSettingSelectorCtn"];
+    ids.forEach(id => {
+      let el = document.getElementById(id);
+      if (el) {
+        el.classList.add("u-highlight-pulse");
+        setTimeout(() => el.classList.remove("u-highlight-pulse"), 800);
+      }
+    });
+  }
+
+  /* ----------------------------------------------------
      MODAL HTML GENERATOR & INJECTION
   ---------------------------------------------------- */
   function ensureAiIdeaModalExists() {
@@ -64,7 +180,7 @@
         <div class="c-ai-modal__header">
           <div class="c-ai-modal__header-title">
             <i class="bi bi-stars c-ai-modal__icon"></i>
-            <span>AI Idea Generator</span>
+            <span>AI Concept Generator (Fills All Notes & Tags)</span>
           </div>
           <button type="button" class="c-ai-modal__close-btn" onclick="window.closeAiIdeaModal()" title="Close">&times;</button>
         </div>
@@ -73,7 +189,7 @@
           <div class="c-ai-modal__field">
             <label class="c-label c-ai-modal__label">Prompt Ideas / Keywords & Image Context:</label>
             <div class="c-ai-modal__textarea-wrapper" id="aiIdeaDropZone">
-              <textarea id="aiIdeaKeywordsInput" class="c-textarea c-ai-modal__textarea" placeholder="Add keywords, ideas, instructions, or paste/drag an image here..."></textarea>
+              <textarea id="aiIdeaKeywordsInput" class="c-textarea c-ai-modal__textarea" placeholder="Add character ideas, themes, or paste/drag an image here..."></textarea>
               <div class="c-ai-modal__bot-badge" title="AI Assistant Active"><i class="bi bi-robot"></i></div>
             </div>
           </div>
@@ -100,21 +216,11 @@
               </div>
             </div>
           </div>
-
-          <div class="c-ai-modal__field">
-            <label class="c-label c-ai-modal__label">Response type:</label>
-            <select id="aiIdeaResponseTypeSelect" class="c-select c-ai-modal__select">
-              <option value="ROLEPLAY PREMISE & CHARACTER OUTLINE">ROLEPLAY PREMISE & CHARACTER OUTLINE</option>
-              <option value="BEHAVIOR & INTERACTION SCENARIO">BEHAVIOR & INTERACTION SCENARIO</option>
-              <option value="WORLD & SCENARIO CONTEXT">WORLD & SCENARIO CONTEXT</option>
-              <option value="ROLEPLAY START OPENING HOOK">ROLEPLAY START OPENING HOOK</option>
-            </select>
-          </div>
         </div>
 
         <div class="c-dialog__footer c-ai-modal__footer">
           <button type="button" class="c-button c-button--md" onclick="window.closeAiIdeaModal()">Cancel</button>
-          <button type="button" id="aiIdeaGenerateBtn" class="c-button c-button--md c-button--primary" onclick="window.executeAiIdeaGeneration()">Generate</button>
+          <button type="button" id="aiIdeaGenerateBtn" class="c-button c-button--md c-button--primary" onclick="window.executeAiIdeaGeneration()">Generate Concept</button>
         </div>
       </div>
     `;
@@ -193,24 +299,11 @@
 
     let targetEl = document.getElementById(targetTextareaId);
     let keywordsInput = document.getElementById("aiIdeaKeywordsInput");
-    let responseTypeSelect = document.getElementById("aiIdeaResponseTypeSelect");
 
     clearImage();
     
     if (keywordsInput) {
       keywordsInput.value = targetEl ? targetEl.value : "";
-    }
-
-    if (responseTypeSelect) {
-      if (targetTextareaId === "customBehaviorFeaturesEl") {
-        responseTypeSelect.value = "BEHAVIOR & INTERACTION SCENARIO";
-      } else if (targetTextareaId === "customScenarioFeaturesEl") {
-        responseTypeSelect.value = "WORLD & SCENARIO CONTEXT";
-      } else if (targetTextareaId === "customRoleplayStartFeaturesEl") {
-        responseTypeSelect.value = "ROLEPLAY START OPENING HOOK";
-      } else {
-        responseTypeSelect.value = "ROLEPLAY PREMISE & CHARACTER OUTLINE";
-      }
     }
 
     overlay.classList.remove("u-hidden");
@@ -231,47 +324,47 @@
     let generateBtn = document.getElementById("aiIdeaGenerateBtn");
     if (generateBtn) {
       generateBtn.disabled = false;
-      generateBtn.innerHTML = "Generate";
+      generateBtn.innerHTML = "Generate Concept";
     }
   };
 
   /* ----------------------------------------------------
-     EXECUTE GENERATION VIA PERCHANCE AI PLUGIN
+     EXECUTE GENERATION VIA PERCHANCE AI PLUGIN (STRUCTURED JSON)
   ---------------------------------------------------- */
   window.executeAiIdeaGeneration = async function() {
     let keywordsInput = document.getElementById("aiIdeaKeywordsInput");
-    let responseTypeSelect = document.getElementById("aiIdeaResponseTypeSelect");
     let generateBtn = document.getElementById("aiIdeaGenerateBtn");
-    let targetEl = document.getElementById(currentTargetTextareaId);
 
     let keywords = keywordsInput ? keywordsInput.value.trim() : "";
-    let responseType = responseTypeSelect ? responseTypeSelect.value : "ROLEPLAY PREMISE & CHARACTER OUTLINE";
     let hasImage = !!selectedImageBlob;
 
-    if (!targetEl) {
-      window.closeAiIdeaModal();
-      return;
-    }
-
-    // Build prompt based on selected response type, keywords, and image vision context
     let visionHint = hasImage ? " Analyze and incorporate visual details, clothing, setting, expression, or atmosphere from the provided image." : "";
-    let instructionPrompt = "";
+    
+    let instructionPrompt = `Generate a complete, structured roleplay character & scenario concept based on these keywords/ideas: "${keywords || 'creative character concept'}".${visionHint}
 
-    if (responseType === "ROLEPLAY PREMISE & CHARACTER OUTLINE") {
-      instructionPrompt = `Write a short, single-paragraph roleplay premise & character outline note based on ${keywords ? `these ideas/keywords: "${keywords}"` : 'the provided content'}.${visionHint} Focus on the basic identity of the character/cast, their core personality, background, and initial roleplay premise. Write ONLY one short, concise paragraph under 3 sentences.`;
-    } else if (responseType === "BEHAVIOR & INTERACTION SCENARIO") {
-      instructionPrompt = `Write a short, single-paragraph behavior/dialogue context note based on ${keywords ? `these ideas/keywords: "${keywords}"` : 'the provided content'}.${visionHint} Focus on specific behavioral traits, speech habits, emotional triggers, or interaction scenarios (e.g. an interaction demonstrating their yandere side, protective instinct, or witty banter). Write ONLY one short, concise paragraph under 3 sentences.`;
-    } else if (responseType === "WORLD & SCENARIO CONTEXT") {
-      instructionPrompt = `Write a short, single-paragraph world & scenario context note based on ${keywords ? `these ideas/keywords: "${keywords}"` : 'the provided content'}.${visionHint} Focus on the world setting, atmosphere, ongoing conflict, why the cast has gathered, and the initial situation involving {{user}}. Write ONLY one short, concise paragraph under 3 sentences.`;
-    } else {
-      instructionPrompt = `Write a short, single-paragraph opening hook note based on ${keywords ? `these ideas/keywords: "${keywords}"` : 'the provided content'}.${visionHint} Focus on the opening scene setup, the character's initial greeting attitude, direct action hook, and starting momentum for the roleplay start. Write ONLY one short, concise paragraph under 3 sentences.`;
-    }
+You MUST output ONLY a single raw valid JSON object (no markdown formatting, no text before or after JSON) matching this exact schema:
+{
+  "roleplay_tone": ["tag1", "tag2", "tag3", "tag4"],
+  "world_setting": ["tag1", "tag2"],
+  "roleplay_idea": "Premise and character outline notes...",
+  "behaviour_idea": "Behavior traits, speech habits and interaction scenario notes...",
+  "scenario_idea": "World setting context, atmosphere, and scenario outline notes...",
+  "start_idea": "Opening scene setup, greeting attitude, and direct action hook notes..."
+}
+
+Rules for fields:
+1. "roleplay_tone": Array of exactly 4 concise tone tag strings (e.g. ["dark_romance", "flirtatious", "sensual", "dramatic"]).
+2. "world_setting": Array of exactly 2 concise setting tag strings (e.g. ["academy_fantasy", "cyberpunk"]).
+3. "roleplay_idea": Write a concise character premise and outline note (1-2 paragraphs). ${hasImage ? 'IMPORTANT: Provide an extremely detailed visual appearance description of the character(s) from the image (hair, eyes, facial features, outfit, body type, distinctive details) so the visual design is fully preserved in text without needing the image again, followed by personality and plot concept involving {{user}}.' : 'Include core character identity, appearance highlights, personality, and plot concept involving {{user}}.'}
+4. "behaviour_idea": Write a concise note on specific behavioral traits, speech habits, emotional triggers, and interaction scenarios (1 short paragraph).
+5. "scenario_idea": Write a concise note on the world context, atmosphere, ongoing conflict, and starting scenario involving {{user}} (1 short paragraph).
+6. "start_idea": Write a concise opening hook note with starting scene setup, character's initial attitude, direct greeting/action hook, and roleplay momentum (1 short paragraph).`;
 
     let instructionPayload = hasImage ? [instructionPrompt, selectedImageBlob] : instructionPrompt;
 
     if (generateBtn) {
       generateBtn.disabled = true;
-      generateBtn.innerHTML = '<i class="bi bi-stars"></i> Generating...';
+      generateBtn.innerHTML = '<i class="bi bi-stars"></i> Generating Concept...';
     }
 
     try {
@@ -279,29 +372,38 @@
         activeAiStreamObj = window.ai({
           instruction: instructionPayload,
           onChunk: (data) => {
-            if (targetEl) {
-              targetEl.value = data.fullTextSoFar;
-              targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+            if (data && data.fullTextSoFar) {
+              let parsed = parseConceptJson(data.fullTextSoFar);
+              if (parsed) applyParsedConcept(parsed);
             }
           }
         });
 
         let result = await activeAiStreamObj;
-        if (result && result.text) {
-          targetEl.value = result.text.trim();
-          targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+        let textResult = (result && typeof result === "object" && result.text) ? result.text : String(result || "");
+        let finalParsed = parseConceptJson(textResult);
+        if (finalParsed) {
+          applyParsedConcept(finalParsed);
         }
       } else {
-        // Fallback for non-Perchance environments
-        targetEl.value = `[AI Generated ${responseType}${hasImage ? ' + Image Analysis' : ''}]: A mysterious traveler with a veiled past wanders the misty high moors, seeking a forgotten heirloom that holds the key to an ancient kingdom.`;
-        targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+        // Fallback for non-Perchance offline environments
+        let fallbackObj = {
+          roleplay_tone: ["dark_romance", "flirtatious", "sensual", "dramatic"],
+          world_setting: ["academy_fantasy", "gothic_horror"],
+          roleplay_idea: hasImage 
+            ? "[AI Image Analysis & Concept]: A solitary spellcaster with silver hair tied back, sharp violet eyes, wearing a gold-trimmed black velvet mage cloak with glowing arcane runes on the collar. Reserved yet fiercely loyal, searching for lost ancestral artifacts."
+            : "[AI Generated Concept]: A mysterious traveler with a veiled past wanders the misty high moors, seeking a forgotten heirloom that holds the key to an ancient kingdom.",
+          behaviour_idea: "Speaks with quiet confidence, often tilting her head when contemplating. Becomes deeply protective when {{user}} is endangered.",
+          scenario_idea: "Set in a decaying academy ruined by past magical conflicts. Tension rises as forbidden relics begin awakening across the campus.",
+          start_idea: "The heavy oaken doors burst open as she steps inside from the storm, brushing rain from her cloak before locking eyes with {{user}}."
+        };
+        applyParsedConcept(fallbackObj);
       }
     } catch (err) {
-      console.error("AI Generation Error:", err);
+      console.error("AI Concept Generation Error:", err);
     } finally {
       window.closeAiIdeaModal();
-      targetEl.classList.add("u-highlight-pulse");
-      setTimeout(() => targetEl.classList.remove("u-highlight-pulse"), 600);
+      pulseHighlightAllFields();
     }
   };
 })();
