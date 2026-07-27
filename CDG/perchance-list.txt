@@ -12,8 +12,11 @@ uploadPlugin = {import:upload-plugin}
 // 2. GENERATOR METADATA
 // ==========================================
 $meta
-  title = AI Character Description Generator (free, no sign-up, unlimited)
+  title = AI Character Description Generator
   description = Generate a full character description based on your keywords/ideas, including personality, background, appearance, and images based on that appearance. Various styles/themes, including fantasy, D&D, anime, slice-of-life, realistic, fiction book/story characters, anthro/furry, creative OCs, villain ideas, etc. Completely free, online AI character maker - no login or sign-up.
+  header
+    mode = minimal
+
 
 // ==========================================
 // 3. GENERATION CONTROL FUNCTIONS
