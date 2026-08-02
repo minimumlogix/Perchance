@@ -346,19 +346,27 @@ You MUST output ONLY a single raw valid JSON object (no markdown formatting, no 
 {
   "roleplay_tone": ["tag1", "tag2", "tag3", "tag4"],
   "world_setting": ["tag1", "tag2"],
-  "roleplay_idea": "Premise and character outline notes...",
-  "behaviour_idea": "Behavior traits, speech habits and interaction scenario notes...",
-  "scenario_idea": "World setting context, atmosphere, and scenario outline notes...",
-  "start_idea": "Opening scene setup, greeting attitude, and direct action hook notes..."
+  "roleplay_idea": "Expressive prompt/guide for generating the main character profile and premise...",
+  "behaviour_idea": "Expressive prompt/guide for generating behavior examples and speech patterns...",
+  "scenario_idea": "Expressive prompt/guide for generating world context, setting atmosphere, and conflict...",
+  "start_idea": "Expressive prompt/guide for generating the opening dialogue scene and action hook..."
 }
+
+CRITICAL STYLE INSTRUCTION FOR ALL *_idea FIELDS:
+Do NOT simply write flat summaries or passive descriptions. Instead, format EVERY *_idea field as an active directive writing prompt/guide (starting with commands like "Create a character profile where...", "Write a dialogue guide where...", "Set up a scenario description where...", "Write a dialogue scene where...").
+
+Every *_idea field MUST seamlessly combine 3 core prompt elements:
+1. Plot / Action Prompt: The core narrative events, character goals, and conflict involving {{user}}.
+2. Tone & Emotional Guidance: Evocative and specific tone directives describing the exact emotional blend, behavioral nuances, and atmospheric mood (e.g., "Write in a tone that blends irritated detachment with condescending frustration, as if...").
+3. Additional Context & Details: Specific environmental elements, key props/objects, sensory cues, background history, or physical stakes.
 
 Rules for fields:
 1. "roleplay_tone": Array of exactly 4 concise tone tag strings (e.g. ["dark_romance", "flirtatious", "sensual", "dramatic"]).
 2. "world_setting": Array of exactly 2 concise setting tag strings (e.g. ["academy_fantasy", "cyberpunk"]).
-3. "roleplay_idea": Write a concise character premise and outline note (1-2 paragraphs). ${hasImage ? 'IMPORTANT: Provide an extremely detailed visual appearance description of the character(s) from the image (hair, eyes, facial features, outfit, body type, distinctive details) so the visual design is fully preserved in text without needing the image again, followed by personality and plot concept involving {{user}}.' : 'Include core character identity, appearance highlights, personality, and plot concept involving {{user}}.'}
-4. "behaviour_idea": Write a concise note on specific behavioral traits, speech habits, emotional triggers, and interaction scenarios (1 short paragraph).
-5. "scenario_idea": Write a concise note on the world context, atmosphere, ongoing conflict, and starting scenario involving {{user}} (1 short paragraph).
-6. "start_idea": Write a concise opening hook note with starting scene setup, character's initial attitude, direct greeting/action hook, and roleplay momentum (1 short paragraph).`;
+3. "roleplay_idea": Write an expressive prompt guide for creating the core character profile and plot premise. ${hasImage ? 'IMPORTANT: Explicitly direct the AI to incorporate an extremely detailed visual appearance description of the character(s) from the image (hair, eyes, facial features, outfit, body type, distinctive details) so the visual design is fully preserved in text without needing the image again, followed by personality traits, tone guidelines, and plot concept involving {{user}}.' : 'Specify core character identity, visual traits, personality dynamics, tone guidelines, and plot concept involving {{user}}.'}
+4. "behaviour_idea": Write an expressive prompt guide for generating character behavior examples. Direct how to portray speech habits, emotional triggers, reaction styles, body language, tone nuances, and interaction dynamics with {{user}}.
+5. "scenario_idea": Write an expressive prompt guide for generating the scenario context. Direct how to describe the world setting, environmental atmosphere, spatial layout, ongoing conflict, and stakes involving {{user}}.
+6. "start_idea": Write an expressive prompt guide for generating the opening roleplay scene hook. Combine a specific plot directive involving {{user}}, a rich tone prompt (e.g., "Write in a tone that blends..."), and key physical/environmental context cues (like specific props, actions, or immediate tension).`;
 
     let instructionPayload = hasImage ? [instructionPrompt, selectedImageBlob] : instructionPrompt;
 
@@ -391,11 +399,11 @@ Rules for fields:
           roleplay_tone: ["dark_romance", "flirtatious", "sensual", "dramatic"],
           world_setting: ["academy_fantasy", "gothic_horror"],
           roleplay_idea: hasImage 
-            ? "[AI Image Analysis & Concept]: A solitary spellcaster with silver hair tied back, sharp violet eyes, wearing a gold-trimmed black velvet mage cloak with glowing arcane runes on the collar. Reserved yet fiercely loyal, searching for lost ancestral artifacts."
-            : "[AI Generated Concept]: A mysterious traveler with a veiled past wanders the misty high moors, seeking a forgotten heirloom that holds the key to an ancient kingdom.",
-          behaviour_idea: "Speaks with quiet confidence, often tilting her head when contemplating. Becomes deeply protective when {{user}} is endangered.",
-          scenario_idea: "Set in a decaying academy ruined by past magical conflicts. Tension rises as forbidden relics begin awakening across the campus.",
-          start_idea: "The heavy oaken doors burst open as she steps inside from the storm, brushing rain from her cloak before locking eyes with {{user}}."
+            ? "Create a character profile for a solitary spellcaster with silver hair tied back, sharp violet eyes, wearing a gold-trimmed black velvet mage cloak with glowing arcane runes on the collar. Write in a tone of mysterious elegance laced with quiet melancholy, as she searches for lost ancestral artifacts while reluctantly forming a pact with {{user}}."
+            : "Create a character profile for a mysterious noble traveler with a veiled past, wandering the misty high moors. Write in a tone of tense intrigue and guarded vulnerability, focusing on her search for a forgotten heirloom that holds the key to an ancient kingdom and her dynamic with {{user}}.",
+          behaviour_idea: "Write a behavior guide depicting her speaking with quiet confidence and tilting her head when contemplating. Write in a tone that blends aristocratic composure with subtle, defensive sharp-tongued wit whenever {{user}} presses about her past, revealing deep protectiveness when {{user}} is endangered.",
+          scenario_idea: "Set up a scenario description for a decaying academy ruined by past magical conflicts. Write in a tone of lingering dread and arcane atmosphere, highlighting the rising tension as forbidden relics awaken across campus, trapping {{user}} and her in the storm-swept library.",
+          start_idea: "Write a dialogue scene where Saku demands that you (the {{user}}) clean her beloved, antique vase after she accidentally knocks it off the shelf. She's furious, but won't admit it, instead blaming you for her own mistake. Write in a tone that blends irritated detachment with condescending frustration, as if Saku is simultaneously disgusted by your existence and begrudgingly dependent on you. Imagine a mix of a harsh, exasperated sigh and a patronizing pat on the head, all while she's seething inside. The vase, a priceless family heirloom from the Edo period, lies shattered on the floor."
         };
         applyParsedConcept(fallbackObj);
       }
