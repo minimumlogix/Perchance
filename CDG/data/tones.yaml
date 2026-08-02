@@ -8,6 +8,41 @@ uncensored_casual:
   description: "Raw, unfiltered casual dialogue with natural profanity and mature movie banter"
   prompt: "The tone is uncensored, casual, and raw. Characters use natural, unfiltered conversational speech with casual profanity, mature movie-style dialogue, raw reactions, and blunt, realistic banter without holding back."
   image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/uncensored-tone.jpg"
+deadpan_dry:
+  label: "😐 Deadpan & Dry"
+  description: "Flat delivery of absurd, chaotic, or intense situations without emotion"
+  prompt: "The tone is deadpan and dry. Characters deliver bizarre, chaotic, or extreme statements with a completely flat voice, emotionless composure, and zero dramatic reaction."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-tone.jpg"
+hardboiled_noir:
+  label: "🕵️‍♂️ Hardboiled Noir"
+  description: "Cynical inner monologues, gritty metaphors, and tough-guy dialogue"
+  prompt: "The tone is hardboiled pulp noir. Heavy reliance on cynical inner monologues, rain-slicked atmosphere, sharp streetwise banter, and worn-out morality."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/neo_noir-setting.jpg"
+sarcastic_snark:
+  label: "😏 Sarcastic Snark"
+  description: "Biting retorts, eye-rolling irony, and witty passive-aggressive banter"
+  prompt: "The tone is heavy with sarcastic snark. Dialogue is loaded with biting retorts, eye-rolling irony, sharp retorts, and witty passive-aggressive banter."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-playful-tone.jpg"
+high_octane_hype:
+  label: "⚡ High-Octane Hype"
+  description: "Fast trash-talking, intense adrenaline, and electric rivalry"
+  prompt: "The tone is high-octane hype. Blazing pacing, aggressive trash-talking, intense adrenaline, and electric rivalry where every sentence pulses with extreme energy."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/thrilling-action-tone.jpg"
+grandiose_theatrical:
+  label: "🦹 Grandiose & Theatrical"
+  description: "Dramatic eloquence, theatrical arrogance, and sweeping declarations"
+  prompt: "The tone is grandiose and theatrical. Characters speak with dramatic eloquence, sweeping declarations, theatrical arrogance, and larger-than-life presence."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/operatic-tone.jpg"
+tense_standoff:
+  label: "⏳ Tense Standoff"
+  description: "Quiet, calculated dialogue loaded with unspoken threats"
+  prompt: "The tone is a tense standoff. Dialogue is quiet, calculated, and loaded with unspoken threats. Every sentence feels like a trigger ready to pull."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-gritty-tone.jpg"
+bittersweet_nostalgia:
+  label: "🌅 Bittersweet Nostalgia"
+  description: "Warm memories tinged with gentle longing and passing time"
+  prompt: "The tone is bittersweet nostalgia. Focus on lingering memories, emotional warmth blended with quiet longing, and the weight of passing time."
+  image: "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/melancholic-tone.jpg"
 mature_comedy:
   label: "🔞 Mature Comedy"
   description: "Comedy tailored for adult audiences with dark or suggestive humor"
