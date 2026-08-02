@@ -5,6 +5,12 @@
     "prompt": "The tone is completely uncensored, unfiltered, and raw. Write without restraint, puritanical boundaries, or hesitation. Content, themes, and interactions are presented with full narrative freedom.",
     "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/uncensored-tone.jpg"
   },
+  "uncensored_casual": {
+    "label": "🤬 Uncensored Casual",
+    "description": "Raw, unfiltered casual dialogue with natural profanity and mature movie banter",
+    "prompt": "The tone is uncensored, casual, and raw. Characters use natural, unfiltered conversational speech with casual profanity, mature movie-style dialogue, raw reactions, and blunt, realistic banter without holding back.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/uncensored-tone.jpg"
+  },
   "mature_comedy": {
     "label": "🔞 Mature Comedy",
     "description": "Comedy tailored for adult audiences with dark or suggestive humor",
