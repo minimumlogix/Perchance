@@ -218,10 +218,21 @@ categories:
     async loadRemoteDatabase() {
       try {
         let isLocal = !window.location.hostname.includes("perchance.org");
-        let path = isLocal ? "data/plots.yaml" : "https://minimumlogix.github.io/Perchance/CDG/data/plots.yaml";
-        let res = await fetch(path);
-        if (res.ok) {
-          let text = await res.text();
+        let jsonPath = isLocal ? "data/plots.json" : "https://minimumlogix.github.io/Perchance/CDG/data/plots.json";
+        let yamlPath = isLocal ? "data/plots.yaml" : "https://minimumlogix.github.io/Perchance/CDG/data/plots.yaml";
+        
+        let resJson = await fetch(jsonPath);
+        if (resJson.ok) {
+          let data = await resJson.json();
+          if (data && data.templates && data.categories) {
+            this.database = data;
+            return;
+          }
+        }
+
+        let resYaml = await fetch(yamlPath);
+        if (resYaml.ok) {
+          let text = await resYaml.text();
           this.database = parseYaml(text);
         }
       } catch (e) {

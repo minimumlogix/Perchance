@@ -242,7 +242,9 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
       this.containerId = containerId;
       this.options = options || {};
       this.title = options.title || "Tags";
+      this.jsonUrl = options.jsonUrl || "";
       this.yamlUrl = options.yamlUrl || "";
+      this.dataUrl = options.dataUrl || this.jsonUrl || this.yamlUrl || "";
       this.placeholder = options.placeholder || "Type to search or add custom tag...";
       this.onChange = options.onChange || function () {};
       this.selectedTags = options.initialTags || [];
@@ -272,20 +274,33 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
         this.render();
       }
 
-      // Fetch latest YAML if network is available
-      if (this.yamlUrl) {
+      // Fetch latest JSON or YAML if network is available
+      let fetchUrl = this.dataUrl || this.jsonUrl || this.yamlUrl;
+      if (fetchUrl) {
         try {
           const isLocal = !window.location.hostname.includes("perchance.org");
           const basePath = isLocal ? "" : "https://minimumlogix.github.io/Perchance/CDG/";
-          const fetchPath = this.yamlUrl.startsWith("http") ? this.yamlUrl : basePath + this.yamlUrl;
+          const fetchPath = fetchUrl.startsWith("http") ? fetchUrl : basePath + fetchUrl;
           
           let res = await fetch(fetchPath);
-          let text = await res.text();
-          let parsed = parseSimpleYaml(text);
-          if (parsed && Object.keys(parsed).length > 0) {
-            this.data = Object.assign({}, this.data, parsed);
-            this.isLoaded = true;
-            this.render();
+          if (res.ok) {
+            let parsed = null;
+            if (fetchPath.endsWith(".json") || fetchUrl.includes(".json")) {
+              parsed = await res.json();
+            } else {
+              let text = await res.text();
+              try {
+                parsed = JSON.parse(text);
+              } catch (e) {
+                parsed = parseSimpleYaml(text);
+              }
+            }
+
+            if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+              this.data = Object.assign({}, this.data, parsed);
+              this.isLoaded = true;
+              this.render();
+            }
           }
         } catch (err) {
           // Fallback to embedded default data silently
@@ -457,7 +472,7 @@ window.DEFAULT_WORLD_SETTINGS_DATA = {
         return;
       }
 
-      matches.slice(0, 10).forEach((item, idx) => {
+      matches.forEach((item, idx) => {
         let itemEl = document.createElement("div");
         itemEl.className = "c-tag-dropdown__item";
         itemEl.dataset.key = item.key;

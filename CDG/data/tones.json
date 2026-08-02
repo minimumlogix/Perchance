@@ -1,0 +1,410 @@
+{
+  "uncensored": {
+    "label": "🔓 Uncensored",
+    "description": "Unfiltered, explicit, and unrestricted narrative freedom",
+    "prompt": "The tone is completely uncensored, unfiltered, and raw. Write without restraint, puritanical boundaries, or hesitation. Content, themes, and interactions are presented with full narrative freedom.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/uncensored-tone.jpg"
+  },
+  "mature_comedy": {
+    "label": "🔞 Mature Comedy",
+    "description": "Comedy tailored for adult audiences with dark or suggestive humor",
+    "prompt": "The tone is mature comedy. Humor is tailored for adult audiences, blending sharp wit, sexual innuendo, adult situations, and clever comedic timing.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/mature-comedy-tone.jpg"
+  },
+  "r_rated_comedy": {
+    "label": "🎬 R-Rated Comedy",
+    "description": "High-energy comedy with crude humor, profanity, and wild situations",
+    "prompt": "The tone is an R-rated comedy. High-energy, wild, and unabashedly crude, incorporating frequent swearing, outrageous situations, physical comedy, and boundary-pushing jokes.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/r-rated-comedy-tone.jpg"
+  },
+  "adult_comedy": {
+    "label": "🍷 Adult Comedy",
+    "description": "Sophisticated adult humor focusing on relationships, work, and life",
+    "prompt": "The tone is adult comedy. Focus on relatable adult humor, relationship absurdity, workplace irony, and mature banter.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/adult-comedy-tone.jpg"
+  },
+  "irreverent_action_comedy": {
+    "label": "💥 Irreverent Action Comedy",
+    "description": "Wild action where nothing is sacred and humor interrupts chaos",
+    "prompt": "The tone is irreverent action comedy. Nothing is sacred—heroes, villains, authority, death, and storytelling tropes are all targets for humor amidst fast-paced action.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/irreverent-action-comedy-tone.jpg"
+  },
+  "dark_action_comedy": {
+    "label": "💣 Dark Action Comedy",
+    "description": "Graphic action and violence treated with hilarious dark humor",
+    "prompt": "The tone is dark action comedy. High-octane graphic action and serious threats are treated with dark humor, witty bantering under fire, and blood-pumping comedic timing.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-action-comedy-tone.jpg"
+  },
+  "profane_comedy": {
+    "label": "🤬 Profane Comedy",
+    "description": "Frequent swearing and crude language as natural character speech",
+    "prompt": "The tone is profane comedy. Frequent swearing, colorful insults, and crude language are part of the character's normal speech, not just for shock value.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/profane-comedy-tone.jpg"
+  },
+  "black_comedy": {
+    "label": "💀 Black Comedy",
+    "description": "Serious subjects like violence, trauma, and mortality treated with humor",
+    "prompt": "The tone is black comedy / dark comedy. Serious subjects like violence, trauma, murder, and mortality are treated with humor rather than drama.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/black-comedy-tone.jpg"
+  },
+  "meta_comedy": {
+    "label": "🪞 Meta Comedy",
+    "description": "Fourth-wall breaks, genre awareness, and jokes about storytelling",
+    "prompt": "The tone is meta / self-aware comedy. Include constant fourth-wall breaks, genre awareness, self-referential jokes, and playful commentary on storytelling clichés.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/meta-comedy-tone.jpg"
+  },
+  "gallows_humor": {
+    "label": "⚰️ Gallows Humor",
+    "description": "Grim, cynical, and playful humor in the face of terrible odds",
+    "prompt": "The tone is gallows humor. Characters make grim, playful, and cynical jokes in the face of hopeless odds, terrible situations, and impending danger because they don't take the world seriously.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gallows-humor-tone.jpg"
+  },
+  "chaotic_comedy": {
+    "label": "🌀 Chaotic Comedy",
+    "description": "Impulsive, unpredictable humor that interrupts serious moments",
+    "prompt": "The tone is chaotic comedy. The humor feels impulsive, unpredictable, and often interrupts serious moments with surprising twists and absurd logic.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chaotic-comedy-tone.jpg"
+  },
+  "irreverent": {
+    "label": "🤡 Irreverent",
+    "description": "Nothing is sacred: heroes, villains, death, authority, and tropes are mocked",
+    "prompt": "The tone is irreverent. Nothing is sacred—heroes, villains, death, authority, clichés, and even the story itself are all fair game for humor.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/irreverent-tone.jpg"
+  },
+  "satirical": {
+    "label": "🎭 Satirical",
+    "description": "Mocks superhero tropes, pop culture, clichés, and expectations",
+    "prompt": "The tone is satirical. Intentionally mock tropes, pop culture clichés, heroic expectations, and narrative conventions with sharp satirical wit.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/satirical-tone.jpg"
+  },
+  "cynical_playful": {
+    "label": "😏 Cynical but Playful",
+    "description": "Characters joke because they don't take the world seriously",
+    "prompt": "The tone is cynical but playful. Characters joke because they don't take the world seriously, keeping things witty and light even when situations are terrible.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-playful-tone.jpg"
+  },
+  "violent_comedy": {
+    "label": "⚔️ Violent Comedy",
+    "description": "Graphic action exaggerated until it becomes funny rather than horrifying",
+    "prompt": "The tone is violent comedy. Graphic action and violence are exaggerated until they become funny and entertaining rather than horrifying.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/violent-comedy-tone.jpg"
+  },
+  "absurdist": {
+    "label": "🤪 Absurdist",
+    "description": "Logic bends for the sake of the joke",
+    "prompt": "The tone is absurdist comedy. Reality and logic bend freely for the sake of the joke, prioritizing bizarre humor over strict plausibility.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/absurdist-tone.jpg"
+  },
+  "casual_everyday": {
+    "label": "💬 Casual & Everyday",
+    "description": "Everyday conversational words, simple phrasing, no purple prose or complex archaisms",
+    "prompt": "The tone is casual, modern, and natural. Use everyday words, plain spoken vocabulary, and natural conversational phrasing. Strictly avoid purple prose, overly complex vocabulary, Shakespearean archaisms, flowery metaphors, or unnaturally formal dialogue.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/genz-casual-tone.jpg"
+  },
+  "romantic": {
+    "label": "💖 Romantic",
+    "description": "Focus on relationship and love",
+    "prompt": "A romantic tone focusing on relationship and love.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romance-tone.jpg"
+  },
+  "romantic_comedy": {
+    "label": "🍿 Rom-Com",
+    "description": "Sweet romance mixed with lighthearted comedy",
+    "prompt": "The tone is a romantic comedy. Center the narrative around romantic attraction, misunderstandings, light-hearted humor, and comedic timing. Keep it entertaining, witty, and sweet.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/romantic-comedy-tone.jpg"
+  },
+  "dark_romance": {
+    "label": "🖤 Dark Romance",
+    "description": "Intense, obsessive, and morally grey love",
+    "prompt": "The tone is dark romance. Center the narrative around intense, obsessive, toxic, or morally complex romantic dynamics. Boundaries between love, possession, and danger are blurred. Tension should be extremely high, and relationships are consuming, overwhelming, and often unhealthy.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-romance-tone.jpg"
+  },
+  "affectionate": {
+    "label": "🤗 Affectionate",
+    "description": "Warm, gentle, and comforting emotional closeness",
+    "prompt": "The tone is affectionate. Focus on warmth, care, and emotional closeness expressed through small, meaningful gestures. Physical contact is gentle and non-sexual-touches, smiles, quiet support. Prioritize comfort, trust, and soft emotional connection.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/affectionate-tone.jpg"
+  },
+  "flirtatious": {
+    "label": "😏 Flirtatious",
+    "description": "Playful attraction, teasing, and witty chemistry",
+    "prompt": "The tone is flirtatious. Emphasize playful attraction, teasing, and suggestive banter. Dialogue should carry double meanings, light tension, and charm without becoming explicit. Keep interactions fun, lively, and driven by chemistry rather than emotional depth or physical detail.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/flirtatious-tone.jpg"
+  },
+  "sensual": {
+    "label": "🕯️ Sensual",
+    "description": "Slow-building physical proximity and atmosphere",
+    "prompt": "The tone is sensual. Focus on physical presence, atmosphere, and slow-building intimacy. Describe touch, proximity, body language, and unspoken tension in detail. Keep it restrained-emphasize anticipation, awareness, and lingering moments rather than explicit acts.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/sensual-tone.jpg"
+  },
+  "intimate": {
+    "label": "🧸 Intimate",
+    "description": "Close relationships and deep emotional focus",
+    "prompt": "The tone is intimate. Deep emotional focus, quiet interactions, and close interpersonal dynamics.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/intimate-tone.jpg"
+  },
+  "cute": {
+    "label": "🥰 Cute",
+    "description": "Sweet, comforting, and heartwarming moments",
+    "prompt": "The tone is cute and heartwarming (moe). Prioritize adorable behaviors, sweetness, comforting interactions, and soft, endearing moments. Focus on innocence and charm.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cute-tone.jpg"
+  },
+  "erotic": {
+    "label": "💋 Erotic",
+    "description": "Focus on sexual attraction and physical intimacy",
+    "prompt": "The tone is erotic. Sexual attraction and physical intimacy take center stage. Describe arousal, bodies, and sexual interaction with clear intent and detail. Prioritize desire, chemistry, and physical experience, but allow for some restraint and buildup rather than constant explicitness.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/erotic-tone.jpg"
+  },
+  "smut": {
+    "label": "🔥 Smut",
+    "description": "Pure erotica focused on graphic intimacy",
+    "prompt": "The tone is smut and pure erotica. Focus intensely on graphic, unapologetic sexual intimacy, desire, arousal, and physical interactions. Prioritize raw lust and explicit detail, leaving nothing to the imagination. The plot serves strictly as a vehicle for sexual encounters.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/smut-tone.jpg"
+  },
+  "explicit": {
+    "label": "🔞 Explicit",
+    "description": "Highly explicit, graphic, and intense passion",
+    "prompt": "The tone is pornographic and highly explicit. Raw, graphic, and shamelessly sexual. Focus intensely on detailed descriptions of bodies, sexual acts, arousal, fetishes, fluids, sounds, smells, and physical sensations. Be hardcore. Prioritize pure eroticism, lust, and explicit sex over plot or emotion. Leave nothing to the imagination - be as vulgar, lewd, and visually descriptive as possible.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/explicit-tone.jpg"
+  },
+  "dark": {
+    "label": "💀 Dark",
+    "description": "Grim, gritty, scary, and high stakes",
+    "prompt": "A dark, grim, gritty, scary, and high stakes tone.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-tone.jpg"
+  },
+  "dark_gritty": {
+    "label": "⛓️ Dark & Gritty",
+    "description": "Harsh, morally complex, and unforgiving world",
+    "prompt": "The tone is dark and gritty. The world is harsh, unforgiving, and morally complex. Characters are flawed, survival often comes at a cost, and hope is fragile or absent. Do not soften violence, suffering, or ethical ambiguity-lean into discomfort, tension, and realism.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-gritty-tone.jpg"
+  },
+  "horror": {
+    "label": "😱 Horror",
+    "description": "Spooky, terrifying, supernatural, or psychological fear",
+    "prompt": "A horror setting designed to evoke spooky, terrifying, supernatural, or psychological fear.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/horror-setting.jpg"
+  },
+  "gory": {
+    "label": "🩸 Gory",
+    "description": "Vivid, explicit violence and visceral combat",
+    "prompt": "The tone is gory and visceral. Describe physical violence, wounds, blood, and body horror in explicit, vivid detail. Emphasize the visceral nature of combat or horror.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/gory-tone.jpg"
+  },
+  "brutal": {
+    "label": "🔨 Brutal",
+    "description": "Ruthless realism and harsh physical/emotional truth",
+    "prompt": "The tone is brutal. Ruthless realism, harsh physical and emotional cruelty, and unvarnished truth.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/brutal-tone.jpg"
+  },
+  "claustrophobic": {
+    "label": "📦 Claustrophobic",
+    "description": "Confinement, tight spaces, and rising pressure",
+    "prompt": "The tone is claustrophobic. Confinement, emotional suffocation, rising pressure, and small spaces.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/claustrophobic-tone.jpg"
+  },
+  "paranoid": {
+    "label": "👁️ Paranoid",
+    "description": "Deep suspicion, secrets, and decaying trust",
+    "prompt": "The tone is paranoid. Everyone hides something, trust decays constantly, and safety is an illusion.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/paranoid-tone.jpg"
+  },
+  "tragic": {
+    "label": "🎭 Tragic",
+    "description": "Loss, inevitability, and emotional weight",
+    "prompt": "The tone is tragic. Center the narrative around loss, inevitability, and emotional weight. Characters may struggle, hope, or resist, but their path is shaped by forces they cannot fully escape. Emphasize sacrifice, consequence, and the slow or sudden collapse of what matters most.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/tragic-tone.jpg"
+  },
+  "melancholic": {
+    "label": "😢 Melancholic",
+    "description": "Sad, reflective, and touching",
+    "prompt": "A melancholic tone that is sad, reflective, and touching.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/melancholic-tone.jpg"
+  },
+  "nihilistic": {
+    "label": "🕳️ Nihilistic",
+    "description": "Futility, erosion of meaning, and quiet void",
+    "prompt": "The tone is nihilistic. Meaninglessness, futility, emotional erosion, and a quiet acceptance of the void.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/nihilistic-tone.jpg"
+  },
+  "lonely": {
+    "label": "🍂 Lonely",
+    "description": "Emotional isolation and longing for connection",
+    "prompt": "The tone is lonely. Isolation, quiet spaces, and the longing for connection form the emotional core.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lonely-tone.jpg"
+  },
+  "lighthearted": {
+    "label": "☀️ Lighthearted",
+    "description": "Bright, positive, and whimsical",
+    "prompt": "A lighthearted, bright, positive, and whimsical tone.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/lighthearted-tone.jpg"
+  },
+  "light_hearted_comedic": {
+    "label": "🤪 Lighthearted Comedic",
+    "description": "Fun, witty, and playful humor",
+    "prompt": "The tone is lighthearted and comedic. Prioritize humor, charm, and entertainment. Dialogue should be witty or playful, situations can be exaggerated for comedic effect, and emotional weight is kept low. Even conflict should feel fun, absurd, or endearing rather than heavy.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/light-hearted-comedic-tone.jpg"
+  },
+  "humorous": {
+    "label": "😂 Humorous",
+    "description": "Funny, witty, and lighthearted comedy",
+    "prompt": "A humorous, witty, and lighthearted comedic tone.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/humorous-tone.jpg"
+  },
+  "dark_humour": {
+    "label": "💀 Dark Humor",
+    "description": "Taboo themes with dry wit and black comedy",
+    "prompt": "The tone is dark humor. Combine morbid, taboo, or tragic themes with dry wit, sarcasm, and black comedy. Contrast serious situations with comedic absurdity.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dark-humour-tone.jpg"
+  },
+  "cozy": {
+    "label": "☕ Cozy",
+    "description": "Small stakes, warm routines, and emotional safety",
+    "prompt": "The tone is cozy. Small stakes, comforting routines, emotional safety, warmth, and quiet moments.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cozy-tone.jpg"
+  },
+  "hopepunk": {
+    "label": "✊ Hopepunk",
+    "description": "Optimistic resistance and fighting for a better world",
+    "prompt": "The tone is hopepunk. Defiant optimism, kindness as resistance, and fighting for a better world against impossible odds.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hopepunk-tone.jpg"
+  },
+  "euphoric": {
+    "label": "🌈 Euphoric",
+    "description": "Intense emotional highs, liberation, and ecstasy",
+    "prompt": "The tone is euphoric. Intense emotional highs, liberation, ecstasy, and overwhelming joy or energy.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/euphoric-tone.jpg"
+  },
+  "genz_casual": {
+    "label": "💬 Gen-Z Casual",
+    "description": "Modern internet slang and informal dialog",
+    "prompt": "The tone is Gen-Z casual. Characters use modern internet slang, text-speak, and contemporary casual phrasing. Emphasize a laid-back, highly informal, sarcastic, or culturally-aware voice. Dialogue should feel like a modern group chat or TikTok comment section.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/genz-casual-tone.jpg"
+  },
+  "action_packed": {
+    "label": "💥 Action-Packed",
+    "description": "High energy, fights, and chases",
+    "prompt": "An action-packed tone with high energy, fights, and chases.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/action-tone.jpg"
+  },
+  "thrilling_action": {
+    "label": "⚡ Thrilling Action",
+    "description": "High-intensity action and suspense",
+    "prompt": "The tone is thrilling and high-intensity. Maintain constant momentum, urgency, and tension. Stakes are immediate and pressing, danger is ever-present, and scenes should push forward with speed and purpose. Minimize downtime-prioritize action, suspense, and escalation.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/thrilling-action-tone.jpg"
+  },
+  "dramatic": {
+    "label": "🎭 Dramatic",
+    "description": "Emotional conflict and tension",
+    "prompt": "A dramatic tone with emotional conflict and tension.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/dramatic-tone.jpg"
+  },
+  "operatic": {
+    "label": "🎻 Operatic",
+    "description": "Dramatic extremes and larger-than-life encounters",
+    "prompt": "The tone is operatic. Massive emotional extremes, larger-than-life confrontations, and dramatic staging.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/operatic-tone.jpg"
+  },
+  "epic": {
+    "label": "🌌 Epic",
+    "description": "Grand, mythic, and high-stakes scale",
+    "prompt": "The tone is epic and grand in scale. Events feel monumental, legendary, and larger than life. Emphasize vast settings, powerful forces, and high stakes that extend beyond individuals. Use elevated language and dramatic weight-this story should feel mythic and significant.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/epic-tone.jpg"
+  },
+  "serious": {
+    "label": "😐 Serious",
+    "description": "Realistic, grave, and meaningful",
+    "prompt": "A serious, realistic, and meaningful tone.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/serious-tone.jpg"
+  },
+  "grounded": {
+    "label": "🌍 Grounded",
+    "description": "Grounded, realistic, and believable characters",
+    "prompt": "The tone is grounded and realistic. Characters behave like real people with believable motivations, limitations, and consequences. Dialogue is natural, emotions are restrained, and events unfold without exaggeration, spectacle, or melodrama. Avoid stylization, fantasy logic, or convenient outcomes.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/grounded-tone.jpg"
+  },
+  "cynical": {
+    "label": "😒 Cynical",
+    "description": "Weary worldview, failed systems, and skepticism",
+    "prompt": "The tone is cynical. A dry, weary worldview where institutions fail and idealists are viewed with skepticism.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/cynical-tone.jpg"
+  },
+  "stoic": {
+    "label": "🛡️ Stoic",
+    "description": "Suppressed emotion under quiet discipline",
+    "prompt": "The tone is stoic. Emotion is suppressed beneath a quiet restraint, calm discipline, and acceptance of fate.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/stoic-tone.jpg"
+  },
+  "clinical": {
+    "label": "🔬 Clinical",
+    "description": "Factual, detached narration without bias",
+    "prompt": "The tone is clinical. Detached, cold, observational narration that reports facts and actions without emotional bias.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/clinical-tone.jpg"
+  },
+  "documentary": {
+    "label": "📹 Documentary",
+    "description": "Objective, detached, and factual observation",
+    "prompt": "The tone is documentary. The narrative is objective, analytical, and highly descriptive, as if observed through a camera lens by a detached third-party narrator. Focus on observable facts, environments, and behavioral analysis rather than inner subjective emotions.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/documentary-tone.jpg"
+  },
+  "satirical_biting": {
+    "label": "🎯 Biting Satire",
+    "description": "Sharp wit, social critique, and exposing hypocrisy",
+    "prompt": "The tone is bitingly satirical. Aggressive social critique, sharp wit, and expose of hypocrisy.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/satirical-biting-tone.jpg"
+  },
+  "existential": {
+    "label": "🌌 Existential",
+    "description": "Focus on identity, mortality, and consciousness",
+    "prompt": "The tone is existential. Deep focus on identity, purpose, mortality, and the nature of consciousness.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/existential-tone.jpg"
+  },
+  "surreal": {
+    "label": "🍄 Surreal",
+    "description": "Dreamlike logic bending with emotional coherence",
+    "prompt": "The tone is surreal. Logic bends constantly but remains emotionally coherent and dreamlike.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/surreal-tone.jpg"
+  },
+  "whimsical": {
+    "label": "🦄 Whimsical",
+    "description": "Dreamlike, imaginative, and surreal rules",
+    "prompt": "The tone is whimsical and dreamlike. Embrace imagination, strangeness, and playful absurdity. The world may operate on surreal or illogical rules, and characters can react with curiosity or delight rather than concern. Prioritize wonder, oddity, and creative unpredictability.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/whimsical-tone.jpg"
+  },
+  "chaotic": {
+    "label": "🌀 Chaotic",
+    "description": "Unpredictable pacing and volatile impulses",
+    "prompt": "The tone is chaotic. Unpredictable pacing, unstable situations, and volatile characters acting on impulse.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/chaotic-tone.jpg"
+  },
+  "campy": {
+    "label": "💅 Campy",
+    "description": "Self-aware humor and over-the-top theatricality",
+    "prompt": "The tone is campy. Over-the-top theatrical absurdity, self-aware humor, and exaggerated playfulness.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/campy-tone.jpg"
+  },
+  "hallucinatory": {
+    "label": "🔮 Hallucinatory",
+    "description": "Distorted senses where dreams and reality blur",
+    "prompt": "The tone is hallucinatory. Reality is uncertain, senses are distorted, and dream and waking states blur.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/hallucinatory-tone.jpg"
+  },
+  "reverent": {
+    "label": "🛐 Reverent",
+    "description": "Sacred seriousness, quiet awe, and dignity",
+    "prompt": "The tone is reverent. Treat all events and lore with sacred seriousness, quiet awe, and dignity.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/reverent-tone.jpg"
+  },
+  "decadent": {
+    "label": "🍷 Decadent",
+    "description": "Indulgence, excess, and rotting luxury",
+    "prompt": "The tone is decadent. Excess, indulgence, moral decay, and luxury rotting from within.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/decadent-tone.jpg"
+  },
+  "unhinged": {
+    "label": "🤪 Unhinged",
+    "description": "Manic energy and erratic, unstable behavior",
+    "prompt": "The tone is unhinged. Escalating instability, manic energy, and erratic behavioral choices.",
+    "image": "https://minimumlogix.github.io/Perchance/RP-GEN/assets/Images/cards/unhinged-tone.jpg"
+  }
+}

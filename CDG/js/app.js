@@ -75,6 +75,7 @@ function initCDGApp() {
   }
   window.toneSelector = new window.TagSelector("toneSelectorCtn", {
     title: "Roleplay Tone",
+    jsonUrl: "data/tones.json",
     yamlUrl: "data/tones.yaml",
     defaultData: window.DEFAULT_TONES_DATA || {},
     placeholder: "Type to search or add custom tone...",
@@ -91,6 +92,7 @@ function initCDGApp() {
   }
   window.worldSettingSelector = new window.TagSelector("worldSettingSelectorCtn", {
     title: "World Setting",
+    jsonUrl: "data/world_settings.json",
     yamlUrl: "data/world_settings.yaml",
     defaultData: window.DEFAULT_WORLD_SETTINGS_DATA || {},
     placeholder: "Type to search or add custom setting...",
