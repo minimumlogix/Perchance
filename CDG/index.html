@@ -44,6 +44,100 @@
       const plugins = ['ai', 'image', 'visualStyles', 'comments', 'prompt2', 'uploadPlugin', 'literal'];
       const mocks = {};
 
+      if (isLocal) {
+        mocks['comments'] = function(opts) {
+          if (opts?.onLoad && !opts?.channel?.includes("reactions")) {
+            setTimeout(() => {
+              opts.onLoad([
+                {
+                  id: "msg_sample_1",
+                  message: "Welcome to the AI Character Description Generator! Share your character prompts and ideas here. :cat_sparkles:",
+                  time: Date.now() - 1000 * 60 * 45,
+                  byCurrentUser: false,
+                  user: { id: "u_admin_1", visualId: "Admin", nickname: "CommunityMod", isAdmin: true }
+                },
+                {
+                  id: "msg_sample_2",
+                  message: "The new tone selector is great for creating mysterious antiheroes. :blob_cheer:",
+                  time: Date.now() - 1000 * 60 * 15,
+                  byCurrentUser: false,
+                  user: { id: "u_hero_2", visualId: "Ranger", nickname: "RuneSeeker" }
+                },
+                {
+                  id: "msg_sample_3",
+                  message: "Don't forget to try the export markdown button for saving your character sheets!",
+                  time: Date.now() - 1000 * 60 * 12,
+                  byCurrentUser: false,
+                  user: { id: "u_hero_2", visualId: "Ranger", nickname: "RuneSeeker" }
+                }
+              ], {});
+            }, 60);
+          }
+
+          let strObj = new String(`<div style="display:flex; align-items:center; width:100%; height:100%; color:var(--chat-text-muted);"><input id="mockChatInput" type="text" placeholder="${opts?.commentPlaceholderText || 'Message #comments...'}" style="width:100%; background:transparent; border:none; color:inherit; outline:none; font-size:14px;" onkeydown="if(event.key==='Enter'&&this.value.trim()){ let text = window.__handleChatBeforeSubmit ? window.__handleChatBeforeSubmit({inputText: this.value}) : this.value; window.__handleChatIncoming?.({id:'msg_'+Date.now(), message:text, time:Date.now(), byCurrentUser:true, user:{id:'my_local_user', nickname:'You'}}); this.value=''; }"></div>`);
+          strObj.inputText = "";
+          strObj.submit = async function(text) {
+            if (opts?.channel?.includes("reactions") && typeof window.__handleReactionBusIncoming === "function") {
+              window.__handleReactionBusIncoming({ message: text, time: Date.now(), byCurrentUser: true, user: { id: "my_local_user" } });
+            }
+            return { success: true };
+          };
+          return strObj;
+        };
+
+        mocks['image'] = function(opts) {
+          if (opts && opts.gallery) {
+            return `<div style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--chat-border); padding-bottom:8px;">
+                <span style="font-weight:600; font-size:0.9rem; color:var(--chat-text-header);"><i class="bi bi-stars"></i> Top Community Creations</span>
+                <span style="font-size:0.8rem; color:var(--chat-text-muted);">Filter: G-Rated | Sort: Top</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
+                <div class="c-art-card" style="border-radius:6px; overflow:hidden;">
+                  <div style="background:#1a1c1e; height:200px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#949ba4; font-size:0.8rem; padding:8px; text-align:center;">
+                    <i class="bi bi-image" style="font-size:2rem; margin-bottom:6px; opacity:0.6;"></i>
+                    <span>Cyberpunk Infiltrator Rogue</span>
+                  </div>
+                  <div style="padding:8px; display:flex; justify-content:space-between; align-items:center; background:var(--chat-bg-actions); font-size:0.75rem;">
+                    <span style="color:var(--chat-text-muted);">❤️ 142</span>
+                    <span style="color:var(--chat-accent); cursor:pointer;">by @CyberArt</span>
+                  </div>
+                </div>
+                <div class="c-art-card" style="border-radius:6px; overflow:hidden;">
+                  <div style="background:#1a1c1e; height:200px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#949ba4; font-size:0.8rem; padding:8px; text-align:center;">
+                    <i class="bi bi-image" style="font-size:2rem; margin-bottom:6px; opacity:0.6;"></i>
+                    <span>Eldritch Void Sorcerer</span>
+                  </div>
+                  <div style="padding:8px; display:flex; justify-content:space-between; align-items:center; background:var(--chat-bg-actions); font-size:0.75rem;">
+                    <span style="color:var(--chat-text-muted);">❤️ 98</span>
+                    <span style="color:var(--chat-accent); cursor:pointer;">by @VoidCaller</span>
+                  </div>
+                </div>
+                <div class="c-art-card" style="border-radius:6px; overflow:hidden;">
+                  <div style="background:#1a1c1e; height:200px; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#949ba4; font-size:0.8rem; padding:8px; text-align:center;">
+                    <i class="bi bi-image" style="font-size:2rem; margin-bottom:6px; opacity:0.6;"></i>
+                    <span>High Elf Celestial Cleric</span>
+                  </div>
+                  <div style="padding:8px; display:flex; justify-content:space-between; align-items:center; background:var(--chat-bg-actions); font-size:0.75rem;">
+                    <span style="color:var(--chat-text-muted);">❤️ 84</span>
+                    <span style="color:var(--chat-accent); cursor:pointer;">by @ElvenCrown</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+          }
+
+          let promptText = (typeof opts === 'string' ? opts : opts?.prompt) || 'Portrait';
+          let str = new String(`<div style="width:100%; height:280px; background:#141517; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; color:#949ba4; text-align:center;">
+            <i class="bi bi-image-fill" style="font-size:2.5rem; opacity:0.4; margin-bottom:8px; color:var(--chat-accent);"></i>
+            <span style="font-size:0.82rem; font-weight:600; color:var(--chat-text-header); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${promptText.split(' - ')[0]}</span>
+            <span style="font-size:0.72rem; color:var(--chat-text-muted); margin-top:4px;">[text-to-image-plugin tile]</span>
+          </div>`);
+          str.evaluateItem = str;
+          return str;
+        };
+      }
+
       plugins.forEach(name => {
         Object.defineProperty(window, name, {
           get: function () {

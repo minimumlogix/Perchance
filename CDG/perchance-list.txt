@@ -5,8 +5,52 @@ ai = {import:ai-text-plugin}
 image = {import:text-to-image-plugin}
 visualStyles = {import:t2i-styles}
 comments = {import:comments-plugin}
+commentsPlugin = [comments]
 prompt2 = {import:prompt2-plugin}
 uploadPlugin = {import:upload-plugin}
+
+// ==========================================
+// COMMENTS PLUGIN CONFIGURATION
+// ==========================================
+customEmojis
+  @import = {import:huge-emoji-list}
+  blob_cheer = https://user-uploads.perchance.org/file/e60fe5fe6bc120baea423086eb293b6e.png
+  blob_cat = https://user-uploads.perchance.org/file/ca7f884ba6ae9ae6b8f36cbbbe842880.png
+  blob_heart = https://user-uploads.perchance.org/file/71c69e25d6061328ae92ca365287f34c.png
+  pepe_popcorn = https://user-uploads.perchance.org/file/ff1c4f526ebecad1bc4b5b7367fc9ff4.png
+  cat_sparkles = https://user-uploads.perchance.org/file/a014eb31a89cbe97f565fe6dae0aa62f.png
+
+commentOptions
+  channel = cdg-community-chat
+  channelLabel = comments
+  customEmojiSize = 1.3
+  loneCustomEmojiSizeMultiplier = 2
+  adminFlair = 👑 MOD
+  adminPasswordHash = REPLACE_WITH_SHA256_HASH
+  rateLimits = 1 per 3 seconds, 6 per minute, 25 per 10 minutes
+  commentPlaceholderText = Message #comments...
+  bannedWords = spam, scam, phishing, hack
+  customEmojis = [customEmojis]
+
+reactionCommentOptions
+  channel = cdg-community-reactions
+  hideComments = true
+  rateLimits = 1 per 1 seconds, 20 per minute
+
+galleryOptions
+  gallery = true
+  sort = top
+  contentFilter = g
+  timeRange = 1-week
+  hideIfScoreIsBelow = -2
+  adaptiveHeight = true
+  bannedPromptPhrases
+    pg13:blood
+    /hate.?speech/
+    /gore/
+    /nsfw/
+
+
 
 // ==========================================
 // 2. GENERATOR METADATA

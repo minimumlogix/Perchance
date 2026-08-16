@@ -80,6 +80,32 @@
   /* LAYOUT BOUNDS */
   --container-max-width: 700px;
   --gallery-max-width: 1050px;
+
+  /* CHAT SECTION TOKENS - DARK DEFAULT */
+  --chat-bg-panel: #313338;
+  --chat-bg-header: #313338;
+  --chat-bg-feed: #313338;
+  --chat-bg-input-wrapper: #313338;
+  --chat-bg-input-bar: #383a40;
+  --chat-bg-actions: #2b2d31;
+  --chat-bg-pill: #2b2d31;
+  --chat-bg-pill-hover: #35373c;
+  --chat-bg-pill-active: rgba(88, 101, 242, 0.18);
+  --chat-bg-hover: rgba(255, 255, 255, 0.04);
+  --chat-bg-reply: #2b2d31;
+  --chat-bg-popover: #2b2d31;
+  --chat-text-main: #dbdee1;
+  --chat-text-header: #f2f3f5;
+  --chat-text-muted: #949ba4;
+  --chat-text-subtle: #80848e;
+  --chat-border: rgba(255, 255, 255, 0.08);
+  --chat-border-subtle: rgba(255, 255, 255, 0.05);
+  --chat-border-pill: rgba(255, 255, 255, 0.1);
+  --chat-border-pill-active: #5865F2;
+  --chat-accent: #5865F2;
+  --chat-accent-hover: #4752c4;
+  --chat-green: #57f287;
+  --chat-red: #ed4245;
 }
 
 /* ===========================
@@ -99,4 +125,30 @@
   --color-border-subtle: #cccccc;
   --color-link: #0066cc;
   --color-link-hover: #004499;
+
+  /* CHAT SECTION TOKENS - LIGHT */
+  --chat-bg-panel: #ffffff;
+  --chat-bg-header: #f2f3f5;
+  --chat-bg-feed: #ffffff;
+  --chat-bg-input-wrapper: #ffffff;
+  --chat-bg-input-bar: #ebedef;
+  --chat-bg-actions: #f2f3f5;
+  --chat-bg-pill: #f2f3f5;
+  --chat-bg-pill-hover: #e3e5e8;
+  --chat-bg-pill-active: rgba(88, 101, 242, 0.15);
+  --chat-bg-hover: rgba(0, 0, 0, 0.04);
+  --chat-bg-reply: #e3e5e8;
+  --chat-bg-popover: #ffffff;
+  --chat-text-main: #2e3338;
+  --chat-text-header: #060607;
+  --chat-text-muted: #747f8d;
+  --chat-text-subtle: #99aab5;
+  --chat-border: rgba(0, 0, 0, 0.08);
+  --chat-border-subtle: rgba(0, 0, 0, 0.04);
+  --chat-border-pill: rgba(0, 0, 0, 0.12);
+  --chat-border-pill-active: #5865F2;
+  --chat-accent: #5865F2;
+  --chat-accent-hover: #4752c4;
+  --chat-green: #23a55a;
+  --chat-red: #da373c;
 }

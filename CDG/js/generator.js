@@ -137,6 +137,9 @@ window.generateImagesSection = async function () {
     let imagesAreaEl = document.getElementById("imagesAreaEl");
     let imagePromptEl = document.getElementById("imagePromptEl");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
+    let hubRegenImagesBtn = document.getElementById("hubRegenImagesBtn");
+    let hubLoadingBanner = document.getElementById("hubArtLoadingBanner");
+    let hubLoadingText = document.getElementById("hubArtLoadingText");
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -149,6 +152,10 @@ window.generateImagesSection = async function () {
     if (generateImagesBtn) generateImagesBtn.disabled = true;
     if (stopImagesBtn) stopImagesBtn.classList.remove("u-hidden");
     if (imagesAreaEl) imagesAreaEl.classList.remove("u-hidden");
+
+    if (typeof window.switchChatHubChannel === "function") {
+        window.switchChatHubChannel("character-art");
+    }
 
     window.clearOldImageStuff();
 
@@ -171,11 +178,16 @@ window.generateImagesSection = async function () {
     captionObj = window.ai(captionPrompt);
     window.lastImageCaptionPromptStreamObj = captionObj;
     if (imagePromptEl) imagePromptEl.innerHTML = "<b>Generating image prompt...</b> " + captionObj.loadingIndicatorHtml;
+    if (hubLoadingBanner) {
+        hubLoadingBanner.style.display = "flex";
+        if (hubLoadingText) hubLoadingText.innerHTML = "Generating visual keyphrase prompt... " + (captionObj.loadingIndicatorHtml || "");
+    }
 
     let responseData = await captionObj;
 
     if (stopImagesBtn) stopImagesBtn.classList.add("u-hidden");
     if (generateImagesBtn) generateImagesBtn.disabled = false;
+    if (hubLoadingBanner) hubLoadingBanner.style.display = "none";
 
     if (responseData.stopReason === "user") return;
     let visualKeyphrasesText = responseData.text.replace(/\n+/g, " ");
@@ -187,6 +199,7 @@ window.generateImagesSection = async function () {
     };
 
     if (regenImagesBtn) regenImagesBtn.disabled = false;
+    if (hubRegenImagesBtn) hubRegenImagesBtn.disabled = false;
     window.generateImages();
 };
 
@@ -200,10 +213,17 @@ window.generateImages = function () {
     let { generatedText, physicalAppearanceText, visualKeyphrasesText } = window.lastCharacterTextData;
     let imagePromptEl = document.getElementById("imagePromptEl");
     let imagesEl = document.getElementById("imagesEl");
+    let hubArtMediaGrid = document.getElementById("hubArtMediaGrid");
+    let hubArtPromptTextarea = document.getElementById("hubArtPromptTextarea");
+
+    let currentPrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
+    if (hubArtPromptTextarea) {
+        hubArtPromptTextarea.value = currentPrompt;
+    }
 
     let imageHtml = "";
     for (let i = 0; i < 6; i++) {
-        let basePrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
+        let basePrompt = currentPrompt;
         if (i % 2 === 0) basePrompt += " - " + physicalAppearanceText;
 
         let promptData = {
@@ -213,24 +233,53 @@ window.generateImages = function () {
             style: "margin:0.25rem",
         };
 
-        imageHtml += `<div class="imageWrapper u-flex u-flex-column u-flex-center u-mb-md">
-      ${window.image(promptData).evaluateItem}
-      <button class="c-button c-button--sm u-mt-xs" onclick="chatWithCharacterButtonClickHandler(this.closest('.imageWrapper').querySelector('iframe').textToImagePluginOutput, this)"><i class="bi bi-chat-quote-fill"></i> chat with this character</button>
-    </div>`;
+        let artId = `a:art-${i}`;
+        let reactionPills = (typeof window.renderReactionPillsHtml === "function") ? window.renderReactionPillsHtml(artId) : "";
+
+        imageHtml += `
+        <div class="c-art-card" id="artCard-${i}" data-art-id="${artId}">
+          <div class="c-art-card-media">
+            ${window.image(promptData).evaluateItem}
+            <div class="c-art-card-overlay">
+              <button class="c-art-card-btn" title="Add Reaction" onclick="window.openChatReactionPicker('${artId}', this)">🙂</button>
+              <button class="c-art-card-btn" title="Chat with this character" onclick="window.chatWithCharacterButtonClickHandler(this.closest('.c-art-card').querySelector('iframe').textToImagePluginOutput, this)">💬</button>
+              <button class="c-art-card-btn" title="Share to #general" onclick="window.shareArtToGeneral(${i})">↗️</button>
+            </div>
+          </div>
+          <div class="c-art-card-footer">
+            <button class="c-art-card-chat-btn" onclick="window.chatWithCharacterButtonClickHandler(this.closest('.c-art-card').querySelector('iframe').textToImagePluginOutput, this)"><i class="bi bi-chat-quote-fill"></i> chat with character</button>
+            <div class="c-chat-reactions" id="chatReactions-${artId}">
+              ${reactionPills}
+            </div>
+          </div>
+        </div>`;
     }
 
     if (imagePromptEl) {
-        imagePromptEl.innerHTML = `<div class="u-text-left"><b>Image Prompt <span style="opacity:0.6;">(editable)</span>:</b> <textarea class="c-textarea u-mt-xs" oninput="window.overwrittenVisualKeyphrasesText=this.value">${window.overwrittenVisualKeyphrasesText || visualKeyphrasesText}</textarea></div>`;
+        imagePromptEl.innerHTML = `<div class="u-text-left"><b>Image Prompt <span style="opacity:0.6;">(editable)</span>:</b> <textarea class="c-textarea u-mt-xs" oninput="window.overwrittenVisualKeyphrasesText=this.value; if(document.getElementById('hubArtPromptTextarea')) document.getElementById('hubArtPromptTextarea').value=this.value;">${currentPrompt}</textarea></div>`;
     }
     if (imagesEl) imagesEl.innerHTML = imageHtml;
+    if (hubArtMediaGrid) hubArtMediaGrid.innerHTML = imageHtml;
 };
 
 window.clearOldImageStuff = function () {
     window.overwrittenVisualKeyphrasesText = null;
     let imagesEl = document.getElementById("imagesEl");
     let imagePromptEl = document.getElementById("imagePromptEl");
+    let hubArtMediaGrid = document.getElementById("hubArtMediaGrid");
+    let hubArtPromptTextarea = document.getElementById("hubArtPromptTextarea");
+
     if (imagesEl) imagesEl.innerHTML = "";
     if (imagePromptEl) imagePromptEl.innerHTML = "";
+    if (hubArtPromptTextarea) hubArtPromptTextarea.value = "";
+    if (hubArtMediaGrid) {
+        hubArtMediaGrid.innerHTML = `
+          <div class="c-chat-empty-state" style="grid-column: 1 / -1;">
+            <div class="c-chat-empty-icon"><i class="bi bi-palette"></i></div>
+            <div class="c-chat-empty-text">No character images generated yet</div>
+            <div class="c-chat-empty-subtext">Generate a character description above, then hit 'generate images' to see 6 stylized portraits.</div>
+          </div>`;
+    }
 };
 
 window.generateVisualStyleOptionsHtml = function () {
