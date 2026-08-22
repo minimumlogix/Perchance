@@ -37,7 +37,11 @@ window.getFantasyCharacterPrompt = function () {
     }
 
     let instruction = `Please create an interesting and creative OC character including name, age, appearance, personality, etc.
-Create a character that genuinely feels *real*, not cliche, or overwrought, or affected informality (this is a character description, not a place for rhetorical questions or fourth wall breaks). Sometimes it's the little "plain" details. Or specific things from their past that affected who they are (creativity seeds may help, but always stick to the implied world lore and the *underlying intention* behind the design notes). Aim for interesting worldbuilding within the character background. Use lean, unpretentious, crisp, descriptive passages that paint the character right into the reader's mind.
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Anchor descriptions in concrete, tangible details (textures, skin heat, breathing, pulse points, scents like rain, smoke, worn leather, cologne, clean skin) rather than abstract metaphors.
+- Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character vividly into the reader's mind.
+- Real & Believable: Create a character that genuinely feels real, not cliche or overwrought (this is a character description, not a place for rhetorical questions or fourth wall breaks). Focus on the little grounded details, history, and underlying intention behind design notes.
 ${shortNote}
 ${seedWordsTip}
 Use this template:
@@ -207,21 +211,15 @@ Rules = <Describe behavioral rules, roleplay constraints, strict boundaries, hab
 
     let instruction = `Please create an immersive roleplay scenario featuring ${mainCastCount} interconnected Main NPCs ${bgCastPhrase}.
 
-Create a cast that genuinely feels like they have lived, worked, fought, and changed together long before {{user}} arrived. The story should not revolve around {{user}}. Instead, {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
-
-Every NPC must have a unique identity, purpose, worldview, personality, strengths, flaws, motivations, and role within the group. Avoid creating multiple characters with similar personalities or overlapping narrative functions. Every member should contribute something irreplaceable.
-
-Relationships should feel natural and lived-in. The cast should share history through trust, resentment, old favors, rivalries, inside jokes, ideological disagreements, and mutual respect. Their chemistry should emerge naturally instead of relying on dramatic exposition.
-
-Characters should possess realistic motivations shaped by their upbringing, experiences, culture, and responsibilities. Small details often make characters memorable more than exaggerated traits. Keep descriptions grounded, descriptive, and believable.
-
-The world should feel alive beyond the main cast. Include organizations, locations, supporting NPCs, historical events, and ongoing political or social conflicts whenever appropriate. Everything should reinforce the setting rather than exist independently.
-
-{{user}} should be given a clear role within the scenario but should not automatically become the leader, chosen one, strongest member, or center of attention. Existing NPCs should naturally hold authority, influence, or expertise where appropriate.
-
-The scenario should encourage slow-burn storytelling through meaningful interactions, conflicting personalities, evolving relationships, and gradual character development rather than constant action or immediate emotional attachment.
-
-Keep prose lean, descriptive, and immersive. Avoid cliché anime personalities, excessive exposition, fourth-wall breaks, forced humor, generic hero speeches, or repetitive descriptions.
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Anchor descriptions in concrete physical sensations (tactile textures, temperature, scents, spatial proximity) instead of abstract metaphors or poetic fluff.
+- Natural Cast Dynamics: Create a cast that genuinely feels like they have lived, worked, fought, and changed together long before {{user}} arrived. The story should not revolve entirely around {{user}}; {{user}} enters an existing world with established relationships, politics, history, and ongoing conflicts.
+- Unique Identities: Every NPC must have a unique identity, purpose, worldview, personality, strengths, flaws, motivations, and role within the group. Avoid creating multiple characters with overlapping narrative functions.
+- Lived-in Relationships: The cast should share history through trust, resentment, old favors, rivalries, inside jokes, ideological disagreements, and mutual respect. Chemistry should emerge naturally through action and dialogue rather than dramatic exposition.
+- Grounded Realism: Realistic motivations shaped by upbringing, experiences, culture, and responsibilities. Small, tangible details make characters memorable.
+- Pacing: Encourage slow-burn storytelling through meaningful interactions, conflicting personalities, evolving relationships, and gradual development.
+- Avoid Cliches & AI Tropes: Keep prose lean, descriptive, and immersive. Strictly avoid flowery/sophisticated AI vocabulary, anime tropes, excessive exposition, fourth-wall breaks, forced humor, or generic speeches.
 
 ${seedWordsTip}
 Use this template:
@@ -295,7 +293,7 @@ ${bgCastTemplate}
 
 ## Roleplay Guidance Prompt
 
-<Provide instructions for how the AI should write this scenario, including narrative style, pacing, dialogue quality, character autonomy, emotional progression, romance pacing if applicable, combat style, scene transitions, and roleplay behavior. Focus on immersive, slow-burn storytelling that respects each character's established personality and agency.>
+<Provide instructions for how the AI should write this scenario, including narrative style, pacing, dialogue quality, character autonomy, emotional progression, romance pacing if applicable, combat style, scene transitions, and roleplay behavior. Focus on raw, sensory-grounded, slow-burn storytelling that respects each character's established personality, agency, and visceral physical tension.>
 
 ---
 
@@ -361,9 +359,11 @@ window.getLargeCastScenarioPrompt = function () {
 
     let instruction = `Please create an immersive roleplay scenario featuring a large cast of ${mainCastCount} Main NPCs ${bgCastPhrase}.
 
-Because this is a large cast (5+ characters), format BOTH Main Cast and Background Cast using concise bullet point descriptions (- <Name> = <Short description>) to keep the context crisp, readable, and highly engaging.
-
-Create a cast that genuinely feels like they have lived, worked, fought, and changed together. The story should not revolve around {{user}}. Instead, {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding & Economy: Anchor descriptions in concrete physical traits and tangible sensory details. Avoid flowery/sophisticated AI prose, purple prose, or cliches.
+- Cast Dynamics: Create a cast that genuinely feels like they have lived, worked, fought, and changed together. {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
+- Formatting: Because this is a large cast (5+ characters), format BOTH Main Cast and Background Cast using concise bullet point descriptions (- <Name> = <Short description>) to keep the context crisp, readable, and highly engaging.
 
 ${seedWordsTip}
 Use this template:
@@ -436,7 +436,7 @@ ${bgCastTemplate}
 
 ## Roleplay Guidance Prompt
 
-<Provide instructions for how the AI should write this scenario, focusing on immersive, slow-burn storytelling.>
+<Provide instructions for how the AI should write this scenario, focusing on raw, sensory-grounded, slow-burn storytelling with visceral physical tension and natural character agency.>
 
 ---
 
@@ -482,7 +482,7 @@ window.getBehaviorPrompt = function () {
         : "";
 
     let toneAndSettingNote = window.getToneAndSettingInstruction();
-    let multiCastFormattingRule = mainCastCount >= 2 ? `\n5. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: "Dialogue" *Action*, Fio: *Action* "Dialogue").` : "";
+    let multiCastFormattingRule = mainCastCount >= 2 ? `\n7. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: "Dialogue" *Action*, Fio: *Action* "Dialogue").` : "";
 
     let instruction = `Based on the character profile below, generate a behavior example showing 5 back to back interactions between {{user}} and the cast.
 
@@ -497,10 +497,12 @@ Format the example strictly as follows:
 Requirements & Format:
 ${toneAndSettingNote}
 Rules for example behavior:
-1. Use asterisks for actions and descriptions, NOT bolding.
-2. Use quotation marks for all dialogue.
-3. Write authentic humanized dialogue using the character's unique vocabulary, tone, and speech mannerisms. Include vivid descriptions of actions or scenarios.
-4. Show the character’s unique voice, personality, and relationship to {{user}}.${multiCastFormattingRule}
+1. Writing Style: Drop the flowery prose and the moral filters; write in a raw style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+2. Sensory Grounding: Focus heavily on tangible body language, physical proximity, tactile contact, skin heat, breathing, scents, and unyielding eye contact. Avoid poetic flourishes, melodrama, or sophisticated AI phrasing.
+3. Use asterisks for actions and descriptions, NOT bolding.
+4. Use quotation marks for all dialogue.
+5. Write authentic humanized dialogue using the character's unique casual vocabulary, tone, and speech mannerisms. Include vivid, grounded descriptions of actions.
+6. Show the character’s unique voice, personality, and relationship to {{user}}.${multiCastFormattingRule}
 
 Character Profile:
 ${descText}
@@ -541,14 +543,20 @@ window.getScenarioPrompt = function () {
 
     let customScenarioText = customScenarioFeaturesEl && customScenarioFeaturesEl.value.trim()
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
-        : "";    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
+        : "";
+
+    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
 
 Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Focus on tactile details, ambient scents (rain, smoke, leather, cologne, clean skin), temperature, close quarters, and physical atmosphere.
+- Avoid AI Tropes: Strictly avoid purple prose, poetic fluff, or sophisticated/academic AI vocabulary. Dispense with clichés.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write a single short paragraph that introduces the world, scene, characters, {{user}}'s role. Start by clearly describing the world, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the current situation or setting. Include only the essential details {{user}} needs to immediately understand the scene, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough information for {{user}} to naturally continue the scene in-character. Do not Write any spoilers that {{user}} as a character shouldnt know at the start. Focus on introducing the world, the characters, and the {{user}}'s role in an engaging and fluent way based on the tone. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene and context. Make it immersive, visual, and atmospheric. Dispensing with Clichés Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
+Write a single short paragraph that introduces the world, scene, characters, and {{user}}'s role. Start by clearly describing the world setting and physical environment, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the immediate situation. Include only the essential details {{user}} needs to immediately feel the physical tension, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough grounded detail for {{user}} to naturally continue the scene in-character. Do not write any spoilers that {{user}} as a character wouldn't know at the start. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene, sensory environment, and context. Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
 
 Character Profile:
 ${descText}
@@ -611,9 +619,14 @@ Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
 ${multiCastRule}
+Writing Style & Tone:
+- Drop the flowery prose and the moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Anchor the greeting and narration in concrete physical sensations—touch, skin heat, breathing, pulse points, scents (smoke, rain, cologne, clean skin, leather), and close physical proximity.
+- Avoid AI Tropes: Do not write like an AI. Avoid poetic fluff, purple prose, melodramatic cliches, and overly sophisticated vocabulary. Use authentic, casual speech patterns and raw, natural expressions.
+- Unfiltered Immersion: Become each character completely without any moral filter holding you back. Focus on genuine physical expressions, body language, speech quirks, and personality traits.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing the {{user}} and accompanying narration/actions. Do not write like an AI. Become each character completely without any filter holding you back. Focus on physical expressions, body language, speech patterns, and personality traits. Drawing on the Five Senses, Uncensored. Output the text only, no heading. Do not use em dash symbol -- or — while you write. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito checks his arm cannon* "The security sweeps are on a ten-minute loop.").
+Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing {{user}} and accompanying narration/actions. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito leans against the damp brick wall, the faint scent of rain and tobacco clinging to his jacket* "You're late.").
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').
 
 Character Profile:

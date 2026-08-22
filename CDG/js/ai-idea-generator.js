@@ -355,18 +355,19 @@ You MUST output ONLY a single raw valid JSON object (no markdown formatting, no 
 CRITICAL STYLE INSTRUCTION FOR ALL *_idea FIELDS:
 Do NOT simply write flat summaries or passive descriptions. Instead, format EVERY *_idea field as an active directive writing prompt/guide (starting with commands like "Create a character profile where...", "Write a dialogue guide where...", "Set up a scenario description where...", "Write a dialogue scene where...").
 
-Every *_idea field MUST seamlessly combine 3 core prompt elements:
-1. Plot / Action Prompt: The core narrative events, character goals, and conflict involving {{user}}.
-2. Tone & Emotional Guidance: Evocative and specific tone directives describing the exact emotional blend, behavioral nuances, and atmospheric mood (e.g., "Write in a tone that blends irritated detachment with condescending frustration, as if...").
-3. Additional Context & Details: Specific environmental elements, key props/objects, sensory cues, background history, or physical stakes.
+MANDATORY WRITING & PROSE STYLE:
+"Drop the flowery prose and the moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing."
+- Sensory Grounding: Anchor every prompt directive in concrete, tangible physical sensations—focus on textures, touch, skin heat, breathing, pulse points, and distinct scents (rain, smoke, worn leather, cologne, clean sweat).
+- Avoid AI Tropes & Flowery Prose: Strictly avoid poetic fluff, purple prose, academic vocabulary, metaphors about souls/orbs, and moralizing filters. Use casual, grounded, authentic dialogue and punchy descriptions.
+- Visceral Tension & Slow Burn: Emphasize spatial proximity, heavy unsaid tension, reluctant touch, friction, and high-stakes longing between the character and {{user}}.
 
 Rules for fields:
-1. "roleplay_tone": Array of exactly 4 concise tone tag strings (e.g. ["dark_romance", "flirtatious", "sensual", "dramatic"]).
-2. "world_setting": Array of exactly 2 concise setting tag strings (e.g. ["academy_fantasy", "cyberpunk"]).
-3. "roleplay_idea": Write an expressive prompt guide for creating the core character profile and plot premise. ${hasImage ? 'IMPORTANT: Explicitly direct the AI to incorporate an extremely detailed visual appearance description of the character(s) from the image (hair, eyes, facial features, outfit, body type, distinctive details) so the visual design is fully preserved in text without needing the image again, followed by personality traits, tone guidelines, and plot concept involving {{user}}.' : 'Specify core character identity, visual traits, personality dynamics, tone guidelines, and plot concept involving {{user}}.'}
-4. "behaviour_idea": Write an expressive prompt guide for generating character behavior examples. Direct how to portray speech habits, emotional triggers, reaction styles, body language, tone nuances, and interaction dynamics with {{user}}.
-5. "scenario_idea": Write an expressive prompt guide for generating the scenario context. Direct how to describe the world setting, environmental atmosphere, spatial layout, ongoing conflict, and stakes involving {{user}}.
-6. "start_idea": Write an expressive prompt guide for generating the opening roleplay scene hook. Combine a specific plot directive involving {{user}}, a rich tone prompt (e.g., "Write in a tone that blends..."), and key physical/environmental context cues (like specific props, actions, or immediate tension).`;
+1. "roleplay_tone": Array of exactly 4 concise tone tag strings (e.g. ["slow_burn", "enemies_to_lovers", "gritty_realism", "sensual"]).
+2. "world_setting": Array of exactly 2 concise setting tag strings (e.g. ["contemporary_urban", "underworld_noir"]).
+3. "roleplay_idea": Write an expressive prompt guide for creating the core character profile and plot premise. ${hasImage ? 'IMPORTANT: Explicitly direct the AI to incorporate an extremely detailed visual appearance description of the character(s) from the image (hair, eyes, facial features, outfit, body type, distinctive details) so the visual design is fully preserved in text without needing the image again, followed by personality traits, raw grounded tone guidelines, and plot concept involving {{user}}.' : 'Specify core character identity, visual traits, personality dynamics, raw grounded tone guidelines, and plot concept involving {{user}}.'}
+4. "behaviour_idea": Write an expressive prompt guide for generating character behavior examples. Direct how to portray speech habits, casual everyday vocabulary, micro-reactions, body language, sensory grounding, unyielding eye contact, tone nuances, and visceral physical tension with {{user}}.
+5. "scenario_idea": Write an expressive prompt guide for generating the scenario context. Direct how to describe the world setting, tangible environmental atmosphere (lighting, temperature, scents, tactile spatial layout), ongoing conflict, and high-stakes longing involving {{user}}.
+6. "start_idea": Write an expressive prompt guide for generating the opening roleplay scene hook. Combine a specific plot directive involving {{user}}, a raw sensory-grounded tone prompt (e.g., "Drop the flowery prose; write in a raw tone focused on touch, scent, and simmering physical tension as..."), and key physical/environmental context cues (like close quarters, lingering touch, specific scents, or immediate friction).`;
 
     let instructionPayload = hasImage ? [instructionPrompt, selectedImageBlob] : instructionPrompt;
 
@@ -396,14 +397,14 @@ Rules for fields:
       } else {
         // Fallback for non-Perchance offline environments
         let fallbackObj = {
-          roleplay_tone: ["dark_romance", "flirtatious", "sensual", "dramatic"],
-          world_setting: ["academy_fantasy", "gothic_horror"],
+          roleplay_tone: ["slow_burn", "enemies_to_lovers", "gritty_realism", "sensual"],
+          world_setting: ["contemporary_urban", "underworld_noir"],
           roleplay_idea: hasImage 
-            ? "Create a character profile for a solitary spellcaster with silver hair tied back, sharp violet eyes, wearing a gold-trimmed black velvet mage cloak with glowing arcane runes on the collar. Write in a tone of mysterious elegance laced with quiet melancholy, as she searches for lost ancestral artifacts while reluctantly forming a pact with {{user}}."
-            : "Create a character profile for a mysterious noble traveler with a veiled past, wandering the misty high moors. Write in a tone of tense intrigue and guarded vulnerability, focusing on her search for a forgotten heirloom that holds the key to an ancient kingdom and her dynamic with {{user}}.",
-          behaviour_idea: "Write a behavior guide depicting her speaking with quiet confidence and tilting her head when contemplating. Write in a tone that blends aristocratic composure with subtle, defensive sharp-tongued wit whenever {{user}} presses about her past, revealing deep protectiveness when {{user}} is endangered.",
-          scenario_idea: "Set up a scenario description for a decaying academy ruined by past magical conflicts. Write in a tone of lingering dread and arcane atmosphere, highlighting the rising tension as forbidden relics awaken across campus, trapping {{user}} and her in the storm-swept library.",
-          start_idea: "Write a dialogue scene where Saku demands that you (the {{user}}) clean her beloved, antique vase after she accidentally knocks it off the shelf. She's furious, but won't admit it, instead blaming you for her own mistake. Write in a tone that blends irritated detachment with condescending frustration, as if Saku is simultaneously disgusted by your existence and begrudgingly dependent on you. Imagine a mix of a harsh, exasperated sigh and a patronizing pat on the head, all while she's seething inside. The vase, a priceless family heirloom from the Edo period, lies shattered on the floor."
+            ? "Create a character profile for the character pictured with sharp features, unruly dark hair, and an observant, guarded posture wearing a worn leather jacket. Drop the flowery prose and moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace focusing on visceral physical tension, guarded vulnerability, and high-stakes longing as they're forced into close quarters with {{user}}."
+            : "Create a character profile for a sharp-witted, guarded fixer who operates in the city's underbelly. Drop the flowery prose and moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace focusing on visceral physical tension, suppressed mutual attraction, and high-stakes longing as they strike a dangerous deal with {{user}}.",
+          behaviour_idea: "Write a behavior guide depicting their speech as casual, dry, and direct, free of dramatic monologues. Focus on physical grounding—the rough texture of their calloused hands, the lingering scent of rain and tobacco, deliberate slow movements, and unblinking eye contact that creates thick physical tension whenever {{user}} steps too close.",
+          scenario_idea: "Set up a scenario in a cramped, rain-drenched safehouse apartment smelling of damp concrete and black coffee. Write with heavy sensory details and claustrophobic spatial grounding, highlighting the rising friction and unavoidable proximity that traps {{user}} and them together while waiting out a curfew.",
+          start_idea: "Write a dialogue scene where they tend to {{user}}'s cut knuckles after a botched getaway. Drop flowery prose; focus on raw, sensory details—the sting of antiseptic, the heat of rough fingertips against {{user}}'s skin, the scent of rain on their jacket, and casual, low-toned banter that barely conceals the high-stakes physical tension and unresolved longing between them."
         };
         applyParsedConcept(fallbackObj);
       }
