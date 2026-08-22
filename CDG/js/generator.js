@@ -130,6 +130,183 @@ window.generateRoleplayStart = async function () {
     }
 };
 
+/* ===========================
+   JSON ART CONFIG PARSER & UI RENDERER
+=========================== */
+
+window.lastArtConfigData = null;
+window.activeArtCharacterIndex = 0;
+
+window.parseArtConfigJson = function(rawText) {
+    if (!rawText) return null;
+    let cleaned = rawText.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    try {
+        let obj = JSON.parse(cleaned);
+        if (obj && typeof obj === "object") return obj;
+    } catch (e) {}
+
+    let jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+        try {
+            let obj = JSON.parse(jsonMatch[0]);
+            if (obj && typeof obj === "object") return obj;
+        } catch (e) {}
+    }
+    return null;
+};
+
+window.renderArtConfigUI = function(config) {
+    let container = document.getElementById("artConfigViewCtn");
+    if (!container || !config) return;
+
+    let type = config.type || "character";
+    let html = "";
+
+    if (type === "character") {
+        let characters = Array.isArray(config.characters) && config.characters.length > 0
+            ? config.characters
+            : [{
+                name: config.name || "Character",
+                gender: config.gender || "",
+                race: config.race || "",
+                visual_appearance: config.visual_appearance || "",
+                outfit: config.outfit || "",
+                expression_or_pose: config.expression_or_pose || "",
+                visual_keyphrases: config.visual_keyphrases || ""
+            }];
+
+        let activeIdx = Math.min(window.activeArtCharacterIndex || 0, characters.length - 1);
+        let activeChar = characters[activeIdx] || characters[0];
+
+        let tabHtml = "";
+        if (characters.length > 1) {
+            tabHtml = `<div class="c-art-tab-bar">` + characters.map((c, i) => `
+                <button type="button" class="c-art-tab ${i === activeIdx ? 'is-active' : ''}" onclick="window.selectArtCharacter(${i})">
+                  <i class="bi bi-person-badge"></i> ${c.name || ('Character ' + (i + 1))}
+                </button>
+            `).join("") + `</div>`;
+        }
+
+        let badges = [];
+        if (activeChar.gender) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-gender-ambiguous"></i> <strong>Gender:</strong> ${activeChar.gender}</span>`);
+        if (activeChar.race) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-person-fill"></i> <strong>Race:</strong> ${activeChar.race}</span>`);
+        if (activeChar.outfit) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-person-lines-fill"></i> <strong>Attire:</strong> ${activeChar.outfit}</span>`);
+        if (activeChar.expression_or_pose) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-emoji-smile"></i> <strong>Pose:</strong> ${activeChar.expression_or_pose}</span>`);
+
+        html = `
+          <div class="c-art-meta-card">
+            ${tabHtml}
+            <div class="c-art-meta-header">
+              <div class="c-art-meta-title"><i class="bi bi-person-bounding-box"></i> ${activeChar.name || 'Character Portrait'}</div>
+              <div class="c-art-meta-badges">${badges.join("")}</div>
+            </div>
+            ${activeChar.visual_appearance ? `<div class="c-art-meta-desc">${activeChar.visual_appearance}</div>` : ''}
+            <div class="c-art-prompt-box" style="margin-top:4px;">
+              <div class="c-art-prompt-header">
+                <span><i class="bi bi-chat-left-text-fill"></i> Visual Keyphrase Prompt:</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" class="c-button c-button--clear c-button--sm" title="Copy visual prompt" onclick="window.copyArtPrompt(this)"><i class="bi bi-clipboard"></i> copy prompt</button>
+                </div>
+              </div>
+              <textarea id="imagePromptTextarea" class="c-art-prompt-textarea" oninput="window.onArtPromptInput(this.value)">${activeChar.visual_keyphrases || ''}</textarea>
+            </div>
+          </div>
+        `;
+    } else if (type === "group") {
+        let charsPresent = Array.isArray(config.characters_present) ? config.characters_present.join(", ") : (config.characters_present || "");
+        let badges = [];
+        if (charsPresent) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-people-fill"></i> <strong>Cast:</strong> ${charsPresent}</span>`);
+        if (config.setting_and_atmosphere) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-cloud-sun-fill"></i> <strong>Atmosphere:</strong> ${config.setting_and_atmosphere}</span>`);
+        if (config.composition) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-aspect-ratio"></i> <strong>Composition:</strong> ${config.composition}</span>`);
+
+        html = `
+          <div class="c-art-meta-card">
+            <div class="c-art-meta-header">
+              <div class="c-art-meta-title"><i class="bi bi-people-fill"></i> ${config.title || 'Group Scene'}</div>
+              <div class="c-art-meta-badges">${badges.join("")}</div>
+            </div>
+            ${config.scene_description ? `<div class="c-art-meta-desc">${config.scene_description}</div>` : ''}
+            <div class="c-art-prompt-box" style="margin-top:4px;">
+              <div class="c-art-prompt-header">
+                <span><i class="bi bi-chat-left-text-fill"></i> Group Visual Keyphrase Prompt:</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" class="c-button c-button--clear c-button--sm" title="Copy visual prompt" onclick="window.copyArtPrompt(this)"><i class="bi bi-clipboard"></i> copy prompt</button>
+                </div>
+              </div>
+              <textarea id="imagePromptTextarea" class="c-art-prompt-textarea" oninput="window.onArtPromptInput(this.value)">${config.visual_keyphrases || ''}</textarea>
+            </div>
+          </div>
+        `;
+    } else if (type === "poster") {
+        let badges = [];
+        if (config.tagline) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-quote"></i> <strong>Tagline:</strong> "${config.tagline}"</span>`);
+        if (config.theme_and_atmosphere) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-stars"></i> <strong>Theme:</strong> ${config.theme_and_atmosphere}</span>`);
+        if (config.composition) badges.push(`<span class="c-art-meta-badge"><i class="bi bi-aspect-ratio"></i> <strong>Layout:</strong> ${config.composition}</span>`);
+
+        html = `
+          <div class="c-art-meta-card">
+            <div class="c-art-meta-header">
+              <div class="c-art-meta-title"><i class="bi bi-film"></i> ${config.title || 'Story Poster'}</div>
+              <div class="c-art-meta-badges">${badges.join("")}</div>
+            </div>
+            ${config.theme_and_atmosphere ? `<div class="c-art-meta-desc">${config.theme_and_atmosphere}</div>` : ''}
+            <div class="c-art-prompt-box" style="margin-top:4px;">
+              <div class="c-art-prompt-header">
+                <span><i class="bi bi-chat-left-text-fill"></i> Poster Visual Keyphrase Prompt:</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" class="c-button c-button--clear c-button--sm" title="Copy visual prompt" onclick="window.copyArtPrompt(this)"><i class="bi bi-clipboard"></i> copy prompt</button>
+                </div>
+              </div>
+              <textarea id="imagePromptTextarea" class="c-art-prompt-textarea" oninput="window.onArtPromptInput(this.value)">${config.visual_keyphrases || ''}</textarea>
+            </div>
+          </div>
+        `;
+    }
+
+    container.innerHTML = html;
+};
+
+window.copyArtPrompt = function(btn) {
+    let textarea = document.getElementById("imagePromptTextarea");
+    if (!textarea || !textarea.value) return;
+    navigator.clipboard.writeText(textarea.value.trim()).then(() => {
+        let originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2"></i> copied!';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+        }, 1800);
+    });
+};
+
+window.selectArtCharacter = function(index) {
+    window.activeArtCharacterIndex = index;
+    window.overwrittenVisualKeyphrasesText = null;
+    if (window.lastArtConfigData) {
+        window.renderArtConfigUI(window.lastArtConfigData);
+        window.generateImages();
+    }
+};
+
+window.onArtPromptInput = function(val) {
+    window.overwrittenVisualKeyphrasesText = val;
+    if (window.lastArtConfigData) {
+        let type = window.lastArtConfigData.type || "character";
+        if (type === "character" && Array.isArray(window.lastArtConfigData.characters)) {
+            let activeIdx = Math.min(window.activeArtCharacterIndex || 0, window.lastArtConfigData.characters.length - 1);
+            if (window.lastArtConfigData.characters[activeIdx]) {
+                window.lastArtConfigData.characters[activeIdx].visual_keyphrases = val;
+            }
+        } else {
+            window.lastArtConfigData.visual_keyphrases = val;
+        }
+    }
+};
+
+/* ===========================
+   EXECUTE IMAGE SECTION GENERATION (AI JSON STEP)
+=========================== */
+
 window.generateImagesSection = async function () {
     let outputEl = document.getElementById("outputEl");
     let generateImagesBtn = document.getElementById("generateImagesBtn");
@@ -137,11 +314,12 @@ window.generateImagesSection = async function () {
     let regenImagesBtn = document.getElementById("regenImagesBtn");
     let artLoadingBanner = document.getElementById("artLoadingBanner");
     let artLoadingText = document.getElementById("artLoadingText");
-    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
+    let imageTypeEl = document.getElementById("imageTypeEl");
+    let imageType = imageTypeEl ? imageTypeEl.value : "character";
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
-        alert("Please generate a character description first!");
+        alert("Please generate a character description or scenario first!");
         return;
     }
 
@@ -151,33 +329,87 @@ window.generateImagesSection = async function () {
     if (stopImagesBtn) stopImagesBtn.classList.remove("u-hidden");
     if (artLoadingBanner) {
         artLoadingBanner.style.display = "flex";
-        if (artLoadingText) artLoadingText.innerHTML = "Generating visual keyphrases & portraits...";
+        if (artLoadingText) artLoadingText.innerHTML = `Generating ${imageType} visual settings & prompt...`;
     }
 
     window.clearOldImageStuff();
 
     let textToBeSummarized = descText.replace(/\n+/g, " ");
-    let physicalAppearanceText = ((descText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)\n\n/s) || [])[1] || "").trim();
-    if (!physicalAppearanceText) physicalAppearanceText = ((descText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)\n/s) || [])[1] || "").trim();
+
+    let promptInstruction = "";
+    if (imageType === "character") {
+        promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for individual character portraits.
+You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
+{
+  "type": "character",
+  "title": "Character Visual Profile",
+  "characters": [
+    {
+      "name": "Character Name",
+      "gender": "Gender",
+      "race": "Race or Species",
+      "visual_appearance": "Brief summary of physical appearance (hair, eyes, skin, build, distinct traits)",
+      "outfit": "Clothing, uniform, armor, or attire details",
+      "expression_or_pose": "Characteristic expression, gaze, posture",
+      "visual_keyphrases": "rich comma-separated visually descriptive keyphrases for text-to-image AI describing race, gender, age, face, hair, outfit, lighting, textures, cinematic portrait composition"
+    }
+  ]
+}
+If the description features multiple main characters / NPCs, include an entry for each main character in the "characters" array.
+Text:
+---
+${textToBeSummarized}
+---`;
+    } else if (imageType === "group") {
+        promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for a GROUP SCENE / CAST INTERACTION photo.
+You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
+{
+  "type": "group",
+  "title": "Group Scene Title",
+  "characters_present": ["Character 1", "Character 2"],
+  "scene_description": "What is happening between the characters in this scene",
+  "setting_and_atmosphere": "The physical environment, mood, lighting, and weather",
+  "composition": "Framing and spatial layout of the group (e.g. wide shot, two characters close together, dramatic depth)",
+  "visual_keyphrases": "rich comma-separated visually descriptive keyphrases for text-to-image AI capturing the full group together in the environment, physical proximity, interactions, dynamic poses, detailed costumes, atmospheric lighting, high resolution group shot"
+}
+Do NOT generate separate prompts for individual characters; generate a unified group visual prompt.
+Text:
+---
+${textToBeSummarized}
+---`;
+    } else if (imageType === "poster") {
+        promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for a cinematic STORY / MOVIE POSTER.
+You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
+{
+  "type": "poster",
+  "title": "Story / Scenario Title",
+  "tagline": "Compelling short tagline or theme",
+  "theme_and_atmosphere": "The overarching mood, emotional stakes, and world atmosphere",
+  "composition": "Cinematic poster layout (e.g. dramatic focal points, contrasting lighting, layered background, high-tension atmosphere)",
+  "visual_keyphrases": "cinematic movie poster, comma-separated visually descriptive keyphrases for text-to-image AI, dramatic lighting, iconic composition, rich textures, moody ambiance, epic visual storytelling"
+}
+Text:
+---
+${textToBeSummarized}
+---`;
+    }
 
     let captionObj;
     let captionPrompt = {
-        instruction: `Below is a description of a character. Please turn it into a comma-separated list of descriptive keywords and phrases which visually capture this character, including their *gender* (if relevant), race, and **visual appearance**. Be creative and descriptive. Don't be repetitive.\n---\n${textToBeSummarized}\n---\nReply with a comma-separated list of keywords and keyphrases which *visually* capture the above character, including their gender if relevant. Imagine you're giving a list of keywords to an artist who will use them to draw the character. Describe the character's appearance with keywords/keyphrases, including their race, class, age, gender, etc. Respond with only the comma-separated visually descriptive keyphrases - nothing more, nothing less. Don't be repetitive.`,
+        instruction: promptInstruction,
         onChunk: (data) => {
-            if (data.fullTextSoFar.length > 500) {
-                let terms = data.fullTextSoFar.split(", ");
-                let uniqueTerms = [...new Set(terms)];
-                if (terms.length > 2 * uniqueTerms.length) captionObj.stop();
+            if (data && data.fullTextSoFar) {
+                let partial = window.parseArtConfigJson(data.fullTextSoFar);
+                if (partial) {
+                    window.lastArtConfigData = partial;
+                    window.renderArtConfigUI(partial);
+                }
             }
-        },
+        }
     };
 
     captionObj = window.ai(captionPrompt);
     window.lastImageCaptionPromptStreamObj = captionObj;
-    if (artLoadingBanner) {
-        artLoadingBanner.style.display = "flex";
-        if (artLoadingText) artLoadingText.innerHTML = "Generating visual keyphrase prompt... " + (captionObj.loadingIndicatorHtml || "");
-    }
 
     let responseData = await captionObj;
 
@@ -186,44 +418,93 @@ window.generateImagesSection = async function () {
     if (artLoadingBanner) artLoadingBanner.style.display = "none";
 
     if (responseData.stopReason === "user") return;
-    let visualKeyphrasesText = responseData.text.replace(/\n+/g, " ");
 
-    window.lastCharacterTextData = {
-        generatedText: descText,
-        physicalAppearanceText,
-        visualKeyphrasesText,
-    };
+    let textResult = (responseData && typeof responseData === "object" && responseData.text) ? responseData.text : String(responseData || "");
+    let finalConfig = window.parseArtConfigJson(textResult);
 
-    if (imagePromptTextarea) {
-        imagePromptTextarea.value = visualKeyphrasesText;
+    if (!finalConfig) {
+        if (imageType === "character") {
+            let physicalAppearanceText = ((descText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)\n/s) || [])[1] || "").trim();
+            finalConfig = {
+                type: "character",
+                title: "Character Portrait",
+                characters: [{
+                    name: "Main Character",
+                    gender: "",
+                    race: "",
+                    visual_appearance: physicalAppearanceText,
+                    outfit: "",
+                    expression_or_pose: "",
+                    visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || physicalAppearanceText || "character portrait, detailed features, cinematic lighting"
+                }]
+            };
+        } else if (imageType === "group") {
+            finalConfig = {
+                type: "group",
+                title: "Group Scene",
+                characters_present: ["Main Cast"],
+                scene_description: "Cast gathered together in the scenario setting.",
+                setting_and_atmosphere: "Atmospheric roleplay setting",
+                composition: "Medium wide group composition",
+                visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || "group photo of characters together, cinematic lighting, detailed costumes"
+            };
+        } else {
+            finalConfig = {
+                type: "poster",
+                title: "Story Poster",
+                tagline: "A Tale of High Stakes & Unspoken Longing",
+                theme_and_atmosphere: "Dramatic cinematic roleplay atmosphere",
+                composition: "Iconic cinematic poster arrangement",
+                visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || "cinematic story poster, dramatic lighting, high tension, detailed composition"
+            };
+        }
     }
+
+    window.lastArtConfigData = finalConfig;
+    window.activeArtCharacterIndex = 0;
+    window.renderArtConfigUI(finalConfig);
 
     if (regenImagesBtn) regenImagesBtn.disabled = false;
     window.generateImages();
 };
 
 /* ===========================
-   IMAGE & GALLERY HELPERS
+   IMAGE & GALLERY RENDERING
 =========================== */
 
 window.generateImages = function () {
-    if (!window.lastCharacterTextData) return;
-
-    let { generatedText, physicalAppearanceText, visualKeyphrasesText } = window.lastCharacterTextData;
     let imagesEl = document.getElementById("imagesEl");
-    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
+    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
 
-    let currentPrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
-    if (imagePromptTextarea) {
-        imagePromptTextarea.value = currentPrompt;
+    let currentPrompt = "";
+    let appearanceExtra = "";
+
+    if (window.lastArtConfigData) {
+        let type = window.lastArtConfigData.type || "character";
+        if (type === "character" && Array.isArray(window.lastArtConfigData.characters)) {
+            let activeIdx = Math.min(window.activeArtCharacterIndex || 0, window.lastArtConfigData.characters.length - 1);
+            let activeChar = window.lastArtConfigData.characters[activeIdx] || {};
+            currentPrompt = window.overwrittenVisualKeyphrasesText || (imagePromptTextarea ? imagePromptTextarea.value.trim() : "") || activeChar.visual_keyphrases || "";
+            appearanceExtra = activeChar.visual_appearance || "";
+        } else {
+            currentPrompt = window.overwrittenVisualKeyphrasesText || (imagePromptTextarea ? imagePromptTextarea.value.trim() : "") || window.lastArtConfigData.visual_keyphrases || "";
+        }
+    } else if (window.lastCharacterTextData) {
+        currentPrompt = window.overwrittenVisualKeyphrasesText || window.lastCharacterTextData.visualKeyphrasesText || "";
+        appearanceExtra = window.lastCharacterTextData.physicalAppearanceText || "";
     }
+
+    if (!currentPrompt) return;
+
     if (regenImagesBtn) regenImagesBtn.disabled = false;
 
     let imageHtml = "";
     for (let i = 0; i < 6; i++) {
         let basePrompt = currentPrompt;
-        if (i % 2 === 0) basePrompt += " - " + physicalAppearanceText;
+        if (appearanceExtra && i % 2 === 0 && !basePrompt.includes(appearanceExtra)) {
+            basePrompt += " - " + appearanceExtra;
+        }
 
         let promptData = {
             prompt: window.addStyleToPrompt(basePrompt),
@@ -238,6 +519,7 @@ window.generateImages = function () {
         imageHtml += `
         <div class="c-art-card" id="artCard-${i}" data-art-id="${artId}">
           <div class="c-art-card-media">
+            <div class="c-art-card-tag"><i class="bi bi-image"></i> #${i + 1}</div>
             ${window.image(promptData).evaluateItem}
             <div class="c-art-card-overlay">
               <button class="c-art-card-btn" title="Add Reaction" onclick="window.openChatReactionPicker('${artId}', this)">🙂</button>
@@ -259,11 +541,13 @@ window.generateImages = function () {
 
 window.clearOldImageStuff = function () {
     window.overwrittenVisualKeyphrasesText = null;
+    window.lastArtConfigData = null;
+    window.activeArtCharacterIndex = 0;
+    let artConfigViewCtn = document.getElementById("artConfigViewCtn");
     let imagesEl = document.getElementById("imagesEl");
-    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
 
-    if (imagePromptTextarea) imagePromptTextarea.value = "";
+    if (artConfigViewCtn) artConfigViewCtn.innerHTML = "";
     if (regenImagesBtn) regenImagesBtn.disabled = true;
     if (imagesEl) {
         imagesEl.innerHTML = `

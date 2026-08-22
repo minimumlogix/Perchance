@@ -186,6 +186,17 @@ function initCDGApp() {
     });
   }
 
+  let imageTypeEl = document.getElementById("imageTypeEl");
+  if (imageTypeEl) {
+    setTimeout(() => {
+      imageTypeEl.value = settings.imageType || localStorage.imageType || imageTypeEl.value;
+    }, 10);
+    imageTypeEl.addEventListener("change", function() {
+      window.CDGStorage.saveSettings({ imageType: this.value });
+      localStorage.imageType = this.value;
+    });
+  }
+
   /* 4. Default Dark Mode Initialization */
   let initialTheme = localStorage.forceColorScheme || settings.theme || "dark";
   window.setColorScheme(initialTheme);

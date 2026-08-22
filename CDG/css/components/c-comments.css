@@ -695,6 +695,94 @@
   gap: 8px;
 }
 
+.c-art-meta-card {
+  background-color: var(--chat-bg-actions);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: var(--space-md);
+}
+
+.c-art-meta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.c-art-meta-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.c-art-meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.c-art-meta-badge {
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  background-color: var(--chat-bg-input-bar);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--radius-pill);
+  color: var(--chat-text-header);
+}
+
+.c-art-meta-badge strong {
+  color: var(--color-primary);
+}
+
+.c-art-meta-desc {
+  font-size: 0.84rem;
+  color: var(--chat-text-main);
+  line-height: 1.4;
+  background-color: rgba(0, 0, 0, 0.15);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.c-art-tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--chat-border);
+  margin-bottom: 4px;
+}
+
+.c-art-tab {
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background-color: var(--chat-bg-input-bar);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--radius-pill);
+  color: var(--chat-text-header);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.c-art-tab:hover {
+  border-color: var(--chat-accent);
+  color: #ffffff;
+}
+
+.c-art-tab.is-active {
+  background-color: var(--chat-accent);
+  border-color: var(--chat-accent);
+  color: #ffffff;
+}
+
 .c-art-prompt-box {
   background-color: var(--chat-bg-actions);
   border: 1px solid var(--chat-border);
@@ -775,6 +863,22 @@
   align-items: center;
   background-color: #000000;
   min-height: 280px;
+}
+
+.c-art-card-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: rgba(20, 22, 28, 0.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--chat-border);
+  color: var(--chat-text-header);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  z-index: 5;
+  pointer-events: none;
 }
 
 .c-art-card-media iframe {

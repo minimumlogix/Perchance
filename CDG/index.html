@@ -335,34 +335,34 @@
     <div class="c-art-controls-bar u-mb-md">
       <div class="c-art-controls-left">
         <div class="c-settings-box" style="margin: 0; padding: 4px 8px;">
-          <span class="c-settings-box__label" style="font-size: 0.85rem;">Style:</span>
+          <span class="c-settings-box__label" style="font-size: 0.85rem;"><i class="bi bi-grid-fill"></i> Type:</span>
+          <select id="imageTypeEl" class="c-select c-select--compact">
+            <option value="character">Character</option>
+            <option value="group">Group</option>
+            <option value="poster">Story Poster</option>
+          </select>
+        </div>
+        <div class="c-settings-box" style="margin: 0; padding: 4px 8px;">
+          <span class="c-settings-box__label" style="font-size: 0.85rem;"><i class="bi bi-palette-fill"></i> Style:</span>
           <select id="visualStyleEl" class="c-select c-select--compact">
             [generateVisualStyleOptionsHtml()]
           </select>
         </div>
         <button id="generateImagesBtn" class="c-button c-button--generate" onclick="generateImagesSection()"><i class="bi bi-images"></i> generate images</button>
         <button id="regenImagesBtn" class="c-button c-button--clear" onclick="generateImages()" disabled><i class="bi bi-arrow-clockwise"></i> regenerate images</button>
+        <button id="clearImagesBtn" class="c-button c-button--clear" title="Clear image gallery & settings" onclick="window.clearOldImageStuff()"><i class="bi bi-trash"></i> clear</button>
         <div class="l-relative-holder">
           <button id="stopImagesBtn" class="c-button c-button--stop u-hidden" onclick="window.lastImageCaptionPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
         </div>
       </div>
-      <div class="c-art-controls-right">
-        <button id="toggleArtPromptBtn" class="c-button c-button--clear c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-pencil-square"></i> edit prompt</button>
-      </div>
     </div>
 
-    <!-- EDITABLE PROMPT BOX -->
-    <div id="artPromptBox" class="c-art-prompt-box u-mb-md" style="display: none;">
-      <div class="c-art-prompt-header">
-        <span>Visual Keyphrase Prompt (Editable):</span>
-        <button type="button" class="c-button c-button--icon c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-x"></i></button>
-      </div>
-      <textarea id="imagePromptTextarea" class="c-art-prompt-textarea" placeholder="Character visual keyphrases..." oninput="window.overwrittenVisualKeyphrasesText=this.value;"></textarea>
-    </div>
+    <!-- DYNAMIC ART CONFIG & PROMPT CONTAINER (POPULATED VIA AI JSON) -->
+    <div id="artConfigViewCtn" class="u-w-full"></div>
 
     <!-- LOADING BANNER -->
     <div id="artLoadingBanner" class="c-art-loading-banner u-mb-md" style="display: none;">
-      <i class="bi bi-hourglass-split"></i> <span id="artLoadingText">Generating visual keyphrases & portraits...</span>
+      <i class="bi bi-hourglass-split"></i> <span id="artLoadingText">Generating visual settings & prompt...</span>
     </div>
 
     <!-- IMAGE GRID -->
