@@ -103,32 +103,10 @@ getOptionalSeedWordsTip() =>
   }
 
 generateImages() =>
-  let { generatedText, physicalAppearanceText, visualKeyphrasesText } = window.lastCharacterTextData;
-  
-  let imageHtml = "";
-  for(let i = 0; i < 6; i++) {
-    let basePrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
-
-    if(i%2 === 0) basePrompt += " - "+physicalAppearanceText;
-
-    let promptData = {
-      prompt: addStyleToPrompt(basePrompt),
-      negativePrompt: addStyleToNegative(""),
-      resolution: "512x768",
-      style: "margin:0.25rem",
-    };
-    imageHtml += `<div class="imageWrapper" style="display:inline-flex; flex-direction:column; justify-content:center; align-items:center; width:min-content; height:max-content; margin-bottom:1rem;">
-      ${image(promptData).evaluateItem}
-      <button onclick="chatWithCharacterButtonClickHandler(this.closest('.imageWrapper').querySelector('iframe').textToImagePluginOutput, this)" style="width:max-content;">💬 chat with this character</button>
-    </div>`;
-  }
-  imagePromptEl.innerHTML = `<div style="text-align:left;"><b>Image Prompt <span style="opacity:0.6;">(editable)</span>:</b> <textarea oninput="window.overwrittenVisualKeyphrasesText=this.value" style="display:block; width:100%; min-height:7rem;">${window.overwrittenVisualKeyphrasesText || visualKeyphrasesText}</textarea></div>`;
-  imagesEl.innerHTML = imageHtml;
+  return window.generateImages();
 
 clearOldImageStuff() =>
-  window.overwrittenVisualKeyphrasesText = null;
-  imagesEl.innerHTML = "";
-  imagePromptEl.innerHTML = "";
+  return window.clearOldImageStuff();
 
 generateVisualStyleOptionsHtml() =>
   function styleScore(style) {

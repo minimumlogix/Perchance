@@ -331,29 +331,50 @@
   <!-- CHARACTER IMAGES SECTION -->
   <div id="imagesSectionCtn" class="c-card--section">
     <div class="c-card__title">Character Images</div>
-    <div class="l-flex-center u-mb-xs">
-      <button id="generateImagesBtn" class="c-button c-button--generate" onclick="generateImagesSection()"><i class="bi bi-images"></i> generate images</button>
-      <div class="l-relative-holder">
-        <button id="stopImagesBtn" class="c-button c-button--stop u-hidden" onclick="window.lastImageCaptionPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
+
+    <div class="c-art-controls-bar u-mb-md">
+      <div class="c-art-controls-left">
+        <div class="c-settings-box" style="margin: 0; padding: 4px 8px;">
+          <span class="c-settings-box__label" style="font-size: 0.85rem;">Style:</span>
+          <select id="visualStyleEl" class="c-select c-select--compact">
+            [generateVisualStyleOptionsHtml()]
+          </select>
+        </div>
+        <button id="generateImagesBtn" class="c-button c-button--generate" onclick="generateImagesSection()"><i class="bi bi-images"></i> generate images</button>
+        <button id="regenImagesBtn" class="c-button c-button--clear" onclick="generateImages()" disabled><i class="bi bi-arrow-clockwise"></i> regenerate images</button>
+        <div class="l-relative-holder">
+          <button id="stopImagesBtn" class="c-button c-button--stop u-hidden" onclick="window.lastImageCaptionPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
+        </div>
+      </div>
+      <div class="c-art-controls-right">
+        <button id="toggleArtPromptBtn" class="c-button c-button--clear c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-pencil-square"></i> edit prompt</button>
+      </div>
+    </div>
+
+    <!-- EDITABLE PROMPT BOX -->
+    <div id="artPromptBox" class="c-art-prompt-box u-mb-md" style="display: none;">
+      <div class="c-art-prompt-header">
+        <span>Visual Keyphrase Prompt (Editable):</span>
+        <button type="button" class="c-button c-button--icon c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-x"></i></button>
+      </div>
+      <textarea id="imagePromptTextarea" class="c-art-prompt-textarea" placeholder="Character visual keyphrases..." oninput="window.overwrittenVisualKeyphrasesText=this.value;"></textarea>
+    </div>
+
+    <!-- LOADING BANNER -->
+    <div id="artLoadingBanner" class="c-art-loading-banner u-mb-md" style="display: none;">
+      <i class="bi bi-hourglass-split"></i> <span id="artLoadingText">Generating visual keyphrases & portraits...</span>
+    </div>
+
+    <!-- IMAGE GRID -->
+    <div id="imagesEl" class="c-art-grid u-mt-md">
+      <div class="c-chat-empty-state" style="grid-column: 1 / -1;">
+        <div class="c-chat-empty-icon"><i class="bi bi-palette"></i></div>
+        <div class="c-chat-empty-text">No character images generated yet</div>
+        <div class="c-chat-empty-subtext">Generate a character description above, then hit 'generate images' to see 6 stylized portraits.</div>
       </div>
     </div>
   </div>
 
-</div>
-
-<!-- IMAGE GALLERY AREA -->
-<div id="imagesAreaEl" class="u-hidden">
-  <p id="imagePromptEl" class="c-gallery__prompt"></p>
-  <div id="imageSettingsEl" class="c-settings-group"> 
-    <div class="c-settings-box">
-      <div class="c-settings-box__label">Style:</div>
-      <select id="visualStyleEl" class="c-select c-select--compact">
-        [generateVisualStyleOptionsHtml()]
-      </select>
-    </div>
-    <button id="regenImagesBtn" class="c-button c-button--generate u-ml-sm" onclick="generateImages()"><i class="bi bi-arrow-clockwise"></i> regenerate images</button>
-  </div>
-  <div id="imagesEl" class="c-gallery__grid"></div>
 </div>
 
 <!-- FOOTER & CREDITS -->

@@ -913,10 +913,13 @@ window.exportAsMarkdown = function() {
 window.__currentChatChannel = "general";
 
 window.switchChatHubChannel = function(channelName) {
+  if (channelName !== "general" && channelName !== "community-gallery") {
+    channelName = "general";
+  }
   window.__currentChatChannel = channelName;
 
   // Update Navigation Bar Buttons
-  ["general", "character-art", "community-gallery"].forEach(ch => {
+  ["general", "community-gallery"].forEach(ch => {
     const btn = document.getElementById(`hubNavBtn-${ch}`);
     const view = document.getElementById(`channelView-${ch}`);
     if (btn) {
@@ -937,10 +940,6 @@ window.switchChatHubChannel = function(channelName) {
     if (hashEl) hashEl.innerHTML = '<i class="bi bi-hash"></i>';
     if (titleEl) titleEl.textContent = "general";
     if (topicEl) topicEl.textContent = "Discuss character ideas, share prompts & roleplay tips";
-  } else if (channelName === "character-art") {
-    if (hashEl) hashEl.innerHTML = '<i class="bi bi-image"></i>';
-    if (titleEl) titleEl.textContent = "character-art";
-    if (topicEl) topicEl.textContent = "Generated character portraits & media channel";
   } else if (channelName === "community-gallery") {
     if (hashEl) hashEl.innerHTML = '<i class="bi bi-grid-3x3-gap"></i>';
     if (titleEl) titleEl.textContent = "community-gallery";
@@ -952,10 +951,6 @@ window.switchChatHubChannel = function(channelName) {
 window.refreshActiveChatChannel = function() {
   if (window.__currentChatChannel === "general") {
     window.createCommentsSectionHtml();
-  } else if (window.__currentChatChannel === "character-art") {
-    if (typeof window.generateImages === "function" && window.lastCharacterTextData) {
-      window.generateImages();
-    }
   } else if (window.__currentChatChannel === "community-gallery") {
     const ctn = document.getElementById("communityGalleryEmbedCtn");
     if (ctn) ctn.removeAttribute("data-loaded");
@@ -964,7 +959,7 @@ window.refreshActiveChatChannel = function() {
 };
 
 window.toggleArtPromptBox = function() {
-  const box = document.getElementById("hubArtPromptBox");
+  const box = document.getElementById("artPromptBox");
   if (!box) return;
   box.style.display = (box.style.display === "none" || !box.style.display) ? "flex" : "none";
 };
@@ -1019,7 +1014,7 @@ window.createCommentsSectionHtml = function() {
   if (!commentsCtn) return;
 
   const colorScheme = window.getCurrentColorScheme();
-  const currentChannel = window.__currentChatChannel || "general";
+  const currentChannel = (window.__currentChatChannel === "community-gallery") ? "community-gallery" : "general";
 
   // Scaffold the multi-channel Discord-like hub structure
   commentsCtn.innerHTML = `
@@ -1028,9 +1023,6 @@ window.createCommentsSectionHtml = function() {
       <div class="c-hub-nav">
         <button class="c-hub-nav-item ${currentChannel === 'general' ? 'is-active' : ''}" id="hubNavBtn-general" onclick="window.switchChatHubChannel('general')">
           <span class="c-hub-nav-hash"><i class="bi bi-hash"></i></span> general
-        </button>
-        <button class="c-hub-nav-item ${currentChannel === 'character-art' ? 'is-active' : ''}" id="hubNavBtn-character-art" onclick="window.switchChatHubChannel('character-art')">
-          <span class="c-hub-nav-hash"><i class="bi bi-image"></i></span> character-art
         </button>
         <button class="c-hub-nav-item ${currentChannel === 'community-gallery' ? 'is-active' : ''}" id="hubNavBtn-community-gallery" onclick="window.switchChatHubChannel('community-gallery')">
           <span class="c-hub-nav-hash"><i class="bi bi-grid-3x3-gap"></i></span> community-gallery
@@ -1072,46 +1064,7 @@ window.createCommentsSectionHtml = function() {
         </div>
       </div>
 
-      <!-- CHANNEL VIEW 2: CHARACTER ART -->
-      <div id="channelView-character-art" class="c-channel-view c-art-view" style="${currentChannel === 'character-art' ? '' : 'display:none;'}">
-        <div class="c-art-controls-bar">
-          <div class="c-art-controls-left">
-            <div class="c-settings-box" style="margin:0; padding:3px 6px;">
-              <span class="c-settings-box__label" style="font-size:0.8rem;">Style:</span>
-              <select id="hubVisualStyleEl" class="c-select c-select--compact" onchange="if(document.getElementById('visualStyleEl')) document.getElementById('visualStyleEl').value = this.value;">
-                ${typeof window.generateVisualStyleOptionsHtml === 'function' ? window.generateVisualStyleOptionsHtml() : ''}
-              </select>
-            </div>
-            <button class="c-button c-button--generate c-button--sm" onclick="window.generateImagesSection()"><i class="bi bi-images"></i> generate images</button>
-            <button id="hubRegenImagesBtn" class="c-button c-button--sm" onclick="window.generateImages()" ${!window.lastCharacterTextData ? 'disabled' : ''}><i class="bi bi-arrow-clockwise"></i> regenerate</button>
-          </div>
-          <div class="c-art-controls-right">
-            <button class="c-button c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-pencil-square"></i> edit prompt</button>
-          </div>
-        </div>
-
-        <div id="hubArtPromptBox" class="c-art-prompt-box" style="display: none;">
-          <div class="c-art-prompt-header">
-            <span>Visual Keyphrase Prompt (Editable):</span>
-            <button class="c-button c-button--icon c-button--sm" onclick="window.toggleArtPromptBox()"><i class="bi bi-x"></i></button>
-          </div>
-          <textarea id="hubArtPromptTextarea" class="c-art-prompt-textarea" placeholder="Character visual keyphrases..." oninput="window.overwrittenVisualKeyphrasesText=this.value;"></textarea>
-        </div>
-
-        <div id="hubArtLoadingBanner" class="c-art-loading-banner" style="display: none;">
-          <i class="bi bi-hourglass-split"></i> <span id="hubArtLoadingText">Generating visual keyphrases & portraits...</span>
-        </div>
-
-        <div id="hubArtMediaGrid" class="c-art-grid">
-          <div class="c-chat-empty-state" style="grid-column: 1 / -1;">
-            <div class="c-chat-empty-icon"><i class="bi bi-palette"></i></div>
-            <div class="c-chat-empty-text">No character images generated yet</div>
-            <div class="c-chat-empty-subtext">Generate a character description above, then hit 'generate images' to see 6 stylized portraits.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CHANNEL VIEW 3: COMMUNITY GALLERY -->
+      <!-- CHANNEL VIEW 2: COMMUNITY GALLERY -->
       <div id="channelView-community-gallery" class="c-channel-view c-gallery-view" style="${currentChannel === 'community-gallery' ? '' : 'display:none;'}">
         <div class="c-gallery-embed-wrapper" id="communityGalleryEmbedCtn">
           <div class="c-chat-empty-state">
@@ -1126,11 +1079,8 @@ window.createCommentsSectionHtml = function() {
     <div id="chatReactionBusCtn" style="display:none; width:0; height:0; overflow:hidden;"></div>
   `;
 
-  // Sync active channel header and existing generated art
+  // Sync active channel header
   window.switchChatHubChannel(currentChannel);
-  if (window.lastCharacterTextData && typeof window.generateImages === "function") {
-    window.generateImages();
-  }
 
   if (typeof window.comments !== "function" && typeof window.root?.commentsPlugin !== "function") {
     const feedEl = document.getElementById("chatFeedEl");

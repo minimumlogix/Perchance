@@ -134,12 +134,10 @@ window.generateImagesSection = async function () {
     let outputEl = document.getElementById("outputEl");
     let generateImagesBtn = document.getElementById("generateImagesBtn");
     let stopImagesBtn = document.getElementById("stopImagesBtn");
-    let imagesAreaEl = document.getElementById("imagesAreaEl");
-    let imagePromptEl = document.getElementById("imagePromptEl");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
-    let hubRegenImagesBtn = document.getElementById("hubRegenImagesBtn");
-    let hubLoadingBanner = document.getElementById("hubArtLoadingBanner");
-    let hubLoadingText = document.getElementById("hubArtLoadingText");
+    let artLoadingBanner = document.getElementById("artLoadingBanner");
+    let artLoadingText = document.getElementById("artLoadingText");
+    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -151,10 +149,9 @@ window.generateImagesSection = async function () {
 
     if (generateImagesBtn) generateImagesBtn.disabled = true;
     if (stopImagesBtn) stopImagesBtn.classList.remove("u-hidden");
-    if (imagesAreaEl) imagesAreaEl.classList.remove("u-hidden");
-
-    if (typeof window.switchChatHubChannel === "function") {
-        window.switchChatHubChannel("character-art");
+    if (artLoadingBanner) {
+        artLoadingBanner.style.display = "flex";
+        if (artLoadingText) artLoadingText.innerHTML = "Generating visual keyphrases & portraits...";
     }
 
     window.clearOldImageStuff();
@@ -177,17 +174,16 @@ window.generateImagesSection = async function () {
 
     captionObj = window.ai(captionPrompt);
     window.lastImageCaptionPromptStreamObj = captionObj;
-    if (imagePromptEl) imagePromptEl.innerHTML = "<b>Generating image prompt...</b> " + captionObj.loadingIndicatorHtml;
-    if (hubLoadingBanner) {
-        hubLoadingBanner.style.display = "flex";
-        if (hubLoadingText) hubLoadingText.innerHTML = "Generating visual keyphrase prompt... " + (captionObj.loadingIndicatorHtml || "");
+    if (artLoadingBanner) {
+        artLoadingBanner.style.display = "flex";
+        if (artLoadingText) artLoadingText.innerHTML = "Generating visual keyphrase prompt... " + (captionObj.loadingIndicatorHtml || "");
     }
 
     let responseData = await captionObj;
 
     if (stopImagesBtn) stopImagesBtn.classList.add("u-hidden");
     if (generateImagesBtn) generateImagesBtn.disabled = false;
-    if (hubLoadingBanner) hubLoadingBanner.style.display = "none";
+    if (artLoadingBanner) artLoadingBanner.style.display = "none";
 
     if (responseData.stopReason === "user") return;
     let visualKeyphrasesText = responseData.text.replace(/\n+/g, " ");
@@ -198,8 +194,11 @@ window.generateImagesSection = async function () {
         visualKeyphrasesText,
     };
 
+    if (imagePromptTextarea) {
+        imagePromptTextarea.value = visualKeyphrasesText;
+    }
+
     if (regenImagesBtn) regenImagesBtn.disabled = false;
-    if (hubRegenImagesBtn) hubRegenImagesBtn.disabled = false;
     window.generateImages();
 };
 
@@ -211,15 +210,15 @@ window.generateImages = function () {
     if (!window.lastCharacterTextData) return;
 
     let { generatedText, physicalAppearanceText, visualKeyphrasesText } = window.lastCharacterTextData;
-    let imagePromptEl = document.getElementById("imagePromptEl");
     let imagesEl = document.getElementById("imagesEl");
-    let hubArtMediaGrid = document.getElementById("hubArtMediaGrid");
-    let hubArtPromptTextarea = document.getElementById("hubArtPromptTextarea");
+    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
+    let regenImagesBtn = document.getElementById("regenImagesBtn");
 
     let currentPrompt = window.overwrittenVisualKeyphrasesText || visualKeyphrasesText;
-    if (hubArtPromptTextarea) {
-        hubArtPromptTextarea.value = currentPrompt;
+    if (imagePromptTextarea) {
+        imagePromptTextarea.value = currentPrompt;
     }
+    if (regenImagesBtn) regenImagesBtn.disabled = false;
 
     let imageHtml = "";
     for (let i = 0; i < 6; i++) {
@@ -255,25 +254,19 @@ window.generateImages = function () {
         </div>`;
     }
 
-    if (imagePromptEl) {
-        imagePromptEl.innerHTML = `<div class="u-text-left"><b>Image Prompt <span style="opacity:0.6;">(editable)</span>:</b> <textarea class="c-textarea u-mt-xs" oninput="window.overwrittenVisualKeyphrasesText=this.value; if(document.getElementById('hubArtPromptTextarea')) document.getElementById('hubArtPromptTextarea').value=this.value;">${currentPrompt}</textarea></div>`;
-    }
     if (imagesEl) imagesEl.innerHTML = imageHtml;
-    if (hubArtMediaGrid) hubArtMediaGrid.innerHTML = imageHtml;
 };
 
 window.clearOldImageStuff = function () {
     window.overwrittenVisualKeyphrasesText = null;
     let imagesEl = document.getElementById("imagesEl");
-    let imagePromptEl = document.getElementById("imagePromptEl");
-    let hubArtMediaGrid = document.getElementById("hubArtMediaGrid");
-    let hubArtPromptTextarea = document.getElementById("hubArtPromptTextarea");
+    let imagePromptTextarea = document.getElementById("imagePromptTextarea");
+    let regenImagesBtn = document.getElementById("regenImagesBtn");
 
-    if (imagesEl) imagesEl.innerHTML = "";
-    if (imagePromptEl) imagePromptEl.innerHTML = "";
-    if (hubArtPromptTextarea) hubArtPromptTextarea.value = "";
-    if (hubArtMediaGrid) {
-        hubArtMediaGrid.innerHTML = `
+    if (imagePromptTextarea) imagePromptTextarea.value = "";
+    if (regenImagesBtn) regenImagesBtn.disabled = true;
+    if (imagesEl) {
+        imagesEl.innerHTML = `
           <div class="c-chat-empty-state" style="grid-column: 1 / -1;">
             <div class="c-chat-empty-icon"><i class="bi bi-palette"></i></div>
             <div class="c-chat-empty-text">No character images generated yet</div>
