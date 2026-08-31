@@ -42,13 +42,14 @@ Writing Style & Tone:
 - Sensory Grounding: Anchor descriptions in concrete, tangible details (textures, skin heat, breathing, pulse points, scents like rain, smoke, worn leather, cologne, clean skin) rather than abstract metaphors.
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character vividly into the reader's mind.
 - Real & Believable: Create a character that genuinely feels real, not cliche or overwrought (this is a character description, not a place for rhetorical questions or fourth wall breaks). Focus on the little grounded details, history, and underlying intention behind design notes.
+- Realistic & Non-Cliché Naming: Strictly avoid overused fantasy naming tropes and cliché names (e.g., Elara, Vael, Blackthorn, Zephyr, Lyra). Avoid fancy or overly melodramatic naming. Generate grounded, realistic names—whether unique or common—that naturally fit the character's specific world, setting, culture, and ethnicity. (For example, an Elf should NOT default to Elara or generic trope names).
 ${shortNote}
 ${seedWordsTip}
 Use this template:
 ---
 Short Description = [emoji] <Maximum 1 sentence, under 55 characters including spaces. start with emoji in square brackets. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
 
-Name = <full name and optional nickname in quotes>
+Name = <full name and optional nickname in quotes (must be non-cliché and realistic, tailored to world, culture, and ethnicity; avoid fantasy tropes like Elara, Vael, or Blackthorn)>
 Age = <number or estimate>
 Gender = <gender identity>
 Race = <one word or phrase describing race/species>
@@ -220,6 +221,7 @@ Writing Style & Tone:
 - Grounded Realism: Realistic motivations shaped by upbringing, experiences, culture, and responsibilities. Small, tangible details make characters memorable.
 - Pacing: Encourage slow-burn storytelling through meaningful interactions, conflicting personalities, evolving relationships, and gradual development.
 - Avoid Cliches & AI Tropes: Keep prose lean, descriptive, and immersive. Strictly avoid flowery/sophisticated AI vocabulary, anime tropes, excessive exposition, fourth-wall breaks, forced humor, or generic speeches.
+- Realistic & Non-Cliché Naming: Avoid overused fantasy name tropes (like Elara, Vael, Blackthorn). Generate non-cliché, realistic names—unique or common grounded in the specific world setting, culture, or ethnicity. Elves or fantasy species must not default to Elara or generic trope names.
 
 ${seedWordsTip}
 Use this template:
@@ -362,6 +364,7 @@ window.getLargeCastScenarioPrompt = function () {
 Writing Style & Tone:
 - Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
 - Sensory Grounding & Economy: Anchor descriptions in concrete physical traits and tangible sensory details. Avoid flowery/sophisticated AI prose, purple prose, or cliches.
+- Realistic & Non-Cliché Naming: Avoid overused fantasy name tropes (like Elara, Vael, Blackthorn). Generate non-cliché, realistic names—unique or common grounded in the specific world setting, culture, or ethnicity. Elves or fantasy species must not default to Elara or generic trope names.
 - Cast Dynamics: Create a cast that genuinely feels like they have lived, worked, fought, and changed together. {{user}} enters an already existing world with established relationships, politics, history, and ongoing conflicts.
 - Formatting: Because this is a large cast (5+ characters), format BOTH Main Cast and Background Cast using concise bullet point descriptions (- <Name> = <Short description>) to keep the context crisp, readable, and highly engaging.
 
