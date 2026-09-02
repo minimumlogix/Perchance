@@ -604,7 +604,8 @@ window.chatWithCharacterButtonClickHandler = async function (textToImagePluginOu
     let scenarioText = window.lastScenarioPromptStreamObj ? window.lastScenarioPromptStreamObj.liveResponseText : "";
     let roleplayStartText = window.lastRoleplayStartPromptStreamObj ? window.lastRoleplayStartPromptStreamObj.liveResponseText : "";
 
-    let name = (description.match(/Name\s*[:=]\s*(.+)/) || [])[1] || "???";
+    let name = (description.match(/Name\s*[:=]\s*([^\n]+)/) || description.match(/(?:^|\n)([a-zA-Z0-9_ -]+)'s Role/i) || description.match(/Title\s*[:=]\s*([^\n]+)/) || [])[1] || "???";
+    name = name.replace(/^<|>$/g, "").trim();
     let firstName = name.split(/[ ,]/)[0];
     let characterImagePrompt = textToImagePluginOutput.inputs.prompt.replace(/\n/g, " ");
     let characterImageDataUrl = textToImagePluginOutput.dataUrl;

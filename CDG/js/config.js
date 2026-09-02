@@ -22,7 +22,8 @@ window.CDGConfig = {
   lengthSpecifiers: {
     short: "at most 1 short paragraph",
     medium: "1-2 paragraphs",
-    long: "2-4 paragraphs"
+    long: "2-4 paragraphs",
+    compact_detailed: "compact and detailed summary"
   }
 };
 

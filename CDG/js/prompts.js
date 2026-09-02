@@ -54,9 +54,6 @@ Gender = <gender identity>
 Race = <one word or phrase describing race/species>
 Ethinicity = <ethnicity or cultural origin>
 Occupation = <occupation or title>
-Fleet = <fleet, military unit, organization, or faction if applicable>
-Flagship = <flagship, vessel, home ship, or headquarters if applicable>
-Rank = <military or organizational rank if applicable>
 Father's Name = <father's full name and title if relevant>
 Mother's Name = <mother's full name and title if relevant>
 Siblings = <siblings' names and details if relevant>
@@ -465,7 +462,105 @@ ${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary
 };
 
 /* ===========================
-   4. BEHAVIOR PROMPT
+   4. COMPACT DETAILED SCENARIO PROMPT
+=========================== */
+
+window.getCompactDetailedPrompt = function () {
+    let customFeaturesEl = document.getElementById("customFeaturesEl");
+    let mainCastEl = document.getElementById("mainCastEl");
+    let bgCastEl = document.getElementById("bgCastEl");
+
+    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
+    let bgCastCount = parseInt(bgCastEl ? bgCastEl.value : "0", 10);
+    let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
+    let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
+    let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
+
+    let mainBlocks = [];
+    for (let i = 1; i <= mainCastCount; i++) {
+        let label = mainCastCount === 1 ? "<NPCname>" : `<NPC #${i} Name>`;
+        mainBlocks.push(`${label}'s Role: Write full Name, Nick names, age, gender, race, ethnicity, occupation, role in the roleplay, relation to {{user}}, relation to other NPCs, Other relations like family, friends, enemies.
+${label}'s Backstory: describing the charater's story/background
+${label}'s Physical Appearance: describing physical appearance
+${label}'s Personality: describing personality/idiosyncrasies/quirks`);
+    }
+    let mainCastTemplate = mainBlocks.join("\n\n");
+
+    let bgCastTemplate = "";
+    if (bgCastCount > 0) {
+        let bgItems = [];
+        for (let idx = 0; idx < bgCastCount; idx++) {
+            bgItems.push(`<Background NPC #${idx + 1} Name> = <Short description of role and dynamic with {{user}} and main cast>`);
+        }
+        bgCastTemplate = bgItems.join("\n");
+    } else {
+        bgCastTemplate = "<Supporting NPC 1 Name> = <Short description of role and dynamic>\n<Supporting NPC 2 Name> = <Short description of role and dynamic>";
+    }
+
+    let bgCastPhrase = bgCastCount > 0 ? `and ${bgCastCount} background NPCs` : "";
+    let castDesc = mainCastCount > 1 ? `${mainCastCount} Main NPCs ${bgCastPhrase}` : `a character ${bgCastPhrase}`;
+
+    let instruction = `Please create an engaging, compact and detailed roleplay scenario and character profile featuring ${castDesc}.
+
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Anchor descriptions in concrete, tangible details (textures, skin heat, breathing, pulse points, scents like rain, smoke, worn leather, cologne, clean skin) rather than abstract metaphors.
+- Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character and world vividly into the reader's mind.
+- Real & Believable: Create characters that genuinely feel real, not cliche or overwrought. Focus on grounded details, history, and underlying intention behind design notes.
+- Compact & Detailed: Balance density and depth. Keep information tightly organized under the exact specified format.
+
+${seedWordsTip}
+Use this template:
+---
+Title = <scenario roleplay title>
+Tags = <3 short tags for roleplay>
+Short Description = [emoji] <Maximum 1 sentence, under 55 characters including spaces. start with emoji in square brackets. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
+
+## Main Cast (NPCs)
+[
+${mainCastTemplate}
+]
+
+## Background Cast (NPCs)
+[
+${bgCastTemplate}
+]
+
+## World Summary
+[
+<World Lore>
+]
+---
+
+# Design notes:
+${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The character's race or setting should be inspired by " + randomRace)}`;
+
+    return {
+        instruction,
+        startWith: "Title = ",
+        render: function (data) {
+            let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1 + p2 + `<b style="color:#13a000">${p3.trim()}</b>` + p4);
+            text = text.replace(/(^|\n)(#+[a-zA-Z/ _'\-0-9\(\)]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            text = text.replace(/(^|\n)\*\*([a-zA-Z/ _'\-0-9#\(\)]{1,50})\*\*(:\s?)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            return text;
+        },
+        onStart: function (data) {
+            if (typeof window.clearOldImageStuff === "function") window.clearOldImageStuff();
+        },
+        onFinish: async function (data) {
+            if (data.stopReason === "user") return;
+            let generatedText = data.text;
+            let physicalAppearanceText = ((generatedText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)(?:\n\n|\n[#A-Za-z]|$)/s) || [])[1] || "").trim();
+            if (!physicalAppearanceText) physicalAppearanceText = ((generatedText.match(/(?:'s Physical Appearance|\bAppearance)\s*[:=]\s*(.+?)(?:\n|$)/is) || [])[1] || "").trim();
+            window.lastCharacterTextData = { generatedText, physicalAppearanceText };
+        }
+    };
+};
+
+/* ===========================
+   5. BEHAVIOR PROMPT
 =========================== */
 
 window.getBehaviorPrompt = function () {
@@ -519,7 +614,7 @@ ${customBehaviorText}`;
 };
 
 /* ===========================
-   5. SCENARIO CONTEXT PROMPT
+   6. SCENARIO CONTEXT PROMPT
 =========================== */
 
 window.getScenarioPrompt = function () {
@@ -567,7 +662,7 @@ ${customScenarioText}`;
 };
 
 /* ===========================
-   6. ROLEPLAY START PROMPT
+   7. ROLEPLAY START PROMPT
 =========================== */
 
 window.getRoleplayStartPrompt = function () {
@@ -646,10 +741,17 @@ ${customRoleplayText}`;
 };
 
 /* ===========================
-   7. PROMPT SELECTOR BY CAST
+   8. PROMPT SELECTOR BY CAST & LENGTH
 =========================== */
 
 window.getCharacterPrompt = function (castCount) {
+    let descLengthEl = document.getElementById("descLengthEl");
+    let lengthVal = descLengthEl ? descLengthEl.value : "medium";
+
+    if (lengthVal === "compact_detailed" || lengthVal === "compact-detailed") {
+        return window.getCompactDetailedPrompt();
+    }
+
     let count = typeof castCount === "number" ? castCount : parseInt(document.getElementById("mainCastEl")?.value || "1", 10);
     if (count >= 5) {
         return window.getLargeCastScenarioPrompt();
@@ -661,7 +763,7 @@ window.getCharacterPrompt = function (castCount) {
 };
 
 /* ===========================
-   8. WINDOW PROPERTY GETTERS
+   9. WINDOW PROPERTY GETTERS
 =========================== */
 
 Object.defineProperties(window, {
@@ -675,6 +777,10 @@ Object.defineProperties(window, {
     },
     largeCastScenarioPrompt: {
         get: function () { return window.getLargeCastScenarioPrompt(); },
+        configurable: true
+    },
+    compactDetailedPrompt: {
+        get: function () { return window.getCompactDetailedPrompt(); },
         configurable: true
     },
     behaviorPrompt: {
