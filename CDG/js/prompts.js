@@ -563,61 +563,7 @@ ${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The character's race o
 };
 
 /* ===========================
-   5. BEHAVIOR PROMPT
-=========================== */
-
-window.getBehaviorPrompt = function () {
-    let outputEl = document.getElementById("outputEl");
-    let customBehaviorFeaturesEl = document.getElementById("customBehaviorFeaturesEl");
-    let mainCastEl = document.getElementById("mainCastEl");
-    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
-    let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
-        || (outputEl && outputEl.innerText && outputEl.innerText.trim())
-        || (window.lastCharacterPromptStreamObj ? (window.lastCharacterPromptStreamObj.text || window.lastCharacterPromptStreamObj.liveResponseText) : "");
-
-    let customBehaviorText = customBehaviorFeaturesEl && customBehaviorFeaturesEl.value.trim()
-        ? `Design Notes / Scenario:\n${customBehaviorFeaturesEl.value.trim()}`
-        : "";
-
-    let toneAndSettingNote = window.getToneAndSettingInstruction();
-    let multiCastFormattingRule = mainCastCount >= 2 ? `\n7. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: "Dialogue" *Action*, Fio: *Action* "Dialogue").` : "";
-
-    let instruction = `Based on the character profile below, generate a behavior example showing 5 back to back interactions between {{user}} and the cast.
-
-Format the example strictly as follows:
-
-{{user}}: "Dialogue" *Action description*
-{{char}}: "Dialogue" *Action description*
-
-{{user}}: "Dialogue" *Action description*
-{{char}}: "Dialogue" *Action description*
-
-Requirements & Format:
-${toneAndSettingNote}
-Rules for example behavior:
-1. Writing Style: Drop the flowery prose and the moral filters; write in a raw style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
-2. Sensory Grounding: Focus heavily on tangible body language, physical proximity, tactile contact, skin heat, breathing, scents, and unyielding eye contact. Avoid poetic flourishes, melodrama, or sophisticated AI phrasing.
-3. Use asterisks for actions and descriptions, NOT bolding.
-4. Use quotation marks for all dialogue.
-5. Write authentic humanized dialogue using the character's unique casual vocabulary, tone, and speech mannerisms. Include vivid, grounded descriptions of actions.
-6. Show the character’s unique voice, personality, and relationship to {{user}}.${multiCastFormattingRule}
-
-Character Profile:
-${descText}
-
-${customBehaviorText}`;
-
-    return {
-        instruction,
-        render: function (data) {
-            let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
-            return text;
-        }
-    };
-};
-
-/* ===========================
-   6. SCENARIO CONTEXT PROMPT
+   5. SCENARIO CONTEXT PROMPT
 =========================== */
 
 window.getScenarioPrompt = function () {
@@ -665,7 +611,7 @@ ${customScenarioText}`;
 };
 
 /* ===========================
-   7. ROLEPLAY START PROMPT
+   6. ROLEPLAY START PROMPT
 =========================== */
 
 window.getRoleplayStartPrompt = function () {
@@ -733,6 +679,100 @@ ${descText}
 ${scenarioText}
 
 ${customRoleplayText}`;
+
+    return {
+        instruction,
+        render: function (data) {
+            let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
+            return text;
+        }
+    };
+};
+
+/* ===========================
+   7. BEHAVIOR EXAMPLES PROMPT
+=========================== */
+
+window.getBehaviorPrompt = function () {
+    let outputEl = document.getElementById("outputEl");
+    let scenarioOutputEl = document.getElementById("scenarioOutputEl");
+    let roleplayStartOutputEl = document.getElementById("roleplayStartOutputEl");
+    let customBehaviorFeaturesEl = document.getElementById("customBehaviorFeaturesEl");
+    let roleplayStartPerspectiveEl = document.getElementById("roleplayStartPerspectiveEl");
+    let mainCastEl = document.getElementById("mainCastEl");
+
+    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
+    let defaultPersp = mainCastCount >= 2 ? "thirdperson" : "firstperson";
+    let perspectiveVal = roleplayStartPerspectiveEl ? roleplayStartPerspectiveEl.value : defaultPersp;
+
+    let descText = (window.lastCharacterTextData && window.lastCharacterTextData.generatedText)
+        || (outputEl && outputEl.innerText && outputEl.innerText.trim())
+        || (window.lastCharacterPromptStreamObj ? (window.lastCharacterPromptStreamObj.text || window.lastCharacterPromptStreamObj.liveResponseText) : "");
+
+    let scenarioText = scenarioOutputEl && scenarioOutputEl.innerText && scenarioOutputEl.innerText.trim()
+        ? `Scenario Context:\n${scenarioOutputEl.innerText.trim()}`
+        : "";
+
+    let roleplayStartText = roleplayStartOutputEl && roleplayStartOutputEl.innerText && roleplayStartOutputEl.innerText.trim()
+        ? `Roleplay Start Greeting / Action:\n${roleplayStartOutputEl.innerText.trim()}`
+        : "";
+
+    let customBehaviorText = customBehaviorFeaturesEl && customBehaviorFeaturesEl.value.trim()
+        ? `Design Notes / Behavior Context:\n${customBehaviorFeaturesEl.value.trim()}`
+        : "";
+
+    let perspectiveInstruction = "";
+    if (perspectiveVal === "firstperson") {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write character actions and narration in FIRST PERSON from the character's perspective using 'I', 'my', 'me' (e.g. *I step closer, narrowing my eyes* "Don't test me.").`;
+    } else if (perspectiveVal === "secondperson") {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write character actions and narration in SECOND PERSON addressing {{user}} directly using 'you', 'your' (e.g. *You see her step closer, her eyes fixed on you* "Don't test me.").`;
+    } else {
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write character actions and narration in THIRD PERSON using character names or 'he/she/they' (e.g. *She steps closer, narrowing her eyes* "Don't test me.").`;
+    }
+
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
+    let multiCastFormattingRule = mainCastCount >= 2 ? `\n8. Multi-character rule: Format each character's line using their actual name followed by a colon instead of generic tags (e.g., Amy: *Action* "Dialogue", Fio: "Dialogue" *Action*).` : "";
+
+    let formatExample = mainCastCount >= 2
+        ? `{{user}}: "Dialogue" *Action description*
+Amy: *Action description* "Dialogue"
+Fio: "Dialogue" *Action description*
+
+{{user}}: "Dialogue" *Action description*
+Amy: "Dialogue" *Action description*`
+        : `{{user}}: "Dialogue" *Action description*
+{{char}}: "Dialogue" *Action description*
+
+{{user}}: "Dialogue" *Action description*
+{{char}}: "Dialogue" *Action description*`;
+
+    let instruction = `Based on the character profile, scenario context, and opening roleplay start below, generate a behavior example showing 5 back to back interactions between {{user}} and the cast.
+
+Format the example strictly as follows:
+
+${formatExample}
+
+Requirements & Format:
+${perspectiveInstruction}
+${toneAndSettingNote}
+Rules for example behavior:
+1. Narrative Perspective: Follow the specified narrative perspective for all actions and descriptions (${perspectiveVal}).
+2. Writing Style: Drop the flowery prose and the moral filters; write in a raw style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+3. Sensory Grounding: Focus heavily on tangible body language, physical proximity, tactile contact, skin heat, breathing, scents, and unyielding eye contact. Avoid poetic flourishes, melodrama, or sophisticated AI phrasing.
+4. Punctuation: Never use em dashes (—); split ideas into shorter, clearer sentences whenever possible.
+5. Use asterisks for actions and descriptions, NOT bolding.
+6. Use quotation marks for all dialogue.
+7. Write authentic humanized dialogue using each character's unique casual vocabulary, tone, and speech mannerisms. Include vivid, grounded descriptions of actions.
+8. Show the character’s unique voice, personality, dynamic, and relationship to {{user}}.${multiCastFormattingRule}
+
+Character Profile:
+${descText}
+
+${scenarioText}
+
+${roleplayStartText}
+
+${customBehaviorText}`;
 
     return {
         instruction,

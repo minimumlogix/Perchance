@@ -359,25 +359,25 @@ window.exportAsMarkdown = function() {
     blocks.push(`# Description\n\n${descText}`);
   }
 
-  // 3. Behavior Examples (# Behavior Examples)
-  let behaviorOutput = document.getElementById("behaviorOutputEl");
-  let behaviorText = behaviorOutput ? window.htmlToMarkdown(behaviorOutput.innerHTML) : "";
-  if (behaviorText) {
-    blocks.push(`# Behavior Examples\n\n${behaviorText}`);
-  }
-
-  // 4. Scenario (# Scenario)
+  // 3. Scenario (# Scenario)
   let scenarioOutput = document.getElementById("scenarioOutputEl");
   let scenarioText = scenarioOutput ? window.htmlToMarkdown(scenarioOutput.innerHTML) : "";
   if (scenarioText) {
     blocks.push(`# Scenario\n\n${scenarioText}`);
   }
 
-  // 5. Roleplay Start (# Roleplay Start)
+  // 4. Roleplay Start (# Roleplay Start)
   let roleplayOutput = document.getElementById("roleplayStartOutputEl");
   let roleplayText = roleplayOutput ? window.htmlToMarkdown(roleplayOutput.innerHTML) : "";
   if (roleplayText) {
     blocks.push(`# Roleplay Start\n\n${roleplayText}`);
+  }
+
+  // 5. Behavior Examples (# Behavior Examples)
+  let behaviorOutput = document.getElementById("behaviorOutputEl");
+  let behaviorText = behaviorOutput ? window.htmlToMarkdown(behaviorOutput.innerHTML) : "";
+  if (behaviorText) {
+    blocks.push(`# Behavior Examples\n\n${behaviorText}`);
   }
 
   if (blocks.length === 0) {

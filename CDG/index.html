@@ -249,26 +249,6 @@
   </div>
   <p id="outputEl" class="u-w-full"></p>
 
-  <!-- BEHAVIOR EXAMPLES SECTION -->
-  <div id="behaviorCtn" class="c-card--section">
-    <div class="c-card__title">Behavior Examples</div>
-    <div class="c-textarea-wrapper">
-      <textarea id="customBehaviorFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..."></textarea>
-      <div class="c-textarea-actions">
-        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customBehaviorFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
-        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
-      </div>
-    </div>
-    <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
-      <button id="generateBehaviorBtn" class="c-button c-button--generate" onclick="generateBehavior()"><i class="bi bi-stars"></i> generate behavior examples</button>
-      <button id="clearBehaviorBtn" class="c-button c-button--clear" title="Clear behavior examples output and notes" onclick="window.clearSection('behavior')"><i class="bi bi-trash"></i> clear</button>
-      <div class="l-relative-holder">
-        <button id="stopBehaviorBtn" class="c-button c-button--stop u-hidden" onclick="window.lastBehaviorPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
-      </div>
-    </div>
-    <p id="behaviorOutputEl" class="u-w-full u-mt-md"></p>
-  </div>
-
   <!-- SCENARIO DESCRIPTION SECTION -->
   <div id="scenarioCtn" class="c-card--section">
     <div class="c-card__title">Scenario Description</div>
@@ -327,6 +307,26 @@
       </div>
     </div>
     <p id="roleplayStartOutputEl" class="u-w-full u-mt-md"></p>
+  </div>
+
+  <!-- BEHAVIOR EXAMPLES SECTION -->
+  <div id="behaviorCtn" class="c-card--section">
+    <div class="c-card__title">Behavior Examples</div>
+    <div class="c-textarea-wrapper">
+      <textarea id="customBehaviorFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, scenario notes, or dialogue context for behavior examples..."></textarea>
+      <div class="c-textarea-actions">
+        <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customBehaviorFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
+        <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
+      </div>
+    </div>
+    <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
+      <button id="generateBehaviorBtn" class="c-button c-button--generate" onclick="generateBehavior()"><i class="bi bi-stars"></i> generate behavior examples</button>
+      <button id="clearBehaviorBtn" class="c-button c-button--clear" title="Clear behavior examples output and notes" onclick="window.clearSection('behavior')"><i class="bi bi-trash"></i> clear</button>
+      <div class="l-relative-holder">
+        <button id="stopBehaviorBtn" class="c-button c-button--stop u-hidden" onclick="window.lastBehaviorPromptStreamObj?.stop();"><i class="bi bi-x-circle-fill"></i> stop</button>
+      </div>
+    </div>
+    <p id="behaviorOutputEl" class="u-w-full u-mt-md"></p>
   </div>
 
   <!-- CHARACTER IMAGES SECTION -->

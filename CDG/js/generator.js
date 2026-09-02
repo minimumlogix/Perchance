@@ -613,8 +613,8 @@ window.chatWithCharacterButtonClickHandler = async function (textToImagePluginOu
     let roleInstruction = `
   ${description}
   
-  ${behaviorText ? `### Behavior Examples\n${behaviorText}\n` : ""}
   ${scenarioText ? `### Scenario Context\n${scenarioText}\n` : ""}
+  ${behaviorText ? `### Behavior Examples\n${behaviorText}\n` : ""}
   Creatively improvise the roleplay between {{char}} and {{user}} to create an interesting and engaging experience/story/chat, no matter where {{user}} decides to lead it. The overall goal is to create a genuinely fascinating and engaging roleplay/story. So good that you can't stop reading.
   For roleplays, messages should be detailed and descriptive, including dialogue, actions (enclosed in asterisks), and thoughts. Utilize all five senses for character experiences.
   `.trim();
