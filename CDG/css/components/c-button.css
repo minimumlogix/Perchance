@@ -52,6 +52,24 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.c-button--generate.is-generating,
+.c-button--generate.c-button--stop {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: var(--color-danger, #ef4444) !important;
+  color: var(--color-danger, #ef4444) !important;
+  margin-left: 0;
+  width: 100%;
+  font-size: var(--font-size-base);
+}
+
+.c-button--generate.is-generating:hover,
+.c-button--generate.c-button--stop:hover {
+  background-color: var(--color-danger, #ef4444) !important;
+  color: #ffffff !important;
 }
 
 .c-button--stop {

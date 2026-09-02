@@ -220,19 +220,23 @@ function initCDGApp() {
 
   /* 5. Restore Cached Output Responses & Update Button State */
   const outputs = [
-    { id: "outputEl", retry: "regenerate", btnId: "generateBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate description' },
-    { id: "behaviorOutputEl", retry: "generateBehavior", btnId: "generateBehaviorBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples' },
-    { id: "scenarioOutputEl", retry: "generateScenario", btnId: "generateScenarioBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description' },
-    { id: "roleplayStartOutputEl", retry: "generateRoleplayStart", btnId: "generateRoleplayStartBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start' }
+    { id: "outputEl", retry: "regenerate", sectionKey: "desc", btnId: "generateBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate description' },
+    { id: "behaviorOutputEl", retry: "generateBehavior", sectionKey: "behavior", btnId: "generateBehaviorBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples' },
+    { id: "scenarioOutputEl", retry: "generateScenario", sectionKey: "scenario", btnId: "generateScenarioBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description' },
+    { id: "roleplayStartOutputEl", retry: "generateRoleplayStart", sectionKey: "roleplayStart", btnId: "generateRoleplayStartBtn", text: '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start' }
   ];
 
-  outputs.forEach(({ id, retry, btnId, text }) => {
+  outputs.forEach(({ id, retry, sectionKey, btnId, text }) => {
     let cachedHTML = window.CDGStorage.getCache(id);
     let el = document.getElementById(id);
     if (cachedHTML && el && cachedHTML.trim()) {
       el.innerHTML = cachedHTML;
-      let btn = document.getElementById(btnId);
-      if (btn) btn.innerHTML = text;
+      if (typeof window.setButtonState === "function") {
+        window.setButtonState(sectionKey, "completed");
+      } else {
+        let btn = document.getElementById(btnId);
+        if (btn) btn.innerHTML = text;
+      }
       window.renderResponseToolbar(id, retry);
     }
   });

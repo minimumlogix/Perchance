@@ -1,29 +1,113 @@
 /* ===========================
+   GENERATION STATE MANAGEMENT
+=========================== */
+
+window.generationStates = {
+    desc: "initial",
+    scenario: "initial",
+    roleplayStart: "initial",
+    behavior: "initial",
+    images: "initial"
+};
+
+window.buttonConfigs = {
+    desc: {
+        btnId: "generateBtn",
+        streamObjKey: "lastCharacterPromptStreamObj",
+        initialLabel: '<i class="bi bi-stars"></i> generate description',
+        generatingLabel: '<i class="bi bi-stop-circle-fill"></i> stop generation',
+        completedLabel: '<i class="bi bi-arrow-clockwise"></i> regenerate description'
+    },
+    scenario: {
+        btnId: "generateScenarioBtn",
+        streamObjKey: "lastScenarioPromptStreamObj",
+        initialLabel: '<i class="bi bi-stars"></i> generate scenario description',
+        generatingLabel: '<i class="bi bi-stop-circle-fill"></i> stop generation',
+        completedLabel: '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description'
+    },
+    roleplayStart: {
+        btnId: "generateRoleplayStartBtn",
+        streamObjKey: "lastRoleplayStartPromptStreamObj",
+        initialLabel: '<i class="bi bi-stars"></i> generate roleplay start',
+        generatingLabel: '<i class="bi bi-stop-circle-fill"></i> stop generation',
+        completedLabel: '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start'
+    },
+    behavior: {
+        btnId: "generateBehaviorBtn",
+        streamObjKey: "lastBehaviorPromptStreamObj",
+        initialLabel: '<i class="bi bi-stars"></i> generate behavior examples',
+        generatingLabel: '<i class="bi bi-stop-circle-fill"></i> stop generation',
+        completedLabel: '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples'
+    },
+    images: {
+        btnId: "generateImagesBtn",
+        streamObjKey: "lastImageCaptionPromptStreamObj",
+        initialLabel: '<i class="bi bi-images"></i> generate images',
+        generatingLabel: '<i class="bi bi-stop-circle-fill"></i> stop generation',
+        completedLabel: '<i class="bi bi-images"></i> generate images'
+    }
+};
+
+window.setButtonState = function (sectionKey, state) {
+    window.generationStates[sectionKey] = state;
+    let cfg = window.buttonConfigs[sectionKey];
+    if (!cfg) return;
+    let btn = document.getElementById(cfg.btnId);
+    if (!btn) return;
+
+    if (state === "generating") {
+        btn.innerHTML = cfg.generatingLabel;
+        btn.classList.add("is-generating", "c-button--stop");
+        btn.disabled = false;
+    } else if (state === "completed") {
+        btn.innerHTML = cfg.completedLabel;
+        btn.classList.remove("is-generating", "c-button--stop");
+        btn.disabled = false;
+    } else { // "initial"
+        btn.innerHTML = cfg.initialLabel;
+        btn.classList.remove("is-generating", "c-button--stop");
+        btn.disabled = false;
+    }
+};
+
+window.stopSectionGeneration = async function (sectionKey) {
+    let cfg = window.buttonConfigs[sectionKey];
+    if (!cfg) return;
+    let streamObj = window[cfg.streamObjKey];
+    if (streamObj && typeof streamObj.stop === "function") {
+        await streamObj.stop();
+    }
+    window.setButtonState(sectionKey, "completed");
+};
+
+/* ===========================
    GENERATION CONTROL LOGIC
 =========================== */
 
 window.regenerate = async function () {
+    if (window.generationStates.desc === "generating") {
+        await window.stopSectionGeneration("desc");
+        return;
+    }
+
     if (window.lastCharacterPromptStreamObj) await window.lastCharacterPromptStreamObj.stop();
 
-    let generateBtn = document.getElementById("generateBtn");
-    let stopBtn = document.getElementById("stopBtn");
     let outputEl = document.getElementById("outputEl");
     let mainCastEl = document.getElementById("mainCastEl");
 
     let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
     let promptToUse = window.getCharacterPrompt(mainCastCount);
 
-    if (generateBtn) generateBtn.disabled = true;
-    if (stopBtn) stopBtn.classList.remove("u-hidden");
-    if (generateBtn) generateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate description';
+    window.setButtonState("desc", "generating");
 
     window.lastCharacterPromptStreamObj = window.ai(promptToUse);
     if (outputEl) outputEl.innerHTML = window.lastCharacterPromptStreamObj;
 
-    await window.lastCharacterPromptStreamObj;
+    let res = await window.lastCharacterPromptStreamObj;
 
-    if (stopBtn) stopBtn.classList.add("u-hidden");
-    if (generateBtn) generateBtn.disabled = false;
+    window.setButtonState("desc", "completed");
+
+    if (res && res.stopReason === "user") return;
 
     if (outputEl) {
         window.renderResponseToolbar("outputEl", "regenerate");
@@ -32,10 +116,13 @@ window.regenerate = async function () {
 };
 
 window.generateBehavior = async function () {
+    if (window.generationStates.behavior === "generating") {
+        await window.stopSectionGeneration("behavior");
+        return;
+    }
+
     let outputEl = document.getElementById("outputEl");
     let behaviorOutputEl = document.getElementById("behaviorOutputEl");
-    let generateBehaviorBtn = document.getElementById("generateBehaviorBtn");
-    let stopBehaviorBtn = document.getElementById("stopBehaviorBtn");
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -45,18 +132,17 @@ window.generateBehavior = async function () {
 
     if (window.lastBehaviorPromptStreamObj) await window.lastBehaviorPromptStreamObj.stop();
 
-    if (generateBehaviorBtn) generateBehaviorBtn.disabled = true;
-    if (stopBehaviorBtn) stopBehaviorBtn.classList.remove("u-hidden");
-    if (generateBehaviorBtn) generateBehaviorBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate behavior examples';
+    window.setButtonState("behavior", "generating");
     if (behaviorOutputEl) behaviorOutputEl.innerHTML = "";
 
     window.lastBehaviorPromptStreamObj = window.ai(window.behaviorPrompt);
     if (behaviorOutputEl) behaviorOutputEl.innerHTML = window.lastBehaviorPromptStreamObj;
 
-    await window.lastBehaviorPromptStreamObj;
+    let res = await window.lastBehaviorPromptStreamObj;
 
-    if (stopBehaviorBtn) stopBehaviorBtn.classList.add("u-hidden");
-    if (generateBehaviorBtn) generateBehaviorBtn.disabled = false;
+    window.setButtonState("behavior", "completed");
+
+    if (res && res.stopReason === "user") return;
 
     if (behaviorOutputEl) {
         window.renderResponseToolbar("behaviorOutputEl", "generateBehavior");
@@ -65,10 +151,13 @@ window.generateBehavior = async function () {
 };
 
 window.generateScenario = async function () {
+    if (window.generationStates.scenario === "generating") {
+        await window.stopSectionGeneration("scenario");
+        return;
+    }
+
     let outputEl = document.getElementById("outputEl");
     let scenarioOutputEl = document.getElementById("scenarioOutputEl");
-    let generateScenarioBtn = document.getElementById("generateScenarioBtn");
-    let stopScenarioBtn = document.getElementById("stopScenarioBtn");
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -78,18 +167,17 @@ window.generateScenario = async function () {
 
     if (window.lastScenarioPromptStreamObj) await window.lastScenarioPromptStreamObj.stop();
 
-    if (generateScenarioBtn) generateScenarioBtn.disabled = true;
-    if (stopScenarioBtn) stopScenarioBtn.classList.remove("u-hidden");
-    if (generateScenarioBtn) generateScenarioBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate scenario description';
+    window.setButtonState("scenario", "generating");
     if (scenarioOutputEl) scenarioOutputEl.innerHTML = "";
 
     window.lastScenarioPromptStreamObj = window.ai(window.scenarioPrompt);
     if (scenarioOutputEl) scenarioOutputEl.innerHTML = window.lastScenarioPromptStreamObj;
 
-    await window.lastScenarioPromptStreamObj;
+    let res = await window.lastScenarioPromptStreamObj;
 
-    if (stopScenarioBtn) stopScenarioBtn.classList.add("u-hidden");
-    if (generateScenarioBtn) generateScenarioBtn.disabled = false;
+    window.setButtonState("scenario", "completed");
+
+    if (res && res.stopReason === "user") return;
 
     if (scenarioOutputEl) {
         window.renderResponseToolbar("scenarioOutputEl", "generateScenario");
@@ -98,10 +186,13 @@ window.generateScenario = async function () {
 };
 
 window.generateRoleplayStart = async function () {
+    if (window.generationStates.roleplayStart === "generating") {
+        await window.stopSectionGeneration("roleplayStart");
+        return;
+    }
+
     let outputEl = document.getElementById("outputEl");
     let roleplayStartOutputEl = document.getElementById("roleplayStartOutputEl");
-    let generateRoleplayStartBtn = document.getElementById("generateRoleplayStartBtn");
-    let stopRoleplayStartBtn = document.getElementById("stopRoleplayStartBtn");
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -111,18 +202,17 @@ window.generateRoleplayStart = async function () {
 
     if (window.lastRoleplayStartPromptStreamObj) await window.lastRoleplayStartPromptStreamObj.stop();
 
-    if (generateRoleplayStartBtn) generateRoleplayStartBtn.disabled = true;
-    if (stopRoleplayStartBtn) stopRoleplayStartBtn.classList.remove("u-hidden");
-    if (generateRoleplayStartBtn) generateRoleplayStartBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> regenerate roleplay start';
+    window.setButtonState("roleplayStart", "generating");
     if (roleplayStartOutputEl) roleplayStartOutputEl.innerHTML = "";
 
     window.lastRoleplayStartPromptStreamObj = window.ai(window.roleplayStartPrompt);
     if (roleplayStartOutputEl) roleplayStartOutputEl.innerHTML = window.lastRoleplayStartPromptStreamObj;
 
-    await window.lastRoleplayStartPromptStreamObj;
+    let res = await window.lastRoleplayStartPromptStreamObj;
 
-    if (stopRoleplayStartBtn) stopRoleplayStartBtn.classList.add("u-hidden");
-    if (generateRoleplayStartBtn) generateRoleplayStartBtn.disabled = false;
+    window.setButtonState("roleplayStart", "completed");
+
+    if (res && res.stopReason === "user") return;
 
     if (roleplayStartOutputEl) {
         window.renderResponseToolbar("roleplayStartOutputEl", "generateRoleplayStart");
@@ -380,10 +470,14 @@ window.addStyleToNegative = function (negative) {
 =========================== */
 
 window.generateImagesSection = async function () {
+    if (window.generationStates.images === "generating") {
+        await window.stopSectionGeneration("images");
+        let artLoadingBanner = document.getElementById("artLoadingBanner");
+        if (artLoadingBanner) artLoadingBanner.style.display = "none";
+        return;
+    }
+
     let outputEl = document.getElementById("outputEl");
-    let generateImagesBtn = document.getElementById("generateImagesBtn");
-    let stopImagesBtn = document.getElementById("stopImagesBtn");
-    let regenImagesBtn = document.getElementById("regenImagesBtn");
     let artLoadingBanner = document.getElementById("artLoadingBanner");
     let artLoadingText = document.getElementById("artLoadingText");
     let imageTypeEl = document.getElementById("imageTypeEl");
@@ -400,14 +494,13 @@ window.generateImagesSection = async function () {
 
     if (window.lastImageCaptionPromptStreamObj) await window.lastImageCaptionPromptStreamObj.stop();
 
-    if (generateImagesBtn) generateImagesBtn.disabled = true;
-    if (stopImagesBtn) stopImagesBtn.classList.remove("u-hidden");
+    window.setButtonState("images", "generating");
     if (artLoadingBanner) {
         artLoadingBanner.style.display = "flex";
         if (artLoadingText) artLoadingText.innerHTML = `Identifying character cast...`;
     }
 
-    window.clearOldImageStuff();
+    window.clearOldImageStuff(false);
 
     let textToBeSummarized = descText.replace(/\n+/g, " ");
 
@@ -474,8 +567,6 @@ window.generateVisualPromptForActiveTab = async function (charIndex, forceRegen 
     let outputEl = document.getElementById("outputEl");
     let imageTypeEl = document.getElementById("imageTypeEl");
     let imageFramingEl = document.getElementById("imageFramingEl");
-    let stopImagesBtn = document.getElementById("stopImagesBtn");
-    let generateImagesBtn = document.getElementById("generateImagesBtn");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
     let artLoadingBanner = document.getElementById("artLoadingBanner");
     let artLoadingText = document.getElementById("artLoadingText");
@@ -496,6 +587,7 @@ window.generateVisualPromptForActiveTab = async function (charIndex, forceRegen 
         currentActiveChar = chars[idx];
 
         if (currentActiveChar.visual_keyphrases && !forceRegen) {
+            window.setButtonState("images", "completed");
             window.generateImages();
             return;
         }
@@ -554,8 +646,7 @@ ${textToBeSummarized}
     }
 
     if (artLoadingBanner) artLoadingBanner.style.display = "flex";
-    if (generateImagesBtn) generateImagesBtn.disabled = true;
-    if (stopImagesBtn) stopImagesBtn.classList.remove("u-hidden");
+    window.setButtonState("images", "generating");
 
     let promptTextarea = document.getElementById("imagePromptTextarea");
 
@@ -577,8 +668,7 @@ ${textToBeSummarized}
 
     let res = await captionObj;
 
-    if (stopImagesBtn) stopImagesBtn.classList.add("u-hidden");
-    if (generateImagesBtn) generateImagesBtn.disabled = false;
+    window.setButtonState("images", "completed");
     if (artLoadingBanner) artLoadingBanner.style.display = "none";
 
     if (res.stopReason === "user") return;
@@ -686,13 +776,17 @@ window.generateImages = function () {
     if (imagesEl) imagesEl.innerHTML = imageHtml;
 };
 
-window.clearOldImageStuff = function () {
+window.clearOldImageStuff = function (resetButton = true) {
     window.overwrittenVisualKeyphrasesText = null;
     window.lastArtConfigData = null;
     window.activeArtCharacterIndex = 0;
     let artConfigViewCtn = document.getElementById("artConfigViewCtn");
     let imagesEl = document.getElementById("imagesEl");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
+
+    if (resetButton) {
+        window.setButtonState("images", "initial");
+    }
 
     if (artConfigViewCtn) artConfigViewCtn.innerHTML = "";
     if (regenImagesBtn) regenImagesBtn.disabled = true;

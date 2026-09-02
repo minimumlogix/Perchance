@@ -149,8 +149,12 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customFeatures: "" });
       localStorage.customFeatures = "";
     }
-    let btn = document.getElementById("generateBtn");
-    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate description';
+    if (typeof window.setButtonState === "function") {
+      window.setButtonState("desc", "initial");
+    } else {
+      let btn = document.getElementById("generateBtn");
+      if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate description';
+    }
   } else if (type === "behavior") {
     window.clearOutput("behaviorOutputEl");
     let customEl = document.getElementById("customBehaviorFeaturesEl");
@@ -159,8 +163,12 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customBehaviorFeatures: "" });
       localStorage.customBehaviorFeatures = "";
     }
-    let btn = document.getElementById("generateBehaviorBtn");
-    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate behavior examples';
+    if (typeof window.setButtonState === "function") {
+      window.setButtonState("behavior", "initial");
+    } else {
+      let btn = document.getElementById("generateBehaviorBtn");
+      if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate behavior examples';
+    }
   } else if (type === "scenario") {
     window.clearOutput("scenarioOutputEl");
     let customEl = document.getElementById("customScenarioFeaturesEl");
@@ -169,8 +177,12 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customScenarioFeatures: "" });
       localStorage.customScenarioFeatures = "";
     }
-    let btn = document.getElementById("generateScenarioBtn");
-    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate scenario description';
+    if (typeof window.setButtonState === "function") {
+      window.setButtonState("scenario", "initial");
+    } else {
+      let btn = document.getElementById("generateScenarioBtn");
+      if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate scenario description';
+    }
   } else if (type === "roleplayStart") {
     window.clearOutput("roleplayStartOutputEl");
     let customEl = document.getElementById("customRoleplayStartFeaturesEl");
@@ -179,8 +191,12 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customRoleplayStartFeatures: "" });
       localStorage.customRoleplayStartFeatures = "";
     }
-    let btn = document.getElementById("generateRoleplayStartBtn");
-    if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate roleplay start';
+    if (typeof window.setButtonState === "function") {
+      window.setButtonState("roleplayStart", "initial");
+    } else {
+      let btn = document.getElementById("generateRoleplayStartBtn");
+      if (btn) btn.innerHTML = '<i class="bi bi-stars"></i> generate roleplay start';
+    }
   }
 };
 
@@ -191,6 +207,9 @@ window.clearAllContent = function() {
   window.clearSection("behavior");
   window.clearSection("scenario");
   window.clearSection("roleplayStart");
+  if (typeof window.clearOldImageStuff === "function") {
+    window.clearOldImageStuff(true);
+  }
 
   if (window.toneSelector) {
     window.toneSelector.selectedTags = [];
