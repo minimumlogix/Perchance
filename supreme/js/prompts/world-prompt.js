@@ -56,7 +56,7 @@
             },
             characters: {
                 role: "Important Characters of this world",
-                rules: "Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include name, age, appearance, personality, role, and personal story/goal in one paragraph."
+                rules: "Provide at least 4 important characters.\nFormat each character EXACTLY as follows:\n- Character_Name: include realistic non-cliché name (grounded in setting/ethnicity; avoid tropes like Elara, Vael, Blackthorn), age, appearance, personality, role, and personal story/goal in one paragraph."
             },
             compile: function (section, wName, wSetting, wTones, wThemes, sectionNotes, lengthInstruction, existingContext) {
                 let config = window.prompts.worldPage.sectionGeneration[section];

@@ -359,6 +359,7 @@ MANDATORY WRITING & PROSE STYLE:
 "Drop the flowery prose and the moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing."
 - Sensory Grounding: Anchor every prompt directive in concrete, tangible physical sensations—focus on textures, touch, skin heat, breathing, pulse points, and distinct scents (rain, smoke, worn leather, cologne, clean sweat).
 - Avoid AI Tropes & Flowery Prose: Strictly avoid poetic fluff, purple prose, academic vocabulary, metaphors about souls/orbs, and moralizing filters. Use casual, grounded, authentic dialogue and punchy descriptions.
+- Real & Realistic Naming: Avoid overused fantasy name tropes (like Elara, Vael, Blackthorn). Generate non-cliché, realistic names—unique or common grounded in the specific world setting, culture, or ethnicity. Elves or fantasy species must not default to Elara or generic trope names.
 - Visceral Tension & Slow Burn: Emphasize spatial proximity, heavy unsaid tension, reluctant touch, friction, and high-stakes longing between the character and {{user}}.
 
 Rules for fields:

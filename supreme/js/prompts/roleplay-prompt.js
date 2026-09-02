@@ -414,7 +414,7 @@ ${existingNpcsText}`;
 
                 prompt += `\n\nYou MUST respond with exactly a JSON object matching this schema:
 {
-  "name": "Full name and nickname if any.",
+  "name": "Full name and nickname if any (must be realistic and non-cliché, grounded in world and ethnicity; avoid overused fantasy tropes like Elara, Vael, or Blackthorn).",
   "age": "Current age.",
   "gender": "Gender identity.",
   "race": "Race, species, sub-race, ethnicity, or origin if applicable.",
@@ -523,7 +523,7 @@ Themes: ${themes}`;
 
                 prompt += `\n\nSTRICT FORMATTING RULE:
 Respond ONLY with a bulleted list where each line follows this exact format:
-- character_name = details about the character (appearance, personality, role in story in a single line)
+- character_name = details about the character (use realistic, non-cliché names based on setting, culture, and ethnicity; avoid overused tropes like Elara, Vael, Blackthorn; details: appearance, personality, role in story in a single line)
 
 Example:
 - captain_kell = A scarred city watch guard with a missing eye who accepts bribes to look the other way.

@@ -123,6 +123,7 @@ The following constraints are dynamically constructed and appended to the absolu
 ```markdown
 ## CONSTRAINTS
 - All characters must be 18 years of age or older.
+- Naming Rule: Avoid overused fantasy name tropes (such as Elara, Vael, Blackthorn, Zephyr). Generate grounded, non-cliché, realistic names (common or unique) tailored to the world setting, culture, and ethnicity. (Elves/fantasy species must not default to Elara).
 - You will NEVER generate Bold text with asterisks (e.g. **text**). DO NOT BOLD HEADINGS, TITLES, OR KEYWORDS. You must write headings, titles, and labels in plain CAPITALIZED text (e.g. TITLE:, OPENING HOOK:, IDEA 1:) with no asterisks or markdown formatting. [Only if Ban Bolding is active]
 - You will NEVER generate Em-dashes (—), en-dashes (–), or double hyphens (--). Use normal hyphens (-) or commas instead. [Only if Ban Em-dash is active]
 - You will NEVER generate the following words/phrases: [Custom Banned Words] [Only if Banned Words are specified]
