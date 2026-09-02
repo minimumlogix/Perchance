@@ -110,29 +110,13 @@ clearOldImageStuff() =>
   return window.clearOldImageStuff();
 
 generateVisualStyleOptionsHtml() =>
-  function styleScore(style) {
-    let fantasy = style["meta:tags"]?.fantasyPortrait || 0;
-    let anime = style["meta:tags"]?.basicAnime || 0;
-    let anthro = style["meta:tags"]?.furryOil || 0;
-    let digital = style["meta:tags"]?.digitalPainting || 0;
-    let cinematic = style["meta:tags"]?.cinematic || 0;
-    return anime*1.0 + cinematic*0.9 + anthro*0.8 + fantasy*0.7 + digital*0.7;
-  }
-  return visualStyles.selectAll.sort((a,b) => styleScore(b)-styleScore(a)).map(s => `<option>${s.getName}</option>`).join("");
+  return window.generateVisualStyleOptionsHtml ? window.generateVisualStyleOptionsHtml() : "";
 
 addStyleToPrompt(prompt) =>
-  let originalWindowInput = window.input;
-  window.input = {description:prompt};
-  let result = visualStyles[visualStyleEl.value].prompt.evaluateItem;
-  window.input = originalWindowInput;
-  return result;
+  return window.addStyleToPrompt ? window.addStyleToPrompt(prompt) : prompt;
 
 addStyleToNegative(negative) =>
-  let originalWindowInput = window.input;
-  window.input = {negative};
-  let result = visualStyles[visualStyleEl.value].negative.evaluateItem;
-  window.input = originalWindowInput;
-  return result;
+  return window.addStyleToNegative ? window.addStyleToNegative(negative) : negative;
 
 // ==========================================
 // 6. DATA LISTS

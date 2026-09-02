@@ -344,9 +344,27 @@
           </select>
         </div>
         <div class="c-settings-box" style="margin: 0; padding: 4px 8px;">
+          <span class="c-settings-box__label" style="font-size: 0.85rem;"><i class="bi bi-person-bounding-box"></i> Framing:</span>
+          <select id="imageFramingEl" class="c-select c-select--compact">
+            <option value="portrait">Portrait (Upper Body)</option>
+            <option value="fullbody">Full Body</option>
+          </select>
+        </div>
+        <div class="c-settings-box" style="margin: 0; padding: 4px 8px;">
           <span class="c-settings-box__label" style="font-size: 0.85rem;"><i class="bi bi-palette-fill"></i> Style:</span>
           <select id="visualStyleEl" class="c-select c-select--compact">
-            [generateVisualStyleOptionsHtml()]
+            <option value="painterly_anime">Painterly Anime</option>
+            <option value="vintage_anime">Vintage Anime</option>
+            <option value="manga">Manga</option>
+            <option value="korean_manhwa">Korean Manhwa</option>
+            <option value="studio_ghibli">Studio Ghibli</option>
+            <option value="disney">Disney</option>
+            <option value="oil_painting">Oil Painting</option>
+            <option value="casual_photo">Casual Photo</option>
+            <option value="cinematic_photo">Cinematic Photo</option>
+            <option value="3d_game">3D Game</option>
+            <option value="2d_game_sprite">2D Game Sprite</option>
+            <option value="pixel_art">Pixel Art</option>
           </select>
         </div>
         <button id="generateImagesBtn" class="c-button c-button--generate" onclick="generateImagesSection()"><i class="bi bi-images"></i> generate images</button>

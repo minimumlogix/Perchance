@@ -304,6 +304,46 @@ window.onArtPromptInput = function(val) {
 };
 
 /* ===========================
+   ART STYLE & KEYWORD HELPERS
+=========================== */
+
+window.stripArtStyleKeywords = function (prompt) {
+    if (!prompt) return "";
+    const styleKeywordsRegex = /\b(?:anime|vintage anime|80s anime|retro anime|manga|screentone|manhwa|korean manhwa|webtoon|ghibli|studio ghibli|disney|oil painting|impasto|chiaroscuro|photorealistic|photo|photograph|photography|candid photo|cinematic photo|cinematic film still|cinematic portrait|cinematic lighting|3d render|3d game|unreal engine|cgi|2d game|game sprite|pixel art|8-bit|16-bit|illustration|digital art|drawing|sketch|artwork|masterpiece)\b/gi;
+    return prompt
+        .replace(styleKeywordsRegex, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s*,\s*,\s*/g, ", ")
+        .replace(/^[\s,]+|[\s,]+$/g, "");
+};
+
+window.generateVisualStyleOptionsHtml = function () {
+    if (!window.CDG_ART_STYLES) return "";
+    return Object.entries(window.CDG_ART_STYLES).map(([key, item]) => 
+        `<option value="${key}">${item.name}</option>`
+    ).join("");
+};
+
+window.addStyleToPrompt = function (prompt) {
+    let visualStyleEl = document.getElementById("visualStyleEl");
+    let selectedKey = visualStyleEl ? visualStyleEl.value : "painterly_anime";
+    let styleObj = (window.CDG_ART_STYLES && window.CDG_ART_STYLES[selectedKey]) || (window.CDG_ART_STYLES && window.CDG_ART_STYLES["painterly_anime"]);
+    let suffix = styleObj ? styleObj.promptSuffix : "";
+    if (!suffix) return prompt || "";
+    return prompt ? `${prompt}, ${suffix}` : suffix;
+};
+
+window.addStyleToNegative = function (negative) {
+    let visualStyleEl = document.getElementById("visualStyleEl");
+    let selectedKey = visualStyleEl ? visualStyleEl.value : "painterly_anime";
+    let styleObj = (window.CDG_ART_STYLES && window.CDG_ART_STYLES[selectedKey]) || (window.CDG_ART_STYLES && window.CDG_ART_STYLES["painterly_anime"]);
+    let styleNegative = styleObj ? styleObj.negativePrompt : "";
+    if (!negative) return styleNegative || "";
+    if (!styleNegative) return negative;
+    return `${negative}, ${styleNegative}`;
+};
+
+/* ===========================
    EXECUTE IMAGE SECTION GENERATION (AI JSON STEP)
 =========================== */
 
@@ -315,7 +355,10 @@ window.generateImagesSection = async function () {
     let artLoadingBanner = document.getElementById("artLoadingBanner");
     let artLoadingText = document.getElementById("artLoadingText");
     let imageTypeEl = document.getElementById("imageTypeEl");
+    let imageFramingEl = document.getElementById("imageFramingEl");
+
     let imageType = imageTypeEl ? imageTypeEl.value : "character";
+    let imageFraming = imageFramingEl ? imageFramingEl.value : "portrait";
 
     let descText = (outputEl && outputEl.innerText.trim()) || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText : "");
     if (!descText) {
@@ -338,20 +381,31 @@ window.generateImagesSection = async function () {
 
     let promptInstruction = "";
     if (imageType === "character") {
+        let framingInstruction = imageFraming === "fullbody"
+            ? "FRAMING REQUIREMENT: Full body framing (full length head to toe shot). The 'visual_appearance' and 'visual_keyphrases' MUST describe the character from head to toe, including posture, full outfit, legs, and footwear."
+            : "FRAMING REQUIREMENT: Portrait framing (upper body / head & shoulders / chest up shot). The 'visual_appearance' and 'visual_keyphrases' MUST describe ONLY upper body features, facial details, hair, eyes, facial expression, collar, chest/shoulders, and upper clothing. Do NOT include lower body or footwear details.";
+
         promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for individual character portraits.
+${framingInstruction}
+
+CRITICAL PROMPT RULES:
+1. The 'visual_keyphrases' MUST describe ONLY physical subject matter, framing, pose, character features, clothing/attire, background/environment, and lighting.
+2. NEVER include any art style, medium, or rendering keywords in 'visual_keyphrases' (e.g., do NOT include 'anime', 'manga', 'manhwa', 'painting', 'oil painting', 'photo', 'photorealistic', '3D render', 'CGI', 'pixel art', 'sprite', 'illustration', 'drawing', 'sketch', 'digital art', 'masterpiece', 'cinematic portrait'). The art style will be automatically appended as a suffix.
+
 You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
 {
   "type": "character",
   "title": "Character Visual Profile",
+  "framing": "${imageFraming}",
   "characters": [
     {
       "name": "Character Name",
       "gender": "Gender",
       "race": "Race or Species",
-      "visual_appearance": "Brief summary of physical appearance (hair, eyes, skin, build, distinct traits)",
+      "visual_appearance": "Brief summary of physical appearance",
       "outfit": "Clothing, uniform, armor, or attire details",
       "expression_or_pose": "Characteristic expression, gaze, posture",
-      "visual_keyphrases": "rich comma-separated visually descriptive keyphrases for text-to-image AI describing race, gender, age, face, hair, outfit, lighting, textures, cinematic portrait composition"
+      "visual_keyphrases": "comma-separated descriptive keyphrases for text-to-image AI describing subject, ${imageFraming === 'fullbody' ? 'full body head to toe' : 'upper body portrait'}, facial features, hair, clothing, lighting, environment (NO art style words)"
     }
   ]
 }
@@ -361,16 +415,23 @@ Text:
 ${textToBeSummarized}
 ---`;
     } else if (imageType === "group") {
-        promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for a GROUP SCENE / CAST INTERACTION photo.
+        let groupFramingText = imageFraming === "fullbody" ? "full body wide shot of characters together head to toe" : "medium shot upper body group composition";
+        promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for a GROUP SCENE / CAST INTERACTION.
+
+CRITICAL PROMPT RULES:
+1. The 'visual_keyphrases' MUST describe ONLY physical subjects, physical interaction, framing, outfits, environment, and lighting.
+2. NEVER include any art style or rendering medium keywords in 'visual_keyphrases' (e.g., do NOT include 'anime', 'manga', 'painting', 'photo', '3D render', 'pixel art', 'digital art', 'masterpiece').
+
 You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
 {
   "type": "group",
   "title": "Group Scene Title",
+  "framing": "${imageFraming}",
   "characters_present": ["Character 1", "Character 2"],
   "scene_description": "What is happening between the characters in this scene",
   "setting_and_atmosphere": "The physical environment, mood, lighting, and weather",
-  "composition": "Framing and spatial layout of the group (e.g. wide shot, two characters close together, dramatic depth)",
-  "visual_keyphrases": "rich comma-separated visually descriptive keyphrases for text-to-image AI capturing the full group together in the environment, physical proximity, interactions, dynamic poses, detailed costumes, atmospheric lighting, high resolution group shot"
+  "composition": "Framing and spatial layout of the group (${groupFramingText})",
+  "visual_keyphrases": "comma-separated descriptive keyphrases capturing physical interaction, ${groupFramingText}, detailed costumes, atmospheric lighting, environment (NO art style words)"
 }
 Do NOT generate separate prompts for individual characters; generate a unified group visual prompt.
 Text:
@@ -379,14 +440,19 @@ ${textToBeSummarized}
 ---`;
     } else if (imageType === "poster") {
         promptInstruction = `Analyze the character/scenario text below and generate a structured visual prompt configuration for a cinematic STORY / MOVIE POSTER.
+
+CRITICAL PROMPT RULES:
+1. The 'visual_keyphrases' MUST describe ONLY thematic subject elements, composition layout, key character presence, dramatic lighting, and symbolic environment details.
+2. NEVER include any art style or rendering medium keywords in 'visual_keyphrases' (e.g., do NOT include 'anime', 'manga', 'painting', 'photo', '3D render', 'pixel art', 'digital art').
+
 You MUST output ONLY a single raw valid JSON object (no markdown formatting, no preamble or trailing text) matching this exact schema:
 {
   "type": "poster",
   "title": "Story / Scenario Title",
   "tagline": "Compelling short tagline or theme",
   "theme_and_atmosphere": "The overarching mood, emotional stakes, and world atmosphere",
-  "composition": "Cinematic poster layout (e.g. dramatic focal points, contrasting lighting, layered background, high-tension atmosphere)",
-  "visual_keyphrases": "cinematic movie poster, comma-separated visually descriptive keyphrases for text-to-image AI, dramatic lighting, iconic composition, rich textures, moody ambiance, epic visual storytelling"
+  "composition": "Cinematic poster layout, dramatic focal points, contrasting lighting, layered background",
+  "visual_keyphrases": "comma-separated descriptive keyphrases describing symbolic subject imagery, dramatic composition, mood, atmospheric lighting (NO art style words)"
 }
 Text:
 ---
@@ -427,7 +493,8 @@ ${textToBeSummarized}
             let physicalAppearanceText = ((descText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)\n/s) || [])[1] || "").trim();
             finalConfig = {
                 type: "character",
-                title: "Character Portrait",
+                title: "Character Visual Profile",
+                framing: imageFraming,
                 characters: [{
                     name: "Main Character",
                     gender: "",
@@ -435,18 +502,19 @@ ${textToBeSummarized}
                     visual_appearance: physicalAppearanceText,
                     outfit: "",
                     expression_or_pose: "",
-                    visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || physicalAppearanceText || "character portrait, detailed features, cinematic lighting"
+                    visual_keyphrases: window.stripArtStyleKeywords(textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ")) || physicalAppearanceText || "character portrait, detailed features, expressive eyes"
                 }]
             };
         } else if (imageType === "group") {
             finalConfig = {
                 type: "group",
                 title: "Group Scene",
+                framing: imageFraming,
                 characters_present: ["Main Cast"],
                 scene_description: "Cast gathered together in the scenario setting.",
                 setting_and_atmosphere: "Atmospheric roleplay setting",
-                composition: "Medium wide group composition",
-                visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || "group photo of characters together, cinematic lighting, detailed costumes"
+                composition: imageFraming === "fullbody" ? "Full body group composition" : "Medium shot upper body group composition",
+                visual_keyphrases: window.stripArtStyleKeywords(textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ")) || "group of characters together, detailed costumes, ambient lighting"
             };
         } else {
             finalConfig = {
@@ -455,7 +523,7 @@ ${textToBeSummarized}
                 tagline: "A Tale of High Stakes & Unspoken Longing",
                 theme_and_atmosphere: "Dramatic cinematic roleplay atmosphere",
                 composition: "Iconic cinematic poster arrangement",
-                visual_keyphrases: textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ") || "cinematic story poster, dramatic lighting, high tension, detailed composition"
+                visual_keyphrases: window.stripArtStyleKeywords(textResult.replace(/```(?:json)?|```/g, "").trim().replace(/\n+/g, " ")) || "dramatic storytelling scene, high tension, detailed environment"
             };
         }
     }
@@ -476,6 +544,8 @@ window.generateImages = function () {
     let imagesEl = document.getElementById("imagesEl");
     let regenImagesBtn = document.getElementById("regenImagesBtn");
     let imagePromptTextarea = document.getElementById("imagePromptTextarea");
+    let imageFramingEl = document.getElementById("imageFramingEl");
+    let imageFraming = imageFramingEl ? imageFramingEl.value : "portrait";
 
     let currentPrompt = "";
     let appearanceExtra = "";
@@ -497,6 +567,19 @@ window.generateImages = function () {
 
     if (!currentPrompt) return;
 
+    // Clean any accidental style keywords from the base prompt
+    currentPrompt = window.stripArtStyleKeywords(currentPrompt);
+
+    // Apply framing guidance if not already present
+    let framingPrefix = (imageFraming === "fullbody")
+        ? "full body shot, full length figure, head to toe"
+        : "upper body portrait, chest up, head and shoulders";
+
+    let lowerPrompt = currentPrompt.toLowerCase();
+    if (!lowerPrompt.includes("portrait") && !lowerPrompt.includes("full body") && !lowerPrompt.includes("head and shoulders") && !lowerPrompt.includes("full length")) {
+        currentPrompt = `${framingPrefix}, ${currentPrompt}`;
+    }
+
     if (regenImagesBtn) regenImagesBtn.disabled = false;
 
     let imageHtml = "";
@@ -506,9 +589,12 @@ window.generateImages = function () {
             basePrompt += " - " + appearanceExtra;
         }
 
+        let styledPrompt = window.addStyleToPrompt(basePrompt);
+        let styledNegative = window.addStyleToNegative("");
+
         let promptData = {
-            prompt: window.addStyleToPrompt(basePrompt),
-            negativePrompt: window.addStyleToNegative(""),
+            prompt: styledPrompt,
+            negativePrompt: styledNegative,
             resolution: "512x768",
             style: "margin:0.25rem",
         };
@@ -557,41 +643,6 @@ window.clearOldImageStuff = function () {
             <div class="c-chat-empty-subtext">Generate a character description above, then hit 'generate images' to see 6 stylized portraits.</div>
           </div>`;
     }
-};
-
-window.generateVisualStyleOptionsHtml = function () {
-    if (!window.visualStyles || !window.visualStyles.selectAll) return "";
-
-    function styleScore(style) {
-        let fantasy = style["meta:tags"]?.fantasyPortrait || 0;
-        let anime = style["meta:tags"]?.basicAnime || 0;
-        let anthro = style["meta:tags"]?.furryOil || 0;
-        let digital = style["meta:tags"]?.digitalPainting || 0;
-        let cinematic = style["meta:tags"]?.cinematic || 0;
-        return anime * 1.0 + cinematic * 0.9 + anthro * 0.8 + fantasy * 0.7 + digital * 0.7;
-    }
-
-    return window.visualStyles.selectAll.sort((a, b) => styleScore(b) - styleScore(a)).map(s => `<option>${s.getName}</option>`).join("");
-};
-
-window.addStyleToPrompt = function (prompt) {
-    if (!window.visualStyles) return prompt;
-    let visualStyleEl = document.getElementById("visualStyleEl");
-    let originalWindowInput = window.input;
-    window.input = { description: prompt };
-    let result = window.visualStyles[visualStyleEl ? visualStyleEl.value : "default"].prompt.evaluateItem;
-    window.input = originalWindowInput;
-    return result;
-};
-
-window.addStyleToNegative = function (negative) {
-    if (!window.visualStyles) return negative;
-    let visualStyleEl = document.getElementById("visualStyleEl");
-    let originalWindowInput = window.input;
-    window.input = { negative };
-    let result = window.visualStyles[visualStyleEl ? visualStyleEl.value : "default"].negative.evaluateItem;
-    window.input = originalWindowInput;
-    return result;
 };
 
 /* ===========================
