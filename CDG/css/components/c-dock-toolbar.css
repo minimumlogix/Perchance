@@ -1,0 +1,306 @@
+/* ===========================
+   COMPONENT: DOCKING TOOLBAR
+=========================== */
+
+.c-dock-container {
+  position: fixed;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--z-floating);
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.c-dock-container.is-hidden {
+  transform: translate(-160%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.c-dock-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 7px;
+  background-color: rgba(18, 20, 23, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.15);
+  user-select: none;
+}
+
+/* ===========================
+   DOCK BUTTONS
+=========================== */
+
+.c-dock-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+  outline: none;
+  transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.c-dock-btn:hover {
+  color: var(--color-text-main);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.c-dock-btn:active {
+  transform: scale(0.92);
+}
+
+/* ACTIVE STATE & ACCENT INDICATOR */
+.c-dock-btn.is-active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.c-dock-btn.is-active::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3.5px;
+  height: 18px;
+  background-color: var(--color-primary);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8), 0 0 3px rgba(34, 197, 94, 0.9);
+}
+
+/* ===========================
+   DIVIDERS
+=========================== */
+
+.c-dock-divider {
+  width: 22px;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.12);
+  margin: 2px 0;
+}
+
+/* ===========================
+   TOOLTIPS
+=========================== */
+
+.c-dock-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.95);
+  background-color: rgba(26, 29, 33, 0.96);
+  color: var(--color-text-main);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: var(--z-tooltip);
+}
+
+.c-dock-btn[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+/* ===========================
+   UNHIDE DOCK TOGGLE
+=========================== */
+
+.c-dock-unhide-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(18, 20, 23, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+  z-index: calc(var(--z-floating) - 1);
+  box-shadow: 2px 4px 14px rgba(0, 0, 0, 0.35);
+  transition: width var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-base), opacity var(--transition-base);
+}
+
+.c-dock-unhide-btn:hover {
+  width: 28px;
+  color: var(--color-primary);
+  background-color: rgba(28, 30, 35, 0.98);
+}
+
+.c-dock-unhide-btn.is-hidden {
+  transform: translate(-100%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===========================
+   SWITCHABLE TAB PAGES
+=========================== */
+
+.c-tab-page {
+  width: 100%;
+  animation: cTabFadeIn var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.c-tab-page.u-hidden {
+  display: none !important;
+}
+
+@keyframes cTabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   TOOL PAGES STYLES
+=========================== */
+
+.c-tool-page-header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.c-tool-page-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.c-tool-page-title i {
+  color: var(--color-primary);
+}
+
+.c-tool-page-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.c-tool-card {
+  background-color: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.c-tool-card__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.c-tool-card__desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.c-tool-preview-box {
+  background-color: var(--color-bg-base);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.c-tool-seed-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-sm);
+}
+
+.c-tool-seed-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background-color: var(--color-bg-box);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-main);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.c-tool-seed-tag:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ===========================
+   RESPONSIVE ADJUSTMENTS
+=========================== */
+
+@media (max-width: 768px) {
+  .c-dock-container {
+    left: var(--space-xs);
+  }
+  .c-dock-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+  .c-dock-btn[data-tooltip]::after {
+    display: none;
+  }
+}

@@ -31,7 +31,9 @@
       const stylesheets = [
         "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css",
         "css/main.css",
-        "css/components/c-tag-selector.css"
+        "css/components/c-tag-selector.css",
+        "css/components/c-dock-toolbar.css",
+        "css/components/c-tools.css"
       ];
       stylesheets.forEach(href => {
         const link = document.createElement("link");
@@ -136,6 +138,58 @@
           str.evaluateItem = str;
           return str;
         };
+
+        mocks['ai'] = function(opts) {
+          let instructionText = typeof opts === 'string' ? opts : (Array.isArray(opts?.instruction) ? opts.instruction[0] : (opts?.instruction || ''));
+          let isStructuredJson = instructionText.includes("schema") || instructionText.includes("roleplay_tone");
+
+          let responseText = "";
+          if (isStructuredJson) {
+            responseText = JSON.stringify({
+              roleplay_tone: ["slow_burn", "enemies_to_lovers", "gritty_realism", "sensual"],
+              world_setting: ["contemporary_urban", "underworld_noir"],
+              roleplay_idea: "Create a character profile for a sharp-witted fixer operating in the city's underbelly...",
+              behaviour_idea: "Write a behavior guide depicting their speech as casual, dry, and direct...",
+              scenario_idea: "Set up a scenario in a rain-drenched safehouse apartment...",
+              start_idea: "Write a dialogue scene where they tend to {{user}}'s cut knuckles..."
+            }, null, 2);
+          } else if (instructionText.includes("Generation Review Bot")) {
+            responseText = "### Critique & Polish Analysis\n\n**1. Strengths:** The concept has compelling core tension and clear stakes.\n**2. Sensory Grounding:** Anchor interactions in tactile textures—describe the damp chill in the air, the friction of worn fabric, or hesitant touch.\n**3. Authentic Voice:** Ensure dialogue remains conversational and grounded in physical cues.\n\n*Ready to polish any specific section? Just send it over!*";
+          } else if (instructionText.includes("Roleplay Test Bot")) {
+            responseText = "*I glance up as the door clicks shut, leaning back against the wooden counter. The rain drums heavily against the window behind me.*\n\n\"You took your time getting here,\" *I say quietly, watching you with an unreadable expression.* \"Tell me you weren't followed.\"";
+          } else if (instructionText.includes("Dialogue & Banter Coach")) {
+            responseText = "Here is an authentic, tension-laced banter exchange:\n\n\"You're standing too close.\"\n\"And you're not backing away. Are we going to keep stating the obvious, or are we going to finish this?\"";
+          } else if (instructionText.includes("Lore & Worldbuilder")) {
+            responseText = "### World & Lore Dossier\n\n- **Underground Syndicate:** *The Ashfall Exchange*, brokers of illicit memories and forged credentials.\n- **City Atmosphere:** Neon lanterns bleeding into constant low-hanging smog; steam vents hissing beneath wet iron grates.\n- **Local Rumor:** Word on the street is the district magistrate has been replaced by a body double.";
+          } else if (instructionText.includes("Image Tag Prompt Writer") || instructionText.includes("SeaArt") || instructionText.includes("Danbooru-style")) {
+            responseText = "masterpiece, best quality, korean webtoon, anime illustration, upper body, close-up, portrait, centered composition, adult woman, big bust woman, long black hair, layered hair, amber eyes, sharp eyes, fair skin, black military jacket, silver earrings, hand touching hair, looking at viewer, confident smile, warm cinematic lighting, blurred modern city background";
+          } else {
+            responseText = "I've analyzed your prompt. Here are focused, sensory-grounded creative directions and recommendations tailored to your setup.";
+          }
+
+          let promise = new Promise((resolve) => {
+            let words = responseText.split(" ");
+            let i = 0;
+            let current = "";
+            let interval = setInterval(() => {
+              if (i < words.length) {
+                current += (i === 0 ? "" : " ") + words[i];
+                if (typeof opts?.onChunk === "function") {
+                  opts.onChunk({ textChunk: words[i], fullTextSoFar: current });
+                }
+                i++;
+              } else {
+                clearInterval(interval);
+                let resObj = new String(current);
+                resObj.text = current;
+                resObj.generatedText = current;
+                resolve(resObj);
+              }
+            }, 25);
+            promise.stop = () => clearInterval(interval);
+          });
+          return promise;
+        };
       }
 
       plugins.forEach(name => {
@@ -165,6 +219,8 @@
         "js/tag-selector.js",
         "js/ui.js",
         "js/generator.js",
+        "js/tools-engine.js",
+        "js/navigation.js",
         "js/app.js"
       ];
       scripts.forEach(src => {
@@ -179,11 +235,32 @@
 </head>
 <body>
 
+<!-- DOCKING TOOLBAR (SWITCHABLE TABS) -->
+<div id="dockContainer" class="c-dock-container is-hidden" aria-label="Docking Navigation Toolbar">
+  <div class="c-dock-bar">
+    <div id="dockNavItems" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <!-- Populated dynamically by navigation.js -->
+    </div>
+    <div class="c-dock-divider"></div>
+    <button type="button" id="dockHideBtn" class="c-dock-btn" data-tooltip="Hide Toolbar" aria-label="Hide Toolbar">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+  </div>
+</div>
+
+<!-- UNHIDE DOCK BUTTON -->
+<button type="button" id="dockUnhideBtn" class="c-dock-unhide-btn" title="Open Toolbar" aria-label="Open Toolbar">
+  <i class="bi bi-chevron-right"></i>
+</button>
+
 <!-- HEADER -->
 <h1 class="u-h1">AI Roleplay Description Generator</h1>
 
 <!-- MAIN GENERATOR CONTAINER -->
 <div class="l-container"> 
+  
+  <!-- TAB PAGE 1: MAIN GENERATOR -->
+  <div id="page-main" class="c-tab-page"> 
   
   <!-- CHARACTER DESCRIPTION SECTION -->
   <div class="c-textarea-wrapper">
@@ -379,12 +456,259 @@
     </div>
   </div>
 
+  <!-- FOOTER & CREDITS -->
+  <div id="commentsCtn" class="c-comments"></div>
+  <p class="u-text-subtle u-mt-lg">This generator uses a combination of the <a href="https://perchance.org/ai-text-plugin" target="_blank">ai-text-plugin</a> and the <a href="https://perchance.org/text-to-image-plugin" target="_blank">text-to-image-plugin</a>.</p>
+
+  </div> <!-- /#page-main -->
+
+  <!-- TAB PAGE 2: IDEA & PLOT LAB -->
+  <div id="page-ideas" class="c-tab-page u-hidden">
+    <div class="c-tool-page-header">
+      <div class="c-tool-page-title"><i class="bi bi-lightbulb-fill"></i> Idea & Plot Lab</div>
+      <div class="c-tool-page-subtitle">Brainstorm roleplay premises, explore random plot directions with the YAML engine, or spark creativity with seed words.</div>
+    </div>
+
+    <!-- YAML PLOT ENGINE WORKBENCH -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-dice-5-fill"></i> YAML Plot Generator</div>
+      <div class="c-tool-card__desc">Generate complete narrative hooks and premise outlines using the built-in procedural plot generator.</div>
+      
+      <div id="ideaLabPlotPreview" class="c-tool-preview-box u-mb-md">Click 'Roll Plot Idea' to generate an engaging storyline premise...</div>
+      
+      <div class="l-flex-row" style="gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="c-button c-button--generate" onclick="window.rollIdeaLabPlot()"><i class="bi bi-stars"></i> Roll Plot Idea</button>
+        <button type="button" id="ideaLabCopyBtn" class="c-button c-button--clear" onclick="window.copyIdeaLabPlot()"><i class="bi bi-copy"></i> Copy Premise</button>
+        <button type="button" class="c-button c-button--clear" onclick="window.applyIdeaLabPlot('customFeaturesEl')"><i class="bi bi-person-fill-add"></i> Send to Character Notes</button>
+        <button type="button" class="c-button c-button--clear" onclick="window.applyIdeaLabPlot('customScenarioFeaturesEl')"><i class="bi bi-journal-text"></i> Send to Scenario Notes</button>
+      </div>
+    </div>
+
+    <!-- AI CONCEPT STUDIO -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-cpu-fill"></i> AI Concept Studio</div>
+      <div class="c-tool-card__desc">Launch the multimodal AI concept generator to transform quick keywords or uploaded character reference images into a full character spec.</div>
+      <div class="l-flex-row" style="gap: 8px;">
+        <button type="button" class="c-button c-button--generate" onclick="window.openAiIdeaModal('customFeaturesEl')"><i class="bi bi-magic"></i> Launch AI Concept Studio</button>
+      </div>
+    </div>
+
+    <!-- CREATIVITY SEED SPARKS -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-lightning-charge-fill"></i> Seed Word Inspiration</div>
+      <div class="c-tool-card__desc">Click any spark word to append it to your active character notes.</div>
+      <div id="ideaLabSeedsCtn" class="c-tool-seed-tags"></div>
+      <div class="u-mt-md">
+        <button type="button" class="c-button c-button--clear" onclick="window.refreshIdeaLabSeeds()"><i class="bi bi-arrow-clockwise"></i> Reroll Seed Sparks</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB PAGE 3: MODULAR AI TOOLS & GEMS -->
+  <div id="page-tools" class="c-tab-page u-hidden">
+    
+    <!-- CATALOG VIEW -->
+    <div id="toolsCatalogView" class="c-tools-catalog">
+      <div class="c-tools-header">
+        <div class="c-tools-header__info">
+          <div class="c-tools-header__title"><i class="bi bi-robot"></i> Modular AI Tools & Gems</div>
+          <div class="c-tools-header__desc">Specialized AI generators and roleplay assistants. Choose a built-in bot or craft your own custom tool with memory access.</div>
+        </div>
+        <div class="c-tools-header__actions">
+          <button type="button" class="c-button c-button--generate" onclick="window.openToolEditorModal()">
+            <i class="bi bi-plus-lg"></i> Create New Tool
+          </button>
+        </div>
+      </div>
+
+      <!-- SEARCH & FILTER BAR -->
+      <div class="c-tools-search-bar">
+        <div class="c-tools-search-input-wrapper">
+          <i class="bi bi-search"></i>
+          <input type="text" id="toolsSearchInput" class="c-tools-search-input" placeholder="Search tools by name, purpose, or instruction...">
+        </div>
+      </div>
+
+      <!-- TOOLS GRID -->
+      <div id="toolsGrid" class="c-tools-grid"></div>
+    </div>
+
+    <!-- CHATBOT VIEW -->
+    <div id="toolsChatView" class="c-tool-chat u-hidden">
+      <!-- CHAT HEADER -->
+      <div class="c-tool-chat-header">
+        <div class="c-tool-chat-header__left">
+          <button type="button" class="c-tool-chat-back-btn" onclick="window.closeToolChat()" title="Back to tools catalog">
+            <i class="bi bi-chevron-left"></i> All Tools
+          </button>
+          <div class="c-tool-chat-meta">
+            <div id="toolChatHeaderAvatar" class="c-tool-chat-avatar"><i class="bi bi-robot"></i></div>
+            <div class="c-tool-chat-title-group">
+              <div id="toolChatHeaderName" class="c-tool-chat-name">Assistant</div>
+              <div id="toolChatHeaderDesc" class="c-tool-chat-desc">AI Generator</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="c-tool-chat-header__right">
+          <!-- ART STYLE SELECTOR (FOR PROMPT WRITER & STYLE-BASED TOOLS) -->
+          <div id="toolChatArtStyleCtn" class="c-tool-chat-artstyle-wrapper u-hidden" title="Select Art Style for SeaArt Danbooru tag prompts">
+            <span class="c-tool-chat-artstyle-label">
+              <i class="bi bi-palette-fill" style="color: var(--color-primary);"></i> Style:
+            </span>
+            <select id="toolChatArtStyleSelect" class="c-tool-chat-artstyle-select" onchange="window.handleChatArtStyleChange(this.value)">
+            </select>
+          </div>
+
+          <!-- MEMORY ACCESS SWITCH -->
+          <div id="toolChatMemoryToggle" class="c-toggle-control" title="When enabled, assistant has access to your active Character and Scenario text from the main page">
+            <div class="c-toggle-switch"></div>
+            <span id="toolChatMemoryStatusLabel" class="c-toggle-control__label">
+              <i class="bi bi-slash-circle"></i> Memory: Off
+            </span>
+          </div>
+
+          <button type="button" class="c-chat-msg-action-btn" title="Clear chat history" onclick="window.clearChatHistory()">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CHAT FEED -->
+      <div id="toolChatFeed" class="c-tool-chat-feed"></div>
+
+      <!-- CHAT INPUT WRAPPER -->
+      <div class="c-tool-chat-input-wrapper">
+        <!-- IMAGE PREVIEW BAR -->
+        <div id="toolChatImagePreviewBar" class="c-chat-image-preview-bar u-hidden">
+          <img id="toolChatImagePreviewThumb" class="c-chat-image-preview-thumb" src="" alt="Thumbnail">
+          <span id="toolChatImagePreviewName" class="c-chat-image-preview-info">image.png</span>
+          <button type="button" class="c-chat-image-preview-remove" onclick="window.clearChatImage()" title="Remove image">&times;</button>
+        </div>
+
+        <div class="c-chat-input-row">
+          <input type="file" id="toolChatImageInput" accept="image/*" class="u-hidden">
+          <button type="button" class="c-chat-attach-btn" title="Attach reference image (Vision AI)" onclick="window.triggerChatImageUpload()">
+            <i class="bi bi-image"></i>
+          </button>
+          <textarea id="toolChatInput" class="c-chat-textarea" rows="1" placeholder="Message assistant..."></textarea>
+          <button type="button" id="toolChatSendBtn" class="c-chat-send-btn" title="Send message" onclick="window.sendToolChatMessage()">
+            <i class="bi bi-arrow-up"></i>
+          </button>
+          <button type="button" id="toolChatStopBtn" class="c-chat-stop-btn u-hidden" title="Stop generating" onclick="window.stopChatStreaming()">
+            <i class="bi bi-square-fill" style="font-size: 0.75rem;"></i>
+          </button>
+        </div>
+        <div class="c-tool-chat-disclaimer">
+          AI output may vary. Memory access connects to your active character description and scenario notes.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB PAGE 4: SETTINGS & PREFERENCES -->
+  <div id="page-settings" class="c-tab-page u-hidden">
+    <div class="c-tool-page-header">
+      <div class="c-tool-page-title"><i class="bi bi-gear-fill"></i> Settings & Preferences</div>
+      <div class="c-tool-page-subtitle">Configure default generation presets, themes, visual style defaults, and manage local storage.</div>
+    </div>
+
+    <!-- THEME CARD -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-palette-fill"></i> Appearance & Theme</div>
+      <div class="c-tool-card__desc">Choose your preferred visual theme. Preferences are saved automatically.</div>
+      <div class="l-flex-row" style="gap: 12px;">
+        <button type="button" id="settingThemeDarkBtn" class="c-button c-button--clear is-active" onclick="window.setTabTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark Mode</button>
+        <button type="button" id="settingThemeLightBtn" class="c-button c-button--clear" onclick="window.setTabTheme('light')"><i class="bi bi-brightness-high-fill"></i> Light Mode</button>
+      </div>
+    </div>
+
+    <!-- GENERATOR PREFERENCES -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-sliders"></i> Default Generation Presets</div>
+      <div class="c-tool-card__desc">Adjust your default lengths, cast counts, and narration perspective.</div>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Description Length</label>
+          <select id="settingDescLengthEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('descLength', this.value, 'descLengthEl')">
+            <option value="short">Short</option>
+            <option value="medium">Medium</option>
+            <option value="long">Long</option>
+            <option value="compact_detailed">Compact Detailed</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Main Cast Count</label>
+          <select id="settingMainCastEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('mainCast', this.value, 'mainCastEl')">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Background Cast Count</label>
+          <select id="settingBgCastEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('bgCast', this.value, 'bgCastEl')">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Scenario Perspective</label>
+          <select id="settingScenarioPerspectiveEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('scenarioPerspective', this.value, 'scenarioPerspectiveEl')">
+            <option value="thirdperson">Third Person (She saw them...)</option>
+            <option value="firstperson">First Person (I saw you...)</option>
+            <option value="secondperson">Second Person (You see her...)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Roleplay Start Perspective</label>
+          <select id="settingRoleplayStartPerspectiveEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('roleplayStartPerspective', this.value, 'roleplayStartPerspectiveEl')">
+            <option value="firstperson">First Person (*I saw you...* "Why are you early?")</option>
+            <option value="thirdperson">Third Person (*She saw you...* "Why is he early?")</option>
+            <option value="secondperson">Second Person (*You saw her...* "Why are you early?")</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="c-settings-box__label" style="display: block; margin-bottom: 6px;">Default Art Framing</label>
+          <select id="settingImageFramingEl" class="c-select u-w-full" onchange="window.updateSettingFromTab('imageFraming', this.value, 'imageFramingEl')">
+            <option value="portrait">Portrait (Upper Body)</option>
+            <option value="fullbody">Full Body</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORAGE & CACHE MANAGEMENT -->
+    <div class="c-tool-card">
+      <div class="c-tool-card__title"><i class="bi bi-database-fill-gear"></i> Storage & Actions</div>
+      <div class="c-tool-card__desc">Manage local storage cache, reset inputs, or export your character data.</div>
+      
+      <div class="l-flex-row" style="gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="c-button c-button--export" onclick="window.exportAsMarkdown()"><i class="bi bi-download"></i> Export Everything (Markdown)</button>
+        <button type="button" class="c-button c-button--clear-all" onclick="window.clearAllContent()"><i class="bi bi-trash3-fill"></i> Clear All Content</button>
+      </div>
+    </div>
+  </div>
+
 </div>
-
-<!-- FOOTER & CREDITS -->
-<div id="commentsCtn" class="c-comments"></div>
-
-<p class="u-text-subtle u-mt-lg">This generator uses a combination of the <a href="https://perchance.org/ai-text-plugin" target="_blank">ai-text-plugin</a> and the <a href="https://perchance.org/text-to-image-plugin" target="_blank">text-to-image-plugin</a>.</p>
 
 <!-- DARK MODE WIDGET -->
 <div class="c-floating-widget c-floating-widget--bottom-left">
@@ -395,6 +719,59 @@
 <div class="c-floating-widget c-floating-widget--bottom-right">
   <div id="feedbackCommentsCtn"></div>
   <button id="feedbackBtn893745ykfuhd" class="c-button c-button--floating" onclick="window.toggleFeedbackModal(this);"><i class="bi bi-chat-dots-fill"></i> feedback</button>
+</div>
+
+<!-- TOOL BUILDER / EDITOR MODAL -->
+<div id="toolEditorModalOverlay" class="c-dialog-overlay u-hidden" onclick="if(event.target===this) window.closeToolEditorModal()">
+  <div class="c-dialog" style="max-width: 580px;">
+    <div class="c-dialog__header">
+      <span id="toolEditorModalTitle">Create New AI Tool</span>
+    </div>
+    <div class="c-dialog__body">
+      <div class="u-mb-md">
+        <label class="c-settings-box__label" style="display: block; margin-bottom: 4px;">Tool Name *</label>
+        <input type="text" id="toolEditorNameInput" class="c-input u-w-full" placeholder="e.g., Character Interviewer or Lore Architect">
+      </div>
+
+      <div class="u-mb-md">
+        <label class="c-settings-box__label" style="display: block; margin-bottom: 4px;">Icon</label>
+        <div class="c-tool-icon-picker">
+          <button type="button" class="c-tool-icon-option is-selected" data-icon="bi-robot" onclick="window.selectToolModalIcon('bi-robot')"><i class="bi bi-robot"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-clipboard-check-fill" onclick="window.selectToolModalIcon('bi-clipboard-check-fill')"><i class="bi bi-clipboard-check-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-chat-heart-fill" onclick="window.selectToolModalIcon('bi-chat-heart-fill')"><i class="bi bi-chat-heart-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-chat-quote-fill" onclick="window.selectToolModalIcon('bi-chat-quote-fill')"><i class="bi bi-chat-quote-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-compass-fill" onclick="window.selectToolModalIcon('bi-compass-fill')"><i class="bi bi-compass-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-lightbulb-fill" onclick="window.selectToolModalIcon('bi-lightbulb-fill')"><i class="bi bi-lightbulb-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-stars" onclick="window.selectToolModalIcon('bi-stars')"><i class="bi bi-stars"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-shield-shaded" onclick="window.selectToolModalIcon('bi-shield-shaded')"><i class="bi bi-shield-shaded"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-palette-fill" onclick="window.selectToolModalIcon('bi-palette-fill')"><i class="bi bi-palette-fill"></i></button>
+          <button type="button" class="c-tool-icon-option" data-icon="bi-book-half" onclick="window.selectToolModalIcon('bi-book-half')"><i class="bi bi-book-half"></i></button>
+        </div>
+      </div>
+
+      <div class="u-mb-md">
+        <label class="c-settings-box__label" style="display: block; margin-bottom: 4px;">Short Description</label>
+        <input type="text" id="toolEditorDescInput" class="c-input u-w-full" placeholder="Summary of what this tool specializes in...">
+      </div>
+
+      <div class="u-mb-md">
+        <label class="c-settings-box__label" style="display: block; margin-bottom: 4px;">System Instructions *</label>
+        <textarea id="toolEditorInstructionInput" class="c-textarea u-w-full" style="height: 130px;" placeholder="Define the AI persona, rules, formatting style, and expertise..."></textarea>
+      </div>
+
+      <div class="u-mb-md" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: var(--color-bg-box); border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+        <div>
+          <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--color-text-main);">Default Memory Access</div>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Allow this tool to access active character notes, scenario, and generated descriptions from the main page (default off).</div>
+        </div>
+        <input type="checkbox" id="toolEditorMemorySwitch" style="width: 18px; height: 18px; cursor: pointer;">
+      </div>
+    </div>
+    <div class="c-dialog__footer">
+      <button type="button" class="c-button c-button--clear" onclick="window.closeToolEditorModal()">Cancel</button>
+      <button type="button" id="toolEditorSaveBtn" class="c-button c-button--generate" onclick="window.submitToolEditorForm()">Save Tool</button>
+    </div>
+  </div>
 </div>
 
 </body>

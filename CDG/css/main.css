@@ -46,6 +46,8 @@
 @import "./components/c-floating-widget.css";
 @import "./components/c-textarea-actions.css";
 @import "./components/c-tag-selector.css";
+@import "./components/c-dock-toolbar.css";
+@import "./components/c-tools.css";
 
 /* ===========================
    UTILITIES
