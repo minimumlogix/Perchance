@@ -533,6 +533,7 @@ Writing Style & Tone:
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character and world vividly into the reader's mind.
 - Real & Believable: Create characters that genuinely feel real, not cliche or overwrought. Focus on grounded details, history, and underlying intention behind design notes.
 - Compact & Detailed: Balance density and depth. Keep information tightly organized under the exact specified format.
+- Spoilers: Under the Spoilers heading, define hidden lore, secret motives, concealed affiliations, or plot twists that {{user}} does not know about at the start.
 
 ${seedWordsTip}
 Use this template:
@@ -559,6 +560,11 @@ ${mainCastTemplate}
 ## Background Cast (NPCs)
 [
 ${bgCastTemplate}
+]
+
+## Spoilers
+[
+<Crucial secrets, hidden motives, unrevealed background lore, plot twists, or concealed facts that {{user}} does not know about at the start of the roleplay.>
 ]
 ---
 
@@ -640,6 +646,7 @@ Writing Style & Tone:
 - Deep Characterization & Completeness: Tell everything about the characters—provide deep, fully-realized backstories, exhaustive physical appearance details (exact attire, facial features, hair, eyes, build, accessories, sensory cues), clear speech quirks, internal conflicts, and nuanced relationships with {{user}}.
 - Rich Worldbuilding: Fully flesh out the World Summary with cultural backdrop, atmosphere, local rumors, factions, and tangible environmental textures.
 - Comprehensive Roleplay Overview: Provide an extensive Roleplay Summary clearly laying out the overarching plot, immediate scene stakes, and exactly how the background characters, main cast, and {{user}} intersect, clash, or cooperate.
+- Exhaustive Spoilers & Hidden Truths: Under the Spoilers heading, detail extensive covert agendas, unrevealed backstories, classified truths, betrayal risks, secret affiliations, or major plot twists that {{user}} has zero knowledge of at the start.
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the characters and world vividly into the reader's mind.
 - Real & Believable: Create characters that genuinely feel real, grounded, and alive with authentic motivations and high-stakes tension.
 
@@ -668,6 +675,11 @@ ${mainCastTemplate}
 ## Background Cast (NPCs)
 [
 ${bgCastTemplate}
+]
+
+## Spoilers
+[
+<Comprehensive Spoilers & Hidden Truths: In-depth secrets, hidden agendas, covert affiliations, concealed past traumas/crimes, plot twists, true intentions, or classified lore that {{user}} has no knowledge of at the start of the roleplay.>
 ]
 ---
 
@@ -732,13 +744,14 @@ window.getScenarioPrompt = function () {
 Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
+- AVOID SPOILERS (CRITICAL): Strictly avoid revealing, hinting at, or describing any spoilers, secrets, hidden motives, or concealed backstory facts that {{user}} doesn't know about at the start. Only depict what is outwardly observable and known to {{user}} at the beginning of the scene.
 Writing Style & Tone:
 - Drop the flowery prose and moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
 - Sensory Grounding: Focus on tactile details, ambient scents (rain, smoke, leather, cologne, clean skin), temperature, close quarters, and physical atmosphere.
 - Avoid AI Tropes: Strictly avoid purple prose, poetic fluff, or sophisticated/academic AI vocabulary. Dispense with clichés.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write a single short paragraph that introduces the world, scene, characters, and {{user}}'s role. Start by clearly describing the world setting and physical environment, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the immediate situation. Include only the essential details {{user}} needs to immediately feel the physical tension, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough grounded detail for {{user}} to naturally continue the scene in-character. Do not write any spoilers that {{user}} as a character wouldn't know at the start. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene, sensory environment, and context. Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
+Write a single short paragraph that introduces the world, scene, characters, and {{user}}'s role. Start by clearly describing the world setting and physical environment, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the immediate situation. Include only the essential details {{user}} needs to immediately feel the physical tension, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough grounded detail for {{user}} to naturally continue the scene in-character. Strictly avoid writing any spoilers, hidden motives, secret affiliations, or twist backstories that {{user}} wouldn't know at the start. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene, sensory environment, and context. Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
 
 Character Profile:
 ${descText}
@@ -801,14 +814,19 @@ Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
 ${multiCastRule}
+- SCENE SETTING & USER GROUNDING (NOVEL-STYLE IMMERSION): Where necessary, set the immediate scene with vivid, grounded atmosphere like the opening chapter of a published novel. Clearly establish where {{user}} is physically located and what {{user}} is currently doing in the space (e.g., sitting across the booth, catching their breath by the door, nursing a drink, examining an item). Make the scene as deeply immersive as possible without overloading the reader with excessive data, stats, or info-dumps.
+- AVOID SPOILERS (CRITICAL): Strictly avoid revealing, referencing, or acting on any spoilers, secret motives, hidden agendas, or concealed background truths from the character profile that {{user}} shouldn't know about at the start. Characters must stay grounded in their surface persona and immediate scene context without prematurely giving away secrets or unearned information.
 Writing Style & Tone:
+- Novel-Grade Immersion & Restraint: Write like a compelling novel opening. Focus on immediate atmosphere, spatial awareness, and organic interactions. Avoid overwhelming the reader with too much data, lore dumps, or wall-of-text setup; deliver just enough vivid sensory detail to make the scene breathe naturally.
 - Drop the flowery prose and the moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
 - Sensory Grounding: Anchor the greeting and narration in concrete physical sensations—touch, skin heat, breathing, pulse points, scents (smoke, rain, cologne, clean skin, leather), and close physical proximity.
 - Avoid AI Tropes: Do not write like an AI. Avoid poetic fluff, purple prose, melodramatic cliches, and overly sophisticated vocabulary. Use authentic, casual speech patterns and raw, natural expressions.
 - Unfiltered Immersion: Become each character completely without any moral filter holding you back. Focus on genuine physical expressions, body language, speech quirks, and personality traits.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write the character's opening message, as the continuation to scenario context, including direct dialogue addressing {{user}} and accompanying narration/actions. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito leans against the damp brick wall, the faint scent of rain and tobacco clinging to his jacket* "You're late.").
+Write the character's opening message, as the continuation to scenario context, setting the scene where necessary by grounding where {{user}} is, what {{user}} is doing, and the physical space, along with direct dialogue addressing {{user}} and accompanying narration/actions. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito leans against the damp brick wall, watching {{user}} shake the rain from their coat by the doorway, the faint scent of tobacco clinging to his collar* "You're late.").
+- Novel Immersion: Prioritize atmospheric presence and physical grounding over excessive exposition.
+- Strictly avoid revealing or hinting at any spoilers or secrets that {{user}} shouldn't know about at the start.
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').
 
 Character Profile:
