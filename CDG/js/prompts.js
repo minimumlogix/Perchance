@@ -729,11 +729,11 @@ window.getScenarioPrompt = function () {
     let perspectiveVal = scenarioPerspectiveEl ? scenarioPerspectiveEl.value : "thirdperson";
     let perspectiveInstruction = "";
     if (perspectiveVal === "firstperson") {
-        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the FIRST PERSON perspective using 'I', 'my', 'me' (e.g., *I stood watching...*).";
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the FIRST PERSON perspective using 'I', 'my', 'me' (e.g., *I had arrived in the district...*).";
     } else if (perspectiveVal === "secondperson") {
-        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the SECOND PERSON perspective addressing {{user}} directly using 'you', 'your' (e.g., *You see her standing...*).";
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the SECOND PERSON perspective addressing {{user}} directly using 'you', 'your' (e.g., *You had arrived in the district...*).";
     } else {
-        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the THIRD PERSON perspective using character names or 'he/she/they' (e.g., *She stood watching...*).";
+        perspectiveInstruction = "NARRATIVE PERSPECTIVE: Write the scenario narration from the THIRD PERSON perspective using character names or 'he/she/they' (e.g., *She had arrived in the district...*).";
     }
     let toneAndSettingNote = window.getToneAndSettingInstruction();
 
@@ -741,19 +741,23 @@ window.getScenarioPrompt = function () {
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
         : "";
 
-    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Write like this is the start.
+    let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Treat this as a unified Roleplay & World Summary that establishes the premise and setup without any spoilers.
 
-Requirements & Format:
+Requirements & Focus:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
+- The World Setting: Clearly establish the world environment, society, rules, atmosphere, and backdrop that {{user}} is currently in.
+- Prior Events & Journey: Explain what has happened to {{user}} and the cast leading up to this moment (how they got here, recent events, background buildup).
+- Current Situation & Stakes: Clearly define the immediate situation, the dynamic between {{user}} and the characters, and the active dilemma or premise right as the roleplay begins.
 - AVOID SPOILERS (CRITICAL): Strictly avoid revealing, hinting at, or describing any spoilers, secrets, hidden motives, or concealed backstory facts that {{user}} doesn't know about at the start. Only depict what is outwardly observable and known to {{user}} at the beginning of the scene.
-Writing Style & Tone:
-- Drop the flowery prose and moral filters; write in a raw, contemporary romance style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
-- Sensory Grounding: Focus on tactile details, ambient scents (rain, smoke, leather, cologne, clean skin), temperature, close quarters, and physical atmosphere.
+
+Writing Style & Guidelines:
+- Direct, Clear & Grounded: Write clean, engaging storytelling prose that quickly brings the reader up to speed on the world, history, and immediate plot without unnecessary sensory fluff.
 - Avoid AI Tropes: Strictly avoid purple prose, poetic fluff, or sophisticated/academic AI vocabulary. Dispense with clichés.
+- NO DIRECT DIALOGUE: Focus purely on world lore, prior context, and current situational setup. Do NOT include character dialogue or spoken lines.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write a single short paragraph that introduces the world, scene, characters, and {{user}}'s role. Start by clearly describing the world setting and physical environment, then the role {{user}} is playing, then introduce the other character, their relationship to {{user}} if relevant, and the immediate situation. Include only the essential details {{user}} needs to immediately feel the physical tension, character dynamics, tone, and context before beginning the roleplay. The paragraph should feel like the opening setup of an interactive story, giving enough grounded detail for {{user}} to naturally continue the scene in-character. Strictly avoid writing any spoilers, hidden motives, secret affiliations, or twist backstories that {{user}} wouldn't know at the start. DO NOT write any character dialogue or direct speech. Focus purely on setting the scene, sensory environment, and context. Output ONLY the scene context paragraphs. Do NOT include headers or labels (like 'Scenario Context:'). Do not exceed one paragraph.
+Write 1-2 short, focused paragraphs that summarize the world context, what brought {{user}} here, and the immediate situation as the roleplay begins. Output ONLY the scenario context. Do NOT include headers or labels (like 'Scenario Context:').
 
 Character Profile:
 ${descText}
