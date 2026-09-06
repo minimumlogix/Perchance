@@ -25,7 +25,7 @@ const NAVIGATION_TABS = [
   {
     id: "tab-tools",
     icon: "bi-robot",
-    title: "AI Tools & Gems",
+    title: "AI Tools",
     pageId: "page-tools"
   },
   {
