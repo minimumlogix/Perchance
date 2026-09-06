@@ -245,7 +245,7 @@ window.extractMainCharacterNames = function (descText) {
     for (let m of headerMatches) {
         let name = m[1].replace(/^<|>$/g, "").trim();
         let lower = name.toLowerCase();
-        if (name && !lower.includes("cast") && !lower.includes("world") && !lower.includes("scenario") && !lower.includes("guidance") && !lower.includes("rules") && !lower.includes("description") && !lower.includes("spoiler") && !names.includes(name)) {
+        if (name && !lower.includes("cast") && !lower.includes("world") && !lower.includes("scenario") && !lower.includes("guidance") && !lower.includes("rules") && !lower.includes("description") && !names.includes(name)) {
             if (name.length > 1 && name.length < 50) names.push(name);
         }
     }
