@@ -4,10 +4,10 @@ window.getToneAndSettingInstruction = function () {
 
     let result = "";
     if (tonePrompts.length > 0) {
-        result += `\nROLEPLAY TONE: ${tonePrompts.join("; ")}\n`;
+        result += `\n# MANDATORY ROLEPLAY TONE & WRITING DIRECTIVES (STRICT COMPLIANCE REQUIRED):\n${tonePrompts.map(p => `- ${p}`).join("\n")}\n`;
     }
     if (settingPrompts.length > 0) {
-        result += `\nWORLD SETTING: ${settingPrompts.join("; ")}\n`;
+        result += `\n# WORLD SETTING DIRECTIVES:\n${settingPrompts.map(p => `- ${p}`).join("\n")}\n`;
     }
     return result;
 };
