@@ -12,6 +12,14 @@ window.getToneAndSettingInstruction = function () {
     return result;
 };
 
+window.getImageReferenceInstruction = function () {
+    if (window.characterImageReference && window.characterImageReference.blob) {
+        return `\n\n# ATTACHED IMAGE REFERENCE (CRITICAL VISUAL GUIDELINES):
+An image reference has been provided for the character. You MUST thoroughly analyze this image and faithfully incorporate all visual details (including gender, apparent age, hair color and style, eye color, facial features, skin tone, physique/build, posture, clothing/attire, style, color palette, accessories, and distinctive characteristics) into the character's Appearance, Attire, and core design.\n`;
+    }
+    return "";
+};
+
 window.getFantasyCharacterPrompt = function () {
     let customFeaturesEl = document.getElementById("customFeaturesEl");
     let descLengthEl = document.getElementById("descLengthEl");
@@ -25,6 +33,7 @@ window.getFantasyCharacterPrompt = function () {
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
     let toneAndSettingNote = window.getToneAndSettingInstruction();
 
+    let imageRefNote = window.getImageReferenceInstruction();
     let shortNote = lengthVal === "short" ? "IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.\n" : "";
 
     let bgCastTemplate = "";
@@ -43,6 +52,7 @@ Writing Style & Tone:
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character vividly into the reader's mind.
 - Real & Believable: Create a character that genuinely feels real, not cliche or overwrought (this is a character description, not a place for rhetorical questions or fourth wall breaks). Focus on the little grounded details, history, and underlying intention behind design notes.
 - Realistic & Non-Cliché Naming: Strictly avoid overused fantasy naming tropes and cliché names (e.g., Elara, Vael, Blackthorn, Zephyr, Lyra). Avoid fancy or overly melodramatic naming. Generate grounded, realistic names—whether unique or common—that naturally fit the character's specific world, setting, culture, and ethnicity. (For example, an Elf should NOT default to Elara or generic trope names).
+${imageRefNote}
 ${shortNote}
 ${seedWordsTip}
 Use this template:
@@ -126,11 +136,14 @@ Long-term Goals = <ultimate ambitions>${bgCastTemplate}
 ---
 
 # Design notes:
-${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The character's race should be " + randomRace)}
+${toneAndSettingNote}${imageRefNote}IMPORTANT: ${customFeaturesText || ("The character's race should be " + randomRace)}
 ${shortNote}`;
 
+    let hasImageRef = !!(window.characterImageReference && window.characterImageReference.blob);
+    let instructionPayload = hasImageRef ? [instruction, window.characterImageReference.blob] : instruction;
+
     return {
-        instruction,
+        instruction: instructionPayload,
         startWith: "Short Description = ",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
@@ -170,6 +183,7 @@ window.getMultiCharacterScenarioPrompt = function () {
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
     let toneAndSettingNote = window.getToneAndSettingInstruction();
 
+    let imageRefNote = window.getImageReferenceInstruction();
     let shortNote = lengthVal === "short" ? "IMPORTANT: Keep each section SHORT. No more than 1 paragraph per section. YOUR RESPONSE MUST BE **SHORT**.\n" : "";
 
     let npcBlocks = [];
@@ -297,11 +311,14 @@ ${bgCastTemplate}
 ---
 
 # Design notes:
-${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}
+${toneAndSettingNote}${imageRefNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}
 ${shortNote}`;
 
+    let hasImageRef = !!(window.characterImageReference && window.characterImageReference.blob);
+    let instructionPayload = hasImageRef ? [instruction, window.characterImageReference.blob] : instruction;
+
     return {
-        instruction,
+        instruction: instructionPayload,
         startWith: "# Scenario\n\nTitle = ",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
@@ -441,10 +458,13 @@ ${bgCastTemplate}
 ---
 
 # Design notes:
-${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}`;
+${toneAndSettingNote}${imageRefNote}IMPORTANT: ${customFeaturesText || ("The setting or primary theme should be inspired by " + randomRace)}`;
+
+    let hasImageRef = !!(window.characterImageReference && window.characterImageReference.blob);
+    let instructionPayload = hasImageRef ? [instruction, window.characterImageReference.blob] : instruction;
 
     return {
-        instruction,
+        instruction: instructionPayload,
         startWith: "# Scenario\n\nTitle = ",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
@@ -537,10 +557,13 @@ ${bgCastTemplate}
 ---
 
 # Design notes:
-${toneAndSettingNote}IMPORTANT: ${customFeaturesText || ("The character's race or setting should be inspired by " + randomRace)}`;
+${toneAndSettingNote}${imageRefNote}IMPORTANT: ${customFeaturesText || ("The character's race or setting should be inspired by " + randomRace)}`;
+
+    let hasImageRef = !!(window.characterImageReference && window.characterImageReference.blob);
+    let instructionPayload = hasImageRef ? [instruction, window.characterImageReference.blob] : instruction;
 
     return {
-        instruction,
+        instruction: instructionPayload,
         startWith: "Title = ",
         render: function (data) {
             let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);

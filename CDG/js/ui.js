@@ -149,6 +149,9 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customFeatures: "" });
       localStorage.customFeatures = "";
     }
+    if (typeof window.clearImageReference === "function") {
+      window.clearImageReference();
+    }
     if (typeof window.setButtonState === "function") {
       window.setButtonState("desc", "initial");
     } else {

@@ -417,3 +417,174 @@ Rules for fields:
     }
   };
 })();
+
+/* ===========================
+   CHARACTER DESCRIPTION IMAGE REFERENCE CONTROLLER
+=========================== */
+
+(function() {
+  window.characterImageReference = null;
+
+  function setCharacterImageReference(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    if (window.characterImageReference && window.characterImageReference.previewUrl) {
+      URL.revokeObjectURL(window.characterImageReference.previewUrl);
+    }
+
+    let previewUrl = URL.createObjectURL(file);
+    window.characterImageReference = {
+      blob: file,
+      previewUrl: previewUrl,
+      name: file.name || "reference-image.png",
+      size: file.size
+    };
+
+    let previewContainer = document.getElementById("descImageRefPreviewContainer");
+    let previewImg = document.getElementById("descImageRefThumb");
+    let imageNameEl = document.getElementById("descImageRefName");
+    let imageSizeEl = document.getElementById("descImageRefSize");
+    let attachBtn = document.getElementById("descAttachImageBtn");
+
+    if (previewImg) previewImg.src = previewUrl;
+    if (imageNameEl) {
+      imageNameEl.textContent = file.name || "reference-image.png";
+      imageNameEl.title = file.name || "reference-image.png";
+    }
+    if (imageSizeEl) imageSizeEl.textContent = Math.round(file.size / 1024) + " KB";
+    if (previewContainer) previewContainer.classList.remove("u-hidden");
+    if (attachBtn) attachBtn.classList.add("is-attached");
+  }
+
+  function clearCharacterImageReference() {
+    if (window.characterImageReference && window.characterImageReference.previewUrl) {
+      URL.revokeObjectURL(window.characterImageReference.previewUrl);
+    }
+    window.characterImageReference = null;
+
+    let previewContainer = document.getElementById("descImageRefPreviewContainer");
+    let previewImg = document.getElementById("descImageRefThumb");
+    let fileInput = document.getElementById("descImageRefInput");
+    let attachBtn = document.getElementById("descAttachImageBtn");
+
+    if (previewImg) previewImg.src = "";
+    if (previewContainer) previewContainer.classList.add("u-hidden");
+    if (fileInput) fileInput.value = "";
+    if (attachBtn) attachBtn.classList.remove("is-attached");
+
+    closeImageRefModal();
+  }
+
+  function triggerImageReferenceUpload(targetId) {
+    let fileInput = document.getElementById("descImageRefInput");
+    if (fileInput) fileInput.click();
+  }
+
+  function ensureLightboxExists() {
+    let existing = document.getElementById("imageRefModalOverlay");
+    if (existing) return existing;
+
+    let modal = document.createElement("div");
+    modal.id = "imageRefModalOverlay";
+    modal.className = "c-image-ref-lightbox u-hidden";
+    modal.innerHTML = `
+      <div class="c-image-ref-lightbox__card">
+        <div class="c-image-ref-lightbox__header">
+          <div class="c-image-ref-lightbox__title">
+            <i class="bi bi-image"></i>
+            <span id="imageRefModalTitle">Reference Image Inspection</span>
+          </div>
+          <button type="button" class="c-ai-modal__close-btn" onclick="window.closeImageReferenceModal()" title="Close">&times;</button>
+        </div>
+        <div class="c-image-ref-lightbox__img-ctn">
+          <img id="imageRefModalImg" class="c-image-ref-lightbox__img" src="" alt="Reference Image Inspection">
+        </div>
+      </div>
+    `;
+    modal.addEventListener("click", function(e) {
+      if (e.target === modal) window.closeImageReferenceModal();
+    });
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function previewImageReferenceModal() {
+    if (!window.characterImageReference || !window.characterImageReference.previewUrl) return;
+    let modal = ensureLightboxExists();
+    let img = modal.querySelector("#imageRefModalImg");
+    let title = modal.querySelector("#imageRefModalTitle");
+    if (img) img.src = window.characterImageReference.previewUrl;
+    if (title) title.textContent = window.characterImageReference.name || "Reference Image";
+    modal.classList.remove("u-hidden");
+  }
+
+  function closeImageRefModal() {
+    let modal = document.getElementById("imageRefModalOverlay");
+    if (modal) modal.classList.add("u-hidden");
+  }
+
+  function initImageReferenceHandlers() {
+    let fileInput = document.getElementById("descImageRefInput");
+    if (fileInput) {
+      fileInput.addEventListener("change", function(e) {
+        if (e.target.files && e.target.files[0]) {
+          setCharacterImageReference(e.target.files[0]);
+        }
+      });
+    }
+
+    let customFeaturesEl = document.getElementById("customFeaturesEl");
+    let customFeaturesWrapper = document.getElementById("customFeaturesWrapper");
+
+    if (customFeaturesWrapper) {
+      ["dragenter", "dragover"].forEach(evtName => {
+        customFeaturesWrapper.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          customFeaturesWrapper.classList.add("is-dragover");
+        });
+      });
+      ["dragleave", "drop"].forEach(evtName => {
+        customFeaturesWrapper.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          customFeaturesWrapper.classList.remove("is-dragover");
+        });
+      });
+      customFeaturesWrapper.addEventListener("drop", (e) => {
+        let files = e.dataTransfer?.files;
+        if (files && files[0] && files[0].type.startsWith("image/")) {
+          setCharacterImageReference(files[0]);
+        }
+      });
+    }
+
+    if (customFeaturesEl) {
+      customFeaturesEl.addEventListener("paste", function(e) {
+        let items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+        if (!items) return;
+        for (let item of items) {
+          if (item.type.indexOf("image") === 0) {
+            let blob = item.getAsFile();
+            if (blob) {
+              setCharacterImageReference(blob);
+              break;
+            }
+          }
+        }
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initImageReferenceHandlers);
+  } else {
+    initImageReferenceHandlers();
+  }
+
+  window.setImageReference = setCharacterImageReference;
+  window.clearImageReference = clearCharacterImageReference;
+  window.triggerImageReferenceUpload = triggerImageReferenceUpload;
+  window.previewImageReferenceModal = previewImageReferenceModal;
+  window.closeImageReferenceModal = closeImageRefModal;
+})();

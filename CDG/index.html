@@ -163,6 +163,80 @@
             responseText = "### World & Lore Dossier\n\n- **Underground Syndicate:** *The Ashfall Exchange*, brokers of illicit memories and forged credentials.\n- **City Atmosphere:** Neon lanterns bleeding into constant low-hanging smog; steam vents hissing beneath wet iron grates.\n- **Local Rumor:** Word on the street is the district magistrate has been replaced by a body double.";
           } else if (instructionText.includes("Image Tag Prompt Writer") || instructionText.includes("SeaArt") || instructionText.includes("Danbooru-style")) {
             responseText = "masterpiece, best quality, korean webtoon, anime illustration, upper body, close-up, portrait, centered composition, adult woman, big bust woman, long black hair, layered hair, amber eyes, sharp eyes, fair skin, black military jacket, silver earrings, hand touching hair, looking at viewer, confident smile, warm cinematic lighting, blurred modern city background";
+          } else if (instructionText.includes("Please create an interesting and creative OC character") || instructionText.includes("OC character") || instructionText.includes("compact and detailed roleplay") || instructionText.includes("immersive roleplay scenario")) {
+            responseText = `Short Description = [🗡️] Guarded fixer navigating dangerous undercity debts.
+
+Name = Kaelen "Vance" Mercer
+Age = 28
+Gender = Male
+Race = Human
+Ethinicity = Northern Continental
+Occupation = Independent Information Broker & Fixer
+Father's Name = Marcus Mercer (Deceased)
+Mother's Name = Elena Mercer
+Siblings = None
+
+Role = Hired by {{user}} to retrieve compromised ledger files from a fortified district vault.
+
+Rules = Never leaves a contract half-finished; refuses to carry firearms inside neutral ground safehouses.
+
+Appearance = Stands 6'1" with an athletic, lean build, weathered hands, short unruly dark hair, sharp grey eyes, and a faint jagged scar along his left jawline. Wears a high-collared dark canvas coat over a charcoal tunic and reinforced boots.
+
+Attire = Tailored utilitarian canvas trench coat, dark linen shirt, reinforced leather gloves, and dark tactical trousers.
+
+Accessories = Custom lockpick set, encrypted datapad, concealed stiletto blade in forearm sheath.
+
+Core Personality = Observant, calm under pressure, dryly sarcastic, fiercely loyal once trust is earned.
+
+Enneagram Type = Type 8, The Challenger
+
+Archetype = Reluctant Protector
+
+Communication Style = Direct, low-pitched, concise, uses dry underworld slang and avoids unnecessary words.
+
+Behavior = Constantly tracks room exits, shifts weight silently, keeps hands relaxed near concealed weapons.
+
+Emotions = Highly controlled exterior; hides deep-seated protective instincts behind aloof cynicism.
+
+Beliefs = Debts must always be settled; loyalty is earned through action, not words.
+
+World View = "The city only gives you what you're willing to take with your own two hands."
+
+Mentality = "Panic is a luxury for people with nothing on the line."
+
+Morals = "Never target someone who didn't buy into the game."
+
+Likes = Strong black coffee, rainy nights, quiet rooftops, clockwork mechanisms.
+
+Dislikes = Unpredictable wildcards, broken agreements, neon glare, overly verbose politicians.
+
+Hobbies = Lock mechanism tuning, collecting antique street maps.
+
+Values = Self-reliance, discretion, keeping one's word.
+
+Romance = Guarded and hesitant; expresses affection through fierce protection and understated acts of care.
+
+Abilities =
+- Urban Infiltration = Expert in covert entry, bypass locks, and silent movement.
+- Tactical CQC = Trained in close-quarters hand-to-hand and defensive blade work.
+- Information Brokering = Broad network of informants and keen deduction.
+- High Threat Assessment = Rapid situational awareness in volatile encounters.
+
+Relations =
+- {{user}} = Client with high stakes; reluctant ally growing into trusted confidant.
+- Miller = Shady back-alley fence providing underworld equipment.
+
+Biography = Raised in the lower canal districts, Kaelen learned survival in the shadow of merchant syndicates before carving out a niche as the most discreet fixer in the ward.
+
+Residence = A discreet third-floor loft above an antique clockmaker's shop on Iron Street.
+
+Secrets = Holds incriminating leverage on the district magistrate that could ignite a gang war.
+
+Internal conflicts = Torn between fleeing the city for a quiet life and settling scores with his former syndicate.
+
+Short-term Goals = Secure the ledger and ensure {{user}} gets out of the district safely.
+
+Long-term Goals = Dismantle the syndicate that framed his father.`;
           } else {
             responseText = "I've analyzed your prompt. Here are focused, sensory-grounded creative directions and recommendations tailored to your setup.";
           }
@@ -263,11 +337,32 @@
   <div id="page-main" class="c-tab-page"> 
   
   <!-- CHARACTER DESCRIPTION SECTION -->
-  <div class="c-textarea-wrapper">
+  <div class="c-textarea-wrapper" id="customFeaturesWrapper">
     <textarea id="customFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, design notes, features, age, etc."></textarea>
     <div class="c-textarea-actions">
       <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
       <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
+      <button type="button" id="descAttachImageBtn" class="c-textarea-btn" title="Attach Image Reference (Vision AI)" onclick="window.triggerImageReferenceUpload('customFeaturesEl')"><i class="bi bi-image"></i></button>
+    </div>
+  </div>
+  <input type="file" id="descImageRefInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
+  
+  <!-- IMAGE REFERENCE PREVIEW CONTAINER -->
+  <div id="descImageRefPreviewContainer" class="c-image-ref-preview u-hidden">
+    <div class="c-image-ref-card">
+      <div class="c-image-ref-thumb-wrapper" onclick="window.previewImageReferenceModal()" title="Click to view full image">
+        <img id="descImageRefThumb" class="c-image-ref-thumb" src="" alt="Reference Image">
+        <div class="c-image-ref-zoom-overlay"><i class="bi bi-zoom-in"></i></div>
+      </div>
+      <div class="c-image-ref-info">
+        <div class="c-image-ref-header">
+          <span class="c-image-ref-badge"><i class="bi bi-eye-fill"></i> Vision Reference Active</span>
+          <span id="descImageRefSize" class="c-image-ref-size">0 KB</span>
+        </div>
+        <span id="descImageRefName" class="c-image-ref-name">image.png</span>
+        <span class="c-image-ref-hint">Visual details from this image will be incorporated into the character description</span>
+      </div>
+      <button type="button" id="descRemoveImageBtn" class="c-image-ref-remove-btn" title="Remove attached image" onclick="window.clearImageReference()">&times;</button>
     </div>
   </div>
   
