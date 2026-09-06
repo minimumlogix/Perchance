@@ -198,7 +198,7 @@ function syncSettingsTabValues() {
     }
   };
 
-  syncField("settingDescLengthEl", "descLengthEl", settings.descLength || "medium");
+  syncField("settingDescLengthEl", "descLengthEl", settings.descLength || "compact_detailed");
   syncField("settingMainCastEl", "mainCastEl", settings.mainCast || "1");
   syncField("settingBgCastEl", "bgCastEl", settings.bgCast || "0");
   syncField("settingScenarioPerspectiveEl", "scenarioPerspectiveEl", settings.scenarioPerspective || "thirdperson");

@@ -4,7 +4,7 @@
 
 window.CDG_SETTINGS_DEFAULTS = {
   theme: "dark",
-  descLength: "medium",
+  descLength: "compact_detailed",
   mainCast: "1",
   bgCast: "0",
   visualStyle: "painterly_anime",
@@ -89,10 +89,11 @@ window.CDG_ART_STYLES = {
 
 window.CDGConfig = {
   lengthSpecifiers: {
+    compact_detailed: "compact and detailed summary",
+    compact_detailed_plus: "comprehensive, highly detailed, and exhaustive in-depth profile",
     short: "at most 1 short paragraph",
     medium: "1-2 paragraphs",
-    long: "2-4 paragraphs",
-    compact_detailed: "compact and detailed summary"
+    long: "2-4 paragraphs"
   }
 };
 

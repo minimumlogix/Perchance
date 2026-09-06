@@ -499,6 +499,7 @@ window.getCompactDetailedPrompt = function () {
     let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
     let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
     let toneAndSettingNote = window.getToneAndSettingInstruction();
+    let imageRefNote = window.getImageReferenceInstruction();
 
     let mainBlocks = [];
     for (let i = 1; i <= mainCastCount; i++) {
@@ -540,6 +541,16 @@ Title = <scenario roleplay title>
 Tags = <3 short tags for roleplay>
 Short Description = [emoji] <Maximum 1 sentence, under 55 characters including spaces. start with emoji in square brackets. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
 
+## World Summary
+[
+<World Lore and Setting Context>
+]
+
+## Roleplay Summary
+[
+<Summary of the main plot, how the world context sets up the scene, and how background characters, main characters, and {{user}} come into play.>
+]
+
 ## Main Cast (NPCs)
 [
 ${mainCastTemplate}
@@ -549,10 +560,114 @@ ${mainCastTemplate}
 [
 ${bgCastTemplate}
 ]
+---
+
+# Design notes:
+${toneAndSettingNote}${imageRefNote}IMPORTANT: ${customFeaturesText || ("The character's race or setting should be inspired by " + randomRace)}`;
+
+    let hasImageRef = !!(window.characterImageReference && window.characterImageReference.blob);
+    let instructionPayload = hasImageRef ? [instruction, window.characterImageReference.blob] : instruction;
+
+    return {
+        instruction: instructionPayload,
+        startWith: "Title = ",
+        render: function (data) {
+            let text = data.text.replace(/(^|\n)([#a-zA-Z/ _'\-0-9]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            text = text.replace(/(^|\n)(\s*-\s*)([#a-zA-Z/ _'\-0-9{}\(\)]{1,50})(\s*[:=]\s*)/g, (m, p1, p2, p3, p4) => p1 + p2 + `<b style="color:#13a000">${p3.trim()}</b>` + p4);
+            text = text.replace(/(^|\n)(#+[a-zA-Z/ _'\-0-9\(\)]{1,50})(\n)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            text = text.replace(/(^|\n)\*\*([a-zA-Z/ _'\-0-9#\(\)]{1,50})\*\*(:\s?)/g, (m, p1, p2, p3) => p1 + `<b style="color:#13a000">${p2.replaceAll("#", "").trim()}</b>` + p3);
+            return text;
+        },
+        onStart: function (data) {
+            if (typeof window.clearOldImageStuff === "function") window.clearOldImageStuff();
+        },
+        onFinish: async function (data) {
+            if (data.stopReason === "user") return;
+            let generatedText = data.text;
+            let physicalAppearanceText = ((generatedText.match(/(?:Physical Appearance|Appearance)\s*[:=]\s*(.+?)(?:\n\n|\n[#A-Za-z]|$)/s) || [])[1] || "").trim();
+            if (!physicalAppearanceText) physicalAppearanceText = ((generatedText.match(/(?:'s Physical Appearance|\bAppearance)\s*[:=]\s*(.+?)(?:\n|$)/is) || [])[1] || "").trim();
+            window.lastCharacterTextData = { generatedText, physicalAppearanceText };
+        }
+    };
+};
+
+/* ===========================
+   4B. COMPACT DETAILED + SCENARIO PROMPT (EXHAUSTIVE & IN-DEPTH)
+=========================== */
+
+window.getCompactDetailedPlusPrompt = function () {
+    let customFeaturesEl = document.getElementById("customFeaturesEl");
+    let mainCastEl = document.getElementById("mainCastEl");
+    let bgCastEl = document.getElementById("bgCastEl");
+
+    let mainCastCount = parseInt(mainCastEl ? mainCastEl.value : "1", 10);
+    let bgCastCount = parseInt(bgCastEl ? bgCastEl.value : "0", 10);
+    let customFeaturesText = customFeaturesEl ? customFeaturesEl.value.trim() : "";
+    let randomRace = (window.root && window.root.race && window.root.race.selectOne) || (window.race && window.race.selectOne) || "Human";
+    let seedWordsTip = typeof window.getOptionalSeedWordsTip === "function" ? window.getOptionalSeedWordsTip() : "";
+    let toneAndSettingNote = window.getToneAndSettingInstruction();
+    let imageRefNote = window.getImageReferenceInstruction();
+
+    let mainBlocks = [];
+    for (let i = 1; i <= mainCastCount; i++) {
+        let label = mainCastCount === 1 ? "<NPCname>" : `<NPC #${i} Name>`;
+        mainBlocks.push(`${label}'s Role: Full Name, Nick names, age, gender, race, ethnicity, occupation, extensive role in the roleplay, relation to {{user}}, relation to other NPCs, family, friends, factions, enemies.
+${label}'s Backstory: In-depth backstory detailing origins, defining milestones, secrets, traumas, personal dilemmas, and how they reached their current position.
+${label}'s Physical Appearance: Comprehensive, vivid physical description detailing height, build, posture, facial features, hair, eyes, skin tone, scars, tattoos, detailed attire/clothing layers, gear, weapons, accessories, and distinct mannerisms.
+${label}'s Personality: In-depth personality profile detailing core traits, flaws, idiosyncrasies, speech patterns, behavioral quirks, morals, worldview, emotions under pressure, and dynamic with {{user}}.`);
+    }
+    let mainCastTemplate = mainBlocks.join("\n\n");
+
+    let bgCastTemplate = "";
+    if (bgCastCount > 0) {
+        let bgItems = [];
+        for (let idx = 0; idx < bgCastCount; idx++) {
+            bgItems.push(`<Background NPC #${idx + 1} Name> = <Detailed description of role, history, and dynamic with {{user}} and main cast>`);
+        }
+        bgCastTemplate = bgItems.join("\n");
+    } else {
+        bgCastTemplate = "<Supporting NPC 1 Name> = <Detailed description of role, history, and dynamic>\n<Supporting NPC 2 Name> = <Detailed description of role, history, and dynamic>";
+    }
+
+    let bgCastPhrase = bgCastCount > 0 ? `and ${bgCastCount} background NPCs` : "";
+    let castDesc = mainCastCount > 1 ? `${mainCastCount} Main NPCs ${bgCastPhrase}` : `a character ${bgCastPhrase}`;
+
+    let instruction = `Please create an exhaustive, rich, and highly detailed roleplay scenario and comprehensive character dossier featuring ${castDesc}.
+
+Writing Style & Tone:
+- Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
+- Sensory Grounding: Anchor descriptions in concrete, tangible details (textures, skin heat, breathing, pulse points, scents like rain, smoke, worn leather, cologne, clean skin) rather than abstract metaphors.
+- Deep Characterization & Completeness: Tell everything about the characters—provide deep, fully-realized backstories, exhaustive physical appearance details (exact attire, facial features, hair, eyes, build, accessories, sensory cues), clear speech quirks, internal conflicts, and nuanced relationships with {{user}}.
+- Rich Worldbuilding: Fully flesh out the World Summary with cultural backdrop, atmosphere, local rumors, factions, and tangible environmental textures.
+- Comprehensive Roleplay Overview: Provide an extensive Roleplay Summary clearly laying out the overarching plot, immediate scene stakes, and exactly how the background characters, main cast, and {{user}} intersect, clash, or cooperate.
+- Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the characters and world vividly into the reader's mind.
+- Real & Believable: Create characters that genuinely feel real, grounded, and alive with authentic motivations and high-stakes tension.
+
+${seedWordsTip}
+Use this template:
+---
+Title = <scenario roleplay title>
+Tags = <3 short tags for roleplay>
+Short Description = [emoji] <Maximum 1 sentence, under 55 characters including spaces. start with emoji in square brackets. Summarize the character's core identity or concept only. Do not mention appearance unless it defines the character.>
 
 ## World Summary
 [
-<World Lore>
+<Comprehensive and in-depth World Lore: atmosphere, sensory environment, societal backdrop, culture, factions, and world dynamics.>
+]
+
+## Roleplay Summary
+[
+<Comprehensive Roleplay Summary: In-depth overarching plot, immediate high-stakes situation, narrative tension, and a detailed breakdown of how background characters, main characters, and {{user}} encounter each other, interact, and come into play.>
+]
+
+## Main Cast (NPCs)
+[
+${mainCastTemplate}
+]
+
+## Background Cast (NPCs)
+[
+${bgCastTemplate}
 ]
 ---
 
@@ -812,8 +927,11 @@ ${customBehaviorText}`;
 
 window.getCharacterPrompt = function (castCount) {
     let descLengthEl = document.getElementById("descLengthEl");
-    let lengthVal = descLengthEl ? descLengthEl.value : "medium";
+    let lengthVal = descLengthEl ? descLengthEl.value : "compact_detailed";
 
+    if (lengthVal === "compact_detailed_plus" || lengthVal === "compact-detailed-plus" || lengthVal === "compact_detailed_+") {
+        return window.getCompactDetailedPlusPrompt();
+    }
     if (lengthVal === "compact_detailed" || lengthVal === "compact-detailed") {
         return window.getCompactDetailedPrompt();
     }
@@ -847,6 +965,10 @@ Object.defineProperties(window, {
     },
     compactDetailedPrompt: {
         get: function () { return window.getCompactDetailedPrompt(); },
+        configurable: true
+    },
+    compactDetailedPlusPrompt: {
+        get: function () { return window.getCompactDetailedPlusPrompt(); },
         configurable: true
     },
     behaviorPrompt: {
