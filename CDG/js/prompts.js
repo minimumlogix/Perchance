@@ -533,7 +533,8 @@ Writing Style & Tone:
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the character and world vividly into the reader's mind.
 - Real & Believable: Create characters that genuinely feel real, not cliche or overwrought. Focus on grounded details, history, and underlying intention behind design notes.
 - Compact & Detailed: Balance density and depth. Keep information tightly organized under the exact specified format.
-- Spoilers: Under the Spoilers heading, define hidden lore, secret motives, concealed affiliations, or plot twists that {{user}} does not know about at the start.
+- MANDATORY HEADINGS & COMPLETION: You MUST generate all 5 headings in the exact specified order: ## World Summary, ## Roleplay Summary, ## Main Cast (NPCs), ## Background Cast (NPCs), and ## Spoilers. Do NOT stop or truncate generation after Background Cast; you MUST fully write the ## Spoilers section.
+- Spoilers: Under the ## Spoilers heading, define hidden lore, secret motives, concealed affiliations, or plot twists that {{user}} does not know about at the start.
 
 ${seedWordsTip}
 Use this template:
@@ -646,7 +647,8 @@ Writing Style & Tone:
 - Deep Characterization & Completeness: Tell everything about the characters—provide deep, fully-realized backstories, exhaustive physical appearance details (exact attire, facial features, hair, eyes, build, accessories, sensory cues), clear speech quirks, internal conflicts, and nuanced relationships with {{user}}.
 - Rich Worldbuilding: Fully flesh out the World Summary with cultural backdrop, atmosphere, local rumors, factions, and tangible environmental textures.
 - Comprehensive Roleplay Overview: Provide an extensive Roleplay Summary clearly laying out the overarching plot, immediate scene stakes, and exactly how the background characters, main cast, and {{user}} intersect, clash, or cooperate.
-- Exhaustive Spoilers & Hidden Truths: Under the Spoilers heading, detail extensive covert agendas, unrevealed backstories, classified truths, betrayal risks, secret affiliations, or major plot twists that {{user}} has zero knowledge of at the start.
+- MANDATORY HEADINGS & COMPLETION: You MUST generate all 5 headings in the exact specified order: ## World Summary, ## Roleplay Summary, ## Main Cast (NPCs), ## Background Cast (NPCs), and ## Spoilers. Do NOT stop or truncate generation after Background Cast; you MUST fully write the ## Spoilers section.
+- Exhaustive Spoilers & Hidden Truths: Under the ## Spoilers heading, detail extensive covert agendas, unrevealed backstories, classified truths, betrayal risks, secret affiliations, or major plot twists that {{user}} has zero knowledge of at the start.
 - Avoid Cliches & AI Tropes: Strictly avoid purple prose, poetic fluff, melodrama, and artificially sophisticated/archaic AI vocabulary. Use lean, unpretentious, crisp, descriptive passages that paint the characters and world vividly into the reader's mind.
 - Real & Believable: Create characters that genuinely feel real, grounded, and alive with authentic motivations and high-stakes tension.
 
