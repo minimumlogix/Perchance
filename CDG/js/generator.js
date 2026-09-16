@@ -68,6 +68,10 @@ window.setButtonState = function (sectionKey, state) {
         btn.classList.remove("is-generating", "c-button--stop");
         btn.disabled = false;
     }
+
+    if (typeof window.updateDockAiStatus === "function") {
+        window.updateDockAiStatus();
+    }
 };
 
 window.stopSectionGeneration = async function (sectionKey) {
@@ -619,10 +623,13 @@ ${textToBeSummarized}
 Framing requirement: ${framingText}
 
 CRITICAL RULES:
-1. Focus ONLY on physical subjects, interaction, poses, costumes, environment, and lighting.
-2. Output ONLY the raw comma-separated prompt keyphrases in plain text.
-3. NEVER output JSON, markdown fences, curly brackets, quotes, or conversational preamble.
-4. NEVER include any art style or rendering medium keywords (e.g. do NOT include 'anime', 'manga', 'oil painting', 'photo', '3D render', 'pixel art', 'digital art', 'masterpiece').
+1. Focus on physical subjects, interaction, poses, costumes, environment, and lighting.
+2. COMPLETE CHARACTER VISUAL DESCRIPTIONS (MANDATORY):
+   - Never rely solely on character names. For every character in the scene, write their complete physical appearance (gender/age, hairstyle, hair color, eye color, facial features, build, and full clothing/attire).
+   - UNIFIED SINGLE-SENTENCE DESCRIPTION PER CHARACTER: Describe each character's complete look, outfit, pose, action, and emotion together in a single continuous clause/sentence to avoid attribute leakage and hallucination. Do not split their appearance, action, and pose into separate phrases.
+3. Output ONLY the raw comma-separated prompt keyphrases in plain text.
+4. NEVER output JSON, markdown fences, curly brackets, quotes, or conversational preamble.
+5. NEVER include any art style or rendering medium keywords (e.g. do NOT include 'anime', 'manga', 'oil painting', 'photo', '3D render', 'pixel art', 'digital art', 'masterpiece').
 
 Text context:
 ---
@@ -633,10 +640,14 @@ ${textToBeSummarized}
         promptInstruction = `You are an AI text-to-image prompt expert. Write a detailed, comma-separated visual keyphrase prompt describing a cinematic STORY / MOVIE POSTER based on the text below.
 
 CRITICAL RULES:
-1. Focus ONLY on symbolic storytelling elements, key characters presence, composition layout, atmospheric lighting, mood, and dramatic background.
-2. Output ONLY the raw comma-separated prompt keyphrases in plain text.
-3. NEVER output JSON, markdown fences, curly brackets, quotes, or conversational preamble.
-4. NEVER include any art style or rendering medium keywords (e.g. do NOT include 'anime', 'manga', 'oil painting', 'photo', '3D render', 'pixel art', 'digital art', 'masterpiece').
+1. Focus on symbolic storytelling elements, key character presence, composition layout, atmospheric lighting, mood, and dramatic background.
+2. COMPLETE CHARACTER VISUAL DESCRIPTIONS (MANDATORY):
+   - Never rely solely on character names without writing their physical appearance. You may still mention character names, but you MUST write their full appearance completely based on the text context (gender/apparent age, hairstyle and hair color, eye color, facial features, skin tone, build/physique, and complete outfit/clothing).
+   - UNIFIED SINGLE-SENTENCE DESCRIPTION PER CHARACTER: Describe each character's entire look, outfit, pose, action, and emotion together within a single continuous clause/sentence (e.g. "[Name], a young woman with a white bob cut, blue eyes, and porcelain complexion, wearing a sliding oversized knit sweater, standing in the shadows").
+   - NEVER separate a character's appearance, action, pose, and emotions into different sentences or disconnected phrases, as this causes confusion, attribute leakage, and AI hallucination in image generation models.
+3. Output ONLY the raw comma-separated prompt keyphrases in plain text.
+4. NEVER output JSON, markdown fences, curly brackets, quotes, or conversational preamble.
+5. NEVER include any art style or rendering medium keywords (e.g. do NOT include 'anime', 'manga', 'oil painting', 'photo', '3D render', 'pixel art', 'digital art', 'masterpiece', 'hyperrealistic').
 
 Text context:
 ---

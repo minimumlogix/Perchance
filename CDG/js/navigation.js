@@ -52,6 +52,8 @@ function initDockNavigation() {
   setupDockEventListeners();
   applyDockVisibility(true);
   switchTab(DEFAULT_TAB_ID);
+  observeOutputContainers();
+  updateDockAiStatus();
 }
 
 /* ===========================
@@ -73,10 +75,28 @@ function setupDockEventListeners() {
     });
   }
 
+  const aiStatusBtn = document.getElementById("dockAiStatusBtn");
+  if (aiStatusBtn) {
+    aiStatusBtn.addEventListener("click", () => {
+      openTokenInspectorModal();
+    });
+  }
+
+  const inspectorModal = document.getElementById("aiTokenInspectorModal");
+  if (inspectorModal) {
+    inspectorModal.addEventListener("click", (event) => {
+      if (event.target === inspectorModal) {
+        closeTokenInspectorModal();
+      }
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.altKey && event.key.toLowerCase() === "d") {
       event.preventDefault();
       toggleDockToolbar();
+    } else if (event.key === "Escape") {
+      closeTokenInspectorModal();
     }
   });
 }
@@ -326,6 +346,227 @@ function syncIdeaLabValues() {
 }
 
 /* ===========================
+   AI STATUS & TOKEN TRACKING
+=========================== */
+
+let aiStatePollInterval = null;
+
+function estimateTokens(text) {
+  if (!text || typeof text !== "string") return 0;
+  let trimmed = text.trim();
+  if (!trimmed) return 0;
+  return Math.max(1, Math.ceil(trimmed.length / 3.8));
+}
+
+function calculateLoadedTokens() {
+  const descEl = document.getElementById("outputEl");
+  const behaviorEl = document.getElementById("behaviorOutputEl");
+  const scenarioEl = document.getElementById("scenarioOutputEl");
+  const roleplayStartEl = document.getElementById("roleplayStartOutputEl");
+
+  let descText = (descEl ? descEl.innerText.trim() : "") || (window.lastCharacterPromptStreamObj ? window.lastCharacterPromptStreamObj.liveResponseText || "" : "");
+  let behaviorText = (behaviorEl ? behaviorEl.innerText.trim() : "") || (window.lastBehaviorPromptStreamObj ? window.lastBehaviorPromptStreamObj.liveResponseText || "" : "");
+  let scenarioText = (scenarioEl ? scenarioEl.innerText.trim() : "") || (window.lastScenarioPromptStreamObj ? window.lastScenarioPromptStreamObj.liveResponseText || "" : "");
+  let roleplayStartText = (roleplayStartEl ? roleplayStartEl.innerText.trim() : "") || (window.lastRoleplayStartPromptStreamObj ? window.lastRoleplayStartPromptStreamObj.liveResponseText || "" : "");
+
+  let descTokens = estimateTokens(descText);
+  let behaviorTokens = estimateTokens(behaviorText);
+  let scenarioTokens = estimateTokens(scenarioText);
+  let roleplayStartTokens = estimateTokens(roleplayStartText);
+
+  let imageTokens = (window.characterImageReference && window.characterImageReference.blob) ? 570 : 0;
+  let totalTokens = descTokens + behaviorTokens + scenarioTokens + roleplayStartTokens + imageTokens;
+
+  let fullCombinedText = [descText, behaviorText, scenarioText, roleplayStartText].filter(Boolean).join(" ");
+  let wordCount = fullCombinedText ? fullCombinedText.trim().split(/\s+/).filter(Boolean).length : 0;
+  let charCount = fullCombinedText.length;
+
+  return {
+    descTokens,
+    behaviorTokens,
+    scenarioTokens,
+    roleplayStartTokens,
+    imageTokens,
+    totalTokens,
+    wordCount,
+    charCount
+  };
+}
+
+function isAiActivelyGenerating() {
+  if (window.generationStates) {
+    for (let key in window.generationStates) {
+      if (window.generationStates[key] === "generating") {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function formatCompactTokenCount(num) {
+  if (!num || num <= 0) return "0";
+  if (num < 1000) return String(num);
+  if (num < 10000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+  return Math.round(num / 1000) + "k";
+}
+
+function updateDockAiStatus(forcedState) {
+  const dockBtn = document.getElementById("dockAiStatusBtn");
+  const tokenCountEl = document.getElementById("dockTokenCount");
+  const unhideDot = document.getElementById("dockUnhideAiDot");
+
+  const isGenerating = typeof forcedState === "boolean" ? forcedState : isAiActivelyGenerating();
+  const tokenData = calculateLoadedTokens();
+  const formattedCount = formatCompactTokenCount(tokenData.totalTokens);
+
+  if (tokenCountEl) {
+    tokenCountEl.textContent = formattedCount;
+  }
+
+  if (dockBtn) {
+    dockBtn.classList.toggle("is-active", isGenerating);
+    dockBtn.classList.toggle("is-idle", !isGenerating);
+
+    let tooltipText = isGenerating
+      ? `AI: Generating • ${tokenData.totalTokens.toLocaleString()} Tokens (Click for details)`
+      : `AI: Idle • ${tokenData.totalTokens.toLocaleString()} Tokens (Click for details)`;
+    dockBtn.setAttribute("data-tooltip", tooltipText);
+    dockBtn.setAttribute("aria-label", tooltipText);
+  }
+
+  if (unhideDot) {
+    unhideDot.classList.toggle("is-active", isGenerating);
+    unhideDot.classList.toggle("is-idle", !isGenerating);
+  }
+
+  if (isGenerating && !aiStatePollInterval) {
+    aiStatePollInterval = setInterval(() => {
+      const stillActive = isAiActivelyGenerating();
+      if (!stillActive) {
+        clearInterval(aiStatePollInterval);
+        aiStatePollInterval = null;
+        updateDockAiStatus(false);
+      } else {
+        const liveTokens = calculateLoadedTokens();
+        if (tokenCountEl) {
+          tokenCountEl.textContent = formatCompactTokenCount(liveTokens.totalTokens);
+        }
+        const modal = document.getElementById("aiTokenInspectorModal");
+        if (modal && !modal.classList.contains("u-hidden") && modal.style.display !== "none") {
+          renderTokenInspectorData(liveTokens, true);
+        }
+      }
+    }, 250);
+  } else if (!isGenerating && aiStatePollInterval) {
+    clearInterval(aiStatePollInterval);
+    aiStatePollInterval = null;
+  }
+
+  const modal = document.getElementById("aiTokenInspectorModal");
+  if (modal && !modal.classList.contains("u-hidden") && modal.style.display !== "none") {
+    renderTokenInspectorData(tokenData, isGenerating);
+  }
+}
+
+function renderTokenInspectorData(data, isGenerating) {
+  const tokenData = data || calculateLoadedTokens();
+  const active = typeof isGenerating === "boolean" ? isGenerating : isAiActivelyGenerating();
+
+  const totalTokensEl = document.getElementById("inspectorTotalTokens");
+  const totalWordsEl = document.getElementById("inspectorTotalWords");
+  const totalCharsEl = document.getElementById("inspectorTotalChars");
+  const percentUsedEl = document.getElementById("inspectorPercentUsed");
+  const progressBar = document.getElementById("inspectorProgressBar");
+  const statusText = document.getElementById("inspectorStatusText");
+  const stopBtn = document.getElementById("inspectorStopGenBtn");
+
+  const descVal = document.getElementById("tokenBreakdownDesc");
+  const behaviorVal = document.getElementById("tokenBreakdownBehavior");
+  const scenarioVal = document.getElementById("tokenBreakdownScenario");
+  const roleplayStartVal = document.getElementById("tokenBreakdownRoleplayStart");
+  const imageVal = document.getElementById("tokenBreakdownImage");
+  const imageRow = document.getElementById("tokenBreakdownImageRow");
+
+  if (totalTokensEl) totalTokensEl.textContent = tokenData.totalTokens.toLocaleString();
+  if (totalWordsEl) totalWordsEl.textContent = tokenData.wordCount.toLocaleString();
+  if (totalCharsEl) totalCharsEl.textContent = tokenData.charCount.toLocaleString();
+
+  let percentOf8k = Math.min(100, Math.round((tokenData.totalTokens / 8192) * 100));
+  if (percentUsedEl) percentUsedEl.textContent = `${percentOf8k}% (of 8k)`;
+  if (progressBar) progressBar.style.width = `${percentOf8k}%`;
+
+  if (descVal) descVal.textContent = tokenData.descTokens.toLocaleString();
+  if (behaviorVal) behaviorVal.textContent = tokenData.behaviorTokens.toLocaleString();
+  if (scenarioVal) scenarioVal.textContent = tokenData.scenarioTokens.toLocaleString();
+  if (roleplayStartVal) roleplayStartVal.textContent = tokenData.roleplayStartTokens.toLocaleString();
+
+  if (imageRow) {
+    imageRow.style.display = tokenData.imageTokens > 0 ? "flex" : "none";
+    if (imageVal) imageVal.textContent = tokenData.imageTokens.toLocaleString();
+  }
+
+  if (statusText) {
+    statusText.textContent = active ? "State: Active (Generating...)" : "State: Idle (Ready)";
+    statusText.style.color = active ? "var(--color-primary)" : "var(--color-text-muted)";
+  }
+
+  if (stopBtn) {
+    stopBtn.classList.toggle("u-hidden", !active);
+  }
+}
+
+function openTokenInspectorModal() {
+  const modal = document.getElementById("aiTokenInspectorModal");
+  if (!modal) return;
+
+  renderTokenInspectorData();
+  modal.classList.remove("u-hidden");
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeTokenInspectorModal() {
+  const modal = document.getElementById("aiTokenInspectorModal");
+  if (!modal) return;
+
+  modal.classList.add("u-hidden");
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function refreshAndRenderTokenInspector() {
+  updateDockAiStatus();
+  renderTokenInspectorData();
+}
+
+async function stopAllActiveGenerations() {
+  if (window.stopSectionGeneration && window.generationStates) {
+    for (let key in window.generationStates) {
+      if (window.generationStates[key] === "generating") {
+        await window.stopSectionGeneration(key);
+      }
+    }
+  }
+  updateDockAiStatus(false);
+}
+
+function observeOutputContainers() {
+  const targetIds = ["outputEl", "behaviorOutputEl", "scenarioOutputEl", "roleplayStartOutputEl"];
+  const observer = new MutationObserver(() => {
+    updateDockAiStatus();
+  });
+
+  targetIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      observer.observe(el, { childList: true, characterData: true, subtree: true });
+      el.addEventListener("input", () => updateDockAiStatus());
+    }
+  });
+}
+
+/* ===========================
    UTILITIES & GLOBAL EXPORTS
 =========================== */
 
@@ -343,6 +584,14 @@ window.applyIdeaLabPlot = applyIdeaLabPlot;
 window.copyIdeaLabPlot = copyIdeaLabPlot;
 window.refreshIdeaLabSeeds = refreshIdeaLabSeeds;
 window.syncIdeaLabValues = syncIdeaLabValues;
+
+window.estimateTokens = estimateTokens;
+window.calculateLoadedTokens = calculateLoadedTokens;
+window.updateDockAiStatus = updateDockAiStatus;
+window.openTokenInspectorModal = openTokenInspectorModal;
+window.closeTokenInspectorModal = closeTokenInspectorModal;
+window.refreshAndRenderTokenInspector = refreshAndRenderTokenInspector;
+window.stopAllActiveGenerations = stopAllActiveGenerations;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initDockNavigation);

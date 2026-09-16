@@ -344,6 +344,16 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
       <!-- Populated dynamically by navigation.js -->
     </div>
     <div class="c-dock-divider"></div>
+    <!-- AI STATUS & TOKEN COUNTER BUTTON -->
+    <button type="button" id="dockAiStatusBtn" class="c-dock-btn c-dock-ai-status-btn is-idle" data-tooltip="AI: Idle • 0 Tokens (Click for details)" aria-label="AI State & Tokens">
+      <div class="c-dock-ai-status-icon-wrap">
+        <span class="c-dock-ai-status-ping"></span>
+        <span class="c-dock-ai-status-dot"></span>
+        <i class="bi bi-cpu-fill c-dock-ai-icon"></i>
+      </div>
+      <span id="dockTokenCount" class="c-dock-token-count">0</span>
+    </button>
+    <div class="c-dock-divider"></div>
     <button type="button" id="dockHideBtn" class="c-dock-btn" data-tooltip="Hide Toolbar" aria-label="Hide Toolbar">
       <i class="bi bi-chevron-left"></i>
     </button>
@@ -353,6 +363,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
 <!-- UNHIDE DOCK BUTTON -->
 <button type="button" id="dockUnhideBtn" class="c-dock-unhide-btn" title="Open Toolbar" aria-label="Open Toolbar">
   <i class="bi bi-chevron-right"></i>
+  <span id="dockUnhideAiDot" class="c-dock-unhide-ai-dot is-idle"></span>
 </button>
 
 <!-- HEADER -->
@@ -895,6 +906,132 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
     <div class="c-dialog__footer">
       <button type="button" class="c-button c-button--clear" onclick="window.closeToolEditorModal()">Cancel</button>
       <button type="button" id="toolEditorSaveBtn" class="c-button c-button--generate" onclick="window.submitToolEditorForm()">Save Tool</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI STATE & TOKEN INSPECTOR MODAL -->
+<div id="aiTokenInspectorModal" class="c-dialog-overlay u-hidden" style="display: none;" aria-hidden="true" role="dialog" aria-labelledby="aiTokenInspectorTitle">
+  <div class="c-dialog c-token-inspector-dialog">
+    <div class="c-dialog__header c-token-inspector-header">
+      <div class="c-token-inspector-header__title">
+        <div class="c-dock-ai-status-icon-wrap c-dock-ai-status-icon-wrap--lg">
+          <span id="inspectorStatusPing" class="c-dock-ai-status-ping"></span>
+          <span id="inspectorStatusDot" class="c-dock-ai-status-dot"></span>
+          <i class="bi bi-cpu-fill c-dock-ai-icon"></i>
+        </div>
+        <div>
+          <div id="aiTokenInspectorTitle" class="c-token-inspector-title">AI State & Token Monitor</div>
+          <div id="inspectorStatusText" class="c-token-inspector-status">State: Idle (Ready)</div>
+        </div>
+      </div>
+      <button type="button" class="c-token-inspector-close-btn" onclick="window.closeTokenInspectorModal()" aria-label="Close dialog">&times;</button>
+    </div>
+
+    <div class="c-dialog__body c-token-inspector-body">
+      <!-- Total Tokens Hero Card -->
+      <div class="c-token-hero-card">
+        <div class="c-token-hero-card__metric">
+          <span class="c-token-hero-card__label">Loaded Context</span>
+          <span id="inspectorTotalTokens" class="c-token-hero-card__val">0</span>
+          <span class="c-token-hero-card__unit">tokens</span>
+        </div>
+        <div class="c-token-hero-card__stats">
+          <div class="c-token-stat-item">
+            <span class="c-token-stat-item__label">Estimated Words</span>
+            <span id="inspectorTotalWords" class="c-token-stat-item__val">0</span>
+          </div>
+          <div class="c-token-stat-item">
+            <span class="c-token-stat-item__label">Characters</span>
+            <span id="inspectorTotalChars" class="c-token-stat-item__val">0</span>
+          </div>
+          <div class="c-token-stat-item">
+            <span class="c-token-stat-item__label">Context Utilized</span>
+            <span id="inspectorPercentUsed" class="c-token-stat-item__val">0% (of 8k)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capacity Progress Bar -->
+      <div class="c-token-progress-wrapper">
+        <div class="c-token-progress-bar-bg">
+          <div id="inspectorProgressBar" class="c-token-progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div class="c-token-progress-markers">
+          <span>0</span>
+          <span>2k</span>
+          <span>4k</span>
+          <span>8k (Standard)</span>
+          <span>16k</span>
+        </div>
+      </div>
+
+      <!-- Breakdown Table / List -->
+      <div class="c-token-breakdown-title">
+        <span>Section Breakdown</span>
+        <button type="button" class="c-token-refresh-btn" onclick="window.refreshAndRenderTokenInspector()" title="Recalculate tokens">
+          <i class="bi bi-arrow-repeat"></i> Refresh
+        </button>
+      </div>
+
+      <div class="c-token-breakdown-list">
+        <div class="c-token-breakdown-row">
+          <div class="c-token-breakdown-info">
+            <i class="bi bi-person-badge-fill c-token-section-icon"></i>
+            <span class="c-token-breakdown-name">Character Description</span>
+          </div>
+          <div class="c-token-breakdown-val">
+            <span id="tokenBreakdownDesc">0</span> tokens
+          </div>
+        </div>
+
+        <div class="c-token-breakdown-row">
+          <div class="c-token-breakdown-info">
+            <i class="bi bi-chat-dots-fill c-token-section-icon"></i>
+            <span class="c-token-breakdown-name">Behavior Examples</span>
+          </div>
+          <div class="c-token-breakdown-val">
+            <span id="tokenBreakdownBehavior">0</span> tokens
+          </div>
+        </div>
+
+        <div class="c-token-breakdown-row">
+          <div class="c-token-breakdown-info">
+            <i class="bi bi-compass-fill c-token-section-icon"></i>
+            <span class="c-token-breakdown-name">Scenario</span>
+          </div>
+          <div class="c-token-breakdown-val">
+            <span id="tokenBreakdownScenario">0</span> tokens
+          </div>
+        </div>
+
+        <div class="c-token-breakdown-row">
+          <div class="c-token-breakdown-info">
+            <i class="bi bi-play-circle-fill c-token-section-icon"></i>
+            <span class="c-token-breakdown-name">Roleplay Start</span>
+          </div>
+          <div class="c-token-breakdown-val">
+            <span id="tokenBreakdownRoleplayStart">0</span> tokens
+          </div>
+        </div>
+
+        <div class="c-token-breakdown-row" id="tokenBreakdownImageRow" style="display: none;">
+          <div class="c-token-breakdown-info">
+            <i class="bi bi-image-fill c-token-section-icon"></i>
+            <span class="c-token-breakdown-name">Attached Vision Reference</span>
+          </div>
+          <div class="c-token-breakdown-val">
+            <span id="tokenBreakdownImage">570</span> tokens
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="c-dialog__footer c-token-inspector-footer">
+      <button type="button" id="inspectorStopGenBtn" class="c-button c-button--stop u-hidden" onclick="window.stopAllActiveGenerations()">
+        <i class="bi bi-stop-circle-fill"></i> Stop Current Generation
+      </button>
+      <button type="button" class="c-button c-button--primary" onclick="window.closeTokenInspectorModal()">Close</button>
     </div>
   </div>
 </div>

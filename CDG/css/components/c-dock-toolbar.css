@@ -288,6 +288,424 @@
 }
 
 /* ===========================
+   AI STATUS & TOKEN BUTTON
+=========================== */
+
+.c-dock-ai-status-btn {
+  width: 40px;
+  min-height: 44px;
+  height: auto;
+  border-radius: var(--radius-md);
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.04);
+  transition: all var(--transition-fast);
+}
+
+.c-dock-ai-status-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.c-dock-ai-status-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.c-dock-ai-status-icon-wrap--lg {
+  width: 36px;
+  height: 36px;
+}
+
+.c-dock-ai-status-icon-wrap--lg .c-dock-ai-icon {
+  font-size: 1.4rem;
+}
+
+.c-dock-ai-icon {
+  font-size: 1.05rem;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+/* Status Indicator Dot & Ping */
+.c-dock-ai-status-dot {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.c-dock-ai-status-icon-wrap--lg .c-dock-ai-status-dot {
+  width: 9px;
+  height: 9px;
+  top: 1px;
+  right: 1px;
+}
+
+.c-dock-ai-status-ping {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.c-dock-ai-status-icon-wrap--lg .c-dock-ai-status-ping {
+  width: 9px;
+  height: 9px;
+  top: 1px;
+  right: 1px;
+}
+
+/* IDLE STATE */
+.c-dock-ai-status-btn.is-idle .c-dock-ai-icon {
+  color: var(--color-text-muted);
+}
+
+.c-dock-ai-status-btn.is-idle .c-dock-ai-status-dot {
+  background-color: #10b981;
+  box-shadow: 0 0 5px rgba(16, 185, 129, 0.6);
+}
+
+.c-dock-ai-status-btn.is-idle .c-dock-token-count {
+  color: var(--color-text-muted);
+}
+
+/* ACTIVE STATE */
+.c-dock-ai-status-btn.is-active {
+  background-color: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.c-dock-ai-status-btn.is-active .c-dock-ai-icon {
+  color: var(--color-primary);
+  animation: cDockAiIconPulse 1.2s ease-in-out infinite;
+}
+
+.c-dock-ai-status-btn.is-active .c-dock-ai-status-dot {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary), 0 0 14px rgba(34, 197, 94, 0.8);
+}
+
+.c-dock-ai-status-btn.is-active .c-dock-ai-status-ping {
+  background-color: var(--color-primary);
+  animation: cDockAiRadarPing 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.c-dock-ai-status-btn.is-active .c-dock-token-count {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+/* Token Counter Badge */
+.c-dock-token-count {
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: var(--font-family-mono, monospace);
+  line-height: 1;
+  letter-spacing: -0.2px;
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+/* UNHIDE BUTTON DOT INDICATOR */
+.c-dock-unhide-ai-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.7);
+  transition: all var(--transition-fast);
+}
+
+.c-dock-unhide-ai-dot.is-active {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary), 0 0 12px rgba(34, 197, 94, 0.9);
+  animation: cDockAiDotBlink 1s ease-in-out infinite;
+}
+
+@keyframes cDockAiRadarPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  75%, 100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+@keyframes cDockAiIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes cDockAiDotBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ===========================
+   AI TOKEN INSPECTOR MODAL
+=========================== */
+
+.c-token-inspector-dialog {
+  max-width: 520px;
+  width: 92%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.c-token-inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.c-token-inspector-header__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.c-token-inspector-title {
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  line-height: 1.2;
+}
+
+.c-token-inspector-status {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.c-token-inspector-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.c-token-inspector-close-btn:hover {
+  color: var(--color-text-main);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* HERO CARD */
+.c-token-hero-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(26, 29, 33, 0.5) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.c-token-hero-card__metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-token-hero-card__label {
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+
+.c-token-hero-card__val {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: var(--font-family-mono, monospace);
+  color: var(--color-primary);
+  line-height: 1.1;
+  margin: 2px 0;
+}
+
+.c-token-hero-card__unit {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.c-token-hero-card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 1px solid var(--color-border);
+  padding-left: var(--space-lg);
+}
+
+.c-token-stat-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.8rem;
+}
+
+.c-token-stat-item__label {
+  color: var(--color-text-muted);
+}
+
+.c-token-stat-item__val {
+  font-weight: 600;
+  font-family: var(--font-family-mono, monospace);
+  color: var(--color-text-main);
+}
+
+/* PROGRESS BAR */
+.c-token-progress-wrapper {
+  margin-bottom: var(--space-lg);
+}
+
+.c-token-progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-bg-base);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.c-token-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary) 0%, #38bdf8 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.c-token-progress-markers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* BREAKDOWN TABLE */
+.c-token-breakdown-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-main);
+  margin-bottom: var(--space-sm);
+}
+
+.c-token-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.c-token-refresh-btn:hover {
+  color: var(--color-text-main);
+  border-color: var(--color-border-hover, var(--color-primary));
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.c-token-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.c-token-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.c-token-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.c-token-breakdown-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--color-text-main);
+}
+
+.c-token-section-icon {
+  font-size: 0.95rem;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.c-token-breakdown-val {
+  font-size: 0.82rem;
+  font-family: var(--font-family-mono, monospace);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.c-token-breakdown-val span {
+  color: var(--color-text-main);
+}
+
+.c-token-inspector-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ===========================
    RESPONSIVE ADJUSTMENTS
 =========================== */
 
@@ -299,6 +717,10 @@
     width: 34px;
     height: 34px;
     font-size: 1rem;
+  }
+  .c-dock-ai-status-btn {
+    width: 34px;
+    min-height: 40px;
   }
   .c-dock-btn[data-tooltip]::after {
     display: none;
