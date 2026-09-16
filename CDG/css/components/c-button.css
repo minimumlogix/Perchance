@@ -224,3 +224,57 @@
   background-color: var(--color-primary-light, rgba(19, 160, 0, 0.2)) !important;
   border-color: var(--color-accent, #13a000) !important;
 }
+
+/* ===========================
+   BUTTON ROW & RESPONSIVE LAYOUT
+=========================== */
+
+.c-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.c-button-row .c-button--generate {
+  flex: 1 1 220px;
+  width: auto;
+  max-width: 100%;
+}
+
+.c-button-row .c-button--export,
+.c-button-row .c-button--clear,
+.c-button-row .c-button--clear-all {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .c-button-row {
+    gap: 6px;
+  }
+
+  .c-button-row .c-button--generate {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .c-button-row .c-button--export,
+  .c-button-row .c-button--clear,
+  .c-button-row .c-button--clear-all {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+    padding: 0 6px;
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

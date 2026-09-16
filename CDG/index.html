@@ -407,50 +407,56 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
   
   <div id="descSettingsEl" class="c-settings-group"> 
     <div class="c-settings-box">
-      <div class="c-settings-box__label">Length:</div>
-      <select id="descLengthEl" class="c-select">
-        <option value="compact_detailed">Compact Detailed</option>
-        <option value="compact_detailed_plus">Compact Detailed +</option>
-        <option value="short">Short</option>
-        <option value="medium">Medium</option>
-        <option value="long">Long</option>
-      </select>
+      <div class="c-settings-item">
+        <span class="c-settings-box__label">Length:</span>
+        <select id="descLengthEl" class="c-select">
+          <option value="compact_detailed">Compact Detailed</option>
+          <option value="compact_detailed_plus">Compact Detailed +</option>
+          <option value="short">Short</option>
+          <option value="medium">Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </div>
 
-      <div class="c-settings-box__label u-ml-sm">Main Cast:</div>
-      <select id="mainCastEl" class="c-select">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-      </select>
+      <div class="c-settings-item">
+        <span class="c-settings-box__label">Main Cast:</span>
+        <select id="mainCastEl" class="c-select">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
 
-      <div class="c-settings-box__label u-ml-sm">Background Cast:</div>
-      <select id="bgCastEl" class="c-select">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-      </select>
+      <div class="c-settings-item">
+        <span class="c-settings-box__label">Background Cast:</span>
+        <select id="bgCastEl" class="c-select">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
     </div>
   </div>
   
   <div id="toneSelectorCtn" class="u-w-full"></div>
   <div id="worldSettingSelectorCtn" class="u-w-full"></div>
   
-  <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
+  <div class="l-flex-center c-button-row u-mt-md u-mb-xs">
     <button id="generateBtn" class="c-button c-button--generate" onclick="regenerate()"><i class="bi bi-stars"></i> generate description</button>
     <button id="exportBtn" class="c-button c-button--export" title="Export everything as an organized Markdown text file" onclick="window.exportAsMarkdown()"><i class="bi bi-download"></i> export markdown</button>
     <button id="clearDescBtn" class="c-button c-button--clear" title="Clear character description output and notes" onclick="window.clearSection('desc')"><i class="bi bi-trash"></i> clear</button>
@@ -478,7 +484,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
         </select>
       </div>
     </div>
-    <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
+    <div class="l-flex-center c-button-row u-mt-md u-mb-xs">
       <button id="generateScenarioBtn" class="c-button c-button--generate" onclick="generateScenario()"><i class="bi bi-stars"></i> generate scenario description</button>
       <button id="clearScenarioBtn" class="c-button c-button--clear" title="Clear scenario description output and notes" onclick="window.clearSection('scenario')"><i class="bi bi-trash"></i> clear</button>
     </div>
@@ -505,7 +511,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
         </select>
       </div>
     </div>
-    <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
+    <div class="l-flex-center c-button-row u-mt-md u-mb-xs">
       <button id="generateRoleplayStartBtn" class="c-button c-button--generate" onclick="generateRoleplayStart()"><i class="bi bi-stars"></i> generate roleplay start</button>
       <button id="clearRoleplayStartBtn" class="c-button c-button--clear" title="Clear roleplay start output and notes" onclick="window.clearSection('roleplayStart')"><i class="bi bi-trash"></i> clear</button>
     </div>
@@ -522,7 +528,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
         <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customBehaviorFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
       </div>
     </div>
-    <div class="l-flex-center u-mt-md u-mb-xs" style="gap: 8px;">
+    <div class="l-flex-center c-button-row u-mt-md u-mb-xs">
       <button id="generateBehaviorBtn" class="c-button c-button--generate" onclick="generateBehavior()"><i class="bi bi-stars"></i> generate behavior examples</button>
       <button id="clearBehaviorBtn" class="c-button c-button--clear" title="Clear behavior examples output and notes" onclick="window.clearSection('behavior')"><i class="bi bi-trash"></i> clear</button>
     </div>

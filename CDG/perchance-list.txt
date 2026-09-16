@@ -26,7 +26,7 @@ commentOptions
   customEmojiSize = 1.3
   loneCustomEmojiSizeMultiplier = 2
   adminFlair = 👑 MOD
-  adminPasswordHash = REPLACE_WITH_SHA256_HASH
+  adminPasswordHash = 125f4fff90483f9a2384371df687d530db80bab1e838cddb1e087639a66df1b3
   rateLimits = 1 per 3 seconds, 6 per minute, 25 per 10 minutes
   commentPlaceholderText = Message #comments...
   bannedWords = spam, scam, phishing, hack

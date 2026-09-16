@@ -24,11 +24,14 @@
   display: flex;
   align-items: stretch;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   position: relative;
 }
 
 .c-tag-container {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -41,6 +44,7 @@
   border-bottom-right-radius: 0;
   padding: 6px 10px;
   min-height: 2.75rem;
+  box-sizing: border-box;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }

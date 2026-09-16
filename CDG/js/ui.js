@@ -1134,7 +1134,7 @@ window.createCommentsSectionHtml = function() {
     rateLimits: "1 per 3 seconds, 6 per minute, 25 per 10 minutes",
     bannedWords: "spam, scam, phishing, hack",
     adminFlair: "👑 MOD",
-    adminPasswordHash: "REPLACE_WITH_SHA256_HASH",
+    adminPasswordHash: (window.root && window.root.commentOptions && window.root.commentOptions.adminPasswordHash && window.root.commentOptions.adminPasswordHash !== "REPLACE_WITH_SHA256_HASH") ? window.root.commentOptions.adminPasswordHash : "125f4fff90483f9a2384371df687d530db80bab1e838cddb1e087639a66df1b3",
     onLoad: function(comments, extra) {
       if (typeof window.__handleChatLoad === "function") {
         window.__handleChatLoad(comments, extra);

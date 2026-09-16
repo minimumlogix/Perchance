@@ -2,6 +2,12 @@
    BASE STYLES
 =========================== */
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-family-base);
   background-color: var(--color-bg-base);
@@ -9,6 +15,12 @@ body {
   padding: var(--space-lg);
   text-align: center;
   transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: var(--space-md) var(--space-xs);
+  }
 }
 
 a {

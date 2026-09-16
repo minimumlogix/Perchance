@@ -7,14 +7,18 @@
   display: flex;
   align-items: stretch;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   position: relative;
 }
 
 .c-textarea-wrapper .c-textarea {
   flex: 1;
+  min-width: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   min-height: 5.5rem;
+  box-sizing: border-box;
 }
 
 .c-textarea-actions {
