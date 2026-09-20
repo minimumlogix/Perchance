@@ -790,7 +790,7 @@ function renderChatFeed(tool) {
       <div class="c-tool-chat-welcome__text">${escapeHtml(tool.description)}</div>
       <div class="c-tool-chat-starters">
         ${(tool.starters || []).map(st => `
-          <button type="button" class="c-tool-chat-starter-btn" onclick="window.sendToolChatMessage('${escapeHtml(st)}')">
+          <button type="button" class="c-tool-chat-starter-btn" onclick="window.sendToolChatMessage(this.dataset.starter)" data-starter="${escapeHtml(st)}">
             <span>"${escapeHtml(st)}"</span>
             <i class="bi bi-arrow-right-short"></i>
           </button>

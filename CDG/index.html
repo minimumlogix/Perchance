@@ -336,6 +336,60 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
       });
     })();
   </script>
+
+  <!-- SAFEGUARD: tools-engine.js builds starter buttons as onclick="window.sendToolChatMessage('<html-escaped text>')".
+       Text containing an apostrophe (e.g. "isn't") breaks that string literal, so the handler fails to compile and
+       perchance's DOM observer reports 'SyntaxError: missing ) after argument list'. Repair those buttons here
+       (before the observer walks the new nodes) and drive them via a delegated listener. Harmless no-op once the
+       upstream generator is fixed. -->
+  <script>
+    (function () {
+      function starterTextFromButton(btn) {
+        var span = btn.querySelector("span");
+        var text = (span ? span.textContent : btn.textContent).trim();
+        return text.replace(/^"([\s\S]*)"$/, "$1");
+      }
+      function repairBrokenStarterButtons() {
+        document.querySelectorAll(".c-tool-chat-starter-btn[onclick]").forEach(function (btn) {
+          var raw = btn.getAttribute("onclick");
+          try { new Function(raw); return; } catch (e) {}
+          btn.setAttribute("data-starter-text", starterTextFromButton(btn));
+          btn.removeAttribute("onclick");
+        });
+      }
+      document.addEventListener("click", function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest(".c-tool-chat-starter-btn") : null;
+        if (!btn || typeof window.sendToolChatMessage !== "function") return;
+        if (!btn.hasAttribute("data-starter-text")) {
+          var raw = btn.getAttribute("onclick");
+          if (!raw) return;
+          try { new Function(raw); return; } catch (err) {}
+          btn.setAttribute("data-starter-text", starterTextFromButton(btn));
+          btn.removeAttribute("onclick");
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        window.sendToolChatMessage(btn.getAttribute("data-starter-text"));
+      }, true);
+      var tries = 0;
+      var iv = setInterval(function () {
+        if (typeof window.renderChatFeed === "function" && !window.renderChatFeed.__starterGuard) {
+          var orig = window.renderChatFeed;
+          var wrapped = function () {
+            var result = orig.apply(this, arguments);
+            repairBrokenStarterButtons();
+            return result;
+          };
+          wrapped.__starterGuard = true;
+          window.renderChatFeed = wrapped;
+          clearInterval(iv);
+          repairBrokenStarterButtons();
+        } else if (++tries > 400) {
+          clearInterval(iv);
+        }
+      }, 100);
+    })();
+  </script>
 </head>
 <body>
 
