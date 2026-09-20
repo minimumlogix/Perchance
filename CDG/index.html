@@ -730,7 +730,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
       <div class="c-tools-header">
         <div class="c-tools-header__info">
           <div class="c-tools-header__title"><i class="bi bi-robot"></i> Modular AI Tools</div>
-          <div class="c-tools-header__desc">Specialized AI generators and roleplay assistants. Choose a built-in bot or craft your own custom tool with memory access.</div>
+          <div class="c-tools-header__desc">Specialized AI generators and roleplay assistants. Choose a built-in bot or craft your own custom tool with context access.</div>
         </div>
         <div class="c-tools-header__actions">
           <button type="button" class="c-button c-button--generate" onclick="window.openToolEditorModal()">
@@ -778,11 +778,11 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
             </select>
           </div>
 
-          <!-- MEMORY ACCESS SWITCH -->
-          <div id="toolChatMemoryToggle" class="c-toggle-control" title="When enabled, assistant has access to your active Character and Scenario text from the main page">
+          <!-- CONTEXT ACCESS SWITCH -->
+          <div id="toolChatMemoryToggle" class="c-toggle-control" title="When enabled, assistant has context access to your active Character and Scenario text from the main page" onclick="window.toggleActiveToolContext()">
             <div class="c-toggle-switch"></div>
             <span id="toolChatMemoryStatusLabel" class="c-toggle-control__label">
-              <i class="bi bi-slash-circle"></i> Memory: Off
+              <i class="bi bi-slash-circle"></i> Context: Off
             </span>
           </div>
 
@@ -818,7 +818,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
           </button>
         </div>
         <div class="c-tool-chat-disclaimer">
-          AI output may vary. Memory access connects to your active character description and scenario notes.
+          AI output may vary. Context access connects to your active character description and scenario notes.
         </div>
       </div>
     </div>
@@ -980,7 +980,7 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
 
       <div class="u-mb-md" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: var(--color-bg-box); border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
         <div>
-          <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--color-text-main);">Default Memory Access</div>
+          <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: var(--color-text-main);">Default Context Access</div>
           <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">Allow this tool to access active character notes, scenario, and generated descriptions from the main page (default off).</div>
         </div>
         <input type="checkbox" id="toolEditorMemorySwitch" style="width: 18px; height: 18px; cursor: pointer;">

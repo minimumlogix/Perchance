@@ -193,7 +193,7 @@ When requested, rewrite or polish sections to demonstrate higher quality, viscer
     badge: "Built-in",
     description: "Simulates an interactive roleplay session with you to test character personality, voice, and chemistry.",
     instruction: `You are an immersive, dynamic roleplay partner.
-If memory access is enabled, step directly into the character (or an intriguing partner interacting with them) based on the main page data.
+If context access is enabled, step directly into the character (or an intriguing partner interacting with them) based on the main page data.
 Stay completely in character. React organically with casual dialogue, tangible physical gestures, sensory details, and realistic emotion.
 Keep responses engaging, grounded, and focused on driving the scene forward without excessive monologue.`,
     accessMemory: false,
@@ -301,7 +301,12 @@ function initToolsEngine() {
    EVENT LISTENERS
 =========================== */
 
+let toolsEventListenersInitialized = false;
+
 function setupToolsEventListeners() {
+  if (toolsEventListenersInitialized) return;
+  toolsEventListenersInitialized = true;
+
   const searchInput = document.getElementById("toolsSearchInput");
   if (searchInput) {
     searchInput.addEventListener("input", function() {
@@ -332,11 +337,12 @@ function setupToolsEventListeners() {
     });
   }
 
-  const memoryToggle = document.getElementById("toolChatMemoryToggle");
-  if (memoryToggle) {
-    memoryToggle.addEventListener("click", function() {
-      toggleActiveToolMemory();
-    });
+  const contextToggle = document.getElementById("toolChatMemoryToggle") || document.getElementById("toolChatContextToggle");
+  if (contextToggle) {
+    contextToggle.onclick = function(e) {
+      if (e) e.preventDefault();
+      toggleActiveToolContext();
+    };
   }
 
   const artStyleSelect = document.getElementById("toolChatArtStyleSelect");
@@ -407,7 +413,7 @@ function deleteCustomTool(toolId) {
 }
 
 /* ===========================
-   CORE LOGIC: MEMORY ACCESS SYNTHESIZER
+   CORE LOGIC: CONTEXT ACCESS SYNTHESIZER
 =========================== */
 
 function gatherMainPageContext() {
@@ -513,11 +519,12 @@ async function sendToolChatMessage(starterText) {
 
   let systemPrompt = `[TOOL INSTRUCTION - ${tool.name}]\n${effectiveInstruction}\n`;
 
-  if (tool.accessMemory) {
+  const hasContext = !!(tool.accessContext !== undefined ? tool.accessContext : tool.accessMemory);
+  if (hasContext) {
     const memoryContext = gatherMainPageContext();
-    systemPrompt += `\n[MAIN PAGE GENERATOR MEMORY (ACTIVE STATE)]:\n${memoryContext}\n`;
+    systemPrompt += `\n[MAIN PAGE GENERATOR CONTEXT (ACTIVE STATE)]:\n${memoryContext}\n`;
   } else {
-    systemPrompt += `\n[NOTE: Memory access to the main page is currently OFF. Answer generally or based solely on conversation context unless the user explicitly asks you to turn it on.]\n`;
+    systemPrompt += `\n[NOTE: Context access to the main page is currently OFF. Answer generally or based solely on conversation context unless the user explicitly asks you to turn it on.]\n`;
   }
 
   // Conversation history string
@@ -630,7 +637,7 @@ function renderToolsCatalog(filterQuery = "") {
         </div>
         <div class="c-tool-card-item__badges">
           <span class="c-tool-badge ${tool.isBuiltin ? 'c-tool-badge--builtin' : 'c-tool-badge--custom'}">${tool.badge || 'Tool'}</span>
-          ${tool.accessMemory ? '<span class="c-tool-badge c-tool-badge--memory" title="Memory Access Enabled"><i class="bi bi-memory"></i> Memory</span>' : ''}
+          ${(tool.accessContext || tool.accessMemory) ? '<span class="c-tool-badge c-tool-badge--context c-tool-badge--memory" title="Context Access Enabled"><i class="bi bi-link-45deg"></i> Context</span>' : ''}
         </div>
       </div>
       <div class="c-tool-card-item__name">${escapeHtml(tool.name)}</div>
@@ -663,7 +670,7 @@ function renderToolsCatalog(filterQuery = "") {
   createCard.innerHTML = `
     <div class="c-tool-card-item--create-icon"><i class="bi bi-plus-circle-fill"></i></div>
     <div class="c-tool-card-item--create-title">Create New AI Tool</div>
-    <div class="c-tool-card-item--create-desc">Build a custom specialized bot with custom instructions & memory access.</div>
+    <div class="c-tool-card-item--create-desc">Build a custom specialized bot with custom instructions & context access.</div>
   `;
   createCard.addEventListener("click", () => openToolEditorModal());
   grid.appendChild(createCard);
@@ -714,7 +721,7 @@ function openToolChat(toolId) {
     if (artStyleCtn) artStyleCtn.classList.add("u-hidden");
   }
 
-  updateChatMemoryToggleUI(tool.accessMemory);
+  updateChatContextToggleUI(!!(tool.accessContext !== undefined ? tool.accessContext : tool.accessMemory));
   renderChatFeed(tool);
   clearChatImage();
 
@@ -732,46 +739,53 @@ function closeToolChat() {
   }
 }
 
-function updateChatMemoryToggleUI(enabled) {
-  const toggleControl = document.getElementById("toolChatMemoryToggle");
-  const statusLabel = document.getElementById("toolChatMemoryStatusLabel");
+function updateChatContextToggleUI(enabled) {
+  const toggleControl = document.getElementById("toolChatMemoryToggle") || document.getElementById("toolChatContextToggle");
+  const statusLabel = document.getElementById("toolChatMemoryStatusLabel") || document.getElementById("toolChatContextStatusLabel");
 
   if (toggleControl) {
     toggleControl.classList.toggle("is-active", !!enabled);
   }
   if (statusLabel) {
     statusLabel.innerHTML = enabled
-      ? '<i class="bi bi-link-45deg"></i> Memory: Connected'
-      : '<i class="bi bi-slash-circle"></i> Memory: Off';
+      ? '<i class="bi bi-link-45deg"></i> Context: Connected'
+      : '<i class="bi bi-slash-circle"></i> Context: Off';
   }
 }
 
-function toggleActiveToolMemory() {
+const updateChatMemoryToggleUI = updateChatContextToggleUI;
+
+function toggleActiveToolContext() {
   const tool = getToolById(activeToolId);
   if (!tool) return;
 
-  tool.accessMemory = !tool.accessMemory;
+  const currentVal = !!(tool.accessContext !== undefined ? tool.accessContext : tool.accessMemory);
+  const nextVal = !currentVal;
+  tool.accessMemory = nextVal;
+  tool.accessContext = nextVal;
 
   if (!tool.isBuiltin) {
     saveCustomTool(tool);
   }
 
-  updateChatMemoryToggleUI(tool.accessMemory);
+  updateChatContextToggleUI(nextVal);
 
   const feed = document.getElementById("toolChatFeed");
   if (feed) {
     const notice = document.createElement("div");
     notice.style.textAlign = "center";
     notice.style.fontSize = "0.75rem";
-    notice.style.color = tool.accessMemory ? "var(--color-primary)" : "var(--color-text-muted)";
+    notice.style.color = nextVal ? "var(--color-primary)" : "var(--color-text-muted)";
     notice.style.padding = "4px 0";
-    notice.innerHTML = tool.accessMemory
-      ? '<i class="bi bi-check-circle-fill"></i> Memory connected: Assistant can now inspect character & scenario data from main page.'
-      : '<i class="bi bi-info-circle"></i> Memory disconnected: Assistant is now running independently.';
+    notice.innerHTML = nextVal
+      ? '<i class="bi bi-check-circle-fill"></i> Context connected: Assistant can now inspect character & scenario data from main page.'
+      : '<i class="bi bi-info-circle"></i> Context disconnected: Assistant is now running independently.';
     feed.appendChild(notice);
     scrollToChatBottom();
   }
 }
+
+const toggleActiveToolMemory = toggleActiveToolContext;
 
 function renderChatFeed(tool) {
   const feed = document.getElementById("toolChatFeed");
@@ -979,7 +993,7 @@ function openToolEditorModal(toolId = null) {
       instructionInput.value = existingTool.instruction;
       instructionInput.disabled = existingTool.isBuiltin;
     }
-    if (memorySwitch) memorySwitch.checked = !!existingTool.accessMemory;
+    if (memorySwitch) memorySwitch.checked = !!(existingTool.accessContext !== undefined ? existingTool.accessContext : existingTool.accessMemory);
     if (saveBtn) saveBtn.style.display = existingTool.isBuiltin ? "none" : "block";
     selectToolModalIcon(existingTool.icon || "bi-cpu-fill");
   } else {
@@ -1028,7 +1042,7 @@ function submitToolEditorForm() {
   const name = nameInput ? nameInput.value.trim() : "";
   const desc = descInput ? descInput.value.trim() : "";
   const instruction = instructionInput ? instructionInput.value.trim() : "";
-  const accessMemory = memorySwitch ? memorySwitch.checked : false;
+  const accessContext = memorySwitch ? memorySwitch.checked : false;
   const icon = selectedIconEl ? selectedIconEl.getAttribute("data-icon") : "bi-robot";
 
   if (!name || !instruction) {
@@ -1041,7 +1055,8 @@ function submitToolEditorForm() {
     name: name,
     description: desc || "Custom specialized AI assistant",
     instruction: instruction,
-    accessMemory: accessMemory,
+    accessMemory: accessContext,
+    accessContext: accessContext,
     icon: icon
   };
 
@@ -1196,6 +1211,10 @@ window.confirmDeleteTool = confirmDeleteTool;
 window.copyChatMessage = copyChatMessage;
 window.handleChatArtStyleChange = handleChatArtStyleChange;
 window.applyTagPromptToMainPage = applyTagPromptToMainPage;
+window.toggleActiveToolMemory = toggleActiveToolContext;
+window.toggleActiveToolContext = toggleActiveToolContext;
+window.updateChatMemoryToggleUI = updateChatContextToggleUI;
+window.updateChatContextToggleUI = updateChatContextToggleUI;
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initToolsEngine);
