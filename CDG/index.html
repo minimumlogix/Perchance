@@ -523,11 +523,32 @@ Long-term Goals = Dismantle the syndicate that framed his father.`;
   <!-- SCENARIO DESCRIPTION SECTION -->
   <div id="scenarioCtn" class="c-card--section">
     <div class="c-card__title">Scenario Description</div>
-    <div class="c-textarea-wrapper">
+    <div class="c-textarea-wrapper" id="customScenarioFeaturesWrapper">
       <textarea id="customScenarioFeaturesEl" class="c-textarea" placeholder="(optional) Keywords, world context, or scenario outline..."></textarea>
       <div class="c-textarea-actions">
         <button type="button" class="c-textarea-btn" title="Generate Random Idea (YAML Engine)" onclick="window.generateRandomPlotIdea('customScenarioFeaturesEl')"><i class="bi bi-dice-5-fill"></i></button>
         <button type="button" class="c-textarea-btn" title="AI Idea Generator" onclick="window.openAiIdeaModal('customScenarioFeaturesEl')"><i class="bi bi-cpu-fill"></i></button>
+        <button type="button" id="scenarioAttachImageBtn" class="c-textarea-btn" title="Attach Scenario Image Reference (Vision AI)" onclick="window.triggerScenarioImageUpload()"><i class="bi bi-image"></i></button>
+      </div>
+    </div>
+    <input type="file" id="scenarioImageRefInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
+
+    <!-- SCENARIO IMAGE REFERENCE PREVIEW CONTAINER -->
+    <div id="scenarioImageRefPreviewContainer" class="c-image-ref-preview u-hidden">
+      <div class="c-image-ref-card">
+        <div class="c-image-ref-thumb-wrapper" onclick="window.previewScenarioImageModal()" title="Click to view full image">
+          <img id="scenarioImageRefThumb" class="c-image-ref-thumb" src="" alt="Scenario Reference Image">
+          <div class="c-image-ref-zoom-overlay"><i class="bi bi-zoom-in"></i></div>
+        </div>
+        <div class="c-image-ref-info">
+          <div class="c-image-ref-header">
+            <span class="c-image-ref-badge"><i class="bi bi-eye-fill"></i> Scenario Vision Reference Active</span>
+            <span id="scenarioImageRefSize" class="c-image-ref-size">0 KB</span>
+          </div>
+          <span id="scenarioImageRefName" class="c-image-ref-name">scenario-image.png</span>
+          <span class="c-image-ref-hint">Visual scene and environmental context from this image will set the scenario & guide the opening roleplay start</span>
+        </div>
+        <button type="button" id="scenarioRemoveImageBtn" class="c-image-ref-remove-btn" title="Remove attached image" onclick="window.clearScenarioImageReference()">&times;</button>
       </div>
     </div>
     <div id="scenarioSettingsEl" class="c-settings-group u-mt-xs"> 

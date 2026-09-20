@@ -374,7 +374,9 @@ function calculateLoadedTokens() {
   let scenarioTokens = estimateTokens(scenarioText);
   let roleplayStartTokens = estimateTokens(roleplayStartText);
 
-  let imageTokens = (window.characterImageReference && window.characterImageReference.blob) ? 570 : 0;
+  let imageTokens = 0;
+  if (window.characterImageReference && window.characterImageReference.blob) imageTokens += 570;
+  if (window.scenarioImageReference && window.scenarioImageReference.blob) imageTokens += 570;
   let totalTokens = descTokens + behaviorTokens + scenarioTokens + roleplayStartTokens + imageTokens;
 
   let fullCombinedText = [descText, behaviorText, scenarioText, roleplayStartText].filter(Boolean).join(" ");

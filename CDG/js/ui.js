@@ -180,6 +180,9 @@ window.clearSection = function(type) {
       window.CDGStorage.saveSettings({ customScenarioFeatures: "" });
       localStorage.customScenarioFeatures = "";
     }
+    if (typeof window.clearScenarioImageReference === "function") {
+      window.clearScenarioImageReference();
+    }
     if (typeof window.setButtonState === "function") {
       window.setButtonState("scenario", "initial");
     } else {

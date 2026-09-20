@@ -523,6 +523,76 @@ Rules for fields:
     if (modal) modal.classList.add("u-hidden");
   }
 
+  /* ===========================
+     SCENARIO IMAGE REFERENCE LOGIC
+  =========================== */
+  window.scenarioImageReference = null;
+
+  function setScenarioImageReference(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    if (window.scenarioImageReference && window.scenarioImageReference.previewUrl) {
+      URL.revokeObjectURL(window.scenarioImageReference.previewUrl);
+    }
+
+    let previewUrl = URL.createObjectURL(file);
+    window.scenarioImageReference = {
+      blob: file,
+      previewUrl: previewUrl,
+      name: file.name || "scenario-image.png",
+      size: file.size
+    };
+
+    let previewContainer = document.getElementById("scenarioImageRefPreviewContainer");
+    let previewImg = document.getElementById("scenarioImageRefThumb");
+    let imageNameEl = document.getElementById("scenarioImageRefName");
+    let imageSizeEl = document.getElementById("scenarioImageRefSize");
+    let attachBtn = document.getElementById("scenarioAttachImageBtn");
+
+    if (previewImg) previewImg.src = previewUrl;
+    if (imageNameEl) {
+      imageNameEl.textContent = file.name || "scenario-image.png";
+      imageNameEl.title = file.name || "scenario-image.png";
+    }
+    if (imageSizeEl) imageSizeEl.textContent = Math.round(file.size / 1024) + " KB";
+    if (previewContainer) previewContainer.classList.remove("u-hidden");
+    if (attachBtn) attachBtn.classList.add("is-attached");
+  }
+
+  function clearScenarioImageReference() {
+    if (window.scenarioImageReference && window.scenarioImageReference.previewUrl) {
+      URL.revokeObjectURL(window.scenarioImageReference.previewUrl);
+    }
+    window.scenarioImageReference = null;
+
+    let previewContainer = document.getElementById("scenarioImageRefPreviewContainer");
+    let previewImg = document.getElementById("scenarioImageRefThumb");
+    let fileInput = document.getElementById("scenarioImageRefInput");
+    let attachBtn = document.getElementById("scenarioAttachImageBtn");
+
+    if (previewImg) previewImg.src = "";
+    if (previewContainer) previewContainer.classList.add("u-hidden");
+    if (fileInput) fileInput.value = "";
+    if (attachBtn) attachBtn.classList.remove("is-attached");
+
+    closeImageRefModal();
+  }
+
+  function triggerScenarioImageUpload() {
+    let fileInput = document.getElementById("scenarioImageRefInput");
+    if (fileInput) fileInput.click();
+  }
+
+  function previewScenarioImageModal() {
+    if (!window.scenarioImageReference || !window.scenarioImageReference.previewUrl) return;
+    let modal = ensureLightboxExists();
+    let img = modal.querySelector("#imageRefModalImg");
+    let title = modal.querySelector("#imageRefModalTitle");
+    if (img) img.src = window.scenarioImageReference.previewUrl;
+    if (title) title.textContent = window.scenarioImageReference.name || "Scenario Reference Image";
+    modal.classList.remove("u-hidden");
+  }
+
   function initImageReferenceHandlers() {
     let fileInput = document.getElementById("descImageRefInput");
     if (fileInput) {
@@ -574,6 +644,58 @@ Rules for fields:
         }
       });
     }
+
+    /* Scenario Image Attachment Handlers */
+    let scenarioFileInput = document.getElementById("scenarioImageRefInput");
+    if (scenarioFileInput) {
+      scenarioFileInput.addEventListener("change", function(e) {
+        if (e.target.files && e.target.files[0]) {
+          setScenarioImageReference(e.target.files[0]);
+        }
+      });
+    }
+
+    let customScenarioFeaturesEl = document.getElementById("customScenarioFeaturesEl");
+    let customScenarioFeaturesWrapper = document.getElementById("customScenarioFeaturesWrapper");
+
+    if (customScenarioFeaturesWrapper) {
+      ["dragenter", "dragover"].forEach(evtName => {
+        customScenarioFeaturesWrapper.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          customScenarioFeaturesWrapper.classList.add("is-dragover");
+        });
+      });
+      ["dragleave", "drop"].forEach(evtName => {
+        customScenarioFeaturesWrapper.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          customScenarioFeaturesWrapper.classList.remove("is-dragover");
+        });
+      });
+      customScenarioFeaturesWrapper.addEventListener("drop", (e) => {
+        let files = e.dataTransfer?.files;
+        if (files && files[0] && files[0].type.startsWith("image/")) {
+          setScenarioImageReference(files[0]);
+        }
+      });
+    }
+
+    if (customScenarioFeaturesEl) {
+      customScenarioFeaturesEl.addEventListener("paste", function(e) {
+        let items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+        if (!items) return;
+        for (let item of items) {
+          if (item.type.indexOf("image") === 0) {
+            let blob = item.getAsFile();
+            if (blob) {
+              setScenarioImageReference(blob);
+              break;
+            }
+          }
+        }
+      });
+    }
   }
 
   if (document.readyState === "loading") {
@@ -587,4 +709,9 @@ Rules for fields:
   window.triggerImageReferenceUpload = triggerImageReferenceUpload;
   window.previewImageReferenceModal = previewImageReferenceModal;
   window.closeImageReferenceModal = closeImageRefModal;
+
+  window.setScenarioImageReference = setScenarioImageReference;
+  window.clearScenarioImageReference = clearScenarioImageReference;
+  window.triggerScenarioImageUpload = triggerScenarioImageUpload;
+  window.previewScenarioImageModal = previewScenarioImageModal;
 })();

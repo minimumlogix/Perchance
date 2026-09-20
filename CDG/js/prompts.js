@@ -621,7 +621,7 @@ window.getCompactDetailedPlusPrompt = function () {
         mainBlocks.push(`${label}'s Role: Full Name, Nick names, age, gender, race, ethnicity, occupation, extensive role in the roleplay, relation to {{user}}, relation to other NPCs, family, friends, factions, enemies.
 ${label}'s Backstory: In-depth backstory detailing origins, defining milestones, secrets, traumas, personal dilemmas, and how they reached their current position.
 ${label}'s Physical Appearance: Comprehensive, vivid physical description detailing height, build, posture, facial features, hair, eyes, skin tone, scars, tattoos, detailed attire/clothing layers, gear, weapons, accessories, and distinct mannerisms.
-${label}'s Personality: In-depth personality profile written as a continuous collection of sentences on the same line detailing core traits, flaws, idiosyncrasies, speech patterns, behavioral quirks, morals, worldview, emotions under pressure, dynamic with {{user}}, and the character's data and level for Extraversion, Neuroticism, Agreeableness, Conscientiousness, and Openness.`);
+${label}'s Personality: In-depth personality profile written as a continuous collection of natural sentences on the same line detailing core traits, flaws, idiosyncrasies, speech patterns, behavioral quirks, morals, worldview, emotions under pressure, dynamic with {{user}}, and seamlessly weaving in their Big Five traits (extraversion, neuroticism, agreeableness, conscientiousness, and openness) in fluid narrative prose (e.g., write 'Kaelen is highly conscientious, disciplined, and thorough, memorizing every lock and backup route before entering a space. He exhibits low extraversion, keeping to quiet corners...' strictly avoiding label tags like 'Conscientiousness: High' or 'Extraversion: Low').`);
     }
     let mainCastTemplate = mainBlocks.join("\n\n");
 
@@ -644,7 +644,8 @@ ${label}'s Personality: In-depth personality profile written as a continuous col
 Writing Style & Tone:
 - Drop the flowery prose and moral filters; write in a raw, grounded style with casual vocabulary, heavy sensory descriptions of touch and scent, and a slow-burn pace that focuses on visceral physical tension and high-stakes longing.
 - Sensory Grounding: Anchor descriptions in concrete, tangible details (textures, skin heat, breathing, pulse points, scents like rain, smoke, worn leather, cologne, clean skin) rather than abstract metaphors.
-- Deep Characterization & Completeness: Tell everything about the characters—provide deep, fully-realized backstories, exhaustive physical appearance details (exact attire, facial features, hair, eyes, build, accessories, sensory cues), clear speech quirks, internal conflicts, and nuanced relationships with {{user}}. In the Personality section, keep it strictly as a continuous collection of sentences on the same line without line breaks or separate bullet lists, weaving in the character's data and level (e.g., High, Moderate, Low with descriptive behavioural data and manifestations) for Extraversion, Neuroticism, Agreeableness, Conscientiousness, and Openness.
+- Deep Characterization & Completeness: Tell everything about the characters—provide deep, fully-realized backstories, exhaustive physical appearance details (exact attire, facial features, hair, eyes, build, accessories, sensory cues), clear speech quirks, internal conflicts, and nuanced relationships with {{user}}.
+- Personality & Big Five Natural Prose (CRITICAL): In the Personality section, write strictly as a continuous collection of natural prose sentences on the same line without line breaks or separate bullet lists. You MUST weave the character's level and behavioral manifestation of Extraversion, Neuroticism, Agreeableness, Conscientiousness, and Openness into fluent narrative sentences. STRICTLY AVOID label-style tags, colons, or parenthetical markers like 'Conscientiousness: High (disciplined...)', 'Extraversion: Moderate (...)', or 'Agreeableness: Low (...)'. Instead, integrate them directly as natural sentences (e.g., 'Kaelen is highly conscientious, disciplined, and thorough, memorizing every lock and backup route before entering a space. He displays low extraversion, preferring quiet corners and safehouse isolation. His neuroticism is moderate, remaining hyper-vigilant under threat while projecting stoic calm...').
 - Rich Worldbuilding: Fully flesh out the World Summary with cultural backdrop, atmosphere, local rumors, factions, and tangible environmental textures.
 - Comprehensive Roleplay Overview: Provide an extensive Roleplay Summary clearly laying out the overarching plot, immediate scene stakes, and exactly how the background characters, main cast, and {{user}} intersect, clash, or cooperate.
 - MANDATORY HEADINGS & COMPLETION: You MUST generate all 5 headings in the exact specified order: ## World Summary, ## Roleplay Summary, ## Main Cast (NPCs), ## Background Cast (NPCs), and ## Spoilers. Do NOT stop or truncate generation after Background Cast; you MUST fully write the ## Spoilers section.
@@ -741,11 +742,16 @@ window.getScenarioPrompt = function () {
         ? `Design Notes / Scenario Context:\n${customScenarioFeaturesEl.value.trim()}`
         : "";
 
+    let hasScenarioImage = !!(window.scenarioImageReference && window.scenarioImageReference.blob);
+    let scenarioImageNote = hasScenarioImage
+        ? `\nSCENARIO IMAGE REFERENCE: A visual reference of the scene and environment is attached. Carefully analyze the image's setting, environment, spatial layout, architecture, weather, lighting, textures, objects, and mood, and directly incorporate these visual details to establish the scenario world context, setting, and immediate situation.\n`
+        : "";
+
     let instruction = `Based on the character profile below, write the SCENARIO CONTEXT for a roleplay session with the character. Treat this as a unified Roleplay & World Summary that establishes the premise and setup without any spoilers.
 
 Requirements & Focus:
 ${perspectiveInstruction}
-${toneAndSettingNote}
+${toneAndSettingNote}${scenarioImageNote}
 - The World Setting: Clearly establish the world environment, society, rules, atmosphere, and backdrop that {{user}} is currently in.
 - Prior Events & Journey: Explain what has happened to {{user}} and the cast leading up to this moment (how they got here, recent events, background buildup).
 - Current Situation & Stakes: Clearly define the immediate situation, the dynamic between {{user}} and the characters, and the active dilemma or premise right as the roleplay begins.
@@ -764,7 +770,8 @@ ${descText}
 
 ${customScenarioText}`;
 
-    return { instruction };
+    let instructionPayload = hasScenarioImage ? [instruction, window.scenarioImageReference.blob] : instruction;
+    return { instruction: instructionPayload };
 };
 
 /* ===========================
@@ -814,11 +821,22 @@ Amy: *She saw you standing there alone* "Why the heck are you so early?"
 Fio: *she follows Amy with a creepy smile only meant for you* "Thats right loser," *she snickers* "why did you come so early?"\n`;
     }
 
+    let hasScenarioImage = !!(window.scenarioImageReference && window.scenarioImageReference.blob);
+    let scenarioImageStartNote = hasScenarioImage
+        ? `\nSCENARIO VISUAL REFERENCE (HOW TO START):
+An image of the starting scene and environment is attached.
+You MUST directly use this visual scene to determine HOW the roleplay starts:
+- Ground {{user}} and the character(s) directly within the physical space, architecture, objects, and lighting depicted in the image.
+- Anchor their opening physical positions, postures, proximity, and immediate actions in the visible props, furniture, doors, weather, or environment shown.
+- Directly weave the visual atmosphere and cues of this setting into their opening dialogue, actions, and the very first moment they encounter each other.\n`
+        : "";
+
     let instruction = `Based on the character profile and scenario context below, write the ROLEPLAY START (Dialogue & Narration) for the character to start the roleplay.
 
 Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
+${scenarioImageStartNote}
 ${multiCastRule}
 - SCENE SETTING & USER GROUNDING (NOVEL-STYLE IMMERSION): Where necessary, set the immediate scene with vivid, grounded atmosphere like the opening chapter of a published novel. Clearly establish where {{user}} is physically located and what {{user}} is currently doing in the space (e.g., sitting across the booth, catching their breath by the door, nursing a drink, examining an item). Make the scene as deeply immersive as possible without overloading the reader with excessive data, stats, or info-dumps.
 - AVOID SPOILERS (CRITICAL): Strictly avoid revealing, referencing, or acting on any spoilers, secret motives, hidden agendas, or concealed background truths from the character profile that {{user}} shouldn't know about at the start. Characters must stay grounded in their surface persona and immediate scene context without prematurely giving away secrets or unearned information.
@@ -842,8 +860,10 @@ ${scenarioText}
 
 ${customRoleplayText}`;
 
+    let instructionPayload = hasScenarioImage ? [instruction, window.scenarioImageReference.blob] : instruction;
+
     return {
-        instruction,
+        instruction: instructionPayload,
         render: function (data) {
             let text = data.text.replace(/(^|\n)(\{\{(?:user|char)\}\}:?|[a-zA-Z0-9_ -]{1,30}:)/g, (m, p1, p2) => p1 + `<b style="color:#13a000">${p2}</b>`);
             return text;
