@@ -804,21 +804,50 @@ window.getRoleplayStartPrompt = function () {
 
     let perspectiveInstruction = "";
     if (perspectiveVal === "firstperson") {
-        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in FIRST PERSON from the character's perspective using 'I', 'my', 'me' (e.g. *I saw you standing there alone* "Why the hell are you so early?").`;
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in FIRST PERSON from the character's perspective using 'I', 'my', 'me'.`;
     } else if (perspectiveVal === "secondperson") {
-        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration in SECOND PERSON addressing {{user}} directly using 'you', 'your' (e.g. *You saw her standing there alone* "Why are you early?").`;
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration in SECOND PERSON addressing {{user}} directly using 'you', 'your'.`;
     } else {
-        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in THIRD PERSON using character names or 'he/she/they' (e.g. *She saw you standing there alone* "Why the heck are you so early?").`;
+        perspectiveInstruction = `NARRATIVE PERSPECTIVE: Write narration and actions in THIRD PERSON using character names or 'he/she/they'.`;
     }
 
-    let multiCastRule = "";
+    let introStructureRule = "";
     if (mainCastCount >= 2) {
-        multiCastRule = `\nMULTI-CHARACTER FORMATTING RULE:
-Since this scenario features multiple characters (${mainCastCount} Main Cast), EVERY line of dialogue and narration MUST start with the specific character's name followed by a colon.
+        introStructureRule = `\nROLEPLAY INTRO STRUCTURE & MULTI-CHARACTER FORMAT (CRITICAL):
+Do NOT output a single monolithic block of actions followed by dialogues (avoid '*actions*\\n"dialogues"').
+Instead, separate characters' actions, breaks, and speech with flowing world narration lines.
+Weave each character's dialogue with natural mid-dialogue actions, gestures, and conversational pauses.
+Every character line MUST begin with their name followed by a colon.
 
-Example format:
-Amy: *She saw you standing there alone* "Why the heck are you so early?"
-Fio: *she follows Amy with a creepy smile only meant for you* "Thats right loser," *she snickers* "why did you come so early?"\n`;
+Required Format & Structure:
+*narration with good flow*
+name: "dialogue" *breaks or mid dialogue actions* "dialogues" *breaks or mid dialogue actions* "dialogues"
+*narration with good flow*
+name: "dialogue" *breaks or mid dialogue actions* "dialogues" *breaks or mid dialogue actions* "dialogues"
+
+Example:
+*The neon sign outside flickers through the rain-streaked blinds, casting pale amber slats across the worn booth where {{user}} sits waiting.*
+Amy: "Took you long enough," *she slips into the seat opposite, unzipping her damp leather jacket with a sharp tug,* "and I told you not to order until I got here." *She glances toward the doorway, tapping her fingernails against the laminate table.* "We're being watched."
+*A low rumble of thunder rattles the storefront glass, followed by the cold chime of the entrance bell as a sudden draft sweeps in.*
+Fio: "Relax, Amy," *she leans over the booth divider, twirling a brass lighter between her knuckles with an irritating smirk,* "nobody followed us through that downpour." *Her eyes flick down toward {{user}}, gaze lingering with quiet amusement.* "Though someone looks like they just saw a ghost."\n`;
+    } else {
+        introStructureRule = `\nROLEPLAY INTRO STRUCTURE & DIALOGUE PACING (CRITICAL):
+Do NOT output a single monolithic block of actions followed by dialogues (avoid '*actions*\\n"dialogues"').
+Instead, separate the character's actions, breaks, and speech with flowing world narration lines.
+Weave dialogue with natural mid-dialogue actions, physical gestures, reactions, and conversational pauses.
+Do NOT use name prefixes for single-character intros.
+
+Required Format & Structure:
+*narration with good flow*
+"dialogue" *breaks or mid dialogue actions* "dialogues" *breaks or mid dialogue actions*
+*narration with good flow*
+"dialogue" *breaks or mid dialogue actions* "dialogues" *breaks or mid dialogue actions*
+
+Example:
+*The damp autumn chill clings to the corridor, the faint hum of fluorescent lighting buzzing overhead while {{user}} leans against the locker row, catching their breath.*
+"You shouldn't be standing out here in the cold," *he remarks quietly, stepping into the dim pool of overhead light while pulling his wool scarf down from his jaw,* "especially not after what happened earlier." *He pauses, his dark eyes scanning the empty hallway before settling back onto {{user}} with quiet intensity.* "They're still looking for you."
+*The distant slam of a heavy stairwell door echoes down the hall, sending a sharp draft cutting through the floorboards.*
+"Here," *he mutters, shrugging out of his heavy coat and draping it across {{user}}'s shoulders before they can protest,* "put this on." *His fingers brush their collar for a lingering beat, his breath ghosting warm against the frosty air.* "We need to keep moving before someone checks this floor."\n`;
     }
 
     let hasScenarioImage = !!(window.scenarioImageReference && window.scenarioImageReference.blob);
@@ -837,7 +866,7 @@ Requirements & Format:
 ${perspectiveInstruction}
 ${toneAndSettingNote}
 ${scenarioImageStartNote}
-${multiCastRule}
+${introStructureRule}
 - SCENE SETTING & USER GROUNDING (NOVEL-STYLE IMMERSION): Where necessary, set the immediate scene with vivid, grounded atmosphere like the opening chapter of a published novel. Clearly establish where {{user}} is physically located and what {{user}} is currently doing in the space (e.g., sitting across the booth, catching their breath by the door, nursing a drink, examining an item). Make the scene as deeply immersive as possible without overloading the reader with excessive data, stats, or info-dumps.
 - AVOID SPOILERS (CRITICAL): Strictly avoid revealing, referencing, or acting on any spoilers, secret motives, hidden agendas, or concealed background truths from the character profile that {{user}} shouldn't know about at the start. Characters must stay grounded in their surface persona and immediate scene context without prematurely giving away secrets or unearned information.
 Writing Style & Tone:
@@ -848,7 +877,9 @@ Writing Style & Tone:
 - Unfiltered Immersion: Become each character completely without any moral filter holding you back. Focus on genuine physical expressions, body language, speech quirks, and personality traits.
 PUNCTUATION RULE: Never use em dashes (—); instead, rewrite the paragraph by splitting ideas into shorter, clearer sentences whenever possible, using periods as the default, commas for minor details, colons for explanations or lists, semicolons only when necessary, and parentheses sparingly for nonessential information.
 
-Write the character's opening message, as the continuation to scenario context, setting the scene where necessary by grounding where {{user}} is, what {{user}} is doing, and the physical space, along with direct dialogue addressing {{user}} and accompanying narration/actions. Format actions and narration inside asterisks and dialogues in double quotes (e.g. *Kaito leans against the damp brick wall, watching {{user}} shake the rain from their coat by the doorway, the faint scent of tobacco clinging to his collar* "You're late.").
+Write the character's opening message as the continuation to scenario context, setting the scene where necessary by grounding where {{user}} is, what {{user}} is doing, and the physical space, following the dynamic pacing and structure specified above:
+- Weave world narration paragraphs and character speech organically. NEVER output a single monolithic action block followed by dialogue blocks.
+- Break dialogue with natural beats: physical reactions, pauses, gestures, and mid-dialogue actions enclosed in asterisks (*...*). Spoken dialogue must be in double quotes ("...").
 - Novel Immersion: Prioritize atmospheric presence and physical grounding over excessive exposition.
 - Strictly avoid revealing or hinting at any spoilers or secrets that {{user}} shouldn't know about at the start.
 - Output ONLY the greeting dialogue and narration. Do NOT include headers or labels (like 'Intro Script:').
