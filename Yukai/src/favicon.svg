@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Gradient (Deep Midnight Cosmic) -->
+    <linearGradient id="yukai-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141726" />
+      <stop offset="50%" stop-color="#0e101b" />
+      <stop offset="100%" stop-color="#080910" />
+    </linearGradient>
+
+    <!-- Outer Rim Stroke Gradient (Violet to Cyan Neon) -->
+    <linearGradient id="yukai-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="35%" stop-color="#818cf8" />
+      <stop offset="70%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <!-- Left Wing Gradient (Lavender / Violet) -->
+    <linearGradient id="yukai-wing-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0e7ff" />
+      <stop offset="30%" stop-color="#c084fc" />
+      <stop offset="70%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+
+    <!-- Right Wing Gradient (Lavender / Cyan) -->
+    <linearGradient id="yukai-wing-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0e7ff" />
+      <stop offset="30%" stop-color="#38bdf8" />
+      <stop offset="70%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+
+    <!-- Shard / Blade Gradient -->
+    <linearGradient id="yukai-shard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="30%" stop-color="#c7d2fe" />
+      <stop offset="70%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <!-- Celestial Star Radial Glow -->
+    <radialGradient id="yukai-star-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#e0e7ff" />
+      <stop offset="60%" stop-color="#a5b4fc" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </radialGradient>
+
+    <!-- Ambient Core Halo -->
+    <radialGradient id="yukai-ambient" cx="50%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#c084fc" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Celestial Ring Gradient -->
+    <linearGradient id="yukai-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" stop-opacity="0.7" />
+      <stop offset="50%" stop-color="#818cf8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.7" />
+    </linearGradient>
+
+    <!-- Glow Filter for Emblem -->
+    <filter id="yukai-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.5" flood-color="#818cf8" flood-opacity="0.7" />
+    </filter>
+
+    <!-- Rim Glow Filter -->
+    <filter id="yukai-rim-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#a5b4fc" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Badge Drop Shadow -->
+    <filter id="yukai-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.75" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes yukaiStarPulse {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 3px #a5b4fc); }
+    }
+    @keyframes yukaiShimmer {
+      0%, 100% { opacity: 0.92; }
+      50% { opacity: 1; }
+    }
+    .yukai-star-group {
+      transform-origin: 32px 31px;
+      animation: yukaiStarPulse 3.4s ease-in-out infinite;
+    }
+    .yukai-wings-group {
+      animation: yukaiShimmer 4s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- SQUIRCLE BADGE BASE -->
+  <rect x="5" y="5" width="54" height="54" rx="14" fill="url(#yukai-bg)" stroke="url(#yukai-rim)" stroke-width="1.6" filter="url(#yukai-shadow)" />
+  <rect x="5" y="5" width="54" height="54" rx="14" fill="none" stroke="#a5b4fc" stroke-width="0.75" opacity="0.4" filter="url(#yukai-rim-glow)" />
+
+  <!-- AMBIENT BACKDROP HALO -->
+  <circle cx="32" cy="31" r="21" fill="url(#yukai-ambient)" />
+
+  <!-- CELESTIAL HALO RING -->
+  <circle cx="32" cy="31" r="14.5" fill="none" stroke="url(#yukai-ring)" stroke-width="1.2" stroke-dasharray="2 1" />
+
+  <!-- MAIN CREST GROUP WITH NEON GLOW -->
+  <g filter="url(#yukai-glow)">
+
+    <!-- WINGS GROUP (THE 'Y' ARCH) -->
+    <g class="yukai-wings-group">
+      <!-- LEFT WING -->
+      <!-- Outer Top Primary Blade -->
+      <path d="M 32 31
+               C 27 27 20 22 16.5 16.5
+               C 16 16 16.8 17.5 17.5 19.5
+               C 19.5 24 23 28 27.5 30.5
+               Z"
+            fill="url(#yukai-wing-left)" />
+
+      <!-- Left Secondary Feather Blades -->
+      <path d="M 27 28
+               C 22 24.5 17.5 22.5 15.5 23
+               C 16.5 25.5 19.5 28.5 24.5 31.5
+               Z"
+            fill="url(#yukai-wing-left)" opacity="0.9" />
+
+      <path d="M 25 32
+               C 21 29.5 17 29.5 16 31
+               C 17.8 33 21.5 35 26 34
+               Z"
+            fill="url(#yukai-wing-left)" opacity="0.8" />
+
+      <path d="M 26 35
+               C 22.5 35 19.5 37 19 39
+               C 21.5 40 25 38.5 28 36.5
+               Z"
+            fill="url(#yukai-wing-left)" opacity="0.7" />
+
+      <!-- Inner Left Horn/Crest Accent -->
+      <path d="M 30 25
+               C 27 21 24 19 22 19
+               C 23.5 21 26 23.5 28.5 27
+               Z"
+            fill="#e0e7ff" opacity="0.9" />
+
+      <!-- RIGHT WING -->
+      <!-- Outer Top Primary Blade -->
+      <path d="M 32 31
+               C 37 27 44 22 47.5 16.5
+               C 48 16 47.2 17.5 46.5 19.5
+               C 44.5 24 41 28 36.5 30.5
+               Z"
+            fill="url(#yukai-wing-right)" />
+
+      <!-- Right Secondary Feather Blades -->
+      <path d="M 37 28
+               C 42 24.5 46.5 22.5 48.5 23
+               C 47.5 25.5 44.5 28.5 39.5 31.5
+               Z"
+            fill="url(#yukai-wing-right)" opacity="0.9" />
+
+      <path d="M 39 32
+               C 43 29.5 47 29.5 48 31
+               C 46.2 33 42.5 35 38 34
+               Z"
+            fill="url(#yukai-wing-right)" opacity="0.8" />
+
+      <path d="M 38 35
+               C 41.5 35 44.5 37 45 39
+               C 42.5 40 39 38.5 36 36.5
+               Z"
+            fill="url(#yukai-wing-right)" opacity="0.7" />
+
+      <!-- Inner Right Horn/Crest Accent -->
+      <path d="M 34 25
+               C 37 21 40 19 42 19
+               C 40.5 21 38 23.5 35.5 27
+               Z"
+            fill="#e0e7ff" opacity="0.9" />
+    </g>
+
+    <!-- DOWNWARD CRYSTAL SHARD / BLADE (STEM OF 'Y') -->
+    <g>
+      <!-- Left Facet -->
+      <path d="M 32 32
+               L 29.5 36
+               L 32 49
+               Z"
+            fill="url(#yukai-shard)" />
+      <!-- Right Facet -->
+      <path d="M 32 32
+               L 34.5 36
+               L 32 49
+               Z"
+            fill="#818cf8" opacity="0.9" />
+      <!-- Center Shard Spine Highlight -->
+      <line x1="32" y1="31" x2="32" y2="48.5" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round" />
+    </g>
+
+    <!-- RADIANT CELESTIAL RPG STAR ('✨' AT THE HEART) -->
+    <g class="yukai-star-group">
+      <!-- 4 Secondary Diagonal Diamond Rays -->
+      <path d="M 32 31
+               L 35.5 27.5
+               M 32 31
+               L 35.5 34.5
+               M 32 31
+               L 28.5 34.5
+               M 32 31
+               L 28.5 27.5"
+            stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" />
+
+      <!-- 4 Primary Concave Diamond Rays -->
+      <path d="M 32 21
+               Q 32 31 42 31
+               Q 32 31 32 41
+               Q 32 31 22 31
+               Q 32 31 32 21 Z"
+            fill="url(#yukai-star-glow)" />
+
+      <!-- Inner Brilliant White Core Diamond -->
+      <path d="M 32 26
+               Q 32 31 37 31
+               Q 32 31 32 36
+               Q 32 31 27 31
+               Q 32 31 32 26 Z"
+            fill="#ffffff" />
+
+      <!-- Sparkle Core Dot -->
+      <circle cx="32" cy="31" r="1.3" fill="#ffffff" />
+    </g>
+
+    <!-- SATELLITE CELESTIAL SPARKLES -->
+    <circle cx="21" cy="18" r="0.8" fill="#e0e7ff" opacity="0.85" />
+    <circle cx="43" cy="18" r="0.8" fill="#e0e7ff" opacity="0.85" />
+
+  </g>
+</svg>

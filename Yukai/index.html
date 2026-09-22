@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>[page.title] - [page.subtitle]</title>
+  <link rel="icon" type="image/svg+xml" href="https://minimumlogix.github.io/Perchance/Yukai/assets/favicon.svg">
+  <link rel="alternate icon" type="image/png" href="https://minimumlogix.github.io/Perchance/Yukai/assets/favicon.png">
   <script>window.pageLoadStartTime = Date.now();</script>
   <script>window.onForcedColorSchemeChangeHandlers = new Set();</script>
   <script>
@@ -7810,15 +7812,20 @@
     }, 40);
   }
 
-  // src/favicon.svg is the editable source of the mark. The src tree is served from the root of the
-  // generator's own origin (so /src/favicon.svg next to /<generatorName>), which is also where a
-  // relative "src/..." reference lands in production; the platform's <base> tag points at the public
-  // page URL instead, so that is tried only as a fallback.
+  // assets/favicon.svg (and src/favicon.svg) is the source of the YUKAI mark.
+  // We probe the hosted GitHub Pages URL first, followed by origin and relative fallbacks.
   function installFavicon() {
-    const candidates = [location.origin + "/src/favicon.svg", new URL("src/favicon.svg", document.baseURI).href];
+    const githubFavicon = "https://minimumlogix.github.io/Perchance/Yukai/assets/favicon.svg";
+    const candidates = [
+      githubFavicon,
+      location.origin + "/assets/favicon.svg",
+      location.origin + "/src/favicon.svg",
+      new URL("assets/favicon.svg", document.baseURI).href,
+      new URL("src/favicon.svg", document.baseURI).href
+    ];
     let i = 0;
     (function tryNext() {
-      if (i >= candidates.length) return applyFavicon(candidates[1]);
+      if (i >= candidates.length) return applyFavicon(githubFavicon);
       const url = candidates[i++];
       const probe = new Image();
       probe.onload = () => applyFavicon(url);
