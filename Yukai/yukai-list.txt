@@ -6,6 +6,8 @@ fullscreenButton = {import:fullscreen-button-plugin}
 literal = {import:literal-plugin} // this plugin allows people to use square/curly brackets (which are usually special characters in perchance) in their bot/user names, writing instructions, etc. without causing errors
 bugReport = {import:bug-report-plugin} // for comments-plugin-based feedback button - it's a helper for getting browser debug info like browser version, localStorage size limits, etc. - stuff that's relevant to bug reports
 createTextEditor = {import:text-editor-plugin-v1} // a higher-performance version of <textarea> that also supports text styling (e.g. text within asterisks can be italicized)
+generateImage = {import:text-to-image-plugin} // paints the "Scene" images in the chat page (see index.html's scene-image section). Note: importing this plugin shows an ad to logged-out visitors.
+kv = {import:kv-plugin} // durable per-user storage for the generated scene images themselves (the chat log only holds a tiny marker per image - see isSceneImageMarker below)
 
 botName = [botNameEl.value.trim() || "Bot"]
 userName = [userNameEl.value.trim() || "Anon"]  
@@ -15,6 +17,149 @@ cleanCharAndUserPlaceholders(text) =>
   let cPlaceholder = String.fromCharCode(123, 123) + "char" + String.fromCharCode(125, 125);
   let uPlaceholder = String.fromCharCode(123, 123) + "user" + String.fromCharCode(125, 125);
   return text.split(cPlaceholder).join(botName).split(uPlaceholder).join(userName);
+
+
+// ---- Scene-image messages --------------------------------------------------------------------------
+// A generated scene image lives in the chat log as a small marker message of the form
+// `[[yukai-img:<id>]]` - the pixels themselves are stored in IndexedDB (see index.html's "SCENE IMAGE
+// MESSAGES" section). These two helpers are the ONE filter that keeps those markers out of everything
+// the AI is fed: the roleplay instruction, the startWith tail, the next-speaker logic and the
+// summarizer. NOTE: the brackets are built with fromCharCode because `[` is special to the pjs parser.
+isSceneImageMarker(text) =>
+  return String(text || "").trim().startsWith(String.fromCharCode(91, 91) + "yukai-img:");
+
+stripSceneImageMarkers(text) =>
+  return String(text || "").split(/\n{2,}/).map(m => m.trim()).filter(m => m && !isSceneImageMarker(m)).join("\n\n");
+
+
+// ---- Speaker attribution (multi-character bots) ---------------------------------------------------
+// A "multi-character" bot (a whole crew, a family, a party...) writes several different speakers per
+// turn. Once the story gets long the model drifts onto the bot's own name for every reply, because the
+// schema example in `instruction` used to only ever name the bot - which makes the bot name the single
+// strongest naming signal in the whole prompt. These helpers read the cast that the story has actually
+// established and feed it back into the instruction as a concrete example plus an explicit cast list,
+// so replies stay attributed to real characters.
+
+extractSpeakerName(messageText) =>
+  let match = String(messageText || "").trim().match(/^([^:\n]{1,40}):\s/);
+  if(!match) return "";
+  return match[1].trim();
+
+getEstablishedSpeakerNames(maxNames=4) =>
+  // Scanned newest-first so the most recently active characters lead. The user's own name, the
+  // bot/story name, and the "SUMMARY^n:" lines are never treated as characters.
+  let names = [];
+  let seen = {};
+  let skipUser = String(userName).trim().toLowerCase();
+  let skipBot = String(botName).trim().toLowerCase();
+  let raw = String(chatLogsEl.value || "").split(/\n{2,}/);
+  for(let i = raw.length - 1; i >= 0 && names.length < maxNames; i--) {
+    let line = raw[i].trim();
+    if(!line || /^SUMMARY\^[0-9]+:/.test(line)) continue;
+    let name = extractSpeakerName(line);
+    if(!name) continue;
+    let key = name.toLowerCase();
+    if(key === skipUser || key === skipBot || seen[key]) continue;
+    if(/^narrat/i.test(name)) continue; // narration is covered by its own example line, not a character
+    seen[key] = true;
+    names.push(name);
+  }
+  return names;
+
+isMultiCharacterStory() =>
+  return getEstablishedSpeakerNames(2).length >= 2;
+
+replyExampleLines() =>
+  // The example lines inside the JSON schema. Naming the story's actual cast here (rather than always
+  // naming the bot) is what stops a multi-character story collapsing into "<botName>: ..." replies.
+  let names = getEstablishedSpeakerNames(3);
+  let lines = ['      "Narrator: *atmospheric narration describing the setting, sensory details, or event...*"'];
+  if(names.length >= 2) {
+    for(let i = 0; i < names.length; i++) {
+      lines.push('      "' + literal(names[i]) + ': \\"Dialogue here...\\" *Action or thought description here...*"');
+    }
+  } else {
+    // Single-character bot: the bot name IS the speaker name. (`literal()` is called here rather than
+    // being left in the text, because this block is injected *after* pjs evaluation.)
+    lines.push('      "' + literal(botName) + ': \\"Dialogue here...\\" *Action or thought description here...*"');
+  }
+  return lines.join(",\n");
+
+jsonSchemaBlock() =>
+  // NOTE: this is injected into the rendered instruction as a SINGLE placeholder line rather than being
+  // written inline in the `instruction` list. Written inline, the pjs parser swallows everything between
+  // "\\{" and "\\}" (the escaped braces do not protect the body), so the model never actually saw the
+  // schema - and the schema is the only place a reply's speaker format is demonstrated.
+  return [
+    "{",
+    "  \"time\": \"e.g. 09:30 AM\",",
+    "  \"date\": \"e.g. Day 3, Autumn / October 14th\",",
+    "  \"location\": \"e.g. Silver Tavern, Orobouros\",",
+    "  \"environment\": \"e.g. cloudy, hellish, poisonous, rainy, tense\",",
+    "  \"replies\": [",
+    replyExampleLines(),
+    "  ]",
+    "}"
+  ].join("\n");
+
+speakerAttributionRules() =>
+  // Empty (@eraseableLine) for single-character bots, where the bot name IS the speaker name.
+  let names = getEstablishedSpeakerNames(8);
+  if(names.length < 2) return "@eraseableLine";
+  let castList = names.map(n => literal(n)).join(", ");
+  return [
+    "- THIS STORY HAS MULTIPLE CHARACTERS (" + castList + "). Attribute every item in \"replies\" to the specific character who is speaking, acting or thinking - give each reply that character's own name as its speaker.",
+    "- NEVER write \"" + literal(botName) + "\" as a speaker name in this story. \"" + literal(botName) + "\" is the name of the story/bot itself, NOT a character - any reply attributed to it is wrong.",
+    "- Never merge two characters into one reply, and never let two different characters share the same speaker name."
+  ].join("\n");
+
+turnRepliesCollapsedOntoBotName(jsonText) =>
+  // True when every non-narration reply in the turn is attributed to the bot/story name, i.e. the model
+  // stopped naming the actual characters. Used to trigger a single corrective re-generation.
+  let block = String(jsonText || "").match(/"replies"\s*:\s*\[([\s\S]*?)\]/);
+  if(!block) return false;
+  let names = [];
+  let re = /"((?:[^"\\]|\\.)*)"/g;
+  let item;
+  while((item = re.exec(block[1])) !== null) {
+    let name = extractSpeakerName(item[1].replace(/\\"/g, '"')).toLowerCase();
+    if(name) names.push(name);
+  }
+  let speakers = names.filter(n => n !== "narrator");
+  if(speakers.length === 0) return false;
+  let bot = String(botName).trim().toLowerCase();
+  return speakers.every(n => n === bot);
+
+async repairCollapsedSpeakerAttribution(renderedInstruction, renderedStartWith, stopSequences, fullJsonText) =>
+  // Re-writes the turn once when every reply came back attributed to the bot/story name instead of to
+  // the characters who are actually speaking (multi-character bots only). Returns the (possibly
+  // unchanged) JSON text. Extracted from handleSendButtonClick so the safety net is testable on its own.
+  if(!isMultiCharacterStory() || !turnRepliesCollapsedOntoBotName(fullJsonText)) return fullJsonText;
+  if(window.onSpeakerAttributionRepair) window.onSpeakerAttributionRepair(true);
+  let result = fullJsonText;
+  try {
+    let repairInstruction = renderedInstruction + "\n\n# IMPORTANT CORRECTION:\nThat attempt attributed replies to \"" + literal(botName) + "\" - but \"" + literal(botName) + "\" is the name of this story/bot, NOT a character, so those replies lost track of who was speaking. Write the whole turn again from scratch, and attribute every item in \"replies\" to the specific character who is speaking, acting or thinking, using that character's own name.\nRespond ONLY with the JSON object.";
+    let repairObj = ai({
+      instruction: () => repairInstruction,
+      startWith: () => renderedStartWith,
+      stopSequences,
+    });
+    window.lastMessagePendingObj = repairObj;
+    stopGenerationBtn.onclick = function() {
+      repairObj.stop();
+      if(window.showAiTypingIndicator) window.showAiTypingIndicator(false);
+    };
+    let repairData = await repairObj;
+    let repairedText = repairData.text;
+    if(!repairedText || !repairedText.includes('"time"')) {
+      repairedText = renderedStartWith + (repairData.generatedText || "");
+    }
+    if(repairedText && repairedText.includes('"time"')) result = repairedText;
+  } catch(e) {
+    console.error(e);
+  }
+  if(window.onSpeakerAttributionRepair) window.onSpeakerAttributionRepair(false);
+  return result;
 
 page 
   title = YUKAI
@@ -27,22 +172,17 @@ instruction
   [""]
   # FORMAT REQUIREMENT (CRITICAL):
   You MUST respond with a single, valid JSON object without markdown code blocks, following this exact schema:
-  \{
-    "time": "e.g. 10:45 PM / Late Evening",
-    "date": "e.g. Day 3, Autumn / October 14th",
-    "location": "e.g. Whispering Alley / Throne Room",
-    "environment": "e.g. cloudy, hellish, poisonous, rainy, tense",
-    "replies": \[
-      "Narrator: *atmospheric narration describing the setting, sensory details, or event...*",
-      "[literal(botName)]: \"Dialogue here...\" *Action or thought description here...*"
-    \]
-  \}
+  <<<JSON_SCHEMA_BLOCK>>>
   [""]
   # Multi-Character & Narration Rules:
   - The "replies" array can contain multiple messages from characters and/or the narrator in chronological order.
-  - Each item in "replies" MUST start with the speaker's name followed by a colon, e.g. "Narrator: ...", "[literal(botName)]: ...", or another character present in the scene.
+  - Each item in "replies" MUST start with the speaker's name followed by a colon - e.g. "Narrator: ..." for narration, or the name of the character who is speaking/acting. Attribute every reply to whoever is actually speaking: never lump two different characters into one reply, and never use a group/story label as the speaker when an actual character is the one speaking.
+  <<<SPEAKER_ATTRIBUTION_RULES>>>
   - Wrap actions, sensations, and thoughts in *asterisks*, and spoken dialogue in quotes.
   - Update the "time", "date", "location", and "environment" dynamically based on what happens in the story.
+  - "time" MUST ALWAYS be a 12-hour clock time with a zero-padded two-digit hour and am/pm - e.g. "09:30 AM", "12:15 PM", "11:05 PM". NEVER use vague words like "morning", "evening", "night", "noon" or "later", and never leave it unchanged if time has passed in the scene.
+  - "location" MUST ALWAYS be written as "\[specific place\], \[broader parent location\]" - e.g. "Silver Tavern, Orobouros", "Engine Room, Titanic, North Atlantic", "Throne Room, Eldora". Never output a bare place name with no parent location.
+  - "environment" MUST be 2-5 short comma-separated descriptors of 1-2 words each - e.g. "rainy, tense, cold" or "hellish, poisonous". Never write a full sentence here.
   - Maintain the distinct personality, voice, and motivations of each character.
   - Do NOT speak or act on behalf of [literal(userName)]. Let the user control their own character.
   [""]
@@ -66,6 +206,7 @@ instruction
   ---
   <<<SCENARIO_PLACEHOLDER>>>
   ---
+  [window.historyTimelineText ? "# Story so far (timeline of earlier events - the full text has been condensed away, so treat this as what actually happened):\n---\n" + literal(window.historyTimelineText) + "\n---" : "@eraseableLine"]
   [""]
   # Here's what has happened so far in this roleplay/chat/story:
   <MESSAGES>
@@ -117,7 +258,9 @@ charactersAndScenarioGenerationPrompt
   
 
 getLastMessage() =>
-  let lastMessage = chatLogsEl.value.trim().split(/\n{2,}/).pop();
+  // Scene-image marker messages are skipped, so an illustration posted after the last turn doesn't
+  // change whose turn the AI thinks it is.
+  let lastMessage = stripSceneImageMarkers(chatLogsEl.value).split(/\n{2,}/).pop();
   let name = lastMessage?.split(":")[0].trim();
   let content = lastMessage?.split(":").slice(1).join(":").trim();
   if(name?.length > 50 && content === "") {
@@ -149,7 +292,7 @@ numMessagesToPutInStartWith = 2
 getStarterText(opts) =>
   if(!opts) opts = {};
   // We make the AI start with the last `numMessagesToPutInStartWith` messages, rather than putting all the messages in the instruction. I think this might make the AI less likely to repeat the last message since it can more easily "see" what it just wrote.
-  let lastFewMessagesArr = chatLogsEl.value.trim().split(/\n{2,}/).filter(m => !/^SUMMARY\^[0-9]+:/.test(m.trim())).slice(-numMessagesToPutInStartWith);
+  let lastFewMessagesArr = chatLogsEl.value.trim().split(/\n{2,}/).filter(m => !/^SUMMARY\^[0-9]+:/.test(m.trim()) && !isSceneImageMarker(m)).slice(-numMessagesToPutInStartWith);
   
   //// EDIT: Disabling this for now since it seems to confuse the new LLM. These are already at the bottom of the instruction anyway - new LLM should be smart enough to follow them.
   // if(opts.nextMessageDraftOrInstruction || whatHappensNextEl.value.trim()) {
@@ -181,19 +324,9 @@ getStarterText(opts) =>
   }
   
 updateVisibilityOfReplyButtonsAndSelectors() =>
-  if(inputEl.value.trim() === "") {
-    sendAsCharacterCtn.hidden = true;
-    autoRespondCtn.hidden = true;
-    quickReplyButtonsCtn.hidden = false;
-  } else {
-    sendAsCharacterCtn.hidden = false;
-    quickReplyButtonsCtn.hidden = true;
-    if(autoImproveCheckboxEl.checked) {
-      autoRespondCtn.hidden = true;
-    } else {
-      autoRespondCtn.hidden = false;
-    }
-  }
+  // NOTE: the reply-as selector and the auto-improve/auto-respond switches now live in the chat page's
+  // persistent control strip / tools popup, so their visibility no longer depends on the input box.
+  quickReplyButtonsCtn.hidden = inputEl.value.trim() !== "";
 
 async handleSendButtonClick(opts) =>
   if(opts && opts.mode === "continue") {
@@ -254,6 +387,10 @@ async handleSendButtonClick(opts) =>
         if(chatLogsEl.value.trim() !== "") chatLogsEl.value += "\n\n";
         chatLogsEl.value += `${speaker}: ${text}`;
         if(window.appendMessageToVisualChat) window.appendMessageToVisualChat(speaker, text);
+        // A brand new chat is named after the first thing the player says.
+        if(window.maybeAutoTitleActiveChat) window.maybeAutoTitleActiveChat();
+        // Persist immediately, so the message survives even if this generation is interrupted.
+        if(window.saveActiveChatNow) window.saveActiveChatNow();
         
         chatLogsEl.scrollTop = chatLogsEl.scrollHeight;
         inputEl.value = ""; // we don't set localStorage.input="" yet - in case e.g. page reloads mid generation
@@ -293,11 +430,12 @@ async handleSendButtonClick(opts) =>
     let chatLogs;
     try {
       // get a version of the message feed with hierarchical summaries swapped in:
-      let messagesWithSummaryReplacements = getMessagesWithSummaryReplacements(chatLogsEl.value);
+      let messagesWithSummaryReplacements = getMessagesWithSummaryReplacements(chatLogsEl.value)
+        .filter(m => !isSceneImageMarker(m)); // scene-image messages are not part of the story text the AI sees
       messagesWithSummaryReplacements = messagesWithSummaryReplacements.map(m => m.replace(/SUMMARY\^[0-9]+:/, "Summary (previous events):").trim());
       chatLogs = messagesWithSummaryReplacements.join("\n\n").trim() || "(No chat messages yet. This is the beginning of the chat.)";
     } catch(e) {
-      chatLogs = chatLogsEl.value.trim() || "(No chat messages yet. This is the beginning of the chat.)";
+      chatLogs = stripSceneImageMarkers(chatLogsEl.value.trim()) || "(No chat messages yet. This is the beginning of the chat.)";
     }
     
     chatLogs = cleanCharAndUserPlaceholders(chatLogs);
@@ -308,6 +446,9 @@ async handleSendButtonClick(opts) =>
 
     let renderedStartWith = '{\n  "time":';
 
+    // The story-history timeline is user-editable and auto-extended by the HTML panel; grab the
+    // current text here so the `instruction` list can splice it in (empty -> the line is dropped).
+    window.historyTimelineText = (window.getHistoryTextForPrompt ? window.getHistoryTextForPrompt() : "");
     let renderedInstruction = instruction.evaluateItem;
     let botDescription = botDescriptionEl.value.trim() || "(Not specified.)";
     let userDescription = userDescriptionEl.value.trim() || "(Not specified.)";
@@ -319,6 +460,11 @@ async handleSendButtonClick(opts) =>
     let dynamicFinalInstructionsArr = [];
     if(nextMessageDraftOrInstruction) dynamicFinalInstructionsArr.push(`IMPORTANT: The next turn MUST creatively interpret this idea/instruction: `+literal(nextMessageDraftOrInstruction).replace(/\n+/g, ". "));
     renderedInstruction = renderedInstruction.replace("<<<EXTRA_DYNAMIC_FINAL_INSTRUCTIONS>>>", dynamicFinalInstructionsArr.length > 0 ? "\n"+dynamicFinalInstructionsArr.join("\n\n")+"\n" : "");
+    // These are computed from the cast the story has established so far (see the speaker attribution
+    // helpers at the top of this file). Function replacers are used because the values contain "$" and
+    // "\\" characters that would otherwise be interpreted as replacement patterns.
+    renderedInstruction = renderedInstruction.replace("<<<JSON_SCHEMA_BLOCK>>>", () => jsonSchemaBlock());
+    renderedInstruction = renderedInstruction.replace("<<<SPEAKER_ATTRIBUTION_RULES>>>", () => speakerAttributionRules());
     renderedInstruction = renderedInstruction.replace(/@eraseableLine\n/g, "");
     
     if(window.showAiTypingIndicator) window.showAiTypingIndicator(true);
@@ -341,12 +487,21 @@ async handleSendButtonClick(opts) =>
     
     let data = await pendingObj;
     if(data.stopReason !== "error") generatedTextAndThereWereNoErrors = true;
-    if(window.showAiTypingIndicator) window.showAiTypingIndicator(false);
 
     let fullJsonText = data.text;
     if(!fullJsonText || !fullJsonText.includes('"time"')) {
       fullJsonText = renderedStartWith + (data.generatedText || "");
     }
+
+    // Safety net for multi-character bots: if the whole turn came back attributed to the bot/story name
+    // instead of to the characters who are actually speaking, write it once more with a correction so the
+    // story doesn't lose track of who spoke. See repairCollapsedSpeakerAttribution at the top of this file.
+    if(data.stopReason !== "error") {
+      fullJsonText = await repairCollapsedSpeakerAttribution(renderedInstruction, renderedStartWith, stopSequences, fullJsonText);
+    }
+
+    if(window.showAiTypingIndicator) window.showAiTypingIndicator(false);
+
     if(window.processAiTurnResponse) {
       window.processAiTurnResponse(fullJsonText);
     }
@@ -476,7 +631,7 @@ injectSummariesAndComputeNextSummariesInBackgroundIfNeeded() =>
   const chatLogsElText = chatLogsEl.value;
   const messagesWithSummaryReplacements = getMessagesWithSummaryReplacements(chatLogsElText);
   
-  let currentlyUsedContextLength = countTokens(messagesWithSummaryReplacements.join("\n\n") + botDescriptionEl.value + userDescriptionEl.value + scenarioEl.value);
+  let currentlyUsedContextLength = countTokens(messagesWithSummaryReplacements.filter(m => !isSceneImageMarker(m)).join("\n\n") + botDescriptionEl.value + userDescriptionEl.value + scenarioEl.value);
   if(currentlyUsedContextLength < contextLengthToIdeallyStayUnder) {
     console.log(`Summarization not needed. currentlyUsedContextLength=${currentlyUsedContextLength} which is less than ${contextLengthToIdeallyStayUnder}`);
     return;
@@ -492,7 +647,9 @@ injectSummariesAndComputeNextSummariesInBackgroundIfNeeded() =>
         return {
           text, // note that this `text` is trimmed in the `map` above - very important that we do this kind of normalization for summary replacement stuff, since we do actual string-match replacement.
           index: i,
-          level: Number((text.match(/SUMMARY\^([0-9]+):/)||[])[1] || 0)
+          // Scene-image markers get level -1, which no summarization level ever matches, so they are
+          // excluded from summary blocks while their index (used to place injected summaries) stays aligned.
+          level: isSceneImageMarker(text) ? -1 : Number((text.match(/SUMMARY\^([0-9]+):/)||[])[1] || 0)
         };
       });
       
@@ -693,7 +850,7 @@ injectSummariesAndComputeNextSummariesInBackgroundIfNeeded() =>
 
 
 async copyChatTextToClipboardWithoutSummaries() =>
-  let text = chatLogsEl.value.split(/\n{2,}/).map(p => p.trim()).filter(p => !p.startsWith("SUMMARY^")).join("\n\n");
+  let text = stripSceneImageMarkers(chatLogsEl.value).split(/\n{2,}/).map(p => p.trim()).filter(p => !p.startsWith("SUMMARY^")).join("\n\n");
   
   await navigator.clipboard.writeText(text);
   copyChatTextWithoutSummariesBtn.textContent = "✅ copied";
@@ -720,8 +877,8 @@ updateLastMessageButtonsDisplayIfNeeded() =>
     // and when we show rating buttons, we reduce the size of the others so the buttons fit on mobile (since hopefully they know what those buttons do by now, so they don't need the "full" label)
     rateLastMessageCtn.hidden = false;
     askForRatingsNoticeEl.hidden = false;
-    deleteLastMessageBtn.textContent = deleteLastMessageBtn.dataset.shortContent;
-    regenMessageBtn.textContent = regenMessageBtn.dataset.shortContent;
+    deleteLastMessageBtn.innerHTML = deleteLastMessageBtn.dataset.shortContent;
+    regenMessageBtn.innerHTML = regenMessageBtn.dataset.shortContent;
   }
 
 async rateLastMessage(rating) =>
@@ -870,6 +1027,8 @@ loadDataIntoTextAreasAndLocalStorage(data) =>
   localStorage.backgroundImageUrl = data.backgroundImageUrl ?? "";
   localStorage.backgroundAudioUrl = data.backgroundAudioUrl ?? "";
   try { localStorage.chatLogs = data.chatLogs; } catch(e) { console.error(e); }
+  // ...and into the chat session that is actually on screen (each chat owns its own log now).
+  if(window.saveActiveChatNow) window.saveActiveChatNow();
   localStorage.whatHappensNext = data.whatHappensNext ?? "";
   localStorage.writingInstructions = data.writingInstructions;
   
@@ -1062,11 +1221,11 @@ getCurrentChatData() =>
   };
 
 deleteLastMessage() =>
-  let messages = chatLogsEl.value.trim().split(/\n{2,}/);
+  let target = getRegenTarget();
+  if(!target) return;
+  antiAntiLayoutJank(() => { chatLogsEl.value = target.baseText.trim(); chatLogsEl.scrollTop = chatLogsEl.scrollHeight; });
   
-  antiAntiLayoutJank(() => { chatLogsEl.value = messages.slice(0, -1).join('\n\n'); chatLogsEl.scrollTop = chatLogsEl.scrollHeight; });
-  
-  window.lastMessageDeleted = messages.at(-1);
+  window.lastMessageDeleted = target.message;
   undoDeleteLastMessageCtn.hidden = false;
   clearTimeout(window.hideUndoDeleteLastMessageCtnTimeout);
   window.hideUndoDeleteLastMessageCtnTimeout = setTimeout(() => {
@@ -1096,14 +1255,30 @@ simpleHash(str) =>
   }
   return sum;
   
+getRegenTarget() =>
+  // Regenerate/delete/prev/next all act on "the last message", but an illustration can sit at the end
+  // of the log (see isSceneImageMarker), and deleting a picture just because you regenerated the turn
+  // before it would be nasty. So: target the last *story* message and keep every marker exactly where
+  // it is (trailing markers end up between the previous turn and the newly generated one).
+  let parts = chatLogsEl.value.trim().split(/\n{2,}/).filter(m => m.trim());
+  if(parts.length === 0) return null;
+  let idx = -1;
+  for(let i = parts.length - 1; i >= 0; i--) {
+    if(!isSceneImageMarker(parts[i])) { idx = i; break; }
+  }
+  if(idx === -1) return null;
+  let after = parts.slice(idx + 1);
+  let baseText = parts.slice(0, idx).concat(after).join("\n\n");
+  return { message: parts[idx], baseText, hasTrailingMarkers: after.length > 0 };
+
 updateRegenPrevNextButtonVisibility() =>
   // note that this will clear `window.currentRegenAlternatives` if current context doesn't match its associated `window.currentRegenContextHash`
   regenPrevButton.disabled = true;
   regenNextButton.disabled = true;
-  let messages = chatLogsEl.value.trim().split(/\n{2,}/);
-  let currentLastMessage = messages.at(-1);
-  let currentContextMessagesText = messages.slice(0, -1).join('\n\n');
-  let currentRegenContextHash = simpleHash(currentContextMessagesText);
+  let target = getRegenTarget();
+  if(!target) { window.currentRegenAlternatives = null; window.currentRegenContextHash = null; return; }
+  let currentLastMessage = target.message;
+  let currentRegenContextHash = simpleHash(target.baseText);
   if(currentRegenContextHash !== window.currentRegenContextHash) {
     window.currentRegenAlternatives = [currentLastMessage];
     window.currentRegenContextHash = currentRegenContextHash;
@@ -1123,14 +1298,15 @@ async regenLastMessage() =>
     inputEl.value = window.nextMessageDraftOrInstruction_prevMessage;
   }
 
-  let messages = chatLogsEl.value.trim().split(/\n{2,}/);
-  let currentLastMessage = messages.at(-1);
+  let target = getRegenTarget();
+  if(!target) { regenMessageBtn.disabled = false; return; }
+  let currentLastMessage = target.message;
   let currentRegenContextHash;
   if(window.mostRecentChatLogEditWasAContinuationGeneration) {
     // if last gen was a continuation, then the hash/id of that "regen alternative" must use use the partial content of the final message too (which was used as context):
     currentRegenContextHash = simpleHash(window.mostRecentGenerationContinuationChatLogContextText);
   } else {
-    currentRegenContextHash = simpleHash(messages.slice(0, -1).join('\n\n'));
+    currentRegenContextHash = simpleHash(target.baseText);
   }
   if(currentRegenContextHash !== window.currentRegenContextHash) {
     window.currentRegenAlternatives = [currentLastMessage]; // note that it's correct to use currentLastMessage even if this is a continuation, since the full last message was the result of the regen either way
@@ -1141,7 +1317,7 @@ async regenLastMessage() =>
     if(window.mostRecentChatLogEditWasAContinuationGeneration) {
       chatLogsEl.value = window.mostRecentGenerationContinuationChatLogContextText;
     } else {
-      let value = messages.slice(0, -1).join('\n\n');
+      let value = target.baseText;
       chatLogsEl.value = value.trim();
       chatLogsEl.scrollTop = chatLogsEl.scrollHeight;
     }
@@ -1164,16 +1340,16 @@ async regenLastMessage() =>
   regenMessageBtn.disabled = false;
   
 prevRegenMessage() =>
-  let messages = chatLogsEl.value.trim().split(/\n{2,}/);
-  let currentLastMessage = messages.at(-1);
-  let currentLastMessageRegenIndex = window.currentRegenAlternatives.findIndex(m => m === currentLastMessage);
+  let target = getRegenTarget();
+  if(!target || !window.currentRegenAlternatives) return;
+  let currentLastMessageRegenIndex = window.currentRegenAlternatives.findIndex(m => m === target.message);
   if(currentLastMessageRegenIndex === 0) {
     console.error("tried to go to prev index when it was already zero");
     return;
   }
   
   antiAntiLayoutJank(() => { 
-    chatLogsEl.value = (messages.slice(0, -1).join('\n\n') + "\n\n" + window.currentRegenAlternatives[currentLastMessageRegenIndex-1]).trim();
+    chatLogsEl.value = (target.baseText + "\n\n" + window.currentRegenAlternatives[currentLastMessageRegenIndex-1]).trim();
     chatLogsEl.scrollTop = chatLogsEl.scrollHeight;
   });
   
@@ -1185,9 +1361,10 @@ prevRegenMessage() =>
   regenNextButton.disabled = false;
   
 nextRegenMessage() =>
-  let messages = chatLogsEl.value.trim().split(/\n{2,}/);
-  let currentLastMessage = messages.at(-1);
-  let currentLastMessageRegenIndex = window.currentRegenAlternatives.findIndex(m => m === currentLastMessage);
+  let target = getRegenTarget();
+  if(!target || !window.currentRegenAlternatives) return;
+  let currentLastMessageRegenIndex = window.currentRegenAlternatives.findIndex(m => m === target.message);
+  if(currentLastMessageRegenIndex === -1) return;
   if(currentLastMessageRegenIndex === window.currentRegenAlternatives.length-1) {
     console.error("tried to go to next index when it was already max");
     return;
@@ -1195,7 +1372,7 @@ nextRegenMessage() =>
   
   // save page scroll so we can recover it (else Chrome Android's auto page-shift-prevention messes with page scroll):
   antiAntiLayoutJank(() => { 
-    chatLogsEl.value = (messages.slice(0, -1).join('\n\n') + "\n\n" + window.currentRegenAlternatives[currentLastMessageRegenIndex+1]).trim();
+    chatLogsEl.value = (target.baseText + "\n\n" + window.currentRegenAlternatives[currentLastMessageRegenIndex+1]).trim();
     chatLogsEl.scrollTop = chatLogsEl.scrollHeight;
   });
   
@@ -1268,7 +1445,7 @@ triggerTipIfNeeded() =>
 
 
 getRecentCharacterNames() =>
-  let recentMessages = cleanCharAndUserPlaceholders(chatLogsEl.value).trim().split(/\n{2,}/).slice(-600).filter(m => m.trim());
+  let recentMessages = cleanCharAndUserPlaceholders(chatLogsEl.value).trim().split(/\n{2,}/).slice(-600).filter(m => m.trim() && !isSceneImageMarker(m));
   let recentNames = recentMessages.filter(m => m.includes(":")).map(m => m.trim().split(":")[0].trim());
   recentNames.push(botName.evaluateItem);
   recentNames.push(userName.evaluateItem);
@@ -1365,7 +1542,7 @@ generateCharacterDescription(botOrUser, buttonEl) =>
   if(inspiration === null) return; // <-- they clicked cancel
   window["lastCharacterDescriptionInspirationIdea_"+botOrUser] = inspiration;
   // buttonEl.disabled = true;
-  buttonEl.textContent = "🛑 stop";
+  buttonEl.innerHTML = `<i class="bi bi-stop-circle"></i> stop`;
   descriptionEl.value = "";
   
   let originalDescriptionElPlaceholder = descriptionEl.placeholder;
@@ -1383,7 +1560,7 @@ generateCharacterDescription(botOrUser, buttonEl) =>
       descriptionEl.scrollTop = 99999999; // scroll down to bottom of text box
     },
     onFinish: function(data) {
-      buttonEl.textContent = "✨ generate";
+      buttonEl.innerHTML = `<i class="bi bi-stars"></i> generate`;
       buttonEl.dataset.currentlyGenerating = "";
 
       const openB = String.fromCharCode(123, 123);
@@ -1439,7 +1616,7 @@ generateScenarioDescription(buttonEl) =>
   if(window.scenarioInspiration === null) return; // <-- they clicked cancel
   window.lastScenarioInspirationIdea = window.scenarioInspiration;
   // buttonEl.disabled = true;
-  buttonEl.textContent = "🛑 stop";
+  buttonEl.innerHTML = `<i class="bi bi-stop-circle"></i> stop`;
   scenarioEl.value = "";
   
   let originalScenarioElPlaceholder = scenarioEl.placeholder;
@@ -1457,7 +1634,7 @@ generateScenarioDescription(buttonEl) =>
     },
     onFinish: function(data) {
       buttonEl.disabled = false;
-      buttonEl.textContent = "✨ generate";
+      buttonEl.innerHTML = `<i class="bi bi-stars"></i> generate`;
       buttonEl.dataset.currentlyGenerating = "";
       localStorage.scenario = scenarioEl.value;
       updateDeleteButtonVisibility();
@@ -1598,6 +1775,10 @@ async generateCharactersAndScenario() =>
 $meta
   title = YUKAI - Next-Gen AI Chat & RPG
   description = YUKAI - An immersive AI Chat & RPG platform. Explore curated characters, create custom roleplay bots, and enjoy rich multi-character stories with real-time RPG environment stats.
+  header
+    // 'minimal' collapses the Perchance site menu bar into a tiny hover button so the app owns the
+    // full viewport. Perchance always re-shows the bar while editing - that is platform behaviour.
+    mode = minimal
 
 
 commentChannels
@@ -1774,15 +1955,3 @@ defaultCommentOptions // See here for all the options:  https://perchance.org/co
     YL29-72d0038df18e5430cc7b
     94YC-56cbd9ce7df8d009ee85
     MCMG-b0042327cf64b453e0eb
-
-
-
-
-
-
-
-
-
-
-
-

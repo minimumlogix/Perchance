@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Gradient (Dark Metallic Obsidian) -->
+    <linearGradient id="cdg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#151b1e" />
+      <stop offset="50%" stop-color="#0f1416" />
+      <stop offset="100%" stop-color="#080b0c" />
+    </linearGradient>
+
+    <!-- Outer Rim Stroke Gradient -->
+    <linearGradient id="cdg-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f59b" />
+      <stop offset="35%" stop-color="#10b981" />
+      <stop offset="70%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#00f59b" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Crescent Gradient (Cyan to Emerald) -->
+    <linearGradient id="cdg-crescent" x1="15%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%" stop-color="#7cfbd0" />
+      <stop offset="30%" stop-color="#34d399" />
+      <stop offset="70%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Feather Gradient -->
+    <linearGradient id="cdg-feather" x1="20%" y1="20%" x2="80%" y2="80%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="40%" stop-color="#34d399" />
+      <stop offset="75%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <!-- Star Glow Radial -->
+    <radialGradient id="cdg-star-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#a7f3d0" />
+      <stop offset="65%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </radialGradient>
+
+    <!-- Ambient Core Radial Glow -->
+    <radialGradient id="cdg-ambient" cx="45%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#00f59b" stop-opacity="0.32" />
+      <stop offset="45%" stop-color="#10b981" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Filter: Soft Neon Bloom -->
+    <filter id="cdg-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.4" flood-color="#00f59b" flood-opacity="0.65" />
+    </filter>
+
+    <!-- Filter: Rim Glow -->
+    <filter id="cdg-rim-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#00f59b" flood-opacity="0.5" />
+    </filter>
+
+    <!-- Filter: Badge Elevation -->
+    <filter id="cdg-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.7" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes cdgStarPulse {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.12); opacity: 1; filter: drop-shadow(0 0 2.5px #00f59b); }
+    }
+    @keyframes cdgShimmer {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+    .cdg-star-group {
+      transform-origin: 43px 20px;
+      animation: cdgStarPulse 3.2s ease-in-out infinite;
+    }
+    .cdg-feather-group {
+      animation: cdgShimmer 4s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- SQUIRCLE BADGE WITH NEON RIM -->
+  <rect x="5" y="5" width="54" height="54" rx="14" fill="url(#cdg-bg)" stroke="url(#cdg-rim)" stroke-width="1.6" filter="url(#cdg-shadow)" />
+  <rect x="5" y="5" width="54" height="54" rx="14" fill="none" stroke="#00f59b" stroke-width="0.8" opacity="0.45" filter="url(#cdg-rim-glow)" />
+
+  <!-- AMBIENT CENTER AURA -->
+  <circle cx="32" cy="32" r="21" fill="url(#cdg-ambient)" />
+
+  <!-- EMBLEM GROUP WITH GLOW -->
+  <g filter="url(#cdg-glow)">
+
+    <!-- CRESCENT 'C' (CHARACTER / ROLEPLAY CREST) -->
+    <path d="M 33.5 17
+             C 24 17.8 17 25.5 17 34
+             C 17 43 23.5 49 33.5 49
+             C 38 49 42 47 44.5 44
+             C 38.5 46.5 32 44.5 26.5 40.5
+             C 21.5 36 21 28.5 26 23.2
+             C 28 21 30.5 19 33.5 17 Z"
+          fill="url(#cdg-crescent)" />
+
+    <!-- STORYTELLER'S QUILL FEATHER (LORE & DESCRIPTIONS) -->
+    <g class="cdg-feather-group">
+      <!-- Feather Plume Body -->
+      <path d="M 40.5 22.5
+               C 36.5 24 35 26.5 32.5 28.5
+               C 34 29 35.5 28.5 37 27.5
+               C 33.5 30.5 31 33.5 27.5 36.5
+               C 29 37 30.5 36.5 31.8 35.5
+               C 28 39 25 43 22 47.5
+               C 24.5 44.5 27 41.5 30.5 38.5
+               C 29.5 39.5 28.8 40.5 28.2 41.5
+               C 32 37 35.5 33 39 28.5
+               C 38 29.8 37.2 31 36.5 32
+               C 39.5 28 42 24.5 40.5 22.5 Z"
+            fill="url(#cdg-feather)" />
+
+      <!-- Right Feather Barbs -->
+      <path d="M 40.5 23
+               C 42 25.5 42.5 28 40.5 30.5
+               C 41.8 29.5 42.8 28.5 43.5 27
+               C 41.5 31 39 34.5 36 37.5
+               C 37 36.5 37.8 35.5 38.2 34.5
+               C 35 38 31 42 25.5 45.5
+               C 29 42 33 37.5 36.5 33
+               C 35.5 34 34.8 34.8 34 35.5
+               C 37.5 31 40 26.5 40.5 23 Z"
+            fill="url(#cdg-feather)" opacity="0.9" />
+
+      <!-- Quill Shaft / Spine -->
+      <path d="M 21.8 48
+               L 41.2 22.2"
+            stroke="#e6fffa" stroke-width="1.2" stroke-linecap="round" />
+      <path d="M 21.8 48
+               L 41.2 22.2"
+            stroke="#00f59b" stroke-width="0.6" stroke-linecap="round" />
+    </g>
+
+    <!-- AI SPARK STAR (RADIANT 8-POINT CELESTIAL STAR) -->
+    <g class="cdg-star-group">
+      <!-- 4 Secondary Diagonal Rays -->
+      <path d="M 43 20
+               L 47 16
+               M 43 20
+               L 47 24
+               M 43 20
+               L 39 24
+               M 43 20
+               L 39 16"
+            stroke="#5eead4" stroke-width="1" stroke-linecap="round" opacity="0.85" />
+
+      <!-- 4 Primary Concave Diamond Rays -->
+      <path d="M 43 11.5
+               Q 43 20 51.5 20
+               Q 43 20 43 28.5
+               Q 43 20 34.5 20
+               Q 43 20 43 11.5 Z"
+            fill="url(#cdg-star-glow)" />
+
+      <!-- Inner Core White Diamond & Center Dot -->
+      <path d="M 43 16
+               Q 43 20 47 20
+               Q 43 20 43 24
+               Q 43 20 39 20
+               Q 43 20 43 16 Z"
+            fill="#ffffff" />
+      <circle cx="43" cy="20" r="1.2" fill="#ffffff" />
+    </g>
+
+  </g>
+</svg>
