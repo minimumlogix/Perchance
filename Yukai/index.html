@@ -1017,6 +1017,34 @@
     justify-content: flex-end;
   }
 
+  /* Starting RPG status on the create page - these seed the chat dock's initial Time/Date/Location/
+     Environment for every new chat with the bot (see getBotStartRpg). */
+  .create-rpg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .create-rpg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .create-rpg-field--wide { grid-column: 1 / -1; }
+
+  .create-rpg-field .form-input { padding: 7px 10px; font-size: 0.85rem; }
+
+  .create-greeting-textarea { min-height: 90px; }
+
+  @media (max-width: 520px) {
+    .create-rpg-grid { grid-template-columns: minmax(0, 1fr); }
+    .create-rpg-field--wide { grid-column: auto; }
+  }
+
   /* NOTE: the platform injects `button:not([disabled]) { color: inherit; }` (specificity 0,1,1),
      which outranks a bare class selector - so any text colour declared on a <button> needs
      !important (or an id) to take effect. */
@@ -1288,6 +1316,15 @@
     text-overflow: ellipsis;
   }
 
+  /* Time and date are short and always worth reading in full, so they never shrink; the location is the
+     long one, so it takes whatever room is left and ellipsizes. */
+  .dock-summary > span:not(:last-child) { flex: 0 0 auto; }
+  .dock-summary > span:last-child { flex: 1 1 auto; }
+
+  @media (max-width: 480px) {
+    .dock-summary { gap: 8px; }
+  }
+
   .dock-summary i {
     color: var(--accent-text);
   }
@@ -1499,6 +1536,10 @@
     color: var(--text-action);
   }
 
+  .bold-text {
+    font-weight: 700;
+  }
+
   .dialogue-text {
     color: var(--text-dialogue);
   }
@@ -1689,6 +1730,9 @@
   .chat-action-btn--danger { color: var(--danger) !important; }
 
   /* ---- per-turn actions pinned under the last message ---- */
+  /* Deliberately understated: this tray is an afterthought on the newest turn, so it sits at low opacity
+     with no border or shadow until it is hovered/focused/tapped. It is also hidden entirely when the
+     newest message is the chat's authored greeting (see renderVisualChatLogs). */
   .chat-last-turn-actions {
     display: flex;
     align-items: center;
@@ -1696,20 +1740,25 @@
     align-self: flex-start;
     margin-top: -0.85rem;
     margin-left: calc(42px + 0.75rem);
-    padding: 3px 6px;
-    border: 1px solid var(--border-subtle);
+    padding: 2px 4px;
+    border: 1px solid transparent;
     border-radius: var(--radius-full);
-    background: var(--bg-glass-strong);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 14px rgba(var(--shadow-rgb), 0.3);
-    opacity: 0.88;
-    transition: opacity 0.2s, border-color 0.2s;
+    background: transparent;
+    opacity: 0.4;
+    transition: opacity 0.2s, background 0.2s, border-color 0.2s;
   }
 
-  .chat-last-turn-actions:hover {
+  .chat-last-turn-actions:hover,
+  .chat-last-turn-actions:focus-within,
+  .chat-last-turn-actions:active {
     opacity: 1;
-    border-color: var(--border-focus);
+    background: var(--bg-glass-soft);
+    border-color: var(--border-subtle);
+  }
+
+  /* Touch devices never hover, so lift the resting opacity a little there (still far quieter than text). */
+  @media (hover: none) {
+    .chat-last-turn-actions { opacity: 0.6; }
   }
 
   .chat-last-turn-actions.align-right {
@@ -1725,6 +1774,10 @@
     border-radius: var(--radius-full);
     background: transparent;
     opacity: 1;
+  }
+
+  .chat-last-turn-actions .chat-action-btn--ghost i {
+    font-size: 0.82rem;
   }
 
   .chat-last-turn-actions .chat-action-btn--ghost:hover:not(:disabled) {
@@ -3330,6 +3383,43 @@
       <textarea id="scenarioInputVisible" class="form-textarea" placeholder="Describe the setting, initial situation, relationship with the player, and RPG quest spark..." oninput="syncBotCreateInputs()"></textarea>
     </div>
 
+    <!-- Greeting Message: the authored opening scene of every new chat with this bot. It is displayed
+         exactly like narration, and it can never be regenerated (see getGreetingMessageCount). -->
+    <div class="form-group">
+      <label class="form-label" for="greetingInputVisible">
+        <span>Greeting Message</span>
+        <span class="form-hint">Opening scene of a new chat · narration style</span>
+      </label>
+      <textarea id="greetingInputVisible" class="form-textarea create-greeting-textarea" placeholder="e.g. *The tavern door creaks open and rain follows you inside.* &quot;You must be the one they sent. Sit.&quot;" oninput="syncBotCreateInputs()"></textarea>
+      <div class="form-hint" style="margin-top:0.35rem; text-align:left;">Shown as the first message when a chat starts (and after a restart). Wrap actions in *asterisks* and speech in "quotes" - plain prose is read as narration. Leave blank to get a generic opening.</div>
+    </div>
+
+    <!-- Starting RPG status: seeds the chat dock for every new chat with this bot. -->
+    <div class="form-group">
+      <label class="form-label">
+        <span>Starting RPG Status</span>
+        <span class="form-hint">Initial values for the chat status bar</span>
+      </label>
+      <div class="create-rpg-grid">
+        <label class="create-rpg-field" for="startTimeInputVisible">
+          <span><i class="bi bi-clock-history"></i> Time</span>
+          <input type="text" id="startTimeInputVisible" class="form-input" placeholder="e.g. 06:30 PM">
+        </label>
+        <label class="create-rpg-field" for="startDateInputVisible">
+          <span><i class="bi bi-calendar3"></i> Date</span>
+          <input type="text" id="startDateInputVisible" class="form-input" placeholder="e.g. Day 1">
+        </label>
+        <label class="create-rpg-field create-rpg-field--wide" for="startLocationInputVisible">
+          <span><i class="bi bi-geo-alt"></i> Location</span>
+          <input type="text" id="startLocationInputVisible" class="form-input" placeholder="e.g. Silver Tavern, Orobouros">
+        </label>
+        <label class="create-rpg-field create-rpg-field--wide" for="startEnvironmentInputVisible">
+          <span><i class="bi bi-cloud-sun"></i> Environment</span>
+          <input type="text" id="startEnvironmentInputVisible" class="form-input" placeholder="e.g. rainy, tense, cold">
+        </label>
+      </div>
+    </div>
+
     <div class="create-bot-actions">
       <button class="btn-secondary" type="button" onclick="switchView('explore')">Cancel</button>
       <button class="btn-primary" type="button" onclick="submitCreateBotForm()"><i class="bi bi-rocket-takeoff"></i> Start Adventure &amp; Chat</button>
@@ -3398,7 +3488,7 @@
            stop element references stay valid across renders). -->
       <div class="chat-last-turn-actions" id="deleteAndRegenLastMessageCtn">
         <button id="regenPrevButton" class="chat-action-btn chat-action-btn--ghost" onclick="prevRegenMessage()" disabled title="Previous alternative"><i class="bi bi-chevron-left"></i></button>
-        <button id="regenMessageBtn" class="chat-action-btn chat-action-btn--ghost" onclick="regenLastMessage()" title="Regenerate this turn" data-short-content="<i class='bi bi-arrow-repeat'></i>"><i class="bi bi-arrow-repeat"></i><span class="chat-btn-label">regenerate</span></button>
+        <button id="regenMessageBtn" class="chat-action-btn chat-action-btn--ghost" onclick="regenLastMessage()" title="Regenerate this turn" aria-label="Regenerate this turn" data-short-content="<i class='bi bi-arrow-repeat'></i>"><i class="bi bi-arrow-repeat"></i></button>
         <button id="regenNextButton" class="chat-action-btn chat-action-btn--ghost" onclick="nextRegenMessage()" disabled title="Next alternative"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
@@ -4092,6 +4182,7 @@
     {
       id: "nia",
       startLocation: "Penthouse, The Metropolis",
+      startRpg: { time: "06:30 PM", date: "Day 1", environment: "rainy, tense" },
       name: "Nia",
       tagline: "Your rival was forced into an arranged marriage with you...",
       tags: ["AI Roleplay", "Intelligent", "Arrogant", "Calm"],
@@ -4106,6 +4197,7 @@
     {
       id: "raphael",
       startLocation: "Obsidian Keep, Ruined Citadel",
+      startRpg: { time: "08:00 PM", date: "Day 1", environment: "ashen, foggy, cold" },
       name: "Raphael",
       tagline: "You were married off to a monster?! (Arranged fantasy contract)",
       tags: ["Villain", "Monster", "Dominant", "Possessive"],
@@ -4120,6 +4212,7 @@
     {
       id: "yvette",
       startLocation: "Misty Forest, Kingdom of Relvon",
+      startRpg: { time: "04:30 PM", date: "Day 1", environment: "misty, damp, tense" },
       name: "Yvette",
       tagline: "Cold, emotionally detached mage hunter from the city underworld.",
       tags: ["AI Roleplay", "Mercenary", "Cold", "Action"],
@@ -4134,6 +4227,7 @@
     {
       id: "kazushi",
       startLocation: "Private Booth, Fight Pit Arena",
+      startRpg: { time: "11:20 PM", date: "Day 1", environment: "smoky, loud, tense" },
       name: "Kazushi",
       tagline: "Fighting arena CEO takes pity on you, a fragile hybrid.",
       tags: ["Dominant", "Protective", "CEO", "Drama"],
@@ -4148,6 +4242,7 @@
     {
       id: "illyria",
       startLocation: "Throne Room, Kingdom of Eldora",
+      startRpg: { time: "10:00 AM", date: "Day 1", environment: "grand, oppressive, still" },
       name: "Illyria",
       tagline: "Taken prisoner by the arrogant queen of the elven kingdom.",
       tags: ["Queen", "Fantasy", "Haughty", "Dominant"],
@@ -4162,6 +4257,7 @@
     {
       id: "ganyu",
       startLocation: "Yuehai Pavilion, Liyue Harbor",
+      startRpg: { time: "11:40 PM", date: "Day 1", environment: "quiet, candle-lit, weary" },
       name: "Ganyu",
       tagline: "The very reliable General Secretary, working late hours in Liyue.",
       tags: ["AI Roleplay", "Workaholic", "Gentle", "Fantasy"],
@@ -4176,6 +4272,7 @@
     {
       id: "death",
       startLocation: "Neon Alley, Cyber District",
+      startRpg: { time: "02:15 AM", date: "Day 1", environment: "rainy, neon, ominous" },
       name: "Death",
       tagline: "An unsettling melodic whistle echoes down the alley—he caught up.",
       tags: ["Dark Fantasy", "Reaper", "Thriller", "Supernatural"],
@@ -4190,6 +4287,7 @@
     {
       id: "mona",
       startLocation: "Tavern Room, Riverside Village",
+      startRpg: { time: "07:10 PM", date: "Day 1", environment: "rainy, cozy, warm" },
       name: "Mona",
       tagline: "A hungry stray catgirl sneaks through your window for dinner.",
       tags: ["Catgirl", "Beastkin", "Playful", "Fantasy"],
@@ -4204,6 +4302,7 @@
     {
       id: "onepiece_rpg",
       startLocation: "Thousand Sunny, Uncharted Island",
+      startRpg: { time: "02:00 PM", date: "Day 1", environment: "sunny, breezy, salty" },
       name: "One Piece RPG",
       tagline: "Set sail on the Grand Line with the Straw Hat pirates for adventure!",
       tags: ["RPG Adventure", "Anime", "Action", "Fantasy"],
@@ -4403,21 +4502,23 @@
   function createChatForBot(botId, opts = {}) {
     const bot = getCombinedBots().find(b => b.id === botId);
     if (!bot) return null;
+    const greeting = opts.greeting != null ? opts.greeting : getBotGreeting(bot);
     const meta = {
       id: opts.id || newChatId(),
       botId,
       title: opts.title || `Chapter ${getChatsForBot(botId).length + 1}`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      titleIsAuto: true
+      titleIsAuto: true,
+      // Copied from the bot so this chat's opening scene is frozen (and never regenerable) even if the
+      // bot is edited later.
+      greeting
     };
     const list = getChatIndex();
     list.push(meta);
     setChatIndex(list);
-    localStorage[chatLogKey(meta.id)] = opts.logs != null
-      ? opts.logs
-      : (bot.initialChatLogs || `Narrator: *The story with ${bot.name} begins. What do you do?*`);
-    if (opts.rpgState) localStorage[chatRpgKey(meta.id)] = JSON.stringify(opts.rpgState);
+    localStorage[chatLogKey(meta.id)] = opts.logs != null ? opts.logs : greeting;
+    localStorage[chatRpgKey(meta.id)] = JSON.stringify(opts.rpgState || getBotStartRpg(bot));
     localStorage[activeChatKeyForBot(botId)] = meta.id;
     return meta;
   }
@@ -4606,6 +4707,7 @@
     botDescriptionInputVisible.value = bot.description;
     scenarioInputVisible.value = bot.scenario || "";
     botAvatarInputVisible.value = bot.avatarUrl || "";
+    loadBotStartFieldsIntoCreateForm(bot);
 
     loadActivePersonaIntoChat();
 
@@ -4623,12 +4725,7 @@
       window.rpgState = null;
     }
     if (!window.rpgState || typeof window.rpgState !== "object") {
-      window.rpgState = {
-        time: "06:30 PM",
-        date: "Day 1",
-        location: bot.startLocation || "Starting Point",
-        environment: "calm, atmospheric"
-      };
+      window.rpgState = getBotStartRpg(bot);
     }
     updateRpgStatusHud();
 
@@ -4680,14 +4777,9 @@
     const bot = getCombinedBots().find(b => b.id === window.activeBotId);
     if (!meta) return;
     if (!confirm(`Restart "${meta.title}" from its opening scene? The messages in this chat will be replaced.`)) return;
-    chatLogsEl.value = (bot && bot.initialChatLogs) || `Narrator: *The adventure with ${bot ? bot.name : "the bot"} begins anew.*`;
+    chatLogsEl.value = getBotGreeting(bot);
     localStorage[chatLogKey(meta.id)] = chatLogsEl.value;
-    window.rpgState = {
-      time: "08:30 AM",
-      date: "Day 1",
-      location: (bot && bot.startLocation) || "Starting Point",
-      environment: "calm, fresh"
-    };
+    window.rpgState = getBotStartRpg(bot);
     updateRpgStatusHud();
     // A restart means a new story, so the old timeline no longer belongs to it.
     clearHistory(true);
@@ -6054,6 +6146,100 @@
     botAvatarUrlEl.value = botAvatarInputVisible.value;
   }
 
+  /* ---- Greeting + starting RPG status (the greeting and the chat dock's initial values) ---- */
+
+  // The greeting is the authored opening scene of a chat. It is stored on the bot as `initialChatLogs`
+  // (the curated presets use that same field) and copied into each new chat's log + meta.
+  function defaultGreetingFor(name) {
+    return `Narrator: *You encounter ${name} for the first time. The air hums with anticipation.*`;
+  }
+
+  function getBotGreeting(bot) {
+    return (bot && bot.initialChatLogs) || defaultGreetingFor((bot && bot.name) || "the bot");
+  }
+
+  // A greeting is rendered exactly like narration, so every blank-line-separated paragraph in it needs a
+  // speaker label; plain prose (no "Name:" prefix) is understood as narration and gets one.
+  function normalizeGreetingText(text) {
+    return String(text || "")
+      .split(/\n{2,}/)
+      .map(m => m.trim())
+      .filter(Boolean)
+      .map(m => {
+        const colon = m.indexOf(":");
+        const hasSpeaker = colon > 0 && colon < 40 && !m.slice(0, colon).includes("*") && !m.slice(0, colon).includes("\"");
+        return hasSpeaker ? m : "Narrator: " + m;
+      })
+      .join("\n\n");
+  }
+
+  // Initial dock values for a new chat. `startRpg` is what the create page writes; the curated presets
+  // only carry `startLocation`, kept as a fallback so they still begin where they say they do.
+  function getBotStartRpg(bot) {
+    const src = (bot && bot.startRpg) || {};
+    return {
+      time: String(src.time || "").trim() || "06:30 PM",
+      date: String(src.date || "").trim() || "Day 1",
+      location: String(src.location || "").trim() || (bot && bot.startLocation) || "Starting Point",
+      environment: String(src.environment || "").trim() || "calm, atmospheric"
+    };
+  }
+
+  function collectBotStartFields() {
+    return {
+      time: (startTimeInputVisible.value || "").trim(),
+      date: (startDateInputVisible.value || "").trim(),
+      location: (startLocationInputVisible.value || "").trim(),
+      environment: (startEnvironmentInputVisible.value || "").trim()
+    };
+  }
+
+  // The create form doubles as a viewer for whichever bot is loaded, so it mirrors that bot's greeting
+  // and starting status (see setActiveChat).
+  function loadBotStartFieldsIntoCreateForm(bot) {
+    const start = (bot && bot.startRpg) || {};
+    greetingInputVisible.value = (bot && bot.initialChatLogs) || "";
+    startTimeInputVisible.value = start.time || "";
+    startDateInputVisible.value = start.date || "";
+    startLocationInputVisible.value = start.location || (bot && bot.startLocation) || "";
+    startEnvironmentInputVisible.value = start.environment || "";
+  }
+
+  // A chat's greeting is frozen when the chat is created - editing the bot later must not rewrite the
+  // opening of an existing story - so older chats fall back to whatever the bot says today.
+  function getChatGreetingText() {
+    const meta = getChatMeta(window.activeChatId);
+    if (meta && typeof meta.greeting === "string") return meta.greeting;
+    const bot = getCombinedBots().find(b => b.id === window.activeBotId);
+    return bot ? getBotGreeting(bot) : "";
+  }
+
+  // How many of the chat's leading messages are that authored greeting. Regenerating means "the model
+  // writes this again", and the greeting was written by the human, so main.pjs's regen helpers ask for
+  // this number (window.getGreetingMessageCount) and refuse to touch anything inside it.
+  function getGreetingMessageCount() {
+    const greeting = getChatGreetingText();
+    if (!greeting) return 0;
+    const logParts = chatLogsEl.value.trim().split(/\n{2,}/)
+      .map(m => m.trim()).filter(m => m && !isSceneImageMarker(m));
+    const greetingParts = greeting.trim().split(/\n{2,}/).map(m => m.trim()).filter(Boolean);
+    let n = 0;
+    while (n < greetingParts.length && n < logParts.length && logParts[n] === greetingParts[n]) n++;
+    return n;
+  }
+
+  // True while the newest *story* message is still part of the greeting - i.e. there is nothing the AI
+  // wrote yet, so the per-turn tray (regenerate / alternatives) has nothing to act on and is hidden.
+  function isNewestMessageGreeting() {
+    const count = getGreetingMessageCount();
+    if (!count) return false;
+    const storyParts = chatLogsEl.value.trim().split(/\n{2,}/)
+      .map(m => m.trim()).filter(m => m && !isSceneImageMarker(m));
+    return storyParts.length > 0 && storyParts.length <= count;
+  }
+
+  window.getGreetingMessageCount = getGreetingMessageCount;
+
   function submitCreateBotForm() {
     const name = botNameInputVisible.value.trim();
     if (!name) {
@@ -6061,6 +6247,7 @@
       return;
     }
 
+    const greeting = normalizeGreetingText(greetingInputVisible.value) || defaultGreetingFor(name);
     const newBot = {
       id: "custom_" + Date.now(),
       name: name,
@@ -6073,7 +6260,8 @@
       likes: "1",
       isUserCustom: true,
       isNew: true,
-      initialChatLogs: `Narrator: *You encounter ${name} for the first time. The air hums with anticipation.* "${name}: Welcome. What brings you to this place?"`
+      initialChatLogs: greeting,
+      startRpg: collectBotStartFields()
     };
 
     let userBots = [];
@@ -6296,7 +6484,7 @@
     if (rawValue === null || rawValue === undefined) return previousLocation || "";
     let value = String(rawValue).replace(/\s+/g, " ").trim();
     value = value.replace(/^[\[\(]+/, "").replace(/[\]\)]+$/, "").replace(/[.;]+$/, "").trim();
-    value = value.replace(/^(location|place|current location)\s*[:\-]\s*/i, "").trim();
+    value = value.replace(/^(location|place|current location|setting)\s*[:\-]\s*/i, "").trim();
     if (!value) return previousLocation || "";
     // Older prompt output used "Place / Alternative" - keep the specific one.
     value = value.split(/\s*[\/|]\s*/)[0].trim();
@@ -6390,8 +6578,9 @@
     if (!summary || !window.rpgState) return;
     summary.innerHTML = [
       `<span><i class="bi bi-clock"></i>${escapeHtml(window.rpgState.time || "")}</span>`,
+      `<span><i class="bi bi-calendar3"></i>${escapeHtml(window.rpgState.date || "")}</span>`,
       `<span><i class="bi bi-geo-alt"></i>${escapeHtml(window.rpgState.location || "")}</span>`
-    ].join("");
+    ].filter(Boolean).join("");
   }
 
   window.toggleChatDock = toggleChatDock;
@@ -6843,6 +7032,19 @@
   /* ===========================
      VISUAL CHAT LOGS RENDERING (IMAGE 2)
   =========================== */
+  function formatInlineText(text) {
+    // Emphasised groups are formatted recursively so markup nested inside another group
+    // (e.g. **bold** inside "a quoted line", or a "quote" inside *an action*) still gets
+    // its own styling. Each call is handed only the raw group text (never the markup that
+    // was already injected), so the class="..." attributes can never be re-scanned or
+    // corrupted; the recursion is bounded because a group never contains its own delimiter.
+    return text.replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|"([^"]+)"/g, (match, bold, action, dialogue) => {
+      if (bold !== undefined) return `<span class="bold-text">${formatInlineText(bold)}</span>`;
+      if (action !== undefined) return `<span class="action-text">${formatInlineText(action)}</span>`;
+      return `<span class="dialogue-text">"${formatInlineText(dialogue)}"</span>`;
+    });
+  }
+
   function formatRoleplayContent(rawText) {
     if (!rawText) return "";
     let safe = rawText
@@ -6850,14 +7052,9 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
 
-    // Single pass so the span markup injected for one rule is never re-scanned
-    // by the other rule (which would corrupt the class="..." attribute).
-    safe = safe.replace(/\*([^*]+)\*|"([^"]+)"/g, (match, action, dialogue) => {
-      if (action !== undefined) return `<span class="action-text">*${action}*</span>`;
-      return `<span class="dialogue-text">"${dialogue}"</span>`;
-    });
-
-    return safe.replace(/\n/g, "<br>");
+    // `**bold**` is tried before `*italic*`, and the asterisks themselves are pure
+    // markup: they are dropped from the output so only the styling remains visible.
+    return formatInlineText(safe).replace(/\n/g, "<br>");
   }
 
   // The last-turn action tray is a persistent element (defined in index.html): main.pjs toggles the
@@ -6878,6 +7075,20 @@
     if (!wasSelected) wrapEl.classList.add("msg-selected");
   }
 
+  // main.pjs owns the regen-alternatives bookkeeping (which message the "‹ 2/3 ›" alternatives belong to,
+  // and the guard that a chat's authored greeting is not regenerable), so it is asked to re-check whenever
+  // the log changes. Skipped while a reply is streaming, since the tray's buttons are deliberately disabled
+  // then and this would re-enable them.
+  function refreshRegenState() {
+    try {
+      const indicator = document.getElementById("aiTypingIndicatorCtn");
+      if (indicator && indicator.style.display !== "none") return;
+      const fn = (typeof root !== "undefined" && root && root.updateRegenPrevNextButtonVisibility)
+        || window.updateRegenPrevNextButtonVisibility;
+      if (typeof fn === "function") fn();
+    } catch (e) { console.error(e); }
+  }
+
   function deleteChatMessageAt(rawIndex) {
     const index = Number(rawIndex);
     if (!Number.isInteger(index) || index < 0) return;
@@ -6893,12 +7104,7 @@
     parts.splice(index, 1);
     chatLogsEl.value = parts.join("\n\n").trim();
     saveActiveChatNow();
-    // main.pjs owns the regen-alternatives bookkeeping; ask it to re-check after the log changed.
-    try {
-      const refreshRegenState = (typeof root !== "undefined" && root && root.updateRegenPrevNextButtonVisibility)
-        || window.updateRegenPrevNextButtonVisibility;
-      if (typeof refreshRegenState === "function") refreshRegenState();
-    } catch (e) { console.error(e); }
+    refreshRegenState();
 
     renderVisualChatLogs();
   }
@@ -7083,11 +7289,13 @@
 
     container.innerHTML = html;
 
-    // Re-attach the persistent last-turn action tray under the newest message.
+    // Re-attach the persistent last-turn action tray under the newest message. It is hidden when there is
+    // nothing to act on: an empty chat, or one that is still showing only the authored greeting.
     if (chatLastTurnActionsEl) {
-      chatLastTurnActionsEl.classList.toggle("is-hidden", messages.length === 0);
+      chatLastTurnActionsEl.classList.toggle("is-hidden", messages.length === 0 || isNewestMessageGreeting());
       chatLastTurnActionsEl.classList.toggle("align-right", lastMessageIsUserMessage);
       container.appendChild(chatLastTurnActionsEl);
+      refreshRegenState();
     }
 
     container.scrollTop = container.scrollHeight;

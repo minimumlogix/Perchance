@@ -874,11 +874,11 @@ async copyChatTextToClipboardWithoutSummaries() =>
 updateLastMessageButtonsDisplayIfNeeded() =>
   if(localStorage.sendCount && Number(localStorage.sendCount) > 5) {
     // rating buttons only get shown after several messages to reduce clutter for newbies.
-    // and when we show rating buttons, we reduce the size of the others so the buttons fit on mobile (since hopefully they know what those buttons do by now, so they don't need the "full" label)
+    // and when we show rating buttons, we reduce the size of the others so the buttons fit on mobile
+    // (the delete button becomes an icon; the regen button is always icon-only).
     rateLastMessageCtn.hidden = false;
     askForRatingsNoticeEl.hidden = false;
     deleteLastMessageBtn.innerHTML = deleteLastMessageBtn.dataset.shortContent;
-    regenMessageBtn.innerHTML = regenMessageBtn.dataset.shortContent;
   }
 
 async rateLastMessage(rating) =>
@@ -1269,14 +1269,31 @@ getRegenTarget() =>
   if(idx === -1) return null;
   let after = parts.slice(idx + 1);
   let baseText = parts.slice(0, idx).concat(after).join("\n\n");
-  return { message: parts[idx], baseText, hasTrailingMarkers: after.length > 0 };
+  // The opening message(s) of a chat are the character's *authored* greeting, not something the AI
+  // generated, so they can never be regenerated. index.html owns that knowledge (it knows which chat
+  // is open and what greeted it), so just ask it how many leading messages the greeting covers.
+  let greetingMessageCount = window.getGreetingMessageCount ? Number(window.getGreetingMessageCount()) || 0 : 0;
+  return { message: parts[idx], baseText, hasTrailingMarkers: after.length > 0, isGreeting: idx < greetingMessageCount };
+
+setRegenButtonDisabledForGreeting(blocked) =>
+  // Only *toggles* the regen button when the greeting-block state actually changes: this runs on every
+  // log change, including mid-generation, where handleSendButtonClick has deliberately disabled it.
+  if(blocked === window.regenBlockedByGreeting) return;
+  window.regenBlockedByGreeting = blocked;
+  regenMessageBtn.disabled = blocked;
 
 updateRegenPrevNextButtonVisibility() =>
   // note that this will clear `window.currentRegenAlternatives` if current context doesn't match its associated `window.currentRegenContextHash`
   regenPrevButton.disabled = true;
   regenNextButton.disabled = true;
   let target = getRegenTarget();
-  if(!target) { window.currentRegenAlternatives = null; window.currentRegenContextHash = null; return; }
+  if(!target || target.isGreeting) {
+    window.currentRegenAlternatives = null;
+    window.currentRegenContextHash = null;
+    setRegenButtonDisabledForGreeting(true);
+    return;
+  }
+  setRegenButtonDisabledForGreeting(false);
   let currentLastMessage = target.message;
   let currentRegenContextHash = simpleHash(target.baseText);
   if(currentRegenContextHash !== window.currentRegenContextHash) {
@@ -1299,7 +1316,9 @@ async regenLastMessage() =>
   }
 
   let target = getRegenTarget();
-  if(!target) { regenMessageBtn.disabled = false; return; }
+  // A chat's opening greeting is authored, not generated, so it is never a regen target (the tray that
+  // holds this button is hidden in that case anyway - see renderVisualChatLogs in index.html).
+  if(!target || target.isGreeting) { updateRegenPrevNextButtonVisibility(); return; }
   let currentLastMessage = target.message;
   let currentRegenContextHash;
   if(window.mostRecentChatLogEditWasAContinuationGeneration) {
